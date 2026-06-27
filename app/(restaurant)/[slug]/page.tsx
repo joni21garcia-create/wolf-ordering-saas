@@ -1,7 +1,4 @@
-import type { Metadata } from "next";
-
 import { getRestaurant } from "@/lib/restaurants/getRestaurant";
-import { generateRestaurantMetadata } from "./metadata";
 
 import ThemeProvider from "@/components/restaurant/ThemeProvider";
 import Hero from "@/components/restaurant/Hero";
@@ -21,19 +18,6 @@ interface Props {
   }>;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Metadata dinámica
-|--------------------------------------------------------------------------
-*/
-
-export async function generateMetadata({
-  params,
-}: Props): Promise<Metadata> {
-  const { slug } = await params;
-
-  return generateRestaurantMetadata(slug);
-}
 
 /*
 |--------------------------------------------------------------------------
