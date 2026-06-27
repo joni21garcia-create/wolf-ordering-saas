@@ -75,7 +75,7 @@ const appIcon =
 
     themeColor,
 
-    manifest: `/${slug}/manifest.webmanifest`,
+    manifest: `/api/manifest/${slug}`,
 
 icons: {
   icon: favicon,
