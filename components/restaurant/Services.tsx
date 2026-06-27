@@ -142,7 +142,7 @@ theme.primary,
 })()}
               <h3
                 style={{
-                  color: "#fff",
+                  color: "var(--text-color)",
                   fontSize: "24px",
                   fontWeight: "700",
                   marginBottom: "10px",

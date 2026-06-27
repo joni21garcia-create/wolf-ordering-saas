@@ -33,6 +33,8 @@ export function useManagerPWASettings() {
   const [loading, setLoading] =
     useState(true);
 
+    const [saving, setSaving] = useState(false);
+
   const loadSettings =
     useCallback(async () => {
 
@@ -54,10 +56,12 @@ export function useManagerPWASettings() {
     loadSettings();
   }, [loadSettings]);
 
-  return {
-    settings,
-    setSettings,
-    loading,
-  };
+return {
+  settings,
+  setSettings,
+  loading,
+  saving,
+  setSaving,
+};
 
 }

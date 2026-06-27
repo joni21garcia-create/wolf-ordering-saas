@@ -82,8 +82,8 @@ export default function ManagerPage() {
       // Redirección
       //---------------------------------------
 
-      const role =
-        user.restaurant_roles?.code;
+    const role =
+  user.restaurant_roles?.[0]?.code;
 
       switch (role) {
         case "super-user":

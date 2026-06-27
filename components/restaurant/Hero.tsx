@@ -243,7 +243,6 @@ const todayClose =
   background:
     theme.primary,
       color: theme.text,
-
         border: "none",
         padding: "18px 38px",
         borderRadius: "18px",

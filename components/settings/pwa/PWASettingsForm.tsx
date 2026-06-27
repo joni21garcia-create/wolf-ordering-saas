@@ -414,9 +414,9 @@ console.log("MANAGER SETTINGS:", managerSettings);
   title="Logo"
   subtitle="Logo utilizado por la PWA y el acceso directo."
 >
-  <LogoUploader
-    restaurantId={restaurantId}
-    value={settings.app_logo}
+<LogoUploader
+  restaurantId={restaurantId}
+  value={current.app_logo}
     onChange={(url) =>
       updateCurrentField("app_logo", url)
     }
@@ -447,7 +447,7 @@ console.log("MANAGER SETTINGS:", managerSettings);
       </label>
 
       <select
-        value={settings.display}
+        value={current.display}
         onChange={(e) =>
           updateCurrentField(
             "display",
@@ -495,7 +495,7 @@ console.log("MANAGER SETTINGS:", managerSettings);
       </label>
 
       <select
-        value={settings.orientation}
+        value={current.orientation}
         onChange={(e) =>
           updateCurrentField(
             "orientation",
@@ -581,9 +581,18 @@ console.log("MANAGER SETTINGS:", managerSettings);
           subtitle="Así verán la aplicación tus clientes."
         >
 
-<PhonePreview
-  settings={current}
-/>
+{appType === "restaurant" ? (
+  <PhonePreview
+    settings={settings}
+  />
+) : (
+  <PhonePreview
+    settings={{
+      ...managerSettings,
+      restaurant_id: "",
+    }}
+  />
+)}
 
         </SectionCard>
 

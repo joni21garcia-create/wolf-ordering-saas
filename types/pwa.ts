@@ -9,8 +9,6 @@ export interface RestaurantPWASettings {
 
   description: string;
 
-  logo_url: string | null;
-
   theme_color: string;
 
   background_color: string;
@@ -19,7 +17,7 @@ export interface RestaurantPWASettings {
 
   orientation: string;
 
-  enable_pwa: boolean;
+  app_logo: string | null;
 
   created_at?: string;
 
