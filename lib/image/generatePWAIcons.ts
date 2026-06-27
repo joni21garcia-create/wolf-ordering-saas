@@ -44,6 +44,14 @@ export async function generatePWAIcons(
 
         .toBuffer();
 
+        console.log(
+  icon.filename,
+  "bytes:",
+  buffer.length,
+  "PNG:",
+  buffer.subarray(0, 8)
+);
+
     icons.push({
       name: icon.name,
       filename: icon.filename,

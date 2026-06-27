@@ -112,6 +112,12 @@ const buffer =
     LOGO_PRESET
   );
 
+  console.log(
+  "Optimizado:",
+  buffer.length,
+  buffer.subarray(0, 8)
+);
+
     const {
       error: uploadError,
     } =
