@@ -20,5 +20,5 @@ export async function generateMetadata({
 export default function RestaurantLayout({
   children,
 }: Props) {
-  return children;
+  return <>{children}</>;
 }

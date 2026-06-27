@@ -19,21 +19,21 @@
   });
 
   export const metadata: Metadata = {
+  metadataBase: new URL("https://app.wolfordering.com"),
+
+  title: "Wolf Ordering",
+
+  description:
+    "Sistema SaaS de pedidos digitales para restaurantes",
+
+  themeColor: "#f97316",
+
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
     title: "Wolf Ordering",
-
-    description:
-      "Sistema SaaS de pedidos digitales para restaurantes",
-
-
-
-    themeColor: "#f97316",
-
-    appleWebApp: {
-      capable: true,
-      statusBarStyle: "black-translucent",
-      title: "Wolf Ordering",
-    },
-  };
+  },
+};
 
   export default function RootLayout({
     children,
