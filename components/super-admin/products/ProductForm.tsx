@@ -461,6 +461,17 @@ const uploadImage =
 )}
 
 {form.image_url && (
+
+<p
+  style={{
+    color: "#22c55e",
+    fontSize: 12,
+    wordBreak: "break-all",
+  }}
+>
+  {form.image_url}
+</p>
+
   <img
     src={
       form.image_url

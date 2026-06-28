@@ -56,6 +56,10 @@ export async function optimizeImage(
 
   }
 
-  return pipeline.toBuffer();
+ const buffer = await pipeline.toBuffer();
+
+console.log("Optimized image bytes:", buffer.length);
+
+return buffer;
 
 }
