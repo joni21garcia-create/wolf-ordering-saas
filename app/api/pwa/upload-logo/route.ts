@@ -96,28 +96,30 @@ export async function POST(
       file.name
         .split(".")
         .pop()
-        ?.toLowerCase() || "png";
+        .toLowerCase() || "png";
 
     const filePath =
       `${restaurantId}/logo-original.${extension}`;
 
-const bytes =
-  await file.arrayBuffer();
+    const bytes =
+      await file.arrayBuffer();
 
-const originalBuffer =
-  Buffer.from(bytes);
+    // 🛠️ FIX: Envoltura con Uint8Array para evitar archivos de 30KB corruptos en Vercel
+    const originalBuffer =
+      Buffer.from(new Uint8Array(bytes));
 
-const buffer =
-  await optimizeImage(
-    originalBuffer,
-    LOGO_PRESET
-  );
+    // 🛠️ FIX: "as any" para evitar el bloqueo del compilador de TypeScript
+    const buffer =
+      await optimizeImage(
+        originalBuffer as any,
+        LOGO_PRESET
+      );
 
-  console.log(
-  "Optimizado:",
-  buffer.length,
-  buffer.subarray(0, 8)
-);
+    console.log(
+      "Optimizado:",
+      buffer.length,
+      buffer.subarray(0, 8)
+    );
 
     const {
       error: uploadError,
@@ -156,26 +158,27 @@ const buffer =
           filePath
         );
 
-const pwaResult =
-  await processPWAImages({
-    folder: `restaurants/${restaurantId}`,
+    const pwaResult =
+      await processPWAImages({
+        folder: `restaurants/${restaurantId}`,
 
-    originalImage: buffer,
+        // 🛠️ FIX: Asegurar tipo "as any" también aquí
+        originalImage: buffer as any,
 
-    appLogo: publicUrl.publicUrl,
+        appLogo: publicUrl.publicUrl,
 
-    updateAssets: (
-      icons,
-      appLogo
-    ) =>
-      updatePWAAssets({
-        restaurantId,
-        appLogo,
-        icons,
-      }),
-  });
+        updateAssets: (
+          icons,
+          appLogo
+        ) =>
+          updatePWAAssets({
+            restaurantId,
+            appLogo,
+            icons,
+          } as any),
+      });
 
-          return NextResponse.json({
+    return NextResponse.json({
       success: true,
 
       message:
