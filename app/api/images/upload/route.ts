@@ -102,24 +102,26 @@ export async function POST(
     }
 
 
-//----------------------------------
-// Optimizar imagen (Seguro para Vercel)
+ //----------------------------------
+// Optimizar imagen (Solución al error de TypeScript)
 //----------------------------------
 
 const bytes = await file.arrayBuffer();
-const originalBuffer = Buffer.from(bytes);
 
-let optimizedBuffer = originalBuffer;
+// Al pasarle un Uint8Array estructurado, Buffer de NodeJS se genera sin tipos conflictivos
+const originalBuffer = Buffer.from(new Uint8Array(bytes));
 
-// Solo optimizamos con sharp si estamos en local. 
-// En Vercel (producción) sube el archivo original directamente para que no se corrompa.
+let optimizedBuffer: Buffer = originalBuffer as any;
+
 if (process.env.NODE_ENV === "development") {
   try {
-    optimizedBuffer = await optimizeImage(originalBuffer, selectedPreset);
+    // Forzamos el tipo con "as any" para que TypeScript no pelee por la firma del método
+    optimizedBuffer = await optimizeImage(originalBuffer as any, selectedPreset) as any;
   } catch (e) {
     console.error("Error optimizando en local:", e);
   }
 }
+
 //----------------------------------
 // Nombre del archivo
 //----------------------------------
