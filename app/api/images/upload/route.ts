@@ -102,21 +102,23 @@ export async function POST(
     }
 
 
-  //----------------------------------
-// Optimizar imagen
+//----------------------------------
+// Optimizar imagen (Modificado para Vercel)
 //----------------------------------
 
-const bytes =
-  await file.arrayBuffer();
+// Extraemos los bytes del archivo cargado
+const arrayBuffer = await file.arrayBuffer();
 
-const originalBuffer =
-  Buffer.from(bytes);
+// Forzamos la creación de una instancia limpia de Uint8Array compatible con Vercel
+const cleanUint8 = new Uint8Array(arrayBuffer);
 
-const optimizedBuffer =
-  await optimizeImage(
-    originalBuffer,
-    selectedPreset
-  );
+// Creamos el Buffer final que "sharp" leerá sin corromperse
+const originalBuffer = Buffer.from(cleanUint8);
+
+const optimizedBuffer = await optimizeImage(
+  originalBuffer,
+  selectedPreset
+);
 
 //----------------------------------
 // Nombre del archivo
