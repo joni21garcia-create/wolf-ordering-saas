@@ -103,17 +103,14 @@ export async function POST(
 
 
 //----------------------------------
-// Optimizar imagen (Modificado para Vercel)
+// Optimizar imagen (Versión Ultra-Segura para Vercel)
 //----------------------------------
 
-// Extraemos los bytes del archivo cargado
 const arrayBuffer = await file.arrayBuffer();
 
-// Forzamos la creación de una instancia limpia de Uint8Array compatible con Vercel
-const cleanUint8 = new Uint8Array(arrayBuffer);
-
-// Creamos el Buffer final que "sharp" leerá sin corromperse
-const originalBuffer = Buffer.from(cleanUint8);
+// Usamos Buffer.from directamente pasándole el ArrayBuffer,
+// que es la forma nativa y estándar recomendada por Next.js
+const originalBuffer = Buffer.from(arrayBuffer);
 
 const optimizedBuffer = await optimizeImage(
   originalBuffer,
