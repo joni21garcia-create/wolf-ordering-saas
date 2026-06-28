@@ -147,59 +147,74 @@ self.addEventListener("fetch", (event) => {
     request.destination === "image";
 
   /*
-  =========================================
-  CACHE FIRST
-  Recursos estáticos
-  =========================================
-  */
+=========================================
+STALE WHILE REVALIDATE
+Recursos estáticos
+=========================================
+*/
 
-  if (isStaticAsset) {
+if (isStaticAsset) {
 
-    event.respondWith(
+  event.respondWith(
 
-      (async () => {
+    (async () => {
 
-        const cache =
-          await caches.open(
-            STATIC_CACHE
-          );
+      const cache =
+        await caches.open(
+          STATIC_CACHE
+        );
 
-        const cachedResponse =
-          await cache.match(request);
+      const cachedResponse =
+        await cache.match(request);
 
-        if (cachedResponse) {
+      const networkFetch =
+        fetch(request)
+          .then(async (response) => {
 
-          console.log(
-            "[SW] Cache:",
-            request.url
-          );
+            if (response.ok) {
 
-          return cachedResponse;
+              await cache.put(
+                request,
+                response.clone()
+              );
 
-        }
+              console.log(
+                "[SW] Actualizado:",
+                request.url
+              );
+
+            }
+
+            return response;
+
+          })
+          .catch(() => cachedResponse);
+
+      if (cachedResponse) {
 
         console.log(
-          "[SW] Network:",
+          "[SW] Cache:",
           request.url
         );
 
-        const networkResponse =
-          await fetch(request);
+        return cachedResponse;
 
-        await cache.put(
-          request,
-          networkResponse.clone()
-        );
+      }
 
-        return networkResponse;
+      console.log(
+        "[SW] Network:",
+        request.url
+      );
 
-      })()
+      return networkFetch;
 
-    );
+    })()
 
-    return;
+  );
 
-  }
+  return;
+
+}
 
   /*
   =========================================
