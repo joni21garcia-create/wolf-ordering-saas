@@ -76,7 +76,7 @@ export default function PhonePreview({
           >
             {settings.app_logo ? (
               <img
-                src={settings.app_logo}
+             src={`${settings.app_logo}?t=${Date.now()}`}
                 alt={settings.app_name}
                 style={{
                   width: "100%",

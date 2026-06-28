@@ -7,20 +7,27 @@ import {
   UploadedIcon,
 } from "./uploadGeneratedIcons";
 
-import {
-  updatePWAAssets,
-} from "./updatePWAAssets";
-
 export interface ProcessPWAImagesResult {
   icons: UploadedIcon[];
   settings: any;
 }
 
-export async function processPWAImages(
-  restaurantId: string,
-  originalImage: Buffer,
-  appLogo: string
-): Promise<ProcessPWAImagesResult> {
+interface ProcessPWAImagesParams {
+  folder: string;
+  originalImage: Buffer;
+  appLogo: string;
+  updateAssets: (
+    icons: UploadedIcon[],
+    appLogo: string
+  ) => Promise<any>;
+}
+
+export async function processPWAImages({
+  folder,
+  originalImage,
+  appLogo,
+  updateAssets,
+}: ProcessPWAImagesParams): Promise<ProcessPWAImagesResult> {
 
   console.log("1 - Entró a processPWAImages");
 
@@ -30,19 +37,18 @@ export async function processPWAImages(
   console.log("2 - Iconos generados");
 
   const uploaded =
-    await uploadGeneratedIcons(
-      restaurantId,
-      generated.icons
-    );
+    await uploadGeneratedIcons({
+      folder,
+      icons: generated.icons,
+    });
 
   console.log("3 - Iconos subidos");
 
   const settings =
-    await updatePWAAssets({
-      restaurantId,
-      appLogo,
-      icons: uploaded,
-    });
+    await updateAssets(
+      uploaded,
+      appLogo
+    );
 
   console.log("4 - Base actualizada");
 

@@ -4,6 +4,7 @@ import { optimizeImage } from "@/lib/image/optimizeImage";
 import { LOGO_PRESET } from "@/lib/image/presets";
 
 import { processPWAImages } from "@/lib/pwa/processPWAImages";
+import { updatePWAAssets } from "@/lib/pwa/updatePWAAssets";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -155,12 +156,25 @@ const buffer =
           filePath
         );
 
-    const pwaResult =
-      await processPWAImages(
+const pwaResult =
+  await processPWAImages({
+    folder: `restaurants/${restaurantId}`,
+
+    originalImage: buffer,
+
+    appLogo: publicUrl.publicUrl,
+
+    updateAssets: (
+      icons,
+      appLogo
+    ) =>
+      updatePWAAssets({
         restaurantId,
-        buffer,
-        publicUrl.publicUrl
-      );
+        appLogo,
+        icons,
+      }),
+  });
+
           return NextResponse.json({
       success: true,
 

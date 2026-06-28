@@ -11,6 +11,9 @@ export interface ManagerPWASettings {
   background_color: string;
   display: string;
   orientation: string;
+
+  created_at?: string;
+  updated_at?: string;
 }
 
 const defaults: ManagerPWASettings = {

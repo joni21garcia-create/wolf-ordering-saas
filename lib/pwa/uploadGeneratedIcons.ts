@@ -15,23 +15,26 @@ export interface UploadedIcon {
   url: string;
 }
 
-export async function uploadGeneratedIcons(
-  restaurantId: string,
-  icons: GeneratedIcon[]
-): Promise<UploadedIcon[]> {
+interface UploadGeneratedIconsParams {
+  folder: string;
+  icons: GeneratedIcon[];
+}
+
+export async function uploadGeneratedIcons({
+  folder,
+  icons,
+}: UploadGeneratedIconsParams): Promise<UploadedIcon[]> {
 
   const uploaded: UploadedIcon[] = [];
 
   for (const icon of icons) {
 
     const path =
-      `${restaurantId}/${icon.filename}`;
+      `${folder}/${icon.filename}`;
 
     const { error } =
       await supabase.storage
-
         .from("restaurant-pwa")
-
         .upload(
           path,
           icon.buffer,
@@ -45,13 +48,10 @@ export async function uploadGeneratedIcons(
       throw error;
     }
 
-    const {
-      data,
-    } = supabase.storage
-
-      .from("restaurant-pwa")
-
-      .getPublicUrl(path);
+    const { data } =
+      supabase.storage
+        .from("restaurant-pwa")
+        .getPublicUrl(path);
 
     uploaded.push({
       name: icon.name,
@@ -62,5 +62,4 @@ export async function uploadGeneratedIcons(
   }
 
   return uploaded;
-
 }

@@ -25,7 +25,7 @@ export default function ColorPicker({
           fontSize: 14,
         }}
       >
-       {label && (
+{label && (
   <label
     style={{
       fontWeight: 600,

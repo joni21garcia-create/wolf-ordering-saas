@@ -1,15 +1,16 @@
 "use client";
 
-import { usePWASettings } from "@/hooks/usePWASettings";
-import ManagerPWAForm from "./ManagerPWAForm";
 import { useState } from "react";
+
+import { usePWASettings } from "@/hooks/usePWASettings";
 import { useManagerPWASettings } from "@/hooks/useManagerPWASettings";
 
-import PhonePreview from "./PhonePreview";
 import SectionCard from "./SectionCard";
-import LogoUploader from "./LogoUploader";
+import PhonePreview from "./PhonePreview";
 import ColorPicker from "./ColorPicker";
 import SaveButton from "./SaveButton";
+import RestaurantLogoUploader from "./RestaurantLogoUploader";
+import ManagerLogoUploader from "./ManagerLogoUploader";
 
 interface Props {
   restaurantId: string;
@@ -19,49 +20,186 @@ export default function PWASettingsForm({
   restaurantId,
 }: Props) {
 
-    const [appType, setAppType] = useState<
-  "restaurant" | "manager"
->("restaurant");
+  /*
+  =====================================================
+  TIPO DE APLICACIÓN
+  =====================================================
+  */
 
-const {
-  settings,
-  loading,
-  saving,
-  error,
-  updateField,
-  saveSettings,
-} = usePWASettings(restaurantId);
+  const [
+    appType,
+    setAppType,
+  ] = useState<"restaurant" | "manager">(
+    "restaurant"
+  );
 
-const {
-  settings: managerSettings,
-  setSettings: setManagerSettings,
-  loading: managerLoading,
-  saving: managerSaving,
-} = useManagerPWASettings();
+  /*
+  =====================================================
+  CONFIGURACIÓN RESTAURANTE
+  =====================================================
+  */
 
+  const {
+    settings,
+    loading,
+    saving,
+    error,
+    updateField,
+    saveSettings,
+  } = usePWASettings(
+    restaurantId
+  );
 
-const current =
-  appType === "restaurant"
-    ? settings
-    : managerSettings;
+  /*
+  =====================================================
+  CONFIGURACIÓN MANAGER
+  =====================================================
+  */
 
-    function updateCurrentField(field: string, value: any) {
+  const {
+    settings: managerSettings,
+    setSettings: setManagerSettings,
+    loading: managerLoading,
+    saving: managerSaving,
+    setSaving: setManagerSaving,
+  } = useManagerPWASettings();
 
-  if (appType === "restaurant") {
-    updateField(field as any, value);
-    return;
+  /*
+  =====================================================
+  CONFIGURACIÓN ACTIVA
+  =====================================================
+  */
+
+  const current =
+    appType === "restaurant"
+      ? settings
+      : managerSettings;
+console.log("Restaurant logo:", settings.app_logo);
+console.log("Manager logo:", managerSettings.app_logo);
+  /*
+  =====================================================
+  ACTUALIZAR CAMPOS
+  =====================================================
+  */
+
+  function updateCurrentField(
+    field: keyof typeof current,
+    value: any
+  ) {
+
+    if (
+      appType === "restaurant"
+    ) {
+
+      updateField(
+        field as any,
+        value
+      );
+
+      return;
+
+    }
+
+    setManagerSettings(
+      (prev) => ({
+        ...prev,
+        [field]: value,
+      })
+    );
+
   }
 
-  setManagerSettings((prev) => ({
-    ...prev,
-    [field]: value,
-  }));
+  /*
+  =====================================================
+  GUARDAR
+  =====================================================
+  */
 
-}
+  async function saveCurrentSettings() {
 
+    if (
+      appType === "restaurant"
+    ) {
 
-  if (loading) {
+      await saveSettings();
+
+      return;
+
+    }
+
+    try {
+
+      setManagerSaving(true);
+
+      const response =
+        await fetch(
+          "/api/pwa/save-manager-settings",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify(
+              managerSettings
+            ),
+          }
+        );
+
+      const json =
+        await response.json();
+
+      if (!json.success) {
+
+        throw new Error(
+          json.error ??
+          "No fue posible guardar."
+        );
+
+      }
+
+      setManagerSettings(
+        json.settings
+      );
+
+      alert(
+        "Configuración del Manager guardada correctamente."
+      );
+
+    } catch (error: any) {
+
+      alert(
+        error.message ??
+        "Error guardando configuración."
+      );
+
+    } finally {
+
+      setManagerSaving(false);
+
+    }
+
+  }
+
+  /*
+  =====================================================
+  LOADING
+  =====================================================
+  */
+
+  if (
+    loading ||
+    managerLoading
+  ) {
+
+    console.log("Restaurant:", settings.app_logo);
+
+console.log("Manager:", managerSettings.app_logo);
+
     return (
+
       <div
         style={{
           padding: 40,
@@ -70,298 +208,237 @@ const current =
       >
         Cargando configuración...
       </div>
+
     );
+
   }
-
-
-
-async function saveCurrentSettings() {
-
-    console.log("APP TYPE:", appType);
-
-console.log("SETTINGS RESTAURANTE:", settings);
-
-console.log("MANAGER SETTINGS:", managerSettings);
-
-  if (appType === "restaurant") {
-    await saveSettings();
-    return;
-  }
-
-  const response = await fetch(
-    "/api/pwa/save-manager-settings",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(managerSettings),
-    }
-  );
-
-  const json = await response.json();
-
-  if (!json.success) {
-    alert("No fue posible guardar la configuración.");
-    return;
-  }
-
-  setManagerSettings(json.settings);
-
-  alert("Configuración del Manager guardada correctamente.");
-
-}
-
-
+   /*
+  =====================================================
+  RENDER
+  =====================================================
+  */
 
   return (
 
-
-    <div
+    <main
       style={{
-        display: "grid",
-        gridTemplateColumns:
-          "minmax(700px,1fr) 360px",
-        gap: 35,
-        alignItems: "start",
+        display: "flex",
+        flexDirection: "column",
+        gap: 32,
       }}
     >
 
-      {/* COLUMNA IZQUIERDA */}
+      {/* ===========================================
+          CABECERA
+      =========================================== */}
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 28,
-        }}
+      <SectionCard
+        title="Configuración PWA"
+        subtitle={
+          appType === "restaurant"
+            ? "Personaliza la aplicación que instalarán los clientes del restaurante."
+            : "Configura la aplicación oficial de administración de Wolf Ordering."
+        }
       >
 
 
-<SectionCard
-  title="Tipo de aplicación"
-  subtitle="Selecciona qué aplicación deseas configurar."
->
-
-  <div
-    style={{
-      display: "flex",
-      gap: 16,
-    }}
-  >
-    <button
-      type="button"
-      onClick={() =>
-        setAppType("restaurant")
-      }
-      style={{
-        flex: 1,
-        padding: "16px",
-        borderRadius: 12,
-        border:
-          appType === "restaurant"
-            ? "2px solid #f97316"
-            : "1px solid #3f3f46",
-        background:
-          appType === "restaurant"
-            ? "#2a1608"
-            : "#18181b",
-        color: "#fff",
-        cursor: "pointer",
-        fontWeight: 700,
-      }}
-    >
-      🌐 Web Restaurante
-    </button>
-
-    <button
-      type="button"
-      onClick={() =>
-        setAppType("manager")
-      }
-      style={{
-        flex: 1,
-        padding: "16px",
-        borderRadius: 12,
-        border:
-          appType === "manager"
-            ? "2px solid #f97316"
-            : "1px solid #3f3f46",
-        background:
-          appType === "manager"
-            ? "#2a1608"
-            : "#18181b",
-        color: "#fff",
-        cursor: "pointer",
-        fontWeight: 700,
-      }}
-    >
-      🐺 Wolf Ordering Manager
-    </button>
-  </div>
-
-</SectionCard>
-        <SectionCard
-          title="Información"
-          subtitle="Información principal de la aplicación instalada por el cliente."
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(2,minmax(0,1fr))",
+            gap: 18,
+          }}
         >
 
-         <div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    gap: 22,
-  }}
->
-  {/* Nombre App */}
+          <button
+            type="button"
+            onClick={() =>
+              setAppType("restaurant")
+            }
+            style={{
+              height: 94,
+              borderRadius: 22,
+              boxShadow:
+                appType === "restaurant"
+                 ? "0 0 0 1px rgba(249,115,22,.25), 0 18px 40px rgba(249,115,22,.12)"
+                 : "none",
+              background:
+                appType === "restaurant"
+                  ? "#cc6220"
+                  : "#18181b",
+              color: "#fff",
+              cursor: "pointer",
+              transition: ".25s",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
 
-  <div>
-    <label
-      style={{
-        display: "block",
-        color: "#fff",
-        marginBottom: 8,
-        fontWeight: 600,
-        fontSize: 15,
-      }}
-    >
-      Nombre de la aplicación
-    </label>
+            <span
+              style={{
+                fontSize: 30,
+              }}
+            >
+              🌐
+            </span>
 
-    <input
-      type="text"
-      placeholder="Ej: Wolf Ordering"
-      value={current.app_name}
-      onChange={(e) =>
-        updateCurrentField(
-          "app_name",
-          e.target.value
-        )
-      }
-      style={{
-        width: "100%",
-        height: 52,
-        borderRadius: 12,
-        border: "1px solid #3f3f46",
-        background: "#27272a",
-        color: "#fff",
-        padding: "0 16px",
-        fontSize: 15,
-        outline: "none",
-      }}
-    />
-  </div>
+            <span
+              style={{
+                fontWeight: 700,
+                fontSize: 16,
+              }}
+            >
+              Restaurante
+            </span>
 
-  {/* Nombre corto */}
+            <span
+              style={{
+                color: "#a1a1aa",
+                fontSize: 13,
+              }}
+            >
+              Aplicación para clientes
+            </span>
 
-  <div>
-    <label
-      style={{
-        display: "block",
-        color: "#fff",
-        marginBottom: 8,
-        fontWeight: 600,
-        fontSize: 15,
-      }}
-    >
-      Nombre corto
-    </label>
+          </button>
 
-    <input
-      type="text"
-      placeholder="Ej: WO"
-      value={current.short_name}
-      onChange={(e) =>
-        updateCurrentField(
-          "short_name",
-          e.target.value
-        )
-      }
-      style={{
-        width: "100%",
-        height: 52,
-        borderRadius: 12,
-        border: "1px solid #3f3f46",
-        background: "#27272a",
-        color: "#fff",
-        padding: "0 16px",
-        fontSize: 15,
-        outline: "none",
-      }}
-    />
-  </div>
+          <button
+            type="button"
+            onClick={() =>
+              setAppType("manager")
+            }
+            style={{
+              height: 94,
+              borderRadius: 22,
+              boxShadow:
+                appType === "manager"
+                ? "0 0 0 1px rgba(249,115,22,.25), 0 18px 40px rgba(249,115,22,.12)"
+                 : "none",
+              background:
+                appType === "manager"
+                  ? "#cc6220"
+                  : "#18181b",
+              color: "#fff",
+              cursor: "pointer",
+              transition: ".25s",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
 
-  {/* Descripción */}
+            <span
+              style={{
+                fontSize: 30,
+              }}
+            >
+              🐺
+            </span>
 
-  <div>
-    <label
-      style={{
-        display: "block",
-        color: "#fff",
-        marginBottom: 8,
-        fontWeight: 600,
-        fontSize: 15,
-      }}
-    >
-      Descripción
-    </label>
+            <span
+              style={{
+                fontWeight: 700,
+                fontSize: 16,
+              }}
+            >
+              Wolf Manager
+            </span>
 
-    <textarea
-      rows={5}
-      placeholder="Describe tu aplicación..."
-      value={current.description}
-      onChange={(e) =>
-        updateCurrentField(
-          "description",
-          e.target.value
-        )
-      }
-      style={{
-        width: "100%",
-        borderRadius: 12,
-        border: "1px solid #3f3f46",
-        background: "#27272a",
-        color: "#fff",
-        padding: 16,
-        resize: "vertical",
-        fontSize: 15,
-        outline: "none",
-      }}
-    />
-  </div>
-</div>
+            <span
+              style={{
+                color: "#a1a1aa",
+                fontSize: 13,
+              }}
+            >
+              Aplicación administrativa
+            </span>
 
-        </SectionCard>
+            
 
-        <SectionCard
-  title="Apariencia"
-  subtitle="Personaliza colores e identidad visual."
+          </button>
+
+        </div>
+
+      </SectionCard>
+
+      {/* ===========================================
+          GRID PRINCIPAL
+      =========================================== */}
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "minmax(0,1fr) 420px",
+          gap: 32,
+          alignItems: "start",
+        }}
+      >
+
+        {/* =======================================
+            COLUMNA IZQUIERDA
+        ======================================= */}
+
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 28,
+          }}
+        >
+            {/* ===========================================
+    INFORMACIÓN GENERAL
+=========================================== */}
+
+<SectionCard
+  title="Información"
+  subtitle="Define la información principal de la aplicación."
 >
   <div
     style={{
       display: "flex",
       flexDirection: "column",
-      gap: 28,
+      gap: 22,
     }}
   >
+
     <div>
       <label
         style={{
           display: "block",
+          marginBottom: 8,
           color: "#fff",
-          marginBottom: 12,
           fontWeight: 600,
         }}
       >
-        Color principal
+        Nombre de la aplicación
       </label>
 
-      <ColorPicker
-        label=""
-        value={current.theme_color}
-        onChange={(color) =>
-          updateCurrentField("theme_color", color)
+      <input
+        type="text"
+        value={current.app_name}
+        onChange={(e) =>
+          updateCurrentField(
+            "app_name",
+            e.target.value
+          )
         }
+        placeholder="Ej: Wolf Burger"
+        style={{
+          width: "100%",
+          height: 52,
+          borderRadius: 12,
+          border: "1px solid #3f3f46",
+          background: "#27272a",
+          color: "#fff",
+          padding: "0 16px",
+        }}
       />
     </div>
 
@@ -369,81 +446,182 @@ console.log("MANAGER SETTINGS:", managerSettings);
       <label
         style={{
           display: "block",
+          marginBottom: 8,
           color: "#fff",
-          marginBottom: 12,
           fontWeight: 600,
         }}
       >
-        Color de fondo
+        Nombre corto
       </label>
 
-      <ColorPicker
-        label=""
-        value={current.background_color}
-        onChange={(color) =>
-          updateCurrentField("background_color", color)
+      <input
+        type="text"
+        value={current.short_name}
+        onChange={(e) =>
+          updateCurrentField(
+            "short_name",
+            e.target.value
+          )
         }
+        placeholder="Ej: Wolf"
+        style={{
+          width: "100%",
+          height: 52,
+          borderRadius: 12,
+          border: "1px solid #3f3f46",
+          background: "#27272a",
+          color: "#fff",
+          padding: "0 16px",
+        }}
       />
     </div>
 
-    <div
-      style={{
-        padding: 16,
-        borderRadius: 12,
-        background: "#27272a",
-        color: "#a1a1aa",
-        fontSize: 14,
-        lineHeight: 1.6,
-        border: "1px solid #3f3f46",
-      }}
-    >
-      Estos colores se utilizarán en:
-      <br />
-      • Pantalla de carga (Splash)
-      <br />
-      • Barra superior de la PWA
-      <br />
-      • Manifest dinámico
-      <br />
-      • Instalación de la aplicación
+    <div>
+      <label
+        style={{
+          display: "block",
+          marginBottom: 8,
+          color: "#fff",
+          fontWeight: 600,
+        }}
+      >
+        Descripción
+      </label>
+
+      <textarea
+        rows={5}
+        value={current.description}
+        onChange={(e) =>
+          updateCurrentField(
+            "description",
+            e.target.value
+          )
+        }
+        placeholder="Describe brevemente la aplicación."
+        style={{
+          width: "100%",
+          borderRadius: 12,
+          border: "1px solid #3f3f46",
+          background: "#27272a",
+          color: "#fff",
+          padding: 16,
+          resize: "vertical",
+        }}
+      />
     </div>
+
   </div>
 </SectionCard>
 
-<SectionCard
-  title="Logo"
-  subtitle="Logo utilizado por la PWA y el acceso directo."
->
-<LogoUploader
-  restaurantId={restaurantId}
-  value={current.app_logo}
-    onChange={(url) =>
-      updateCurrentField("app_logo", url)
-    }
-  />
-</SectionCard>
+{/* ===========================================
+    APARIENCIA
+=========================================== */}
 
-       
-       <SectionCard
-  title="Configuración avanzada"
-  subtitle="Cómo se abrirá la aplicación instalada."
+<SectionCard
+  title="Apariencia"
+  subtitle="Personaliza los colores principales."
 >
+
   <div
     style={{
-      display: "grid",
+      display: "flex",
+      flexDirection: "column",
+      gap: 26,
+    }}
+  >
+
+    <ColorPicker
+      label="Color principal"
+      value={current.theme_color}
+      onChange={(color) =>
+        updateCurrentField(
+          "theme_color",
+          color
+        )
+      }
+    />
+
+    <ColorPicker
+      label="Color de fondo"
+      value={current.background_color}
+      onChange={(color) =>
+        updateCurrentField(
+          "background_color",
+          color
+        )
+      }
+    />
+
+  </div>
+
+</SectionCard>
+
+{/* ===========================================
+    LOGO
+=========================================== */}
+
+<SectionCard
+  title="Logo"
+  subtitle="Selecciona el logo de la aplicación."
+>
+
+  {appType === "restaurant" ? (
+
+    <RestaurantLogoUploader
+      restaurantId={restaurantId}
+      value={settings.app_logo}
+      onChange={(url) =>
+        updateField(
+          "app_logo",
+          url
+        )
+      }
+    />
+
+  ) : (
+
+    <ManagerLogoUploader
+      value={managerSettings.app_logo}
+      onChange={(url) =>
+        setManagerSettings(prev => ({
+          ...prev,
+          app_logo: url,
+        }))
+      }
+    />
+
+  )}
+
+</SectionCard>
+
+{/* ===========================================
+    CONFIGURACIÓN AVANZADA
+=========================================== */}
+
+<SectionCard
+  title="Configuración avanzada"
+  subtitle="Opciones del manifiesto PWA."
+>
+
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
       gap: 24,
     }}
   >
+
     <div>
+
       <label
         style={{
           display: "block",
-          marginBottom: 10,
+          marginBottom: 8,
           color: "#fff",
           fontWeight: 600,
         }}
       >
-        Tipo de visualización
+        Display
       </label>
 
       <select
@@ -458,10 +636,10 @@ console.log("MANAGER SETTINGS:", managerSettings);
           width: "100%",
           height: 52,
           borderRadius: 12,
-          background: "#18181b",
-          color: "#fff",
           border: "1px solid #3f3f46",
-          padding: "0 16px",
+          background: "#27272a",
+          color: "#fff",
+          padding: "0 14px",
         }}
       >
         <option value="standalone">
@@ -479,14 +657,17 @@ console.log("MANAGER SETTINGS:", managerSettings);
         <option value="browser">
           Browser
         </option>
+
       </select>
+
     </div>
 
     <div>
+
       <label
         style={{
           display: "block",
-          marginBottom: 10,
+          marginBottom: 8,
           color: "#fff",
           fontWeight: 600,
         }}
@@ -506,10 +687,10 @@ console.log("MANAGER SETTINGS:", managerSettings);
           width: "100%",
           height: 52,
           borderRadius: 12,
-          background: "#18181b",
-          color: "#fff",
           border: "1px solid #3f3f46",
-          padding: "0 16px",
+          background: "#27272a",
+          color: "#fff",
+          padding: "0 14px",
         }}
       >
         <option value="portrait">
@@ -523,7 +704,9 @@ console.log("MANAGER SETTINGS:", managerSettings);
         <option value="any">
           Any
         </option>
+
       </select>
+
     </div>
 
     <div
@@ -534,100 +717,232 @@ console.log("MANAGER SETTINGS:", managerSettings);
         padding: 18,
         color: "#a1a1aa",
         fontSize: 14,
-        lineHeight: 1.6,
+        lineHeight: 1.7,
       }}
     >
-      <strong style={{ color: "#fff" }}>
+      <strong
+        style={{
+          color: "#fff",
+        }}
+      >
         ¿Qué significa esto?
       </strong>
 
       <br />
       <br />
 
-      • <b>Standalone</b>: la aplicación se abre como una app normal.
+      • <b>Standalone:</b> abre como una aplicación instalada.
 
       <br />
 
-      • <b>Fullscreen</b>: ocupa toda la pantalla.
+      • <b>Fullscreen:</b> ocupa toda la pantalla.
 
       <br />
 
-      • <b>Browser</b>: se abre como una página web.
+      • <b>Browser:</b> abre como una página web.
 
       <br />
 
-      • <b>Portrait</b>: sólo vertical.
+      • <b>Portrait:</b> solo orientación vertical.
 
       <br />
 
-      • <b>Landscape</b>: sólo horizontal.
+      • <b>Landscape:</b> solo orientación horizontal.
+
     </div>
+
   </div>
+
 </SectionCard>
+ </div>
 
-      </div>
+        {/* =======================================
+            COLUMNA DERECHA
+        ======================================= */}
 
-      {/* PREVIEW */}
-
-      <div
-        style={{
-          position: "sticky",
-          top: 30,
-        }}
-      >
-
-        <SectionCard
-          title="Vista previa"
-          subtitle="Así verán la aplicación tus clientes."
+        <div
+          style={{
+            position: "sticky",
+            top: 30,
+            display: "flex",
+            flexDirection: "column",
+            gap: 28,
+            alignSelf: "start",
+          }}
         >
 
-{appType === "restaurant" ? (
-  <PhonePreview
-    settings={settings}
-  />
-) : (
-  <PhonePreview
-    settings={{
-      ...managerSettings,
-      restaurant_id: "",
-    }}
-  />
-)}
+          {/* ===================================
+              VISTA PREVIA
+          =================================== */}
 
-        </SectionCard>
-
-        <SectionCard
-  title="Guardar cambios"
-  subtitle="La configuración quedará disponible inmediatamente para este restaurante."
+<SectionCard
+  title="Vista previa"
+  subtitle="Así se verá la aplicación instalada."
 >
-  {error && (
-    <div
-      style={{
-        background: "#7f1d1d",
-        border: "1px solid #dc2626",
-        color: "#fff",
-        padding: 16,
-        borderRadius: 12,
-        marginBottom: 20,
-      }}
-    >
-      {error}
-    </div>
+
+  {appType === "restaurant" ? (
+
+    <PhonePreview
+      settings={settings}
+    />
+
+  ) : (
+
+<PhonePreview
+  settings={{
+    ...managerSettings,
+    restaurant_id: "",
+  }}
+/>
+
   )}
 
-<SaveButton
-  loading={
-    appType === "restaurant"
-      ? saving
-      : managerSaving
-  }
-  onClick={saveCurrentSettings}
-/>
 </SectionCard>
+
+          {/* ===================================
+              ESTADO
+          =================================== */}
+
+          <SectionCard
+            title="Estado"
+            subtitle="Información del formulario."
+          >
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+              }}
+            >
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "14px 16px",
+                  borderRadius: 12,
+                  background: "#27272a",
+                }}
+              >
+
+                <span
+                  style={{
+                    color: "#a1a1aa",
+                  }}
+                >
+                  Aplicación
+                </span>
+
+                <strong
+                  style={{
+                    color: "#fff",
+                  }}
+                >
+                  {appType === "restaurant"
+                    ? "Restaurante"
+                    : "Wolf Manager"}
+                </strong>
+
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "14px 16px",
+                  borderRadius: 12,
+                  background: "#27272a",
+                }}
+              >
+
+                <span
+                  style={{
+                    color: "#a1a1aa",
+                  }}
+                >
+                  Estado
+                </span>
+
+                <strong
+                  style={{
+                    color:
+                      appType === "restaurant"
+                        ? saving
+                          ? "#f59e0b"
+                          : "#22c55e"
+                        : managerSaving
+                          ? "#f59e0b"
+                          : "#22c55e",
+                  }}
+                >
+                  {appType === "restaurant"
+                    ? saving
+                      ? "Guardando..."
+                      : "Listo"
+                    : managerSaving
+                      ? "Guardando..."
+                      : "Listo"}
+                </strong>
+
+              </div>
+
+            </div>
+
+          </SectionCard>
+
+          {/* ===================================
+              ERROR
+          =================================== */}
+
+          {error &&
+            appType === "restaurant" && (
+
+            <div
+              style={{
+                background: "#7f1d1d",
+                border: "1px solid #dc2626",
+                color: "#fff",
+                padding: 18,
+                borderRadius: 12,
+              }}
+            >
+              {error}
+            </div>
+
+          )}
+
+          {/* ===================================
+              GUARDAR
+          =================================== */}
+
+          <SectionCard
+            title="Guardar cambios"
+            subtitle={
+              appType === "restaurant"
+                ? "Los cambios se aplicarán únicamente a este restaurante."
+                : "Los cambios actualizarán la aplicación Wolf Ordering Manager."
+            }
+          >
+
+            <SaveButton
+              loading={
+                appType === "restaurant"
+                  ? saving
+                  : managerSaving
+              }
+              onClick={saveCurrentSettings}
+            />
+
+          </SectionCard>
+
+        </div>
 
       </div>
 
-    </div>
+    </main>
 
   );
 
