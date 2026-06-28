@@ -103,19 +103,23 @@ export async function POST(
 
 
 //----------------------------------
-// Optimizar imagen
+// Optimizar imagen (Seguro para Vercel)
 //----------------------------------
 
 const bytes = await file.arrayBuffer();
-
-// Forma nativa de Next.js y Vercel para convertir ArrayBuffer a Buffer sin errores de sintaxis
 const originalBuffer = Buffer.from(bytes);
 
-const optimizedBuffer = await optimizeImage(
-  originalBuffer,
-  selectedPreset
-);
+let optimizedBuffer = originalBuffer;
 
+// Solo optimizamos con sharp si estamos en local. 
+// En Vercel (producción) sube el archivo original directamente para que no se corrompa.
+if (process.env.NODE_ENV === "development") {
+  try {
+    optimizedBuffer = await optimizeImage(originalBuffer, selectedPreset);
+  } catch (e) {
+    console.error("Error optimizando en local:", e);
+  }
+}
 //----------------------------------
 // Nombre del archivo
 //----------------------------------
