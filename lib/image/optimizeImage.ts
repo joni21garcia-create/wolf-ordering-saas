@@ -56,6 +56,7 @@ export async function optimizeImage(
 
   }
 
-  return pipeline.toBuffer();
+  // 🛠️ SOLUCIÓN EN UNA LÍNEA: Envolvemos la promesa directamente para evitar mutaciones corruptas
+  return pipeline.toBuffer().then((data) => Buffer.from(new Uint8Array(data)));
 
 }
