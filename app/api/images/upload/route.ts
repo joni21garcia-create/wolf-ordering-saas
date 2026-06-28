@@ -103,14 +103,13 @@ export async function POST(
 
 
 //----------------------------------
-// Optimizar imagen (Versión Ultra-Segura para Vercel)
+// Optimizar imagen
 //----------------------------------
 
-const arrayBuffer = await file.arrayBuffer();
+const bytes = await file.arrayBuffer();
 
-// Usamos Buffer.from directamente pasándole el ArrayBuffer,
-// que es la forma nativa y estándar recomendada por Next.js
-const originalBuffer = Buffer.from(arrayBuffer);
+// Forma nativa de Next.js y Vercel para convertir ArrayBuffer a Buffer sin errores de sintaxis
+const originalBuffer = Buffer.from(bytes);
 
 const optimizedBuffer = await optimizeImage(
   originalBuffer,
