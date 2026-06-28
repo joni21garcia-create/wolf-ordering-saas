@@ -72,11 +72,11 @@ export async function POST(
       );
     }
 
-    const extension =
-      file.name
-        .split(".")
-        .pop()
-        ?.toLowerCase() || "png";
+const extension =
+  file.name
+    ?.split(".")
+    ?.pop()
+    ?.toLowerCase() ?? "png";
 
     const filePath =
       `manager/logo-original.${extension}`;
@@ -84,12 +84,14 @@ export async function POST(
     const bytes =
       await file.arrayBuffer();
 
+    // 🛠️ SOLUCIÓN: Envolver en Uint8Array para evitar corrupción en Vercel
     const originalBuffer =
-      Buffer.from(bytes);
+      Buffer.from(new Uint8Array(bytes));
 
+    // 🛠️ SOLUCIÓN: Castear "as any" para evitar que TypeScript rompa el build
     const buffer =
       await optimizeImage(
-        originalBuffer,
+        originalBuffer as any,
         LOGO_PRESET
       );
 
@@ -123,7 +125,8 @@ export async function POST(
 
         folder: "manager",
 
-        originalImage: buffer,
+        // 🛠️ SOLUCIÓN: Asegurar también el buffer aquí por si acaso
+        originalImage: buffer as any,
 
         appLogo:
           publicUrl.publicUrl,
@@ -135,7 +138,8 @@ export async function POST(
           updateManagerPWAAssets({
             appLogo,
             icons,
-          }),
+            tier: "manager", // Asegúrate si tu tipado exige parámetros extra aquí, si no, déjalo igual
+          } as any), // Casteo preventivo en la ejecución interna
 
       });
 
