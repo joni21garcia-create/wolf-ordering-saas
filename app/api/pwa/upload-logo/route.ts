@@ -92,8 +92,8 @@ export async function POST(
       );
     }
 
-const extension =
-      file?.name
+    const extension =
+      file.name
         .split(".")
         .pop()
         ?.toLowerCase() || "png";
@@ -101,25 +101,23 @@ const extension =
     const filePath =
       `${restaurantId}/logo-original.${extension}`;
 
-    const bytes =
-      await file.arrayBuffer();
+const bytes =
+  await file.arrayBuffer();
 
-    // 🛠️ FIX: Envoltura con Uint8Array para evitar archivos de 30KB corruptos en Vercel
-    const originalBuffer =
-      Buffer.from(new Uint8Array(bytes));
+const originalBuffer =
+  Buffer.from(bytes);
 
-    // 🛠️ FIX: "as any" para evitar el bloqueo del compilador de TypeScript
-    const buffer =
-      await optimizeImage(
-        originalBuffer as any,
-        LOGO_PRESET
-      );
+const buffer =
+  await optimizeImage(
+    originalBuffer,
+    LOGO_PRESET
+  );
 
-    console.log(
-      "Optimizado:",
-      buffer.length,
-      buffer.subarray(0, 8)
-    );
+  console.log(
+  "Optimizado:",
+  buffer.length,
+  buffer.subarray(0, 8)
+);
 
     const {
       error: uploadError,
@@ -158,27 +156,26 @@ const extension =
           filePath
         );
 
-    const pwaResult =
-      await processPWAImages({
-        folder: `restaurants/${restaurantId}`,
+const pwaResult =
+  await processPWAImages({
+    folder: `restaurants/${restaurantId}`,
 
-        // 🛠️ FIX: Asegurar tipo "as any" también aquí
-        originalImage: buffer as any,
+    originalImage: buffer,
 
-        appLogo: publicUrl.publicUrl,
+    appLogo: publicUrl.publicUrl,
 
-        updateAssets: (
-          icons,
-          appLogo
-        ) =>
-          updatePWAAssets({
-            restaurantId,
-            appLogo,
-            icons,
-          } as any),
-      });
+    updateAssets: (
+      icons,
+      appLogo
+    ) =>
+      updatePWAAssets({
+        restaurantId,
+        appLogo,
+        icons,
+      }),
+  });
 
-    return NextResponse.json({
+          return NextResponse.json({
       success: true,
 
       message:
