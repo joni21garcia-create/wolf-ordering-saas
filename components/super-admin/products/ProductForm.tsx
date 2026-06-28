@@ -461,28 +461,26 @@ const uploadImage =
 )}
 
 {form.image_url && (
+  <>
+    <p
+      style={{
+        color: "#22c55e",
+        fontSize: 12,
+        wordBreak: "break-all",
+      }}
+    >
+      {form.image_url}
+    </p>
 
-<p
-  style={{
-    color: "#22c55e",
-    fontSize: 12,
-    wordBreak: "break-all",
-  }}
->
-  {form.image_url}
-</p>
-
-  <img
-    src={
-      form.image_url
-    }
-    alt="preview"
-    style={{
-      width: "200px",
-      borderRadius:
-        "12px",
-    }}
-  />
+    <img
+      src={form.image_url}
+      alt="preview"
+      style={{
+        width: "200px",
+        borderRadius: "12px",
+      }}
+    />
+  </>
 )}
 
           <input
