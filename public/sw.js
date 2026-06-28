@@ -11,7 +11,7 @@ CACHE NAMES
 =========================================
 */
 
-const STATIC_CACHE = "wolf-static-v1";
+const STATIC_CACHE = "wolf-static-v2";
 
 /*
 En fases posteriores agregaremos:
@@ -29,11 +29,28 @@ const OFFLINE_CACHE = "wolf-offline-v1";
 =========================================
 */
 
-self.addEventListener("install", () => {
+self.addEventListener("install", (event) => {
 
   console.log("[SW] Instalando...");
 
-  self.skipWaiting();
+  event.waitUntil(
+
+    (async () => {
+
+      const cache =
+        await caches.open(
+          STATIC_CACHE
+        );
+
+      await cache.addAll([
+        "/offline.html",
+      ]);
+
+      self.skipWaiting();
+
+    })()
+
+  );
 
 });
 
@@ -216,11 +233,41 @@ if (isStaticAsset) {
 
 }
 
+
   /*
   =========================================
   Las demás peticiones continúan
   normalmente hacia Internet.
   =========================================
   */
+
+if (request.mode === "navigate") {
+
+  event.respondWith(
+
+    (async () => {
+
+      try {
+
+        return await fetch(request);
+
+      } catch {
+
+        const cache =
+          await caches.open(
+            STATIC_CACHE
+          );
+
+return await cache.match(
+  "/offline.html"
+);
+
+      }
+
+    })()
+
+  );
+
+}
 
 });
