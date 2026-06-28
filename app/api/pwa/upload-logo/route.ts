@@ -92,11 +92,11 @@ export async function POST(
       );
     }
 
-    const extension =
-      file.name
+const extension =
+      file?.name
         .split(".")
         .pop()
-        .toLowerCase() || "png";
+        ?.toLowerCase() || "png";
 
     const filePath =
       `${restaurantId}/logo-original.${extension}`;
