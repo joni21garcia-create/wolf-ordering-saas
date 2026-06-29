@@ -13,19 +13,16 @@ export function buildRestaurantManifest(
 
   const icons: ManifestIcon[] = [];
 
-  // 🛠️ FALLBACK ABSOLUTO: Si los íconos individuales vienen vacíos, usamos el logo principal de la PWA (app_logo)
-  // Obtenemos la URL de Supabase desde la variable de entorno o directamente de la URL de producción
   const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://fegilyorwocgcbwomyb2.supabase.co"; 
   
   const rawLogo = restaurant.pwaSettings?.app_logo || restaurant.pwaSettings?.icon_512_url || null;
   let fallbackIconUrl = rawLogo;
 
-  // Si el logo de Supabase es solo un path relativo, lo transformamos en URL pública absoluta
   if (fallbackIconUrl && !fallbackIconUrl.startsWith("http")) {
     fallbackIconUrl = `${SUPABASE_URL}/storage/v1/object/public/restaurant-pwa/${fallbackIconUrl.replace(/^\//, "")}`;
   }
 
-  // 🛠️ FUNCIÓN PROCESADORA: Valida y asegura URLs absolutas para la PWA
+  // 🛠️ FUNCIÓN PROCESADORA MEJORADA: Detecta el tipo MIME real de la imagen
   function addIcon(
     src: string | null,
     size: string,
@@ -34,25 +31,33 @@ export function buildRestaurantManifest(
     let finalSrc = src || fallbackIconUrl;
     if (!finalSrc) return;
 
-    // Si viene de Supabase como path relativo, lo convertimos en absoluto
     if (!finalSrc.startsWith("http") && !finalSrc.startsWith("/")) {
       finalSrc = `${SUPABASE_URL}/storage/v1/object/public/restaurant-pwa/${finalSrc}`;
     }
 
-    // Limpieza de subcarpetas viejas duplicadas en el storage
     if (finalSrc.includes("/restaurant-pwa/restaurants/")) {
       finalSrc = finalSrc.replace("/restaurant-pwa/restaurants/", "/restaurant-pwa/");
+    }
+
+// 🌟 DETECCIÓN DINÁMICA DE TIPO: Evita que Chrome rechace el ícono si no es PNG original
+    let imageType = "image/png";
+    const lowerSrc = finalSrc.toLowerCase();
+    if (lowerSrc.endsWith(".jpg") || lowerSrc.endsWith(".jpeg")) {
+      imageType = "image/jpeg";
+    } else if (lowerSrc.endsWith(".webp")) {
+      imageType = "image/webp";
+    } else if (lowerSrc.endsWith(".svg")) {
+      imageType = "image/svg+xml";
     }
 
     icons.push({
       src: finalSrc,
       sizes: size,
-      type: "image/png",
+      type: imageType as any, // 🛠️ FIX TYPE-CHECK: Forzamos la asignación dinámica
       purpose,
     });
   }
 
-  // Mapeo exacto basado en tu interfaz RestaurantMetadataData
   addIcon(restaurant.pwaSettings?.icon_72_url ?? null, "72x72");
   addIcon(restaurant.pwaSettings?.icon_96_url ?? null, "96x96");
   addIcon(restaurant.pwaSettings?.icon_128_url ?? null, "128x128");
@@ -68,7 +73,6 @@ export function buildRestaurantManifest(
     "maskable"
   );
 
-  // Tu retorno original e intacto para mantener la perfecta instalación de la PWA
   return {
     id: `/${restaurant.slug}`,
 
