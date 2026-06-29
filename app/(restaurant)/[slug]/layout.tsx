@@ -17,10 +17,10 @@ export async function generateMetadata({
   // 1. Obtenemos los metadatos base generados por tu función actual
   const baseMetadata = await generateRestaurantMetadata(slug);
 
-  // 2. Retornamos los metadatos inyectando dinámicamente el manifest de tu API
+  // 2. Retornamos los metadatos inyectando dinámicamente la ruta REAL de tu API
   return {
     ...baseMetadata,
-    manifest: `/api/pwa/manifest?slug=${slug}`, // 🌟 ¡LA PIEZA FALTANTE! Vincula el manifest dinámico con su slug
+    manifest: `/api/manifest/${slug}`, // 🌟 ¡CORREGIDO! Apunta exactamente a app/api/manifest/[slug]/route.ts
   };
 }
 
