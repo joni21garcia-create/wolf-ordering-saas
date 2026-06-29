@@ -28,6 +28,13 @@ export async function generateRestaurantMetadata(
       restaurant.description ??
       "",
 
+    manifest: `/api/manifest/${slug}`,
+
+    // 🛠️ FIX: Forzar al navegador a aceptar las credenciales y cookies del manifest dinámico
+    other: {
+      "crossorigin": "use-credentials",
+    },
+
     openGraph: {
       title:
         restaurant.meta_title ??
