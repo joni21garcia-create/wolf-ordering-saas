@@ -13,21 +13,27 @@ export function buildRestaurantManifest(
 
   const icons: ManifestIcon[] = [];
 
+  // 🛠️ FUNCIÓN BLINDADA: Corrige y previene URLs rotas del bucket de Supabase
   function addIcon(
     src: string | null,
     size: string,
     purpose?: "maskable"
   ) {
-
     if (!src) return;
 
+    let finalSrc = src;
+
+    // Si la URL contiene el prefijo viejo '/restaurants/', lo limpiamos para que apunte a la raíz del ID
+    if (finalSrc.includes("/restaurant-pwa/restaurants/")) {
+      finalSrc = finalSrc.replace("/restaurant-pwa/restaurants/", "/restaurant-pwa/");
+    }
+
     icons.push({
-      src,
+      src: finalSrc,
       sizes: size,
       type: "image/png",
       purpose,
     });
-
   }
 
   addIcon(
@@ -115,11 +121,11 @@ export function buildRestaurantManifest(
       restaurant.pwaSettings?.theme_color ??
       "#f97316",
 
-      lang: "es",
+    lang: "es",
 
-      dir: "ltr",
+    dir: "ltr",
 
-      icons,
+    icons,
 
   };
 
