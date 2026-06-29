@@ -1,7 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server"; // 🛠️ FIX: Usar NextRequest nativo de Next.js
 
 import { getRestaurantMetadata } from "@/lib/restaurants/getRestaurantMetadata";
 import { buildRestaurantManifest } from "@/lib/pwa/manifest/buildRestaurantManifest";
+
+// 🛠️ FIX: Evitar que Vercel intente cachear o congelar este manifest en el build estático
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{
@@ -10,7 +13,7 @@ interface Props {
 }
 
 export async function GET(
-  request: Request,
+  request: NextRequest, // 🛠️ FIX: Cambiado de Request a NextRequest
   { params }: Props
 ) {
   const { slug } = await params;
@@ -34,11 +37,8 @@ export async function GET(
 
   return NextResponse.json(manifest, {
     headers: {
-      "Content-Type":
-        "application/manifest+json",
-
-      "Cache-Control":
-        "public, max-age=300",
+      "Content-Type": "application/manifest+json",
+      "Cache-Control": "public, max-age=0, must-revalidate", // 🛠️ FIX: Evitar bloqueos de caché vieja mientras pruebas
     },
   });
 }
