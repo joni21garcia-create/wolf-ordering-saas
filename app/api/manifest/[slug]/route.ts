@@ -1,71 +1,46 @@
-import { NextRequest, NextResponse } from "next/server";
-
+import { NextResponse } from "next/server";
 import { getRestaurantMetadata } from "@/lib/restaurants/getRestaurantMetadata";
-import { buildRestaurantManifest } from "@/lib/pwa/manifest/buildRestaurantManifest";
-
-export const dynamic = "force-dynamic";
-
-interface Props {
-  params: Promise<{
-    slug?: string; // 🛠️ Lo hacemos opcional para que no crashee si viene vacío
-  }>;
-}
 
 export async function GET(
-  request: NextRequest,
-  { params }: Props
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  // 1. Intentamos obtener el slug desde los parámetros de la ruta
-  const resolvedParams = await params;
-  let slug = resolvedParams?.slug;
+  try {
+    const { slug } = await params;
+    const restaurant = await getRestaurantMetadata(slug);
 
-  // 2. ESTRATEGIA DE RESPALDO: Si no viene en params, lo extraemos del Referer (la URL de la pestaña del navegador)
-  if (!slug) {
-    const referer = request.headers.get("referer"); // Ejemplo: https://app.wolfordering.com/demo/order
-    if (referer) {
-      try {
-        const urlObj = new URL(referer);
-        const pathSegments = urlObj.pathname.split("/").filter(Boolean);
-        // Si la URL es /demo o /demo/order, el primer segmento es el slug de tu restaurante ("demo")
-        if (pathSegments.length > 0 && pathSegments[0] !== "api") {
-          slug = pathSegments[0];
-        }
-      } catch (e) {
-        console.error("Error procesando URL del referer:", e);
-      }
+    if (!restaurant || !restaurant.pwaSettings) {
+      return NextResponse.json({ error: "Configuración no encontrada" }, { status: 404 });
     }
+
+    const p = restaurant.pwaSettings;
+
+    const manifest = {
+      name: p.app_name,
+      short_name: p.short_name,
+      description: p.description || "",
+      start_url: `/${restaurant.slug}`,
+      display: p.display || "standalone",
+      orientation: p.orientation || "portrait",
+      background_color: p.background_color || "#0d0d0d",
+      theme_color: p.theme_color || "#3b92a5",
+      icons: [
+        { src: p.icon_72_url, sizes: "72x72", type: "image/png" },
+        { src: p.icon_96_url, sizes: "96x96", type: "image/png" },
+        { src: p.icon_128_url, sizes: "128x128", type: "image/png" },
+        { src: p.icon_144_url, sizes: "144x144", type: "image/png" },
+        { src: p.icon_192_url, sizes: "192x192", type: "image/png" },
+        { src: p.icon_512_url, sizes: "512x512", type: "image/png" },
+        { src: p.maskable_icon_url, sizes: "512x512", type: "image/png", purpose: "maskable" }
+      ]
+    };
+
+    return new NextResponse(JSON.stringify(manifest), {
+      headers: {
+        "Content-Type": "application/manifest+json",
+      },
+    });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
-
-  // 3. SEGUNDA ESTRATEGIA: Por si acaso lo estás enviando como ?slug=demo query param
-  if (!slug) {
-    slug = request.nextUrl.searchParams.get("slug") || undefined;
-  }
-
-  // Si después de todos los intentos no hay slug, usamos "demo" como último recurso para evitar pantallas en blanco
-  if (!slug) {
-    slug = "demo";
-  }
-
-  console.log("=== MANIFEST GENERATOR ===");
-  console.log("Buscando manifiesto para el slug:", slug);
-
-  const restaurant = await getRestaurantMetadata(slug);
-
-  if (!restaurant) {
-    return NextResponse.json(
-      { error: `Restaurant '${slug}' not found` },
-      { status: 404 }
-    );
-  }
-
-  const manifest = buildRestaurantManifest(restaurant);
-
-  return NextResponse.json(manifest, {
-    headers: {
-      "Content-Type": "application/manifest+json",
-      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate", // 🛠️ Forzamos al navegador a pedirlo siempre fresco
-      "Pragma": "no-cache",
-      "Expires": "0",
-    },
-  });
 }

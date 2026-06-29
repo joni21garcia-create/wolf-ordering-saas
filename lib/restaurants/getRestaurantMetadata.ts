@@ -1,9 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export interface RestaurantMetadataData {
   id: string;
@@ -22,20 +17,16 @@ export interface RestaurantMetadataData {
     background_color: string | null;
     display: string | null;
     orientation: string | null;
-
     app_logo: string | null;
-
     favicon_url: string | null;
-
     icon_72_url: string | null;
     icon_96_url: string | null;
     icon_128_url: string | null;
-    icon_144_url: string |null;
+    icon_144_url: string | null;
     icon_152_url: string | null;
     icon_192_url: string | null;
     icon_384_url: string | null;
     icon_512_url: string | null;
-
     apple_icon_url: string | null;
     maskable_icon_url: string | null;
   } | null;
@@ -44,11 +35,10 @@ export interface RestaurantMetadataData {
 export async function getRestaurantMetadata(
   slug: string
 ): Promise<RestaurantMetadataData | null> {
+  const supabase = await createSupabaseServerClient();
 
-  const {
-    data: restaurant,
-    error,
-  } = await supabase
+  // Consulta relacional directa para obtener el restaurante y su configuración PWA
+  const { data: restaurant, error } = await supabase
     .from("restaurants")
     .select(`
       id,
@@ -57,45 +47,54 @@ export async function getRestaurantMetadata(
       description,
       meta_title,
       meta_description,
-      og_image_url
+      og_image_url,
+      pwaSettings:restaurant_pwa_settings (
+        app_name,
+        short_name,
+        description,
+        theme_color,
+        background_color,
+        display,
+        orientation,
+        app_logo,
+        favicon_url,
+        icon_72_url,
+        icon_96_url,
+        icon_128_url,
+        icon_144_url,
+        icon_152_url,
+        icon_192_url,
+        icon_384_url,
+        icon_512_url,
+        apple_icon_url,
+        maskable_icon_url
+      )
     `)
     .eq("slug", slug)
     .maybeSingle();
 
-  if (error || !restaurant) {
+  if (error) {
+    console.error("Error al obtener metadata:", error.message);
     return null;
   }
 
-  const {
-    data: pwaSettings,
-  } = await supabase
-    .from("restaurant_pwa_settings")
-    .select(`
-      app_name,
-      short_name,
-      description,
-      theme_color,
-      background_color,
-      display,
-      orientation,
-      app_logo,
-      favicon_url,
-      icon_72_url,
-      icon_96_url,
-      icon_128_url,
-      icon_144_url,
-      icon_152_url,
-      icon_192_url,
-      icon_384_url,
-      icon_512_url,
-      apple_icon_url,
-      maskable_icon_url
-    `)
-    .eq("restaurant_id", restaurant.id)
-    .maybeSingle();
+  if (!restaurant) {
+    return null;
+  }
+
+  // Manejo de la relación (pwaSettings puede ser un objeto o un array de un solo elemento)
+  const pwaSettings = Array.isArray(restaurant.pwaSettings)
+    ? restaurant.pwaSettings[0]
+    : restaurant.pwaSettings;
 
   return {
-    ...restaurant,
-    pwaSettings,
+    id: restaurant.id,
+    slug: restaurant.slug,
+    name: restaurant.name,
+    description: restaurant.description,
+    meta_title: restaurant.meta_title,
+    meta_description: restaurant.meta_description,
+    og_image_url: restaurant.og_image_url,
+    pwaSettings: pwaSettings || null,
   };
 }

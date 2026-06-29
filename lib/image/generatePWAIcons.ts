@@ -1,68 +1,38 @@
 import sharp from "sharp";
-
-import {
-  PWA_ICON_SIZES,
-} from "./iconSizes";
-
-import {
-  GenerateIconsResult,
-  GeneratedIcon,
-} from "./types";
+import { PWA_ICON_SIZES } from "./iconSizes";
+import { GenerateIconsResult, GeneratedIcon } from "./types";
 
 export async function generatePWAIcons(
   originalImage: Buffer
 ): Promise<GenerateIconsResult> {
-
-  const icons: GeneratedIcon[] = [];
-
-  for (const icon of PWA_ICON_SIZES) {
-
- console.log("================================");
-  console.log("GENERANDO ICONOS");
-  console.log("Buffer:", Buffer.isBuffer(originalImage));
-  console.log("Length:", originalImage.length);
-  console.log(
-    "Primeros bytes:",
-    originalImage.subarray(0,16)
-  );
-  console.log("================================");
-
-
-
-    const buffer =
-      await sharp(originalImage)
-
-        .resize(
-          icon.size,
-          icon.size,
-          {
-            fit: "cover",
-          }
-        )
-
-        .png()
-
+  
+  // Procesamos todos los iconos en paralelo para mayor velocidad
+  const iconPromises = PWA_ICON_SIZES.map(async (icon) => {
+    try {
+      const buffer = await sharp(originalImage)
+        .resize(icon.size, icon.size, {
+          fit: "cover",
+          background: { r: 0, g: 0, b: 0, alpha: 0 } // Asegura transparencia
+        })
+        .png({
+          compressionLevel: 9,
+          palette: true // Optimiza el tamaño del archivo PNG
+        })
         .toBuffer();
 
-        console.log(
-  icon.filename,
-  "bytes:",
-  buffer.length,
-  "PNG:",
-  buffer.subarray(0, 8)
-);
+      return {
+        name: icon.name,
+        filename: icon.filename,
+        size: icon.size,
+        buffer,
+      };
+    } catch (error) {
+      console.error(`Error generando icono ${icon.filename}:`, error);
+      throw error;
+    }
+  });
 
-    icons.push({
-      name: icon.name,
-      filename: icon.filename,
-      size: icon.size,
-      buffer,
-    });
+  const icons = await Promise.all(iconPromises);
 
-  }
-
-  return {
-    icons,
-  };
-
+  return { icons };
 }
