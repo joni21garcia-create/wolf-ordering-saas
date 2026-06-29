@@ -16,14 +16,63 @@ export async function registerSW(path: string) {
       registration.scope
     );
 
-    registration.addEventListener(
-      "updatefound",
+registration.addEventListener(
+  "updatefound",
+  () => {
+
+    console.log(
+      "[SW] Nueva versión encontrada."
+    );
+
+    window.dispatchEvent(
+      new CustomEvent("wolf-update-available")
+    );
+
+
+    const newWorker =
+      registration.installing;
+
+    if (!newWorker) {
+      return;
+    }
+
+    newWorker.addEventListener(
+      "statechange",
       () => {
+
         console.log(
-          "[SW] Nueva versión encontrada."
+          "[SW] Estado:",
+          newWorker.state
         );
+
+        if (
+          newWorker.state ===
+          "installed"
+        ) {
+
+          if (
+            navigator.serviceWorker.controller
+          ) {
+
+            console.log(
+              "[SW] Nueva versión lista."
+            );
+
+          } else {
+
+            console.log(
+              "[SW] Instalación inicial completada."
+            );
+
+          }
+
+        }
+
       }
     );
+
+  }
+);
 
   } catch (error) {
     console.error(

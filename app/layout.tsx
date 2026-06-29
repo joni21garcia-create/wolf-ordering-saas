@@ -6,6 +6,8 @@
   import ParticlesBackground from "@/components/ParticlesBackground";
   import { SessionProvider } from "@/providers/SessionProvider";
   import ServiceWorkerProvider from "@/components/pwa/ServiceWorkerProvider";
+  import UpdateBanner from "@/components/pwa/UpdateBanner";
+  import InstallProvider from "@/components/pwa/InstallProvider";
 
 
   const geistSans = Geist({
@@ -57,6 +59,8 @@
           {/* App */}
           <SessionProvider>
            <ServiceWorkerProvider />
+           <InstallProvider />
+           <UpdateBanner />
             {children}
           </SessionProvider>
         </body>

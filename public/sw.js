@@ -11,7 +11,9 @@ CACHE NAMES
 =========================================
 */
 
-const STATIC_CACHE = "wolf-static-v2";
+const STATIC_CACHE = "wolf-static-v3";
+
+const PAGES_CACHE = "wolf-pages-v1";
 
 /*
 En fases posteriores agregaremos:
@@ -71,9 +73,10 @@ self.addEventListener("activate", (event) => {
       const cacheNames =
         await caches.keys();
 
-      const validCaches = [
-        STATIC_CACHE,
-      ];
+const validCaches = [
+  STATIC_CACHE,
+  PAGES_CACHE,
+];
 
       await Promise.all(
 
@@ -190,10 +193,10 @@ if (isStaticAsset) {
 
             if (response.ok) {
 
-              await cache.put(
-                request,
-                response.clone()
-              );
+await pagesCache.put(
+  request,
+  response.clone()
+);
 
               console.log(
                 "[SW] Actualizado:",
@@ -247,18 +250,40 @@ if (request.mode === "navigate") {
 
     (async () => {
 
+      const cache =
+        await caches.open(
+          STATIC_CACHE
+        );
+
       try {
 
-        return await fetch(request);
+        const response =
+          await fetch(request);
+
+        await cache.put(
+          request,
+          response.clone()
+        );
+
+        return response;
 
       } catch {
 
-        const cache =
-          await caches.open(
-            STATIC_CACHE
-          );
+const cachedPage =
+  await pagesCache.match(request);
 
-return await cache.match(
+        if (cachedPage) {
+
+          return cachedPage;
+
+        }
+
+const staticCache =
+  await caches.open(
+    STATIC_CACHE
+  );
+
+return await staticCache.match(
   "/offline.html"
 );
 
