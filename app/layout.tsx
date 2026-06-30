@@ -10,14 +10,13 @@ import InstallProvider from "@/components/pwa/InstallProvider";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-// Configuración para forzar el comportamiento de App Nativa (Pantalla completa)
 export const viewport: Viewport = {
   themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1, // Bloquea el zoom para dar sensación de App
-  userScalable: false, // Evita que el usuario haga zoom manual
-  viewportFit: "cover", // Ocupa todo el notch/pantalla
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -26,12 +25,12 @@ export const metadata: Metadata = {
   description: "Sistema SaaS de pedidos digitales para restaurantes",
   manifest: "/api/manifest/manager",
   appleWebApp: {
-    capable: true, // Habilita modo WebApp en iOS
+    capable: true,
     statusBarStyle: "black-translucent",
     title: "Wolf Ordering",
   },
   other: {
-    "mobile-web-app-capable": "yes", // Habilita modo WebApp en Android
+    "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
   },
 };
@@ -48,16 +47,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="wolf-orb-top" />
         <div className="wolf-orb-bottom" />
         <div className="stripe-lines" />
-        
         <ParticlesBackground />
-        
         <SessionProvider>
           <ServiceWorkerProvider />
           <InstallProvider>
             <UpdateBanner />
-            <main>
-              {children}
-            </main>
+            <main>{children}</main>
           </InstallProvider>
         </SessionProvider>
       </body>
