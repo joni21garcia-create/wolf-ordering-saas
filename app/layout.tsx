@@ -19,18 +19,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// MODIFICACIÓN: Forzamos un ancho de 1200px.
+// Esto hará que el móvil "zoom-out" automáticamente a tu diseño de escritorio, 
+// evitando que el navegador piense que necesitas el modo sitio para computadoras.
 export const viewport: Viewport = {
   themeColor: "#f97316",
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1, // Recomendado para PWA para evitar zoom no deseado
+  width: "1200", 
+  initialScale: 0.5, // Empezará un poco más alejado para encajar el ancho
+  maximumScale: 2.0, 
+  userScalable: true,
 };
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://app.wolfordering.com"),
   title: "Wolf Ordering",
   description: "Sistema SaaS de pedidos digitales para restaurantes",
-  // INYECCIÓN CENTRALIZADA: Esto asegura que el link aparezca en el <head> global
   manifest: "/api/manifest/manager", 
   appleWebApp: {
     capable: true,
@@ -50,10 +53,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable}`}
       data-scroll-behavior="smooth"
     >
-      {/* Next.js inyectará automáticamente el <link rel="manifest"> 
-        y otros metadatos definidos arriba dentro de este head.
-      */}
-      <head /> 
+      <head>
+        {/* Agregamos una etiqueta meta extra para asegurar que Safari y Chrome 
+            respeten la escala en iOS y Android al instalar */}
+        <meta name="viewport" content="width=1200, initial-scale=0.5" />
+      </head> 
       
       <body className="text-white">
         <div className="wolf-orb-top" />
@@ -65,10 +69,10 @@ export default function RootLayout({
         <SessionProvider>
           <ServiceWorkerProvider />
           <InstallProvider>
-         <UpdateBanner />
-         {children}
-         </InstallProvider>
-         </SessionProvider>
+           <UpdateBanner />
+           {children}
+          </InstallProvider>
+        </SessionProvider>
       </body>
     </html>
   );
