@@ -74,7 +74,7 @@ export default function EditServicePage() {
         .from("restaurant_services")
         .select("*")
         .eq("id", serviceId)
-        .single();
+        .maybeSingle();
 
     setForm(data);
 
