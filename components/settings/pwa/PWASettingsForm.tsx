@@ -1,5 +1,5 @@
 "use client";
-
+import { RestaurantPWASettings, UploadResult } from "@/types/pwa";
 import { useState } from "react";
 
 import { usePWASettings } from "@/hooks/usePWASettings";
@@ -83,7 +83,7 @@ console.log("Manager logo:", managerSettings.app_logo);
   */
 
   function updateCurrentField(
-    field: keyof typeof current,
+    field: string,
     value: any
   ) {
 
@@ -101,7 +101,7 @@ console.log("Manager logo:", managerSettings.app_logo);
     }
 
     setManagerSettings(
-      (prev) => ({
+      (prev: any) => ({
         ...prev,
         [field]: value,
       })
@@ -532,7 +532,7 @@ console.log("Manager:", managerSettings.app_logo);
 
     <ColorPicker
       label="Color principal"
-      value={current.theme_color}
+     value={current.theme_color || ""}
       onChange={(color) =>
         updateCurrentField(
           "theme_color",
@@ -543,7 +543,7 @@ console.log("Manager:", managerSettings.app_logo);
 
     <ColorPicker
       label="Color de fondo"
-      value={current.background_color}
+     value={current.background_color || ""}
       onChange={(color) =>
         updateCurrentField(
           "background_color",
@@ -581,9 +581,9 @@ console.log("Manager:", managerSettings.app_logo);
   ) : (
 
     <ManagerLogoUploader
-      value={managerSettings.app_logo}
+      value={managerSettings.app_logo ?? null}
       onChange={(url) =>
-        setManagerSettings(prev => ({
+       setManagerSettings((prev: any) => ({
           ...prev,
           app_logo: url,
         }))
@@ -625,7 +625,7 @@ console.log("Manager:", managerSettings.app_logo);
       </label>
 
       <select
-        value={current.display}
+      value={(current as any).display}
         onChange={(e) =>
           updateCurrentField(
             "display",
@@ -676,10 +676,10 @@ console.log("Manager:", managerSettings.app_logo);
       </label>
 
       <select
-        value={current.orientation}
+        value={(current as any).orientation}
         onChange={(e) =>
           updateCurrentField(
-            "orientation",
+            "orientation" as any,
             e.target.value
           )
         }
@@ -792,6 +792,11 @@ console.log("Manager:", managerSettings.app_logo);
   settings={{
     ...managerSettings,
     restaurant_id: "",
+    theme_color: managerSettings.theme_color || "#ffffff",
+    background_color: managerSettings.background_color || "#000000",
+    display: (managerSettings as any).display || "standalone",
+    orientation: (managerSettings as any).orientation || "portrait",
+    app_logo: managerSettings.app_logo ?? null, 
   }}
 />
 

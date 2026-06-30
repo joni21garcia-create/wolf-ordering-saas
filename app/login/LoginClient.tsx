@@ -1,10 +1,12 @@
 "use client";
 
+import { InstallButton } from "@/components/pwa/InstallButton";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import Image from "next/image";
 import { data } from "framer-motion/client";
+
 
 
 export default function LoginPage() {
@@ -136,7 +138,7 @@ await supabase.auth.signInWithOAuth({
           "auth_user_id",
           authUserId
         )
-        .single();
+        .maybeSingle();
 
       if (userError || !user) {
         alert(
@@ -664,6 +666,11 @@ await supabase.auth.signInWithOAuth({
 
   Continuar con Google
 </button>
+
+
+<div style={{ marginTop: "16px" }}>
+  <InstallButton />
+</div>
 
 
         <div

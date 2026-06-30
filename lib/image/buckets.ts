@@ -14,4 +14,6 @@ export const IMAGE_BUCKETS = {
 
   gallery: "restaurant-gallery",
 
+  pwa: "restaurant-pwa",
+
 } as const;

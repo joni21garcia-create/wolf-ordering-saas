@@ -13,7 +13,7 @@ export interface UploadedIcon {
 }
 
 interface UploadGeneratedIconsParams {
-  folder: string; // Ejemplo: "restaurants/aa5dc78e-..."
+  folder: string; // Ejemplo: "restaurants/aa5dc78e-..." o "manager"
   icons: GeneratedIcon[];
 }
 
@@ -27,8 +27,10 @@ export async function uploadGeneratedIcons({
   // Normalizamos el folder: quitamos espacios y barras redundantes al inicio/final
   const cleanFolder = folder.replace(/^\/+|\/+$/g, "");
 
+  console.log(`Subiendo ${icons.length} iconos a la carpeta: ${cleanFolder}`);
+
   for (const icon of icons) {
-    // Ruta limpia y estandarizada
+    // Ruta limpia y estandarizada dentro del bucket
     const path = `${cleanFolder}/${icon.filename}`;
 
     const { error } = await supabase.storage
@@ -39,20 +41,30 @@ export async function uploadGeneratedIcons({
       });
 
     if (error) {
-      console.error(`Error subiendo ${path}:`, error);
+      console.error(`Error crítico subiendo icono PWA a ${path}:`, error);
       throw error;
     }
 
+    // Obtenemos la URL pública
     const { data } = supabase.storage
       .from("restaurant-pwa")
       .getPublicUrl(path);
 
+    // 🛠️ SOLUCIÓN PARA IMÁGENES ROTAS: Cache-Busting
+    // Agregamos un timestamp único al final de la URL.
+    // Esto obliga al navegador y a los Service Workers a ignorar
+    // las versiones antiguas o rotas guardadas en caché, forzando
+    // la descarga de la nueva versión del icono.
+    const uniqueUrl = `${data.publicUrl}?t=${Date.now()}`;
+
     uploaded.push({
       name: icon.name,
       filename: icon.filename,
-      url: data.publicUrl,
+      url: uniqueUrl, // Guardamos la URL blindada contra caché
     });
   }
+
+  console.log("Subida de iconos PWA completada exitosamente.");
 
   return uploaded;
 }

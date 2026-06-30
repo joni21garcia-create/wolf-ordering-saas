@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { generateRestaurantMetadata } from "./metadata";
 import { getRestaurantMetadata } from "@/lib/restaurants/getRestaurantMetadata";
+import InstallWidget from "@/components/pwa/InstallWidget";
 
 interface Props {
   children: React.ReactNode;
@@ -29,5 +30,12 @@ export async function generateViewport({ params }: Props): Promise<Viewport> {
 }
 
 export default function RestaurantLayout({ children }: Props) {
-  return <>{children}</>;
+  return (
+    <>
+      {/* Widget flotante de instalación PWA */}
+      <InstallWidget />
+      
+      {children}
+    </>
+  );
 }
