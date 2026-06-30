@@ -9,25 +9,21 @@ export default function ServiceWorkerProvider() {
   useEffect(() => {
     if (hasRegistered.current) return;
 
-    // 1. Registro del Service Worker
     if ("serviceWorker" in navigator) {
-      registerSW("/sw.js").then(async (registration) => {
+      // Forzamos el tipo de la promesa que devuelve registerSW
+      registerSW("/sw.js").then(async (registration: any) => {
         hasRegistered.current = true;
 
-        // 2. Solicitud de Permiso y Suscripción a Push Notifications
         if ("Notification" in window && Notification.permission === "default") {
           const permission = await Notification.requestPermission();
           
-          if (permission === "granted") {
+          if (permission === "granted" && registration && registration.pushManager) {
             try {
-              // Suscribir al Manager a las notificaciones Push
               const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                // IMPORTANTE: Asegúrate de tener tu VAPID_PUBLIC_KEY en tus env variables
                 applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
               });
 
-              // Guardar la suscripción en tu base de datos para enviar pedidos
               await fetch("/api/notifications/save", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -43,11 +39,9 @@ export default function ServiceWorkerProvider() {
       });
     }
 
-    // 3. Captura del evento de instalación (Popup Nativo)
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       (window as any).deferredPrompt = e;
-      console.log("Evento de instalación capturado");
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
