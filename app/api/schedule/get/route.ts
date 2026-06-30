@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// IMPORTANTE: Esto evita que Vercel cachee la respuesta de la API
+// FORZAR DINAMISMO TOTAL
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export const fetchCache = 'force-no-store';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -24,19 +25,19 @@ export async function POST(request: Request) {
       .eq("restaurant_id", restaurantId)
       .maybeSingle();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase GET Error:", error);
+      throw error;
+    }
 
     return NextResponse.json({
       success: true,
       schedule: data,
     });
   } catch (error: any) {
-    console.error("API Error (get schedule):", error);
+    console.error("API GET Schedule Error:", error);
     return NextResponse.json(
-      {
-        success: false,
-        error: error.message || "Internal Server Error",
-      },
+      { success: false, error: error.message },
       { status: 500 }
     );
   }
