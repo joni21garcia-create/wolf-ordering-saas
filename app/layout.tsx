@@ -10,15 +10,12 @@ import InstallProvider from "@/components/pwa/InstallProvider";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-// Esta es la configuración ideal para que el móvil respete tu diseño responsivo
-// y se comporte como una App Nativa.
+// Configuración flexible para que el móvil se comporte como un sitio web estándar
 export const viewport: Viewport = {
   themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: "cover", // Esto asegura que la app ocupe toda la pantalla, incluyendo notch
+  // Al eliminar maximumScale y userScalable, el usuario puede hacer zoom y navegar con libertad
 };
 
 export const metadata: Metadata = {
@@ -31,10 +28,13 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Wolf Ordering",
   },
+  // Comentamos estas etiquetas para evitar que el navegador fuerce el modo pantalla completa ("App")
+  /*
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
   },
+  */
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -52,7 +52,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ParticlesBackground />
         
         <SessionProvider>
-          {/* El Provider registrará el SW y pedirá notificaciones push */}
           <ServiceWorkerProvider />
           <InstallProvider>
             <UpdateBanner />
