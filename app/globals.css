@@ -1,455 +1,69 @@
 @import "tailwindcss";
 
-/* --- FIX PARA CARGA INSTANTÁNEA --- */
-:root {
-  background-color: #050505; /* Fondo base inmediato */
-
-
-/* =========================================
-   VARIABLES
-========================================= */
-
 :root {
   --wolf-orange: #f97316;
   --wolf-orange-light: #fb923c;
   --wolf-orange-dark: #ea580c;
   --wolf-dark: #050505;
+  --background: #050505;
+  --foreground: #ffffff;
 }
 
-/* =========================================
-   BASE
-========================================= */
-
-html {
-  scroll-behavior: smooth;
-}
-
+/* Base */
+html { scroll-behavior: smooth; }
 body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   min-height: 100vh;
-
-  color: white;
-
-  font-family: Arial, Helvetica, sans-serif;
-
+  margin: 0;
   overflow-x: hidden;
-
-  position: relative;
-
-  background:
-    radial-gradient(
-      circle at top right,
-      rgba(249,115,22,.20),
-      transparent 25%
-    ),
-    radial-gradient(
-      circle at bottom left,
-      rgba(249,115,22,.15),
-      transparent 20%
-    ),
-    radial-gradient(
-      circle at center,
-      rgba(249,115,22,.05),
-      transparent 45%
-    ),
-    #050505;
 }
 
-/* =========================================
-   GRID PREMIUM
-========================================= */
-
-body::before {
-  content: "";
-
-  position: fixed;
-
-  inset: 0;
-
-  pointer-events: none;
-
-  background-image:
-    linear-gradient(
-      rgba(255,255,255,.02) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      90deg,
-      rgba(255,255,255,.02) 1px,
-      transparent 1px
-    );
-
-  background-size: 80px 80px;
-
-  z-index: -4;
+/* --- DISEÑO PREMIUM (Estilo imagen) --- */
+.premium-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 16px;
+  transition: all 0.3s ease;
 }
 
-/* =========================================
-   ORBES PREMIUM
-========================================= */
-
-.wolf-orb-top {
-  position: fixed;
-
-  top: -250px;
-  right: -250px;
-
-  width: 600px;
-  height: 600px;
-
-  border-radius: 50%;
-
-  background:
-    radial-gradient(
-      circle,
-      rgba(249,115,22,.22),
-      transparent 70%
-    );
-
-  filter: blur(70px);
-
-  pointer-events: none;
-
-  z-index: -3;
+.premium-card:hover {
+  border-color: rgba(249, 115, 22, 0.3);
 }
 
-.wolf-orb-bottom {
-  position: fixed;
-
-  left: -250px;
-  bottom: -250px;
-
-  width: 600px;
-  height: 600px;
-
-  border-radius: 50%;
-
-  background:
-    radial-gradient(
-      circle,
-      rgba(249,115,22,.18),
-      transparent 70%
-    );
-
-  filter: blur(70px);
-
-  pointer-events: none;
-
-  z-index: -3;
-}
-
-/* =========================================
-   LINEAS STRIPE
-========================================= */
-
-.stripe-lines {
-  position: fixed;
-
-  inset: 0;
-
-  overflow: hidden;
-
-  pointer-events: none;
-
-  z-index: -2;
-}
-
-.stripe-lines::before {
-  content: "";
-
-  position: absolute;
-
-  width: 220%;
-  height: 220%;
-
-  top: -60%;
-  left: -60%;
-
-  background:
-    repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 90px,
-      rgba(249,115,22,.025) 92px,
-      rgba(249,115,22,.025) 94px
-    );
-
-  animation: stripeMove 60s linear infinite;
-}
-
-@keyframes stripeMove {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* =========================================
-   PARTICULAS PREMIUM
-========================================= */
-
-.wolf-particle {
-  position: fixed;
-
-  width: 3px;
-  height: 3px;
-
-  border-radius: 999px;
-
-  background: rgba(
-    249,
-    115,
-    22,
-    .45
-  );
-
-  filter: blur(1px);
-
-  box-shadow:
-    0 0 8px rgba(249,115,22,.25),
-    0 0 18px rgba(249,115,22,.15);
-
-  pointer-events: none;
-
-  z-index: -1;
-
-  animation:
-    wolfFloat linear infinite;
-}
-
-@keyframes wolfFloat {
-  from {
-    transform:
-      translateY(0px)
-      translateX(0px);
-  }
-
-  to {
-    transform:
-      translateY(-800px)
-      translateX(120px);
-  }
-}
-
-/* =========================================
-   GLASS CARD
-========================================= */
-
-.glass-card {
-  background: rgba(255,255,255,.03);
-
-  border: 1px solid rgba(255,255,255,.08);
-
-  backdrop-filter: blur(20px);
-
-  -webkit-backdrop-filter: blur(20px);
-
-  border-radius: 24px;
-
-  transition: all .3s ease;
-}
-
-.glass-card:hover {
-  transform: translateY(-5px);
-
-  border-color:
-    rgba(249,115,22,.35);
-
-  box-shadow:
-    0 0 30px rgba(249,115,22,.10);
-}
-
-/* =========================================
-   SHADOW PREMIUM
-========================================= */
-
-.wolf-shadow {
-  box-shadow:
-    0 0 20px rgba(249,115,22,.10),
-    0 0 60px rgba(249,115,22,.08),
-    0 0 120px rgba(249,115,22,.04);
-}
-
-/* =========================================
-   BOTONES PREMIUM
-========================================= */
-
-.wolf-button {
-  background:
-    linear-gradient(
-      135deg,
-      var(--wolf-orange),
-      var(--wolf-orange-dark)
-    );
-
+.btn-accent {
+  background: linear-gradient(135deg, var(--wolf-orange), var(--wolf-orange-dark));
   color: white;
-
-  transition: all .25s ease;
-
-  box-shadow:
-    0 0 25px rgba(249,115,22,.25);
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 10px 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.wolf-button:hover {
-  transform:
-    translateY(-3px)
-    scale(1.02);
-
-  box-shadow:
-    0 0 35px rgba(249,115,22,.45);
-}
-
-/* =========================================
-   HOVER PREMIUM
-========================================= */
-
-.hover-lift {
-  transition: all .3s ease;
-}
-
-.hover-lift:hover {
-  transform:
-    translateY(-8px)
-    scale(1.01);
-}
-
-/* =========================================
-   TITULOS PREMIUM
-========================================= */
+.btn-accent:active { transform: scale(0.95); }
 
 .wolf-title {
-  background:
-    linear-gradient(
-      90deg,
-      #ffffff,
-      #f97316
-    );
-
+  background: linear-gradient(90deg, #ffffff, var(--wolf-orange));
   background-clip: text;
   -webkit-background-clip: text;
-
   color: transparent;
-  -webkit-text-fill-color: transparent;
 }
 
-/* =========================================
-   SCROLLBAR
-========================================= */
-
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #0b0b0b;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #f97316;
-
-  border-radius: 999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #fb923c;
-}
-/* =========================================
-   ORDER PAGE BACKGROUND
-========================================= */
-
-.wolf-order-background {
-  position: relative;
-  isolation: isolate;
-}
-
-.wolf-order-background::before {
+/* Efectos de fondo sutiles */
+body::before {
   content: "";
-
   position: fixed;
-
   inset: 0;
-
-  background:
-    radial-gradient(
-      circle at top right,
-      rgba(249,115,22,.08),
-      transparent 25%
-    ),
-    radial-gradient(
-      circle at bottom left,
-      rgba(249,115,22,.05),
-      transparent 20%
-    );
-
   pointer-events: none;
-
+  background: radial-gradient(circle at top right, rgba(249, 115, 22, 0.1), transparent 40%),
+              radial-gradient(circle at bottom left, rgba(249, 115, 22, 0.05), transparent 40%);
   z-index: -1;
 }
 
-.wolf-order-background::after {
-  content: "";
-
-  position: fixed;
-
-  inset: 0;
-
-  background-image:
-    radial-gradient(
-      rgba(249,115,22,.25) 1px,
-      transparent 1px
-    );
-
-  background-size: 250px 250px;
-
-  animation:
-    wolfParticles 35s linear infinite;
-
-  opacity: .15;
-
-  pointer-events: none;
-
-  z-index: -1;
-}
-
-@layer base {
-  :root {
-    --background: #050505;
-    --foreground: #ffffff;
-    --accent-orange: #ff6600; /* Ajusta este color al naranja de tu logo */
-  }
-
-  body {
-    background-color: var(--background);
-    color: var(--foreground);
-    font-family: sans-serif;
-  }
-}
-
-@layer components {
-  /* Estilo para las tarjetas como en image_662055.png */
-  .premium-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 16px;
-  }
-
-  /* Estilo de botones naranja */
-  .btn-accent {
-    background-color: var(--accent-orange);
-    color: white;
-    font-weight: bold;
-    border-radius: 8px;
-    transition: opacity 0.2s;
-  }
-  
-  .btn-accent:hover {
-    opacity: 0.9;
-  }
-}
-
-
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #050505; }
+::-webkit-scrollbar-thumb { background: var(--wolf-orange); border-radius: 999px; }
