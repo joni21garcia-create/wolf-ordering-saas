@@ -29,9 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="es" 
       className={`${geistSans.variable} ${geistMono.variable}`} 
     >
-      <body className="text-white bg-[#050505] antialiased min-h-screen relative overflow-x-hidden">
+      <body className="text-white bg-[#050505] antialiased min-h-screen relative overflow-x-hidden flex flex-col">
         
-        {/* DECORACIÓN: Envuelta en un contenedor que no interfiera con el scroll */}
+        {/* FONDO FIJO: Asegura que la decoración esté siempre detrás y no afecte el flujo */}
         <div className="fixed inset-0 pointer-events-none -z-10">
           <div className="wolf-orb-top" />
           <div className="wolf-orb-bottom" />
@@ -39,15 +39,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ParticlesBackground />
         </div>
         
-        {/* ESTRUCTURA PRINCIPAL:
-            Usamos un flexbox para asegurar que el footer siempre esté abajo si es necesario
-            y que el contenido fluya limpiamente.
+        {/* PROVIDERS Y ESTRUCTURA DE CONTENIDO:
+            Hemos eliminado la lógica condicional que causaba saltos visuales.
+            El layout ahora sirve como contenedor estable.
         */}
         <SessionProvider>
           <ServiceWorkerProvider />
           <InstallProvider>
             <UpdateBanner />
-            <main className="w-full relative">
+            {/* main envuelve el contenido sin márgenes internos extraños */}
+            <main className="flex-1 w-full relative flex flex-col">
               {children}
             </main>
           </InstallProvider>
