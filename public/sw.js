@@ -1,4 +1,4 @@
-/* Wolf Ordering App Service Worker - V5 Profesional */
+/* Wolf Ordering App Service Worker - V6 con Push Notifications */
 const STATIC_CACHE = "wolf-static-v5";
 const PAGES_CACHE = "wolf-pages-v2";
 const MANAGER_CACHE = "wolf-manager-v2";
@@ -23,21 +23,47 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+/* --- LÓGICA DE NOTIFICACIONES PUSH --- */
+
+self.addEventListener("push", (event) => {
+  let data = { title: "Wolf Ordering", body: "Tienes una nueva notificación", url: "/" };
+  
+  if (event.data) {
+    data = event.data.json();
+  }
+
+  const options = {
+    body: data.body,
+    icon: "/icons/icon-192x192.png", // Asegúrate de tener este icono
+    badge: "/icons/icon-72x72.png",
+    data: { url: data.url || "/" },
+    vibrate: [200, 100, 200],
+  };
+
+  event.waitUntil(self.registration.showNotification(data.title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow(event.notification.data.url)
+  );
+});
+
+/* --- LÓGICA DE FETCH (Mantenida intacta) --- */
+
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // 1. IGNORAR APIS DINÁMICAS (Supabase, Auth, etc)
   if (url.origin.includes("supabase.co") || url.pathname.includes("/api/")) {
     return;
   }
 
-  // 2. LÓGICA DE MANAGER / LOGIN (Network First)
   if (url.pathname.startsWith("/login") || url.pathname.startsWith("/manager")) {
     event.respondWith(
       fetch(event.request)
         .then((res) => {
           if (res && res.status === 200) {
-            // CLONAR ANTES DE CONSUMIR
             const resToCache = res.clone();
             caches.open(MANAGER_CACHE).then((cache) => cache.put(event.request, resToCache));
           }
@@ -48,13 +74,12 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 3. LÓGICA DE ESTATICOS (Cache First)
   if (["style", "script", "font", "image"].includes(event.request.destination)) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
         return cached || fetch(event.request).then((res) => {
           if (res && res.status === 200) {
-            const resToCache = res.clone(); // CLONADO PREVENTIVO
+            const resToCache = res.clone();
             caches.open(STATIC_CACHE).then((cache) => cache.put(event.request, resToCache));
           }
           return res;
@@ -64,12 +89,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 4. LÓGICA DE NAVEGACIÓN (Network First con Fallback a Cache)
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request)
         .then((res) => {
-          const resToCache = res.clone(); // CLONADO PREVENTIVO
+          const resToCache = res.clone();
           caches.open(PAGES_CACHE).then((c) => c.put(event.request, resToCache));
           return res;
         })

@@ -4,19 +4,28 @@ import { useEffect, useRef } from "react";
 import { registerSW } from "@/lib/pwa/registerSW";
 
 export default function ServiceWorkerProvider() {
-  // Usamos una ref para evitar múltiples registros innecesarios
   const hasRegistered = useRef(false);
 
   useEffect(() => {
     if (hasRegistered.current) return;
     
     if ("serviceWorker" in navigator) {
-      // Registramos una sola vez al montar la app
-      registerSW("/sw.js").then(() => {
+      registerSW("/sw.js").then(async (registration) => {
         hasRegistered.current = true;
+        
+        // Solicitar permiso de notificaciones una vez registrado el SW
+        if ("Notification" in window && Notification.permission === "default") {
+          const permission = await Notification.requestPermission();
+          
+          if (permission === "granted") {
+            console.log("Notificaciones permitidas");
+            // Aquí podrías llamar a una función para enviar la suscripción a tu BD
+            // subscribeUserToPush(registration);
+          }
+        }
       });
     }
-  }, []); // Solo se ejecuta al montar la aplicación
+  }, []);
 
   return null;
 }
