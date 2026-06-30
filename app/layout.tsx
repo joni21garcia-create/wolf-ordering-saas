@@ -14,13 +14,29 @@ export const viewport: Viewport = {
   themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover", // Esto es vital para el notch
+  // Nuevas mejoras:
+  colorScheme: "dark", // Indica al SO que fuerce modo oscuro instantáneo
+  interactiveWidget: "resizes-content", // Evita que el teclado aplaste el diseño de forma brusca
 };
 
+// Metadatos para activar el modo standalone
 export const metadata: Metadata = {
   metadataBase: new URL("https://app.wolfordering.com"),
   title: "Wolf Ordering",
-  description: "Sistema SaaS de pedidos digitales para restaurantes",
-  appleWebApp: { capable: false },
+  description: "Sistema SaaS de pedidos digitales",
+  manifest: "/api/manifest/manager", // Esta ruta ya confirmamos que devuelve el JSON correcto
+  appleWebApp: {
+    capable: true, // Habilita modo app en iOS
+    statusBarStyle: "black-translucent", // Barra de estado negra
+    title: "Wolf Ordering",
+  },
+  other: {
+    "mobile-web-app-capable": "yes", // Habilita modo app en Android
+    "apple-mobile-web-app-capable": "yes",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -28,32 +44,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html 
       lang="es" 
       className={`${geistSans.variable} ${geistMono.variable}`} 
+      data-scroll-behavior="smooth"
+      style={{ backgroundColor: '#050505' }} // Fondo instantáneo
     >
-      <body className="text-white bg-[#050505] antialiased min-h-screen relative overflow-x-hidden flex flex-col">
+      <body className="text-white bg-[#050505] antialiased min-h-screen">
+        <div className="wolf-orb-top" />
+        <div className="wolf-orb-bottom" />
+        <div className="stripe-lines" />
         
-        {/* FONDO FIJO: Asegura que la decoración esté siempre detrás y no afecte el flujo */}
-        <div className="fixed inset-0 pointer-events-none -z-10">
-          <div className="wolf-orb-top" />
-          <div className="wolf-orb-bottom" />
-          <div className="stripe-lines" />
-          <ParticlesBackground />
-        </div>
+        <ParticlesBackground />
         
-        {/* PROVIDERS Y ESTRUCTURA DE CONTENIDO:
-            Hemos eliminado la lógica condicional que causaba saltos visuales.
-            El layout ahora sirve como contenedor estable.
-        */}
         <SessionProvider>
           <ServiceWorkerProvider />
           <InstallProvider>
             <UpdateBanner />
-            {/* main envuelve el contenido sin márgenes internos extraños */}
-            <main className="flex-1 w-full relative flex flex-col">
+            <main>
               {children}
             </main>
           </InstallProvider>
         </SessionProvider>
-        
       </body>
     </html>
   );
