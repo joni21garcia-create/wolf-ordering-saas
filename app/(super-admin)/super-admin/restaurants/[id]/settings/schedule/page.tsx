@@ -3,7 +3,7 @@
 import BackToSettings from "@/components/admin/BackToSettings";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 const dayKeys = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
@@ -12,6 +12,7 @@ export default function SchedulePage() {
   const params = useParams();
   const restaurantId = params.id as string;
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [schedule, setSchedule] = useState({
     monday_open: "08:00", monday_close: "22:00",
     tuesday_open: "08:00", tuesday_close: "22:00",
@@ -22,6 +23,21 @@ export default function SchedulePage() {
     sunday_open: "08:00", sunday_close: "22:00",
   });
 
+  // CARGAR DATOS AL MONTAR
+  useEffect(() => {
+    fetch("/api/schedule/get", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ restaurantId }),
+      cache: "no-store"
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success && data.schedule) setSchedule(data.schedule);
+    })
+    .finally(() => setLoading(false));
+  }, [restaurantId]);
+
   const saveSchedule = async () => {
     setSaving(true);
     try {
@@ -29,6 +45,7 @@ export default function SchedulePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ restaurantId, schedule }),
+        cache: "no-store"
       });
       const result = await response.json();
       if (result.success) alert("Horarios guardados correctamente");
@@ -48,23 +65,26 @@ export default function SchedulePage() {
           <header style={{ marginBottom: "30px" }}>
             <BackToSettings restaurantId={restaurantId} />
             <h1 style={{ fontSize: "clamp(28px, 6vw, 42px)", fontWeight: "900", margin: "10px 0" }}>🕒 Horarios</h1>
-            <p style={{ color: "#9ca3af" }}>Configura los horarios de atención de tu restaurante.</p>
           </header>
 
-          <section style={{ background: "rgba(17,17,17,.95)", border: "1px solid rgba(255,255,255,.08)", borderRadius: "24px", padding: "20px" }}>
-            {days.map((day, index) => {
-              const key = dayKeys[index];
-              return (
-                <div key={day} style={{ display: "grid", gridTemplateColumns: "100px 1fr 1fr", gap: "10px", alignItems: "center", padding: "12px 0", borderBottom: index !== days.length - 1 ? "1px solid rgba(255,255,255,.06)" : "none" }}>
-                  <strong style={{ fontSize: "14px" }}>{day}</strong>
-                  <input type="time" value={schedule[`${key}_open` as keyof typeof schedule]} onChange={(e) => setSchedule({...schedule, [`${key}_open`]: e.target.value})} style={inputStyle} />
-                  <input type="time" value={schedule[`${key}_close` as keyof typeof schedule]} onChange={(e) => setSchedule({...schedule, [`${key}_close`]: e.target.value})} style={inputStyle} />
-                </div>
-              );
-            })}
-          </section>
+          {loading ? (
+            <p style={{ textAlign: "center", color: "#9ca3af" }}>Cargando configuración...</p>
+          ) : (
+            <section style={{ background: "rgba(17,17,17,.95)", border: "1px solid rgba(255,255,255,.08)", borderRadius: "24px", padding: "20px" }}>
+              {days.map((day, index) => {
+                const key = dayKeys[index];
+                return (
+                  <div key={day} style={{ display: "grid", gridTemplateColumns: "100px 1fr 1fr", gap: "10px", alignItems: "center", padding: "12px 0", borderBottom: index !== days.length - 1 ? "1px solid rgba(255,255,255,.06)" : "none" }}>
+                    <strong style={{ fontSize: "14px" }}>{day}</strong>
+                    <input type="time" value={schedule[`${key}_open` as keyof typeof schedule]} onChange={(e) => setSchedule({...schedule, [`${key}_open`]: e.target.value})} style={inputStyle} />
+                    <input type="time" value={schedule[`${key}_close` as keyof typeof schedule]} onChange={(e) => setSchedule({...schedule, [`${key}_close`]: e.target.value})} style={inputStyle} />
+                  </div>
+                );
+              })}
+            </section>
+          )}
 
-          <button onClick={saveSchedule} disabled={saving} style={saveBtn}>
+          <button onClick={saveSchedule} disabled={saving || loading} style={saveBtn}>
             {saving ? "Guardando..." : "💾 Guardar Horarios"}
           </button>
         </div>
