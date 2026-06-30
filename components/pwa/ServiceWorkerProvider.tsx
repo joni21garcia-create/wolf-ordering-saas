@@ -14,10 +14,10 @@ export default function ServiceWorkerProvider() {
         hasRegistered.current = true;
         const reg = registration as ServiceWorkerRegistration;
 
-        // Solicitar permisos solo si no han sido otorgados previamente
-        if ("Notification" in window && Notification.permission === "default") {
+        if ("Notification" in window) {
           const permission = await Notification.requestPermission();
-          
+          console.log("Permiso de notificación:", permission); // DEBUG 1
+
           if (permission === "granted" && reg.pushManager) {
             try {
               const subscription = await reg.pushManager.subscribe({
@@ -25,28 +25,23 @@ export default function ServiceWorkerProvider() {
                 applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
               });
 
-              await fetch("/api/notifications/save", {
+              console.log("Suscripción obtenida:", subscription); // DEBUG 2
+
+              const response = await fetch("/api/notifications/save", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ subscription }),
               });
-              console.log("Suscripción a notificaciones exitosa");
+
+              const result = await response.json();
+              console.log("Respuesta del servidor:", result); // DEBUG 3
             } catch (err) {
-              console.error("Error al registrar push:", err);
+              console.error("Error al registrar push:", err); // DEBUG 4
             }
           }
         }
       });
     }
-
-    // Manejo del prompt de instalación (PWA)
-    const handleBeforeInstallPrompt = (e: any) => {
-      e.preventDefault();
-      (window as any).deferredPrompt = e;
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
   }, []);
 
   return null;
