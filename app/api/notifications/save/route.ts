@@ -1,35 +1,40 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-
-// Inicializamos el cliente de Supabase usando la Service Role Key
-// IMPORTANTE: Asegúrate de que SUPABASE_SERVICE_ROLE_KEY esté en tu .env
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { cookies } from "next/headers"; // Necesario para obtener la sesión
 
 export async function POST(request: Request) {
   try {
-    const { subscription, restaurant_id } = await request.json();
+    const { subscription } = await request.json();
 
-    if (!subscription) {
-      return NextResponse.json({ error: "Suscripción requerida" }, { status: 400 });
+    // 1. Inicializar Supabase con las cookies del usuario
+    const cookieStore = await cookies();
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // 2. Obtener el usuario actual de forma segura
+    // (Asegúrate de que el usuario ya haya iniciado sesión en tu app)
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
     }
 
-    // Guardamos la suscripción en la tabla 'push_subscriptions'
-    // Asegúrate de tener esta tabla creada en tu Supabase
-    const { data, error } = await supabase
+    // 3. Upsert usando el ID del usuario autenticado
+    const { error } = await supabase
       .from("push_subscriptions")
       .upsert({
-        restaurant_id: restaurant_id, // Identificador del manager/restaurante
-        subscription: subscription,   // El objeto JSON completo
+        restaurant_id: user.id, // Se usa el ID del usuario logueado
+        subscription: subscription,
         updated_at: new Date().toISOString(),
-      });
+      }, { onConflict: 'restaurant_id' }); // IMPORTANTE: Define la restricción de conflicto
 
     if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
+    console.error("Error en API:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

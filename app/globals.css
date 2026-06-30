@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* --- FIX PARA CARGA INSTANTÁNEA --- */
+:root {
+  background-color: #050505; /* Fondo base inmediato */
+
+
 /* =========================================
    VARIABLES
 ========================================= */
@@ -406,4 +411,5 @@ body::before {
   pointer-events: none;
 
   z-index: -1;
+}
 }

@@ -10,12 +10,10 @@ import InstallProvider from "@/components/pwa/InstallProvider";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-// Configuración flexible para que el móvil se comporte como un sitio web estándar
 export const viewport: Viewport = {
   themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
-  // Al eliminar maximumScale y userScalable, el usuario puede hacer zoom y navegar con libertad
 };
 
 export const metadata: Metadata = {
@@ -28,13 +26,6 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Wolf Ordering",
   },
-  // Comentamos estas etiquetas para evitar que el navegador fuerce el modo pantalla completa ("App")
-  /*
-  other: {
-    "mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-capable": "yes",
-  },
-  */
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -43,8 +34,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="es" 
       className={`${geistSans.variable} ${geistMono.variable}`} 
       data-scroll-behavior="smooth"
+      style={{ backgroundColor: '#050505' }} // Forzamos color de fondo en el HTML raíz
     >
-      <body className="text-white bg-[#050505] antialiased">
+      <body className="text-white bg-[#050505] antialiased min-h-screen">
+        {/* Capas decorativas de fondo */}
         <div className="wolf-orb-top" />
         <div className="wolf-orb-bottom" />
         <div className="stripe-lines" />
@@ -55,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ServiceWorkerProvider />
           <InstallProvider>
             <UpdateBanner />
-            <main className="min-h-screen">
+            <main>
               {children}
             </main>
           </InstallProvider>

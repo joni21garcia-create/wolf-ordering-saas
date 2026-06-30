@@ -10,39 +10,36 @@ export default function ServiceWorkerProvider() {
     if (hasRegistered.current) return;
 
     if ("serviceWorker" in navigator) {
-      // Usamos 'as any' en la resolución de la promesa
-      registerSW("/sw.js").then(async (registration: any) => {
+      registerSW("/sw.js").then(async (registration: unknown) => {
         hasRegistered.current = true;
+        const reg = registration as ServiceWorkerRegistration;
 
+        // Solicitar permisos solo si no han sido otorgados previamente
         if ("Notification" in window && Notification.permission === "default") {
           const permission = await Notification.requestPermission();
           
-          if (permission === "granted") {
+          if (permission === "granted" && reg.pushManager) {
             try {
-              // Convertimos explícitamente a ServiceWorkerRegistration para TS
-              const reg = registration as ServiceWorkerRegistration;
-              
-              if (reg.pushManager) {
-                const subscription = await reg.pushManager.subscribe({
-                  userVisibleOnly: true,
-                  applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-                });
+              const subscription = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+              });
 
-                await fetch("/api/notifications/save", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ subscription }),
-                });
-                console.log("Manager suscrito a notificaciones push");
-              }
+              await fetch("/api/notifications/save", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ subscription }),
+              });
+              console.log("Suscripción a notificaciones exitosa");
             } catch (err) {
-              console.error("Error al suscribir a notificaciones:", err);
+              console.error("Error al registrar push:", err);
             }
           }
         }
       });
     }
 
+    // Manejo del prompt de instalación (PWA)
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       (window as any).deferredPrompt = e;
