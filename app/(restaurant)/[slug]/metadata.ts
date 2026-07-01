@@ -30,6 +30,12 @@ export async function generateRestaurantMetadata(
 
     manifest: `/api/manifest/${slug}`,
 
+    icons: {
+    icon: `/api/favicon/${slug}`,
+    shortcut: `/api/favicon/${slug}`,
+    apple: `/api/favicon/${slug}`,
+  },
+
     // 🛠️ FIX: Forzar al navegador a aceptar las credenciales y cookies del manifest dinámico
     other: {
       "crossorigin": "use-credentials",
