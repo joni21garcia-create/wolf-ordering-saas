@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
+import UnlockWhatsApp from "@/components/restaurant/UnlockWhatsApp";
 
 interface Props {
   searchParams: Promise<{
@@ -185,6 +186,11 @@ const estimatedTime =
         padding: "80px 20px",
       }}
     >
+
+    <UnlockWhatsApp
+      restaurantId={restaurant.id}
+    />
+
       <div
         style={{
           textAlign: "center",
