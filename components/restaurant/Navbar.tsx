@@ -11,9 +11,7 @@ interface Props {
 export default function Navbar({ restaurant }: Props) {
   const theme = getTheme(restaurant);
   
-  // Estado inicial 'false' es seguro para SSR
   const [scrolled, setScrolled] = useState(false);
-  // Nuevo estado para evitar discrepancias al hidratar
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -26,22 +24,24 @@ export default function Navbar({ restaurant }: Props) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Si no se ha montado, devolvemos un estilo estático para que coincida con el servidor
+  // Evita el error de hidratación renderizando null hasta que el cliente esté listo
+  if (!isMounted) return null;
+
   const navStyle = {
     position: "fixed" as const,
     top: 0,
     left: 0,
     width: "100%",
     zIndex: 9999,
-    backdropFilter: isMounted && scrolled ? "blur(20px)" : "none",
-    background: isMounted && scrolled ? "rgba(0,0,0,.75)" : "transparent",
-    borderBottom: isMounted && scrolled ? "1px solid rgba(255,255,255,.08)" : "none",
+    backdropFilter: scrolled ? "blur(20px)" : "none",
+    background: scrolled ? "rgba(0,0,0,.75)" : "transparent",
+    borderBottom: scrolled ? "1px solid rgba(255,255,255,.08)" : "none",
     transition: "all .3s ease",
   };
 
   return (
     <motion.nav
-      initial={{ y: -100 }}
+      initial={false}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
       style={navStyle}
@@ -56,16 +56,8 @@ export default function Navbar({ restaurant }: Props) {
           alignItems: "center",
         }}
       >
-        {/* Logo */}
-        <a
-          href="#"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            textDecoration: "none",
-          }}
-        >
+        {/* Logo: Corregido para ser HTML válido */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <img
             src={restaurant.logo_url}
             alt={restaurant.name}
@@ -77,16 +69,18 @@ export default function Navbar({ restaurant }: Props) {
               border: `2px solid ${theme.primary}`,
             }}
           />
-          <span
-            style={{
-              color: theme.text,
-              fontWeight: "700",
-              fontSize: "18px",
+          <Link 
+            href="/" 
+            style={{ 
+              color: theme.text, 
+              fontWeight: "700", 
+              fontSize: "18px", 
+              textDecoration: "none" 
             }}
           >
             {restaurant.name}
-          </span>
-        </a>
+          </Link>
+        </div>
 
         {/* Menu */}
         <div
