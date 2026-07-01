@@ -88,7 +88,7 @@ const [uploading, setUploading] =
           "id",
           productId
         )
-        .single();
+        .maybeSingle();
 
       if (error) return;
 
@@ -462,7 +462,7 @@ const uploadImage =
 
 {form.image_url && (
   <>
-  
+
     <img
       src={form.image_url}
       alt="preview"

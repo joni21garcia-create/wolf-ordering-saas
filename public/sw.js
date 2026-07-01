@@ -1,59 +1,230 @@
-/* Wolf Ordering App Service Worker - V7 Profesional con Push Force */
-const STATIC_CACHE = "wolf-static-v5";
-const PAGES_CACHE = "wolf-pages-v2";
-const MANAGER_CACHE = "wolf-manager-v2";
+/* ==========================================
+ Wolf Ordering Service Worker V8
+========================================== */
 
-const CACHE_NAMES = [STATIC_CACHE, PAGES_CACHE, MANAGER_CACHE];
+const STATIC_CACHE = "wolf-static-v6";
+const PAGES_CACHE = "wolf-pages-v3";
 
-self.addEventListener("install", (event) => self.skipWaiting());
+const CACHE_NAMES = [
+  STATIC_CACHE,
+  PAGES_CACHE,
+];
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => (!CACHE_NAMES.includes(k) ? caches.delete(k) : null)))
-    ).then(() => self.clients.claim())
-  );
+/* INSTALL */
+
+self.addEventListener("install", () => {
+  self.skipWaiting();
 });
 
-/* --- LÓGICA DE NOTIFICACIONES PUSH --- */
+/* ACTIVATE */
+
+self.addEventListener("activate", (event) => {
+
+  event.waitUntil(
+
+    (async () => {
+
+      const keys = await caches.keys();
+
+      await Promise.all(
+
+        keys.map((key) => {
+
+          if (!CACHE_NAMES.includes(key)) {
+            return caches.delete(key);
+          }
+
+        })
+
+      );
+
+      await self.clients.claim();
+
+    })()
+
+  );
+
+});
+
+/* ==========================================
+ PUSH
+========================================== */
+
 self.addEventListener("push", (event) => {
-  const data = event.data ? event.data.json() : { title: "Wolf Ordering", body: "Nuevo pedido recibido", url: "/admin/orders" };
+  const data = event.data
+    ? event.data.json()
+    : {
+        title: "Wolf Ordering",
+        body: "Nuevo pedido recibido",
+        url: "/manager",
+      };
 
   const options = {
     body: data.body,
-    icon: "/icons/icon-192x192.png",
-    badge: "/icons/icon-72x72.png",
-    data: { url: data.url || "/admin/orders" },
-    vibrate: [500, 200, 500, 200, 500], // Patrón de vibración más largo
+
+    data: {
+      url: data.url ?? "/manager",
+    },
+
+    vibrate: [300, 100, 300],
+
     requireInteraction: true,
-    silent: false, // OBLIGATORIO: Asegura que suene
-    actions: [{ action: 'open', title: 'Ver Pedido' }]
+
+    actions: [
+      {
+        action: "open",
+        title: "Ver pedido",
+      },
+    ],
   };
 
-  event.waitUntil(self.registration.showNotification(data.title, options));
+  // Solo agrega iconos si vienen en el payload
+  if (data.icon) {
+    options.icon = data.icon;
+  }
+
+  if (data.badge) {
+    options.badge = data.badge;
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(
+      data.title,
+      options
+    )
+  );
 });
 
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  event.waitUntil(clients.openWindow(event.notification.data.url));
-});
+/* ==========================================
+ CLICK
+========================================== */
 
-/* --- LÓGICA DE FETCH --- */
+self.addEventListener(
+  "notificationclick",
+  (event) => {
+
+    event.notification.close();
+
+    event.waitUntil(
+
+      clients.matchAll({
+        type: "window",
+      }).then((clientList) => {
+
+        for (const client of clientList) {
+
+          if ("focus" in client) {
+
+            client.navigate(
+              event.notification.data.url
+            );
+
+            return client.focus();
+
+          }
+
+        }
+
+        return clients.openWindow(
+          event.notification.data.url
+        );
+
+      })
+
+    );
+
+  }
+);
+
+/* ==========================================
+ FETCH
+========================================== */
+
 self.addEventListener("fetch", (event) => {
-  const url = new URL(event.request.url);
-  if (url.origin.includes("supabase.co") || url.pathname.includes("/api/")) return;
 
-  if (url.pathname.startsWith("/login") || url.pathname.startsWith("/manager")) {
-    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
+  const request = event.request;
+
+  const url = new URL(request.url);
+
+  if (
+
+    request.method !== "GET" ||
+
+    url.pathname.startsWith("/api") ||
+
+    url.hostname.includes("supabase.co")
+
+  ) {
+
     return;
+
   }
 
-  if (["style", "script", "font", "image"].includes(event.request.destination)) {
-    event.respondWith(caches.match(event.request).then((res) => res || fetch(event.request)));
+  if (
+
+    request.destination === "style" ||
+
+    request.destination === "script" ||
+
+    request.destination === "font" ||
+
+    request.destination === "image"
+
+  ) {
+
+    event.respondWith(
+
+      (async () => {
+
+        const cache =
+          await caches.open(
+            STATIC_CACHE
+          );
+
+        const cached =
+          await cache.match(request);
+
+        if (cached) {
+          return cached;
+        }
+
+        const response =
+          await fetch(request);
+
+        cache.put(
+          request,
+          response.clone()
+        );
+
+        return response;
+
+      })()
+
+    );
+
     return;
+
   }
 
-  if (event.request.mode === "navigate") {
-    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
+  if (request.mode === "navigate") {
+
+    event.respondWith(
+
+      fetch(request).catch(
+        async () => {
+
+          const cache =
+            await caches.open(
+              PAGES_CACHE
+            );
+
+          return cache.match(request);
+
+        }
+      )
+
+    );
+
   }
+
 });

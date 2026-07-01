@@ -8,6 +8,7 @@ import React, {
 } from "react";
 
 import { supabase } from "@/lib/supabase/client";
+import PushNotificationsProvider from "@/components/pwa/PushNotificationsProvider";
 
 type SessionUser = {
   id: string;
@@ -52,35 +53,35 @@ export function SessionProvider({
     try {
       setLoading(true);
 
-const {
-  data: { session },
-} = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-if (!session) {
-  setUser(null);
-  setLoading(false);
-  return;
-}
+      if (!session) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
 
-const {
-  data: { user: authUser },
-  error: authError,
-} = await supabase.auth.getUser();
+      const {
+        data: { user: authUser },
+        error: authError,
+      } = await supabase.auth.getUser();
 
       if (authError) {
-  if (
-    authError.message?.includes(
-      "Auth session missing"
-    )
-  ) {
-    setUser(null);
-    return;
-  }
+        if (
+          authError.message?.includes(
+            "Auth session missing"
+          )
+        ) {
+          setUser(null);
+          return;
+        }
 
-  console.error(authError);
-  setUser(null);
-  return;
-}
+        console.error(authError);
+        setUser(null);
+        return;
+      }
 
       if (!authUser) {
         setUser(null);
@@ -104,7 +105,7 @@ const {
           "auth_user_id",
           authUser.id
         )
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error(error);
@@ -215,6 +216,15 @@ const {
       }}
     >
       {children}
+
+      {user && (
+        <PushNotificationsProvider
+          restaurantId={
+            user.restaurant_id
+          }
+          userId={user.id}
+        />
+      )}
     </SessionContext.Provider>
   );
 }

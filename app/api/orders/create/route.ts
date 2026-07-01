@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import {
   isRestaurantOpen,
 } from "@/lib/restaurant-hours";
-
+import { sendPush } from "@/lib/push/sendPush";
 
 
 
@@ -99,7 +99,7 @@ const { data: restaurant } =
       commission_percentage
     `)
     .eq("id", restaurant_id)
-    .single();
+    .maybeSingle();
 
 let commission_amount = 0;
 
@@ -182,7 +182,7 @@ const {
     }
   )
   .limit(1)
-  .single();
+  .maybeSingle();
 
 console.log(
   "SCHEDULE ERROR:",
@@ -314,7 +314,7 @@ total:
     new Date().toISOString(),
 })
         .select()
-        .single();
+        .maybeSingle();
 
         console.log(
   "ORDER ERROR:",
@@ -421,6 +421,24 @@ if (orderError) {
             ) || null,
         });
     }
+
+try {
+  await sendPush({
+    restaurant_id,
+
+    title: "🛍️ Nuevo pedido",
+
+    body: `${customer_name} realizó un pedido por $${final_total.toFixed(2)}`,
+
+    url: `/admin/orders/${order.id}`,
+  });
+} catch (err) {
+  console.error(
+    "Error enviando Push",
+    err
+  );
+}
+
 
     return NextResponse.json({
       success: true,
