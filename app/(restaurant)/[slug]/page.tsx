@@ -12,16 +12,12 @@ import CTA from "@/components/restaurant/sections/CTA";
 import Navbar from "@/components/restaurant/Navbar";
 import Footer from "@/components/restaurant/Footer";
 
-// 🛠️ FIX: Forzar a que la página del restaurante sea 100% dinámica en Vercel
-// Esto evita que se congele con datos viejos o vacíos de la caché del servidor
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 interface Props {
   params: Promise<{
     slug: string;
   }>;
 }
+
 
 /*
 |--------------------------------------------------------------------------
@@ -46,7 +42,6 @@ export default async function RestaurantPage({
           justifyContent: "center",
           alignItems: "center",
           color: "#fff",
-          backgroundColor: "#111827"
         }}
       >
         <h1>
