@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import LiquidationActions from "@/components/finance/LiquidationActions";
 import BackToSettings from "@/components/admin/BackToSettings";
 import PermissionGuard from "@/components/auth/PermissionGuard";
+import GenerateLiquidationButton from "@/components/finance/GenerateLiquidationButton";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,13 +31,14 @@ export default async function FinancePage({
       .from("restaurants")
       .select("*")
       .eq("id", id)
-      .single();
+      .maybeSingle();
 
-  const { data: orders } =
-    await supabase
-      .from("orders")
-      .select("*")
-      .eq("restaurant_id", id);
+const { data: orders } =
+  await supabase
+    .from("orders")
+    .select("*")
+    .eq("restaurant_id", id)
+    .eq("status", "completed");
 
 
 const {
@@ -45,11 +47,14 @@ const {
   .from("liquidations")
   .select("*")
   .eq("restaurant_id", id)
-  .order("created_at", {
+  .order("year", {
+    ascending: false,
+  })
+  .order("month", {
     ascending: false,
   })
   .limit(1)
-  .single();
+  .maybeSingle();
 
   console.log(
   "LIQUIDATION:",
@@ -116,6 +121,13 @@ const {
       1
     );
 
+    const endOfMonth =
+  new Date(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    1
+  );
+
   const ordersToday =
     orders?.filter(
       (o) =>
@@ -132,14 +144,17 @@ const {
         ) >= startOfWeek
     ) || [];
 
-  const ordersMonth =
-    orders?.filter(
-      (o) =>
-        new Date(
-          o.created_at
-        ) >= startOfMonth
-    ) || [];
+const ordersMonth =
+  orders?.filter((o) => {
+    const date =
+      new Date(o.created_at);
 
+    return (
+      date >= startOfMonth &&
+      date < endOfMonth
+    );
+  }) || [];
+  
   const salesToday =
     ordersToday.reduce(
       (acc, o) =>
@@ -464,13 +479,27 @@ return (
           padding: "30px",
         }}
       >
-        <h2
-          style={{
-            marginTop: 0,
-          }}
-        >
-          📄 Liquidaciones Wolf
-        </h2>
+        
+        <div
+  style={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
+  }}
+>
+  <h2
+    style={{
+      margin: 0,
+    }}
+  >
+    📄 Liquidaciones Wolf
+  </h2>
+
+  <GenerateLiquidationButton
+    restaurantId={id}
+  />
+</div>
 
         <div
           style={{

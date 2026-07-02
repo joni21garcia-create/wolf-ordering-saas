@@ -6,200 +6,86 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export async function POST(
-  request: Request
-) {
+export async function POST(request: Request) {
   try {
-  const body =
-  await request.json();
-
-const liquidationId =
-  body.liquidationId;
-
-console.log(
-  "LIQUIDATION ID:",
-  liquidationId
-);
-
-    const {
-      restaurantId,
-      month,
-      year,
-    } = body;
+    const { restaurantId } = await request.json();
 
     if (!restaurantId) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "restaurantId requerido",
+          error: "restaurantId requerido",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
-    const existing =
-      await supabase
-        .from(
-          "liquidations"
-        )
-        .select("id")
-        .eq(
-          "restaurant_id",
-          restaurantId
-        )
-        .eq(
-          "month",
-          month
-        )
-        .eq(
-          "year",
-          year
-        )
-        .maybeSingle();
+    // Buscar la última liquidación
+    const { data: lastLiquidation, error: lastError } = await supabase
+      .from("liquidations")
+      .select("month, year")
+      .eq("restaurant_id", restaurantId)
+      .order("year", { ascending: false })
+      .order("month", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    if (existing.data) {
+    if (lastError) throw lastError;
+
+    let month: number;
+    let year: number;
+
+    if (!lastLiquidation) {
+      const today = new Date();
+
+      month = today.getMonth() + 1;
+      year = today.getFullYear();
+    } else {
+      month = lastLiquidation.month + 1;
+      year = lastLiquidation.year;
+
+      if (month > 12) {
+        month = 1;
+        year++;
+      }
+    }
+
+    // Evitar duplicados
+    const { data: existing } = await supabase
+      .from("liquidations")
+      .select("id")
+      .eq("restaurant_id", restaurantId)
+      .eq("month", month)
+      .eq("year", year)
+      .maybeSingle();
+
+    if (existing) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "La liquidación ya existe",
+          error: "La liquidación ya existe.",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
-    const startDate =
-      `${year}-${String(
-        month
-      ).padStart(
-        2,
-        "0"
-      )}-01`;
-
-    const endMonth =
-      month === 12
-        ? 1
-        : month + 1;
-
-    const endYear =
-      month === 12
-        ? year + 1
-        : year;
-
-    const endDate =
-      `${endYear}-${String(
-        endMonth
-      ).padStart(
-        2,
-        "0"
-      )}-01`;
-
-    const {
-      data: orders,
-      error,
-    } = await supabase
-      .from("orders")
-      .select("*")
-      .eq(
-        "restaurant_id",
-        restaurantId
-      )
-      .eq(
-        "status",
-        "completed"
-      )
-      .gte(
-        "created_at",
-        startDate
-      )
-      .lt(
-        "created_at",
-        endDate
-      );
-
-    if (error) {
-      throw error;
-    }
-
-    const salesTotal =
-      orders.reduce(
-        (acc, order) =>
-          acc +
-          Number(
-            order.total ||
-              0
-          ),
-        0
-      );
-
-    const wolfTotal =
-      orders.reduce(
-        (acc, order) =>
-          acc +
-          Number(
-            order.wolf_amount ||
-              0
-          ),
-        0
-      );
-
-    const restaurantTotal =
-      orders.reduce(
-        (acc, order) =>
-          acc +
-          Number(
-            order.restaurant_amount ||
-              0
-          ),
-        0
-      );
-
-    const totalOrders =
-      orders.length;
-
-    const {
-      data:
-        liquidation,
-      error:
-        insertError,
-    } = await supabase
-      .from(
-        "liquidations"
-      )
+    // Crear registro vacío
+    const { data: liquidation, error: insertError } = await supabase
+      .from("liquidations")
       .insert({
-        restaurant_id:
-          restaurantId,
-
+        restaurant_id: restaurantId,
         month,
-
         year,
-
-        sales_total:
-          salesTotal,
-
-        wolf_total:
-          wolfTotal,
-
-        restaurant_total:
-          restaurantTotal,
-
-        total_orders:
-          totalOrders,
-
-        status:
-          "pending",
+        sales_total: 0,
+        wolf_total: 0,
+        restaurant_total: 0,
+        total_orders: 0,
+        status: "pending",
       })
       .select()
       .single();
 
-    if (insertError) {
-      throw insertError;
-    }
+    if (insertError) throw insertError;
 
     return NextResponse.json({
       success: true,
@@ -211,8 +97,7 @@ console.log(
     return NextResponse.json(
       {
         success: false,
-        error:
-          "Error interno",
+        error: "Error interno",
       },
       {
         status: 500,
