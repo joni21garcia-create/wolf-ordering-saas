@@ -27,7 +27,7 @@ export default function DigitalMenu({ restaurant, addToCart }: Props) {
 
   useEffect(() => {
     loadProducts();
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -62,19 +62,15 @@ export default function DigitalMenu({ restaurant, addToCart }: Props) {
     : products;
 
   return (
-    <section style={{ marginTop: "50px" }}>
-      <h2 className="wolf-title" style={{ fontSize: isMobile ? "28px" : "36px", marginBottom: "30px" }}>
-        Menú Digital
-      </h2>
-
+    <section>
+      {/* Menú compacto: margen superior reducido */}
       <div
         style={{
           display: "flex",
-          gap: "10px",
-          marginBottom: "30px",
+          gap: "8px",
+          marginBottom: "20px",
           overflowX: "auto",
-          paddingBottom: "10px",
-          WebkitOverflowScrolling: "touch",
+          paddingBottom: "5px",
         }}
       >
         {categories.map((category) => (
@@ -82,15 +78,15 @@ export default function DigitalMenu({ restaurant, addToCart }: Props) {
             key={category}
             onClick={() => setSelectedCategory(category)}
             style={{
-              padding: "10px 16px",
-              borderRadius: "999px",
+              padding: "6px 14px",
+              borderRadius: "8px",
               border: "none",
               cursor: "pointer",
               whiteSpace: "nowrap",
-              background: selectedCategory === category ? "#f97316" : "#111",
+              background: selectedCategory === category ? "#f97316" : "rgba(255,255,255,0.05)",
               color: "#fff",
-              transition: ".3s",
-              fontSize: "14px",
+              fontSize: "13px",
+              fontWeight: 500,
             }}
           >
             {category}
@@ -98,49 +94,53 @@ export default function DigitalMenu({ restaurant, addToCart }: Props) {
         ))}
       </div>
 
-      {/* AJUSTE: He cambiado el grid para que en desktop (dentro de la col de 2/3) 
-          se vea bien en 2 columnas, aprovechando el espacio */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "20px",
+          gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(200px, 1fr))",
+          gap: "12px",
         }}
       >
         {filteredProducts.map((product) => (
           <motion.div
             key={product.id}
-            whileHover={{ y: isMobile ? 0 : -8, scale: isMobile ? 1 : 1.02 }}
-            className="glass-card wolf-shadow"
-            style={{ overflow: "hidden" }}
+            whileHover={{ scale: 1.01 }}
+            className="glass-card"
+            style={{ 
+                overflow: "hidden", 
+                borderRadius: "12px",
+                display: "flex",
+                flexDirection: "column"
+            }}
           >
             <img
               src={product.image}
               alt={product.name}
-              style={{ width: "100%", height: "180px", objectFit: "cover" }}
+              style={{ width: "100%", height: "120px", objectFit: "cover" }}
             />
 
-            <div style={{ padding: "20px" }}>
-              <h3 style={{ color: "#fff", fontSize: "18px", fontWeight: "700", marginBottom: "10px" }}>
+            <div style={{ padding: "12px", flex: 1, display: "flex", flexDirection: "column" }}>
+              <h3 style={{ fontSize: "14px", fontWeight: "600", marginBottom: "4px" }}>
                 {product.name}
               </h3>
-              <p style={{ color: "#f97316", fontWeight: "bold", fontSize: "16px" }}>
+              <p style={{ color: "#f97316", fontWeight: "700", fontSize: "14px", marginBottom: "10px" }}>
                 ${getFinalPrice(product.price, getCommissionConfig(restaurant)).toFixed(2)}
               </p>
+              
               <button
                 onClick={() => addToCart(product)}
                 className="wolf-button"
                 style={{
-                  width: "100%",
-                  marginTop: "15px",
-                  padding: "12px",
+                  marginTop: "auto",
+                  padding: "8px",
+                  fontSize: "12px",
+                  borderRadius: "8px",
                   border: "none",
-                  borderRadius: "12px",
                   cursor: "pointer",
                   fontWeight: "700",
                 }}
               >
-                Agregar al carrito
+                Agregar
               </button>
             </div>
           </motion.div>

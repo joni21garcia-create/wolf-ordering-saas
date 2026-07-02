@@ -82,10 +82,11 @@ export default function OrderClient({ restaurant }: Props) {
   if (!isMounted) return null;
 
   return (
-    <main className="wolf-order-background" style={{ minHeight: "100vh", padding: isMobile ? "20px 10px" : "120px 20px" }}>
-      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+    <main className="wolf-order-background" style={{ minHeight: "100vh", padding: isMobile ? "16px 8px" : "80px 20px" }}>
+      <div style={{ maxWidth: "1440px", margin: "0 auto" }}>
         
-        <div style={{ marginBottom: "40px" }}>
+        {/* Selector de modo (Delivery/Pickup) - Compacto */}
+        <div style={{ marginBottom: "24px", maxWidth: "600px", margin: "0 auto 24px auto" }}>
           <OrderType
             selected={orderType}
             onSelect={setOrderType}
@@ -95,32 +96,38 @@ export default function OrderClient({ restaurant }: Props) {
           />
         </div>
 
+        {/* Grid de 3 columnas */}
         <div style={{ 
             display: "grid", 
-            gridTemplateColumns: isMobile ? "1fr" : "300px minmax(0, 1fr) 350px", 
-            gap: "20px", 
+            gridTemplateColumns: isMobile ? "1fr" : "280px minmax(0, 1fr) 340px", 
+            gap: "16px", 
             alignItems: "start" 
         }}>
           
-          {/* COLUMNA 1: Mapa y Datos de Entrega */}
-          <div style={{ display: "grid", gap: "20px", position: isMobile ? "relative" : "sticky", top: "120px" }}>
-            <RestaurantMap restaurant={restaurant} />
+          {/* COLUMNA 1: Mapa + Formulario (Bloque de gestión unificado) */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", position: isMobile ? "relative" : "sticky", top: "100px" }}>
+            <div className="glass-card" style={{ overflow: "hidden", borderRadius: "16px" }}>
+              <RestaurantMap restaurant={restaurant} />
+            </div>
+            
             {orderType && (
-              <CustomerForm
-                orderType={orderType}
-                customerData={customerData}
-                setCustomerData={setCustomerData}
-              />
+              <div className="glass-card" style={{ padding: "16px", borderRadius: "16px" }}>
+                <CustomerForm
+                  orderType={orderType}
+                  customerData={customerData}
+                  setCustomerData={setCustomerData}
+                />
+              </div>
             )}
           </div>
 
-          {/* COLUMNA 2: Menú Digital (Limpio) */}
+          {/* COLUMNA 2: Menú Digital */}
           <div>
             <DigitalMenu restaurant={restaurant} addToCart={addToCart} />
           </div>
 
           {/* COLUMNA 3: Carrito */}
-          <div style={{ position: isMobile ? "relative" : "sticky", top: "120px" }}>
+          <div style={{ position: isMobile ? "relative" : "sticky", top: "100px" }}>
             <Cart
               items={cartItems}
               orderType={orderType}
