@@ -18,495 +18,130 @@ interface PaymentQR {
 
 export default function PaymentQRsPage() {
   const params = useParams();
-
-  const restaurantId =
-    params.id as string;
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [qrs, setQrs] =
-    useState<PaymentQR[]>([]);
+  const restaurantId = params.id as string;
+  const [loading, setLoading] = useState(true);
+  const [qrs, setQrs] = useState<PaymentQR[]>([]);
 
   useEffect(() => {
     loadQRs();
   }, []);
 
-  const loadQRs =
-    async () => {
-      try {
-        setLoading(true);
+  const loadQRs = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("restaurant_payment_qrs")
+        .select("*")
+        .eq("restaurant_id", restaurantId)
+        .order("sort_order", { ascending: true });
 
-        const { data, error } =
-          await supabase
-            .from(
-              "restaurant_payment_qrs"
-            )
-            .select("*")
-            .eq(
-              "restaurant_id",
-              restaurantId
-            )
-            .order(
-              "sort_order",
-              {
-                ascending: true,
-              }
-            );
+      if (error) throw error;
+      setQrs((data || []) as PaymentQR[]);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        if (error)
-          throw error;
+  const toggleQR = async (id: string, current: boolean) => {
+    const { error } = await supabase
+      .from("restaurant_payment_qrs")
+      .update({ active: !current })
+      .eq("id", id);
 
-        setQrs(
-          (data ||
-            []) as PaymentQR[]
-        );
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (error) return alert("Error actualizando QR");
+    loadQRs();
+  };
 
-  const toggleQR =
-    async (
-      id: string,
-      current: boolean
-    ) => {
-      const { error } =
-        await supabase
-          .from(
-            "restaurant_payment_qrs"
-          )
-          .update({
-            active:
-              !current,
-          })
-          .eq("id", id);
+  const deleteQR = async (id: string) => {
+    if (!confirm("¿Eliminar este QR permanentemente?")) return;
+    const { error } = await supabase
+      .from("restaurant_payment_qrs")
+      .delete()
+      .eq("id", id);
 
-      if (error) {
-        alert(
-          "Error actualizando QR"
-        );
-        return;
-      }
-
-      loadQRs();
-    };
-
-  const deleteQR =
-    async (
-      id: string
-    ) => {
-      const ok =
-        confirm(
-          "¿Eliminar este QR?"
-        );
-
-      if (!ok) return;
-
-      const { error } =
-        await supabase
-          .from(
-            "restaurant_payment_qrs"
-          )
-          .delete()
-          .eq("id", id);
-
-      if (error) {
-        alert(
-          "Error eliminando QR"
-        );
-        return;
-      }
-
-      loadQRs();
-    };
-
-  const totalQRs =
-    qrs.length;
-
-  const activeQRs =
-    qrs.filter(
-      (q) => q.active
-    ).length;
-
-  const hiddenQRs =
-    totalQRs - activeQRs;
+    if (error) return alert("Error eliminando QR");
+    loadQRs();
+  };
 
   return (
-    <main
-      style={{
-        maxWidth: "1500px",
-        margin: "0 auto",
-        padding: "40px",
-        color: "#fff",
-      }}
-    >
+    <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px", color: "#fff" }}>
       {/* Header */}
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent:
-            "space-between",
-          alignItems:
-            "center",
-          marginBottom: "40px",
-        }}
-      >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "40px" }}>
         <div>
-          <p
-            style={{
-              color: "#888",
-              marginBottom: "8px",
-            }}
-          >
-            
-            Configuración /
-            Pagos / QRs
-          </p>
-
-          <h1
-            style={{
-              fontSize: "52px",
-              fontWeight: "800",
-              margin: 0,
-            }}
-          >
-            QRs de Pago
-          </h1>
-
-          <p
-            style={{
-              color: "#888",
-              marginTop: "12px",
-            }}
-          >
-            Administra todos los
-            métodos QR del
-            restaurante.
-          </p>
+          <p style={{ color: "#888", marginBottom: "8px" }}>Configuración / Pagos / QRs</p>
+          <h1 style={{ fontSize: "48px", fontWeight: "900", margin: 0 }}>QRs de Pago</h1>
         </div>
-
-        <Link
-          href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/new`}
-        >
-          <button
-            style={{
-              background:
-                "#f97316",
-              border: "none",
-              color: "#fff",
-              padding:
-                "16px 28px",
-              borderRadius:
-                "16px",
-              cursor:
-                "pointer",
-              fontWeight:
-                "700",
-              fontSize:
-                "15px",
-            }}
-          >
-            + Nuevo QR
-          </button>
+        <Link href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/new`}>
+          <button style={buttonOrange}>+ Nuevo QR</button>
         </Link>
       </div>
 
       {/* Stats */}
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(220px,1fr))",
-          gap: "20px",
-          marginBottom: "35px",
-        }}
-      >
-        <div style={statCard}>
-          <h2>
-            {totalQRs}
-          </h2>
-
-          <p>
-            Total QRs
-          </p>
-        </div>
-
-        <div style={statCard}>
-          <h2>
-            {activeQRs}
-          </h2>
-
-          <p>
-            Activos
-          </p>
-        </div>
-
-        <div style={statCard}>
-          <h2>
-            {hiddenQRs}
-          </h2>
-
-          <p>
-            Ocultos
-          </p>
-        </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px", marginBottom: "35px" }}>
+        <StatCard title="Total QRs" value={qrs.length} />
+        <StatCard title="Activos" value={qrs.filter(q => q.active).length} />
+        <StatCard title="Ocultos" value={qrs.filter(q => !q.active).length} />
       </div>
 
-      {/* Loading */}
-
-      {loading && (
-        <div
-          style={{
-            color: "#888",
-          }}
-        >
-          Cargando QRs...
-        </div>
-      )}
-
-      {/* Empty State */}
-
-      {!loading &&
-        qrs.length === 0 && (
-          <div
-            style={{
-              background:
-                "rgba(17,17,17,.95)",
-              border:
-                "1px solid rgba(255,255,255,.08)",
-              borderRadius:
-                "24px",
-              padding:
-                "60px",
-              textAlign:
-                "center",
-            }}
-          >
-            <h2>
-              No hay QRs
-              configurados
-            </h2>
-
-            <p
-              style={{
-                color:
-                  "#888",
-              }}
-            >
-              Agrega el primer
-              QR para comenzar.
-            </p>
-
-            <Link
-              href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/new`}
-            >
-              <button
-                style={{
-                  marginTop:
-                    "20px",
-                  background:
-                    "#f97316",
-                  border:
-                    "none",
-                  color:
-                    "#fff",
-                  padding:
-                    "14px 26px",
-                  borderRadius:
-                    "14px",
-                  cursor:
-                    "pointer",
-                }}
-              >
-                Crear Primer QR
-              </button>
-            </Link>
-          </div>
-        )}
-
-      {/* Cards */}
-
-      <div
-        style={{
-          display: "grid",
-          gap: "20px",
-        }}
-      >
-        {qrs.map((qr) => (
-          <div
-            key={qr.id}
-            style={{
-              background:
-                "rgba(17,17,17,.95)",
-              border:
-                "1px solid rgba(255,255,255,.08)",
-              borderRadius:
-                "24px",
-              padding:
-                "24px",
-              display:
-                "grid",
-              gridTemplateColumns:
-                "120px 1fr auto",
-              gap: "25px",
-              alignItems:
-                "center",
-            }}
-          >
-            <img
-              src={
-                qr.qr_image_url
-              }
-              alt={qr.name}
-              style={{
-                width: "120px",
-                height:
-                  "120px",
-                objectFit:
-                  "cover",
-                borderRadius:
-                  "16px",
-              }}
-            />
-
-            <div>
-              <h3
-                style={{
-                  marginBottom:
-                    "10px",
-                }}
-              >
-                {qr.name}
-              </h3>
-
-              <p>
-                Titular:{" "}
-                {qr.account_holder ||
-                  "-"}
-              </p>
-
-              <p>
-                Cuenta:{" "}
-                {qr.account_number ||
-                  "-"}
-              </p>
-
-              <div
-                style={{
-                  marginTop:
-                    "12px",
-                }}
-              >
-                <span
-                  style={{
-                    background:
-                      qr.active
-                        ? "#22c55e20"
-                        : "#ef444420",
-                    color:
-                      qr.active
-                        ? "#22c55e"
-                        : "#ef4444",
-                    padding:
-                      "6px 12px",
-                    borderRadius:
-                      "999px",
-                    fontSize:
-                      "12px",
-                    fontWeight:
-                      "700",
-                  }}
-                >
-                  {qr.active
-                    ? "ACTIVO"
-                    : "OCULTO"}
+      {loading ? (
+        <p style={{ color: "#888" }}>Cargando QRs...</p>
+      ) : qrs.length === 0 ? (
+        <EmptyState restaurantId={restaurantId} />
+      ) : (
+        <div style={{ display: "grid", gap: "20px" }}>
+          {qrs.map((qr) => (
+            <div key={qr.id} style={cardStyle}>
+              <img src={qr.qr_image_url} alt={qr.name} style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "16px" }} />
+              
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: "0 0 5px 0" }}>{qr.name}</h3>
+                <p style={{ color: "#888", fontSize: "14px", margin: 0 }}>Titular: {qr.account_holder || "N/A"}</p>
+                <p style={{ color: "#888", fontSize: "14px", margin: 0 }}>Cuenta: {qr.account_number || "N/A"}</p>
+                <span style={{ display: "inline-block", marginTop: "10px", padding: "4px 10px", borderRadius: "99px", fontSize: "11px", fontWeight: "bold", background: qr.active ? "#22c55e20" : "#ef444420", color: qr.active ? "#22c55e" : "#ef4444" }}>
+                  {qr.active ? "ACTIVO" : "OCULTO"}
                 </span>
               </div>
-            </div>
 
-            <div
-              style={{
-                display:
-                  "flex",
-                flexDirection:
-                  "column",
-                gap: "10px",
-              }}
-            >
-              <button
-                onClick={() =>
-                  toggleQR(
-                    qr.id,
-                    qr.active
-                  )
-                }
-                style={secondaryBtn}
-              >
-                {qr.active
-                  ? "Ocultar"
-                  : "Mostrar"}
-              </button>
-
-              <button
-                onClick={() =>
-                  deleteQR(
-                    qr.id
-                  )
-                }
-                style={
-                  deleteBtn
-                }
-              >
-                Eliminar
-              </button>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button onClick={() => toggleQR(qr.id, qr.active)} style={buttonSecondary}>
+                  {qr.active ? "Ocultar" : "Mostrar"}
+                </button>
+                <button onClick={() => deleteQR(qr.id)} style={buttonDelete}>Eliminar</button>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
 
-const statCard = {
-  background:
-    "rgba(17,17,17,.95)",
-  border:
-    "1px solid rgba(255,255,255,.08)",
-  borderRadius: "24px",
-  padding: "25px",
-  textAlign:
-    "center" as const,
-};
+function StatCard({ title, value }: any) {
+  return (
+    <div style={{ ...cardStyle, textAlign: "center", display: "block" }}>
+      <h2 style={{ margin: 0, fontSize: "24px" }}>{value}</h2>
+      <p style={{ color: "#888", fontSize: "12px", textTransform: "uppercase", marginTop: "5px" }}>{title}</p>
+    </div>
+  );
+}
 
-const secondaryBtn = {
-  background:
-    "rgba(255,255,255,.05)",
-  border:
-    "1px solid rgba(255,255,255,.08)",
-  color: "#fff",
-  padding:
-    "10px 14px",
-  borderRadius:
-    "12px",
-  cursor:
-    "pointer",
-};
+function EmptyState({ restaurantId }: { restaurantId: string }) {
+  return (
+    <div style={{ ...cardStyle, textAlign: "center", padding: "60px", display: "block" }}>
+      <h2>No hay QRs configurados</h2>
+      <p style={{ color: "#888", marginBottom: "20px" }}>Crea tu primer código para recibir pagos.</p>
+      <Link href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/new`}>
+        <button style={buttonOrange}>Crear Primer QR</button>
+      </Link>
+    </div>
+  );
+}
 
-const deleteBtn = {
-  background:
-    "#ef444420",
-  border:
-    "1px solid #ef444455",
-  color: "#ef4444",
-  padding:
-    "10px 14px",
-  borderRadius:
-    "12px",
-  cursor:
-    "pointer",
-};
+// Estilos compartidos
+const cardStyle = { background: "#111", border: "1px solid rgba(255,255,255,.08)", borderRadius: "24px", padding: "20px", display: "flex", alignItems: "center", gap: "20px" };
+const buttonBase = { padding: "12px 20px", borderRadius: "12px", border: "none", cursor: "pointer", fontWeight: "700" };
+const buttonOrange = { ...buttonBase, background: "#f97316", color: "#fff" };
+const buttonSecondary = { ...buttonBase, background: "rgba(255,255,255,.05)", color: "#fff", border: "1px solid rgba(255,255,255,.1)" };
+const buttonDelete = { ...buttonBase, background: "#ef444420", color: "#ef4444", border: "1px solid #ef444455" };
