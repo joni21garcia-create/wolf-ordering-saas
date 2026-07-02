@@ -85,11 +85,11 @@ export default function OrdersPage() {
           <div>Total: ${Number(newOrderAlert.total).toFixed(2)}</div>
         </div>
       )}
-      <main style={{ minHeight: "100vh", background: "#050505", padding: "40px" }}>
+      <main style={{ minHeight: "100vh", background: "#050505", padding: "20px" }}>
         <div style={{ maxWidth: "1800px", margin: "0 auto" }}>
-          <h1 style={{ color: "#fff", fontSize: "58px", fontWeight: "900", marginBottom: "40px" }}>🐺 Wolf Operations Center</h1>
+          <h1 style={{ color: "#fff", fontSize: "40px", fontWeight: "900", marginBottom: "30px" }}>🐺 Wolf Operations Center</h1>
           
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px", marginBottom: "40px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "15px", marginBottom: "30px" }}>
             <DashboardCard title="🟡 Nuevos" value={pendingOrders.length} />
             <DashboardCard title="🟠 Cocina" value={acceptedOrders.length} />
             <DashboardCard title="🔵 Listos" value={readyOrders.length} />
@@ -98,11 +98,27 @@ export default function OrdersPage() {
             <DashboardCard title="🏪 Restaurante" value={`$${restaurantRevenue.toFixed(2)}`} />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(320px, 1fr))", gap: "20px" }}>
-            <OrderColumn title="🟡 Nuevos" orders={pendingOrders} updateStatus={updateStatus} updatePaymentStatus={updatePaymentStatus} />
-            <OrderColumn title="🟠 Cocina" orders={acceptedOrders} updateStatus={updateStatus} updatePaymentStatus={updatePaymentStatus} />
-            <OrderColumn title="🔵 Listos" orders={readyOrders} updateStatus={updateStatus} updatePaymentStatus={updatePaymentStatus} />
-            <OrderColumn title="🟢 Historial" orders={completedOrders} updateStatus={updateStatus} updatePaymentStatus={updatePaymentStatus} />
+          {/* CONTENEDOR ADAPTADO: Flexbox con scroll horizontal para móvil */}
+          <div style={{ 
+            display: "flex", 
+            flexDirection: "row", 
+            gap: "20px", 
+            overflowX: "auto", 
+            paddingBottom: "20px",
+            alignItems: "flex-start" 
+          }}>
+            <div style={{ minWidth: "320px", flex: "1" }}>
+              <OrderColumn title="🟡 Nuevos" orders={pendingOrders} updateStatus={updateStatus} updatePaymentStatus={updatePaymentStatus} />
+            </div>
+            <div style={{ minWidth: "320px", flex: "1" }}>
+              <OrderColumn title="🟠 Cocina" orders={acceptedOrders} updateStatus={updateStatus} updatePaymentStatus={updatePaymentStatus} />
+            </div>
+            <div style={{ minWidth: "320px", flex: "1" }}>
+              <OrderColumn title="🔵 Listos" orders={readyOrders} updateStatus={updateStatus} updatePaymentStatus={updatePaymentStatus} />
+            </div>
+            <div style={{ minWidth: "320px", flex: "1" }}>
+              <OrderColumn title="🟢 Historial" orders={completedOrders} updateStatus={updateStatus} updatePaymentStatus={updatePaymentStatus} />
+            </div>
           </div>
         </div>
       </main>
@@ -112,9 +128,9 @@ export default function OrdersPage() {
 
 function DashboardCard({ title, value }: any) {
   return (
-    <div style={{ background: "#111", border: "1px solid rgba(255,255,255,.08)", borderRadius: "30px", padding: "24px" }}>
-      <p style={{ color: "#888", fontSize: "14px", textTransform: "uppercase" }}>{title}</p>
-      <h2 style={{ color: "#fff", fontSize: "34px", fontWeight: "800" }}>{value}</h2>
+    <div style={{ background: "#111", border: "1px solid rgba(255,255,255,.08)", borderRadius: "20px", padding: "20px" }}>
+      <p style={{ color: "#888", fontSize: "12px", textTransform: "uppercase" }}>{title}</p>
+      <h2 style={{ color: "#fff", fontSize: "28px", fontWeight: "800", marginTop: "5px" }}>{value}</h2>
     </div>
   );
 }
@@ -122,17 +138,17 @@ function DashboardCard({ title, value }: any) {
 function OrderColumn({ title, orders, updateStatus, updatePaymentStatus }: any) {
   return (
     <div>
-      <h2 style={{ color: "#fff", marginBottom: "20px" }}>{title}</h2>
+      <h2 style={{ color: "#fff", marginBottom: "20px", fontSize: "20px" }}>{title}</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {orders.map((order: any) => (
           <div key={order.id} style={{ background: "#111", border: "1px solid rgba(255,255,255,.08)", borderRadius: "22px", padding: "20px", color: "#fff" }}>
-            <h3>{order.tracking_code}</h3>
-            <p>👤 {order.customer_name}</p>
-            <p>📞 {order.customer_phone}</p>
-            <p>💰 Total: ${Number(order.total).toFixed(2)}</p>
-            <p style={{ color: "#f97316" }}>🐺 Wolf: ${Number(order.wolf_amount || 0).toFixed(2)}</p>
-            <p style={{ color: "#22c55e" }}>🏪 Rest: ${Number(order.restaurant_amount || 0).toFixed(2)}</p>
-            <p>💳 {order.payment_status === "paid" ? "🟢 Pagado" : "🟡 Pendiente"}</p>
+            <h3 style={{ margin: "0 0 10px 0" }}>{order.tracking_code}</h3>
+            <p style={{ margin: "4px 0" }}>👤 {order.customer_name}</p>
+            <p style={{ margin: "4px 0" }}>📞 {order.customer_phone}</p>
+            <p style={{ margin: "4px 0" }}>💰 Total: ${Number(order.total).toFixed(2)}</p>
+            <p style={{ color: "#f97316", margin: "4px 0" }}>🐺 Wolf: ${Number(order.wolf_amount || 0).toFixed(2)}</p>
+            <p style={{ color: "#22c55e", margin: "4px 0" }}>🏪 Rest: ${Number(order.restaurant_amount || 0).toFixed(2)}</p>
+            <p style={{ margin: "4px 0" }}>💳 {order.payment_status === "paid" ? "🟢 Pagado" : "🟡 Pendiente"}</p>
             
             {order.payment_status !== "paid" && <button onClick={() => updatePaymentStatus(order.id, "paid")} style={buttonGreen}>Confirmar Pago</button>}
             
