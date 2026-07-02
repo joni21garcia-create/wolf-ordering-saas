@@ -10,21 +10,15 @@ import InstallProvider from "@/components/pwa/InstallProvider";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-
+// Esta es la configuración ideal para que el móvil respete tu diseño responsivo
+// y se comporte como una App Nativa.
 export const viewport: Viewport = {
   themeColor: "#050505",
-
   width: "device-width",
-
   initialScale: 1,
-
-  minimumScale: 0.8,
-
-  maximumScale: 2,
-
-  userScalable: true,
-
-  viewportFit: "cover",
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover", // Esto asegura que la app ocupe toda la pantalla, incluyendo notch
 };
 
 export const metadata: Metadata = {

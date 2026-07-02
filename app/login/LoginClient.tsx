@@ -315,7 +315,7 @@ style={{
 
   gap: "6px",
 
-  marginBottom: "18px",
+  marginBottom: "18px"
 }}
     >
   
@@ -419,17 +419,18 @@ style={{
                   "radial-gradient(circle, rgba(249,115,22,.25), transparent 70%)",
               }}
             >
-              <Image
-                src="/wolfloginv2.png"
-                alt="Wolf Ordering"
-                width={370}
-                height={370}
-                priority
-                style={{
-                  objectFit:
-                    "contain",
-                }}
-              />
+<Image
+  src="/wolfloginv2.png"
+  alt="Wolf Ordering"
+  width={370}
+  height={370}
+  priority
+  style={{
+    width: "370px",
+    height: "auto",
+    objectFit: "contain",
+  }}
+/>
             </div>
           </div>
 

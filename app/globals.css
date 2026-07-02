@@ -426,3 +426,22 @@ main {
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
+/* --- Ajustes finales para comportamiento de App Nativa --- */
+
+/* 1. Elimina el rebote elástico (scroll bounce) para que la app se sienta sólida */
+html, body {
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
+  height: 100%;
+}
+
+/* 2. Elimina el destello gris/azul al tocar botones */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 3. Asegura que el diseño respete el notch y la barra inferior de iPhone/Android */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
