@@ -1,6 +1,5 @@
 .gallerySection {
- 
-  padding: 120px 20px;
+  padding: 60px 20px; /* Reduje el padding de 120px a 60px para que no sea tan alto en móvil */
 }
 
 .container {
@@ -10,24 +9,22 @@
 
 .header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 }
-
-
 
 .grid {
   display: grid;
-
-  grid-template-columns:
-    repeat(3, 1fr);
-
-  gap: 20px;
+  /* Esto hace la magia: en pantallas pequeñas (móvil) pone 1 columna, 
+     en tablets 2, y en desktop 3 */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
 }
+
 .card {
   position: relative;
   overflow: hidden;
   border-radius: 24px;
-  height: 320px;
+  height: 280px; /* Un poco más compacto para móvil */
   cursor: pointer;
 }
 
@@ -35,9 +32,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-
-  transition:
-    transform .7s ease;
+  transition: transform .7s ease;
 }
 
 .card:hover img {
@@ -47,16 +42,15 @@
 .overlay {
   position: absolute;
   inset: 0;
-
-  background:
-    linear-gradient(
-      to top,
-      rgba(0,0,0,.8),
-      rgba(0,0,0,.1)
-    );
-
+  background: linear-gradient(to top, rgba(0,0,0,.8), rgba(0,0,0,.1));
   display: flex;
   align-items: end;
+  padding: 20px;
+}
 
-  padding: 25px;
+/* Ajuste adicional para pantallas muy pequeñas */
+@media (max-width: 480px) {
+  .card {
+    height: 220px; /* Imágenes más cortas en celulares pequeños */
+  }
 }
