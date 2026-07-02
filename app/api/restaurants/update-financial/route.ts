@@ -38,6 +38,41 @@ export async function POST(
       );
     }
 
+if (
+  commissionMode === "custom"
+) {
+  if (
+    commissionType !== "customer" &&
+    commissionType !== "restaurant"
+  ) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Tipo de comisión inválido",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+
+  if (
+    Number(commissionPercentage) < 0 ||
+    Number(commissionPercentage) > 100
+  ) {
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          "La comisión debe estar entre 0 y 100",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+}
+
     const updateData: any = {
       commission_mode:
         commissionMode,
@@ -50,8 +85,8 @@ export async function POST(
       updateData.commission_type =
         commissionType;
 
-      updateData.commission_percentage =
-        commissionPercentage;
+updateData.commission_percentage =
+  Number(commissionPercentage) || 0;
 
       updateData.commission_active =
         commissionActive;

@@ -85,11 +85,13 @@ useEffect(() => {
       "wolf_cart"
     );
 
-  if (savedCart) {
-    setProducts(
-      JSON.parse(savedCart)
-    );
-  }
+if (savedCart) {
+  const cart = JSON.parse(savedCart);
+
+  console.log("CARRITO CHECKOUT:", cart);
+
+  setProducts(cart);
+}
 
   const savedCustomer =
     localStorage.getItem(
@@ -157,7 +159,7 @@ const loadRestaurant =
         "id",
         restaurantId
       )
-      .single();
+      .maybeSingle();
 
   if (!error) {
   setRestaurant(
@@ -511,39 +513,29 @@ router.push(
           Resumen del Pedido
         </h3>
 
-        {products.map(
-          (product, index) => (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                justifyContent:
-                  "space-between",
-                marginBottom: "12px",
-                color:
-                  "rgba(255,255,255,.8)",
-              }}
-            >
-            $
-{(
-  (
-    product.display_price ||
-    product.price
-  ) *
-  product.quantity
-).toFixed(2)}
+       {products.map((product, index) => (
+  <div
+    key={index}
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      marginBottom: "12px",
+      color: "rgba(255,255,255,.8)",
+    }}
+  >
+    <span>
+      {product.name} x {product.quantity}
+    </span>
 
-
-              <span>
-                $
-                {(
-                  product.price *
-                  product.quantity
-                ).toFixed(2)}
-              </span>
-            </div>
-          )
-        )}
+    <span>
+      $
+      {(
+        (product.display_price ?? product.price) *
+        product.quantity
+      ).toFixed(2)}
+    </span>
+  </div>
+))}
 
         <hr
           style={{

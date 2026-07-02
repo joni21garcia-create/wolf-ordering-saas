@@ -66,39 +66,50 @@ export async function POST(request: Request) {
     ).padStart(2, "0")}-01`;
 
     // Buscar únicamente pedidos del mes
-    const {
-      data: orders,
-      error: ordersError,
-    } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("restaurant_id", liquidation.restaurant_id)
-      .eq("status", "completed")
-      .gte("created_at", startDate)
-      .lt("created_at", endDate);
+   const {
+  data: orders,
+  error: ordersError,
+} = await supabase
+  .from("orders")
+  .select("*")
+  .eq("restaurant_id", liquidation.restaurant_id)
+  .eq("status", "completed")
+  .not("total", "is", null)
+  .gte("created_at", startDate)
+  .lt("created_at", endDate);
 
     if (ordersError) {
       throw ordersError;
     }
 
-    const salesTotal = orders.reduce(
-      (acc, order) =>
-        acc + Number(order.total || 0),
-      0
-    );
+const safeOrders = orders || [];
 
-    const wolfTotal = orders.reduce(
-      (acc, order) =>
-        acc + Number(order.wolf_amount || 0),
-      0
-    );
+   const salesTotal = Number(
+  orders.reduce(
+    (acc, order) =>
+      acc +
+      (Number(order.total) || 0),
+    0
+  ).toFixed(2)
+);
 
-    const restaurantTotal = orders.reduce(
-      (acc, order) =>
-        acc +
-        Number(order.restaurant_amount || 0),
-      0
-    );
+const wolfTotal = Number(
+  orders.reduce(
+    (acc, order) =>
+      acc +
+      (Number(order.wolf_amount) || 0),
+    0
+  ).toFixed(2)
+);
+
+const restaurantTotal = Number(
+  orders.reduce(
+    (acc, order) =>
+      acc +
+      (Number(order.restaurant_amount) || 0),
+    0
+  ).toFixed(2)
+);
 
     const totalOrders = orders.length;
 

@@ -20,12 +20,18 @@ export default async function FinancialPage({
 }: Props) {
   const { id } = await params;
 
-  const { data: restaurant } =
-    await supabase
-      .from("restaurants")
-      .select("*")
-      .eq("id", id)
-      .single();
+const { data: restaurant } =
+  await supabase
+    .from("restaurants")
+    .select(`
+      id,
+      commission_percentage,
+      commission_mode,
+      commission_type,
+      commission_active
+    `)
+    .eq("id", id)
+    .maybeSingle();
 
   if (!restaurant) {
     return (
@@ -42,6 +48,30 @@ export default async function FinancialPage({
       </div>
     );
   }
+
+const examplePrice = 10;
+
+const commission =
+  Number(
+    restaurant.commission_percentage
+  ) || 0;
+
+const customerPrice =
+  Number(
+    (
+      examplePrice *
+      (1 + commission / 100)
+    ).toFixed(2)
+  );
+
+const wolfAmount =
+  Number(
+    (
+      examplePrice *
+      (commission / 100)
+    ).toFixed(2)
+  );
+
 
 return (
   <PermissionGuard permission="financial">
@@ -301,45 +331,38 @@ return (
             📊 Vista previa financiera
           </h3>
 
-          <div
-            style={{
-              color: "#d1d5db",
-              lineHeight: "2",
-            }}
-          >
-            Producto ejemplo:
-            <strong>
-              {" "}
-              $10.00
-            </strong>
+  <div
+  style={{
+    color: "#d1d5db",
+    lineHeight: "2",
+  }}
+>
+  Producto ejemplo:
+  <strong>
+    {` $${examplePrice.toFixed(2)}`}
+  </strong>
 
-            <br />
+  <br />
 
-            Si el cliente paga una
-            comisión del 5% verá:
-            <strong>
-              {" "}
-              $10.50
-            </strong>
+  Si el cliente paga una comisión del {commission}% verá:
+  <strong>
+    {` $${customerPrice.toFixed(2)}`}
+  </strong>
 
-            <br />
+  <br />
 
-            Si el restaurante paga la
-            comisión del 5% el cliente
-            verá:
-            <strong>
-              {" "}
-              $10.00
-            </strong>
+  Si el restaurante paga la comisión del {commission}% el cliente verá:
+  <strong>
+    {` $${examplePrice.toFixed(2)}`}
+  </strong>
 
-            <br />
+  <br />
 
-            Wolf recibiría:
-            <strong>
-              {" "}
-              $0.50
-            </strong>
-          </div>
+  Wolf recibiría:
+  <strong>
+    {` $${wolfAmount.toFixed(2)}`}
+  </strong>
+</div>
         </div>
       </div>
      </main>

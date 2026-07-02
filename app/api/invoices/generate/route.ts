@@ -38,21 +38,22 @@ export async function POST(
     );
 
     const {
-      data: liquidation,
-      error: liquidationError,
-    } = await supabase
-      .from("liquidations")
-      .select("*")
-      .eq(
-        "id",
-        liquidationId
-      )
-      .single();
+  data: liquidation,
+  error: liquidationError,
+} = await supabase
+  .from("liquidations")
+  .select("*")
+  .eq(
+    "id",
+    liquidationId
+  )
+  .maybeSingle();
 
-    if (
+  if (
       liquidationError ||
       !liquidation
     ) {
+
       return NextResponse.json(
         {
           success: false,
@@ -64,6 +65,25 @@ export async function POST(
         }
       );
     }
+
+const { data: restaurant } =
+  await supabase
+    .from("restaurants")
+    .select(`
+      name,
+      business_name,
+      tax_id,
+      email,
+      phone,
+      address
+    `)
+    .eq(
+      "id",
+      liquidation.restaurant_id
+    )
+    .maybeSingle();
+
+    
 
     /*
  * VALIDAR SI YA EXISTE
@@ -117,7 +137,7 @@ if (existingInvoice) {
           invoiceNumber,
 
         total:
-          liquidation.wolf_total,
+          Number(liquidation.wolf_total) || 0,
 
         status:
           "generated",
@@ -126,7 +146,7 @@ if (existingInvoice) {
           null,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (invoiceError) {
       return NextResponse.json(
@@ -221,7 +241,7 @@ try {
     path.join(
       process.cwd(),
       "public",
-      "wolf-logo.png"
+      "wolfweb.png"
     );
 
   const logoBytes =
@@ -288,6 +308,28 @@ page.drawText(
   }
 );
 
+page.drawText(
+  "www.wolfordering.com",
+  {
+    x: 170,
+    y: height - 130,
+    size: 11,
+    font,
+    color: rgb(0.85, 0.85, 0.85),
+  }
+);
+
+page.drawText(
+  "support@wolfordering.com",
+  {
+    x: 170,
+    y: height - 148,
+    size: 11,
+    font,
+    color: rgb(0.85, 0.85, 0.85),
+  }
+);
+
 /*
 |--------------------------------------------------------------------------
 | INVOICE INFO
@@ -317,11 +359,10 @@ page.drawText(
 );
 
 page.drawText(
-  `Liquidation ID: ${liquidation.id}`,
+  `Liquidation #: ${liquidation.id.slice(0, 8).toUpperCase()}`,
   {
     x: 50,
-    y:
-      height - 300,
+    y: height - 300,
     size: 12,
     font,
   }
@@ -347,12 +388,33 @@ page.drawText(
 );
 
 page.drawText(
-  `Restaurant ID: ${liquidation.restaurant_id}`,
+  restaurant?.business_name ||
+  restaurant?.name ||
+  "Restaurant",
   {
     x: 50,
-    y:
-      height - 390,
-    size: 13,
+    y: height - 390,
+    size: 15,
+    font: fontBold,
+  }
+);
+
+page.drawText(
+  restaurant?.address || "",
+  {
+    x: 50,
+    y: height - 415,
+    size: 12,
+    font,
+  }
+);
+
+page.drawText(
+  restaurant?.email || "",
+  {
+    x: 50,
+    y: height - 438,
+    size: 12,
     font,
   }
 );
@@ -361,12 +423,12 @@ page.drawText(
   `Period: ${liquidation.month}/${liquidation.year}`,
   {
     x: 50,
-    y:
-      height - 420,
+    y: height - 465,
     size: 13,
     font,
   }
 );
+
 
 /*
 |--------------------------------------------------------------------------
@@ -375,7 +437,7 @@ page.drawText(
 */
 
 const cardsY =
-  height - 560;
+  height - 620;
 
 const cardWidth =
   180;
@@ -433,24 +495,24 @@ function drawCard(
 drawCard(
   50,
   "TOTAL SALES",
-  `$${Number(
-    liquidation.sales_total
+  `$${(
+    Number(liquidation.sales_total) || 0
   ).toFixed(2)}`
 );
 
 drawCard(
   260,
   "WOLF FEE",
-  `$${Number(
-    liquidation.wolf_total
+  `$${(
+    Number(liquidation.wolf_total) || 0
   ).toFixed(2)}`
 );
 
 drawCard(
   470,
   "RESTAURANT",
-  `$${Number(
-    liquidation.restaurant_total
+  `$${(
+    Number(liquidation.restaurant_total) || 0
   ).toFixed(2)}`
 );
 
@@ -467,7 +529,7 @@ drawCard(
 */
 
 const tableY =
-  height - 760;
+  height - 820;
 
 page.drawRectangle({
   x: 50,
@@ -515,15 +577,15 @@ page.drawText(
 const rows = [
   [
     "Gross Sales",
-    liquidation.sales_total,
+    Number(liquidation.sales_total) || 0,
   ],
   [
     "Wolf Commission",
-    liquidation.wolf_total,
+    Number(liquidation.wolf_total) || 0,
   ],
   [
     "Restaurant Revenue",
-    liquidation.restaurant_total,
+    Number(liquidation.restaurant_total) || 0,
   ],
 ];
 
@@ -726,17 +788,15 @@ page.drawText(
      * 6. ACTUALIZAR LIQUIDACION
      */
 
-    await supabase
-      .from("liquidations")
-      .update({
-        invoice_url:
-          invoice.id,
-      })
-      .eq(
-        "id",
-        liquidation.id
-      );
-
+await supabase
+  .from("liquidations")
+  .update({
+    invoice_url: pdfUrl,
+  })
+  .eq(
+    "id",
+    liquidation.id
+  );
     return NextResponse.json({
       success: true,
       invoice,

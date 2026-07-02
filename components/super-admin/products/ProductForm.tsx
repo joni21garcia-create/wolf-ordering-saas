@@ -205,23 +205,24 @@ const uploadImage =
           return;
         }
 
-        if (
-          !form.name
-        ) {
-          alert(
-            "Ingrese un nombre"
-          );
-          return;
-        }
+if (
+  !form.name.trim()
+) {
+  alert(
+    "Ingrese un nombre"
+  );
+  return;
+}
 
-        if (
-          !form.price
-        ) {
-          alert(
-            "Ingrese un precio"
-          );
-          return;
-        }
+if (
+  Number.isNaN(Number(form.price)) ||
+  Number(form.price) <= 0
+) {
+  alert(
+    "Ingrese un precio válido"
+  );
+  return;
+}
 
         const payload = {
           restaurant_id:
@@ -230,26 +231,24 @@ const uploadImage =
           category_id:
             form.category_id,
 
-          name:
-            form.name,
+name:
+  form.name.trim(),
 
-          slug: form.name
-            .toLowerCase()
-            .replaceAll(
-              " ",
-              "-"
-            ),
+slug: form.name
+  .trim()
+  .toLowerCase()
+  .replace(/\s+/g, "-")
+  .replace(/[^a-z0-9-]/g, ""),
 
-          description:
-            form.description,
+description:
+  form.description.trim(),
 
           image_url:
             form.image_url,
 
-          price:
-            Number(
-              form.price
-            ),
+price: Number(
+  Number(form.price).toFixed(2)
+),
 
           available:
             form.available,
@@ -474,25 +473,24 @@ const uploadImage =
   </>
 )}
 
-          <input
-            type="text"
-            step="0.01"
-            placeholder="Precio"
-            value={
-              form.price
-            }
-            onChange={(e) =>
-              setForm({
-                ...form,
-               price:
-  e.target.value,
-              })
-            }
-            style={{
-              padding:
-                "12px",
-            }}
-          />
+<input
+  type="number"
+  step="0.01"
+  placeholder="Precio"
+  value={
+    form.price
+  }
+  onChange={(e) =>
+    setForm({
+      ...form,
+      price:
+        e.target.value,
+    })
+  }
+  style={{
+    padding: "12px",
+  }}
+/>
 
           <label
             style={{

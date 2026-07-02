@@ -4,7 +4,12 @@ import {
   isRestaurantOpen,
 } from "@/lib/restaurant-hours";
 import { sendPush } from "@/lib/push/sendPush";
-
+import {
+  getCommissionAmount,
+  getRestaurantAmount,
+  getCommissionConfig,
+  getOrderTotal,
+} from "@/lib/configuration/pricing";
 
 
 const supabase = createClient(
@@ -101,57 +106,58 @@ const { data: restaurant } =
     .eq("id", restaurant_id)
     .maybeSingle();
 
-let commission_amount = 0;
+const commissionConfig =
+  getCommissionConfig(
+    restaurant
+  );
 
-let restaurant_amount =
-  subtotal;
+/*
+subtotal que llega del checkout:
 
-let wolf_amount = 0;
+- customer:
+  YA incluye comisión.
 
-let final_total =
-  total;
+- restaurant:
+  Es precio base.
+*/
 
-if (
-  restaurant?.commission_active
-) {
-  const percentage =
-    Number(
-      restaurant.commission_percentage
-    ) || 0;
+const percentage =
+  Number(
+    commissionConfig.commission_percentage
+  ) || 0;
 
-  commission_amount =
-    (subtotal * percentage) / 100;
-
-  wolf_amount =
-    commission_amount;
-
-  if (
-    restaurant.commission_type ===
+const baseSubtotal =
+  commissionConfig.commission_active &&
+  commissionConfig.commission_type ===
     "customer"
-  ) {
-    final_total =
-      subtotal +
-      delivery_fee +
-      commission_amount;
+    ? Number(
+        (
+          subtotal /
+          (1 + percentage / 100)
+        ).toFixed(2)
+      )
+    : subtotal;
 
-    restaurant_amount =
-      subtotal;
-  }
+const commission_amount =
+  getCommissionAmount(
+    baseSubtotal,
+    commissionConfig
+  );
 
-  if (
-    restaurant.commission_type ===
-    "restaurant"
-  ) {
-    restaurant_amount =
-      subtotal -
-      commission_amount;
+const restaurant_amount =
+  getRestaurantAmount(
+    baseSubtotal,
+    commissionConfig
+  );
 
-    final_total =
-      subtotal +
-      delivery_fee;
-  }
-}
+const wolf_amount =
+  commission_amount;
 
+const final_total =
+  getOrderTotal(
+    subtotal,
+    delivery_fee
+  );
 
     // Validaciones básicas
 
