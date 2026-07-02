@@ -27,7 +27,6 @@ export default function DigitalMenu({ restaurant, addToCart }: Props) {
 
   useEffect(() => {
     loadProducts();
-    // Detector de pantalla para estilos responsivos
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -68,13 +67,12 @@ export default function DigitalMenu({ restaurant, addToCart }: Props) {
         Menú Digital
       </h2>
 
-      {/* Selector de categorías: Scroll horizontal en móvil */}
       <div
         style={{
           display: "flex",
           gap: "10px",
           marginBottom: "30px",
-          overflowX: "auto", // Habilita scroll si hay muchas categorías
+          overflowX: "auto",
           paddingBottom: "10px",
           WebkitOverflowScrolling: "touch",
         }}
@@ -88,7 +86,7 @@ export default function DigitalMenu({ restaurant, addToCart }: Props) {
               borderRadius: "999px",
               border: "none",
               cursor: "pointer",
-              whiteSpace: "nowrap", // Evita que el texto se rompa
+              whiteSpace: "nowrap",
               background: selectedCategory === category ? "#f97316" : "#111",
               color: "#fff",
               transition: ".3s",
@@ -100,11 +98,12 @@ export default function DigitalMenu({ restaurant, addToCart }: Props) {
         ))}
       </div>
 
-      {/* Grid de productos: minmax más pequeño para móvil */}
+      {/* AJUSTE: He cambiado el grid para que en desktop (dentro de la col de 2/3) 
+          se vea bien en 2 columnas, aprovechando el espacio */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(280px, 1fr))",
+          gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(220px, 1fr))",
           gap: "20px",
         }}
       >
@@ -118,14 +117,14 @@ export default function DigitalMenu({ restaurant, addToCart }: Props) {
             <img
               src={product.image}
               alt={product.name}
-              style={{ width: "100%", height: isMobile ? "180px" : "220px", objectFit: "cover" }}
+              style={{ width: "100%", height: "180px", objectFit: "cover" }}
             />
 
             <div style={{ padding: "20px" }}>
-              <h3 style={{ color: "#fff", fontSize: "20px", fontWeight: "700", marginBottom: "10px" }}>
+              <h3 style={{ color: "#fff", fontSize: "18px", fontWeight: "700", marginBottom: "10px" }}>
                 {product.name}
               </h3>
-              <p style={{ color: "#f97316", fontWeight: "bold", fontSize: "18px" }}>
+              <p style={{ color: "#f97316", fontWeight: "bold", fontSize: "16px" }}>
                 ${getFinalPrice(product.price, getCommissionConfig(restaurant)).toFixed(2)}
               </p>
               <button

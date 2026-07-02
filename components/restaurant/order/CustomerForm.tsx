@@ -24,7 +24,6 @@ export default function CustomerForm({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Mantenemos tu lógica de validación igual
   const nameError = customerData.name && customerData.name.trim().length < 3;
   const phoneError = customerData.phone && customerData.phone.replace(/\D/g, "").length < 10;
   const addressError = orderType === "delivery" && customerData.address && customerData.address.trim().length < 5;
@@ -32,50 +31,47 @@ export default function CustomerForm({
 
   if (!orderType) return null;
 
-  // Estilos base ajustables
+  // Ajuste: Reducción leve de padding para adaptarse mejor a la columna de 2/3
   const inputStyle = {
     width: "100%",
-    padding: isMobile ? "14px" : "18px", // Padding ligeramente menor en móvil
-    borderRadius: "14px",
+    padding: "14px", 
+    borderRadius: "12px",
     border: "1px solid rgba(255,255,255,.08)",
     background: "rgba(255,255,255,.05)",
     color: "#fff",
     outline: "none",
-    fontSize: "16px", // Asegura 16px para evitar zoom automático de iOS en inputs
+    fontSize: "15px",
   };
 
   return (
     <div
       style={{
-        marginTop: "30px",
-        padding: isMobile ? "20px" : "40px", // Padding más compacto en móvil
+        marginTop: "20px",
+        marginBottom: "20px",
+        padding: "24px",
         borderRadius: "24px",
-        background: "rgba(255,255,255,.04)",
-        backdropFilter: "blur(20px)",
+        background: "rgba(255,255,255,.03)",
         border: "1px solid rgba(255,255,255,.08)",
+        backdropFilter: "blur(20px)",
       }}
     >
-      <h2 style={{ color: "#fff", marginBottom: "10px", fontSize: isMobile ? "22px" : "28px" }}>
+      <h2 style={{ color: "#fff", marginBottom: "8px", fontSize: "20px", fontWeight: "700" }}>
         {orderType === "delivery" ? "🚚 Datos de Entrega" : "🛍️ Datos para Retiro"}
       </h2>
 
-      <p style={{ color: "rgba(255,255,255,.65)", marginBottom: "25px", fontSize: "14px" }}>
+      <p style={{ color: "rgba(255,255,255,.5)", marginBottom: "20px", fontSize: "13px" }}>
         {orderType === "delivery"
           ? "Completa la información para recibir tu pedido."
           : "Completa tus datos para retirar en el local."}
       </p>
 
-      <div style={{ display: "grid", gap: "15px" }}>
-        {/* Nombre */}
+      <div style={{ display: "grid", gap: "12px" }}>
         <input
           placeholder="Nombre completo *"
           value={customerData.name || ""}
           onChange={(e) => setCustomerData({ ...customerData, name: e.target.value })}
           style={{ ...inputStyle, border: nameError ? "1px solid #ef4444" : inputStyle.border }}
         />
-        {nameError && <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "-10px" }}>❌ Nombre inválido</span>}
-
-        {/* Teléfono */}
         <input
           type="tel"
           placeholder="Teléfono *"
@@ -83,17 +79,7 @@ export default function CustomerForm({
           onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
           style={{ ...inputStyle, border: phoneError ? "1px solid #ef4444" : inputStyle.border }}
         />
-        {phoneError && <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "-10px" }}>❌ Teléfono inválido</span>}
-
-        {/* Correo */}
-        <input
-          type="email"
-          placeholder="Correo electrónico (opcional)"
-          value={customerData.email || ""}
-          onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
-          style={inputStyle}
-        />
-
+        
         {orderType === "delivery" && (
           <>
             <input
@@ -102,27 +88,17 @@ export default function CustomerForm({
               onChange={(e) => setCustomerData({ ...customerData, address: e.target.value })}
               style={{ ...inputStyle, border: addressError ? "1px solid #ef4444" : inputStyle.border }}
             />
-            {addressError && <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "-10px" }}>❌ Dirección inválida</span>}
-
             <input
               placeholder="Sector *"
               value={customerData.zone || ""}
               onChange={(e) => setCustomerData({ ...customerData, zone: e.target.value })}
               style={{ ...inputStyle, border: zoneError ? "1px solid #ef4444" : inputStyle.border }}
             />
-            {zoneError && <span style={{ color: "#ef4444", fontSize: "12px", marginTop: "-10px" }}>❌ Sector inválido</span>}
-
             <textarea
-              placeholder="Referencia: Casa blanca junto a la farmacia"
+              placeholder="Referencia (opcional)"
               value={customerData.reference || ""}
               onChange={(e) => setCustomerData({ ...customerData, reference: e.target.value })}
-              style={{ ...inputStyle, minHeight: "80px" }}
-            />
-            <textarea
-              placeholder="Instrucciones: Tocar timbre..."
-              value={customerData.instructions || ""}
-              onChange={(e) => setCustomerData({ ...customerData, instructions: e.target.value })}
-              style={{ ...inputStyle, minHeight: "80px" }}
+              style={{ ...inputStyle, minHeight: "60px", resize: "none" }}
             />
           </>
         )}

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 
-// Asegúrate de que estas rutas sean exactamente las correctas en tu proyecto
 import OrderType from "@/components/restaurant/order/OrderType";
 import CustomerForm from "@/components/restaurant/order/CustomerForm";
 import RestaurantMap from "@/components/restaurant/order/RestaurantMap"; 
@@ -25,7 +24,6 @@ interface CartItem {
 }
 
 export default function OrderClient({ restaurant }: Props) {
-  // Estado para prevenir errores de hidratación y manejar el tamaño de pantalla
   const [isMobile, setIsMobile] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -39,7 +37,6 @@ export default function OrderClient({ restaurant }: Props) {
     checkMobile();
     window.addEventListener("resize", checkMobile);
     
-    // Carga de LocalStorage
     const savedCart = localStorage.getItem("wolf_cart");
     if (savedCart) setCartItems(JSON.parse(savedCart));
     
@@ -52,7 +49,6 @@ export default function OrderClient({ restaurant }: Props) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Guardar en LocalStorage
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem("wolf_cart", JSON.stringify(cartItems));
@@ -61,7 +57,6 @@ export default function OrderClient({ restaurant }: Props) {
     }
   }, [cartItems, customerData, orderType, isMounted]);
 
-  // Lógica de AddToCart y otras funciones se mantienen igual...
   const addToCart = (product: any) => {
     setCartItems((prev) => {
       const existing = prev.find((item) => item.id === product.id);
@@ -87,30 +82,10 @@ export default function OrderClient({ restaurant }: Props) {
   if (!isMounted) return null;
 
   return (
-    <main
-      className="wolf-order-background"
-      style={{ minHeight: "100vh", padding: isMobile ? "80px 15px" : "120px 20px" }}
-    >
-      <div
-        style={{
-          maxWidth: "1700px",
-          margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "320px minmax(0,1fr) 380px",
-          gap: isMobile ? "20px" : "40px",
-          alignItems: "start",
-        }}
-      >
-        {/* MAPA */}
-        <div style={{ position: isMobile ? "relative" : "sticky", top: "120px" }}>
-          <RestaurantMap restaurant={restaurant} />
-        </div>
-
-        {/* MENU */}
-        <div>
-          <h1 className="wolf-title" style={{ fontSize: isMobile ? "32px" : "48px", marginBottom: "50px", fontWeight: 700 }}>
-            Realizar Pedido
-          </h1>
+    <main className="wolf-order-background" style={{ minHeight: "100vh", padding: isMobile ? "20px 10px" : "120px 20px" }}>
+      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+        
+        <div style={{ marginBottom: "40px" }}>
           <OrderType
             selected={orderType}
             onSelect={setOrderType}
@@ -118,26 +93,43 @@ export default function OrderClient({ restaurant }: Props) {
             pickupEnabled={restaurant.deliverySettings?.pickup_enabled}
             deliverySettings={restaurant.deliverySettings}
           />
-          {orderType && (
-            <CustomerForm
-              orderType={orderType}
-              customerData={customerData}
-              setCustomerData={setCustomerData}
-            />
-          )}
-          <DigitalMenu restaurant={restaurant} addToCart={addToCart} />
         </div>
 
-        {/* CARRITO */}
-        <div style={{ position: isMobile ? "relative" : "sticky", top: "120px" }}>
-          <Cart
-            items={cartItems}
-            orderType={orderType}
-            increaseQuantity={increaseQuantity}
-            decreaseQuantity={decreaseQuantity}
-            removeItem={removeItem}
-            deliverySettings={restaurant.deliverySettings}
-          />
+        <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: isMobile ? "1fr" : "300px minmax(0, 1fr) 350px", 
+            gap: "20px", 
+            alignItems: "start" 
+        }}>
+          
+          {/* COLUMNA 1: Mapa y Datos de Entrega */}
+          <div style={{ display: "grid", gap: "20px", position: isMobile ? "relative" : "sticky", top: "120px" }}>
+            <RestaurantMap restaurant={restaurant} />
+            {orderType && (
+              <CustomerForm
+                orderType={orderType}
+                customerData={customerData}
+                setCustomerData={setCustomerData}
+              />
+            )}
+          </div>
+
+          {/* COLUMNA 2: Menú Digital (Limpio) */}
+          <div>
+            <DigitalMenu restaurant={restaurant} addToCart={addToCart} />
+          </div>
+
+          {/* COLUMNA 3: Carrito */}
+          <div style={{ position: isMobile ? "relative" : "sticky", top: "120px" }}>
+            <Cart
+              items={cartItems}
+              orderType={orderType}
+              increaseQuantity={increaseQuantity}
+              decreaseQuantity={decreaseQuantity}
+              removeItem={removeItem}
+              deliverySettings={restaurant.deliverySettings}
+            />
+          </div>
         </div>
       </div>
     </main>
