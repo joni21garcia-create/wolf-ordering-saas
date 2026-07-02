@@ -14,8 +14,9 @@ export const viewport: Viewport = {
   themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 1, // Previene zoom accidental
   userScalable: false,
+  viewportFit: "cover", // Muy importante para pantallas con notch
 };
 
 export const metadata: Metadata = {
@@ -37,16 +38,22 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${geistSans.variable} ${geistMono.variable}`} data-scroll-behavior="smooth">
-      <body className="text-white bg-[#050505] antialiased">
-        <div className="wolf-orb-top" />
-        <div className="wolf-orb-bottom" />
-        <div className="stripe-lines" />
-        <ParticlesBackground />
+      <body className="text-white bg-[#050505] antialiased overflow-x-hidden">
+        
+        {/* Capas decorativas fijas: añadimos pointer-events-none para no bloquear clics */}
+        <div className="fixed inset-0 pointer-events-none -z-10">
+          <div className="wolf-orb-top" />
+          <div className="wolf-orb-bottom" />
+          <div className="stripe-lines" />
+          <ParticlesBackground />
+        </div>
+
         <SessionProvider>
           <ServiceWorkerProvider />
           <InstallProvider>
             <UpdateBanner />
-            <main className="min-h-screen">
+            {/* main envuelto para asegurar que ocupe todo el espacio */}
+            <main className="relative min-h-screen">
               {children}
             </main>
           </InstallProvider>
