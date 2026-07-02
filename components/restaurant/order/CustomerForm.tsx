@@ -31,41 +31,41 @@ export default function CustomerForm({
 
   if (!orderType) return null;
 
-  // Ajuste: Reducción leve de padding para adaptarse mejor a la columna de 2/3
   const inputStyle = {
     width: "100%",
-    padding: "14px", 
+    padding: "12px", // Ligeramente más compacto
     borderRadius: "12px",
     border: "1px solid rgba(255,255,255,.08)",
     background: "rgba(255,255,255,.05)",
     color: "#fff",
     outline: "none",
-    fontSize: "15px",
+    fontSize: "14px",
   };
 
   return (
     <div
       style={{
-        marginTop: "20px",
-        marginBottom: "20px",
-        padding: "24px",
-        borderRadius: "24px",
+        // MÁRGENES EN 0 para que el padre decida dónde colocarlo
+        marginTop: "0",
+        marginBottom: "0",
+        padding: "20px",
+        borderRadius: "16px", // Más compacto
         background: "rgba(255,255,255,.03)",
         border: "1px solid rgba(255,255,255,.08)",
         backdropFilter: "blur(20px)",
       }}
     >
-      <h2 style={{ color: "#fff", marginBottom: "8px", fontSize: "20px", fontWeight: "700" }}>
+      <h2 style={{ color: "#fff", marginBottom: "8px", fontSize: "18px", fontWeight: "700" }}>
         {orderType === "delivery" ? "🚚 Datos de Entrega" : "🛍️ Datos para Retiro"}
       </h2>
 
-      <p style={{ color: "rgba(255,255,255,.5)", marginBottom: "20px", fontSize: "13px" }}>
+      <p style={{ color: "rgba(255,255,255,.5)", marginBottom: "16px", fontSize: "12px" }}>
         {orderType === "delivery"
           ? "Completa la información para recibir tu pedido."
           : "Completa tus datos para retirar en el local."}
       </p>
 
-      <div style={{ display: "grid", gap: "12px" }}>
+      <div style={{ display: "grid", gap: "10px" }}>
         <input
           placeholder="Nombre completo *"
           value={customerData.name || ""}
@@ -98,7 +98,7 @@ export default function CustomerForm({
               placeholder="Referencia (opcional)"
               value={customerData.reference || ""}
               onChange={(e) => setCustomerData({ ...customerData, reference: e.target.value })}
-              style={{ ...inputStyle, minHeight: "60px", resize: "none" }}
+              style={{ ...inputStyle, minHeight: "50px", resize: "none" }}
             />
           </>
         )}

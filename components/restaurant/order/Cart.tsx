@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
 
-// Interfaces mantenidas según tu estructura original
 interface CartItem {
   id: string;
   restaurant_id: string;
@@ -36,7 +35,6 @@ export default function Cart({
   const params = useParams();
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detectar mobile para el botón flotante
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
     checkMobile();
@@ -62,7 +60,6 @@ export default function Cart({
   const handleContinueOrder = () => {
     const customer = localStorage.getItem("wolf_customer");
     if (!customer) { alert("Completa tus datos primero"); return; }
-    
     const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
     if (!slug) return;
     localStorage.setItem("restaurant_slug", slug);
@@ -70,7 +67,14 @@ export default function Cart({
   };
 
   return (
-    <div className="glass-card wolf-shadow" style={{ padding: "24px", borderRadius: "24px" }}>
+    <div className="glass-card wolf-shadow" style={{ 
+      padding: "24px", 
+      borderRadius: "24px", 
+      display: "flex", 
+      flexDirection: "column",
+      // En móvil, limitamos la altura para que el botón siempre sea visible
+      maxHeight: isMobile ? "85vh" : "none" 
+    }}>
       <h3 style={{ color: "#fff", fontSize: "20px", fontWeight: 700, marginBottom: "20px" }}>
         🛒 Mi Pedido
       </h3>
@@ -81,7 +85,8 @@ export default function Cart({
         </div>
       )}
 
-      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+      {/* ZONA DE SCROLL: Solo los productos hacen scroll */}
+      <div style={{ flex: 1, overflowY: "auto", marginBottom: "16px" }}>
         {items.map((item) => (
           <div key={item.id} style={{ borderBottom: "1px solid rgba(255,255,255,.05)", paddingBottom: "16px", marginBottom: "16px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
@@ -100,7 +105,8 @@ export default function Cart({
         ))}
       </div>
 
-      <div style={{ marginTop: "20px" }}>
+      {/* ZONA DE TOTALES: Siempre visible al final */}
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "16px" }}>
         {orderType === "delivery" && deliverySettings?.free_delivery_enabled && subtotal < deliverySettings.free_delivery_minimum && (
           <div style={{ fontSize: "12px", color: "#22c55e", marginBottom: "15px" }}>
             Te faltan ${(deliverySettings.free_delivery_minimum - subtotal).toFixed(2)} para envío gratis.
@@ -119,41 +125,29 @@ export default function Cart({
           </div>
         )}
 
-        <div style={{ display: "flex", justifyContent: "space-between", color: "#fff", fontWeight: "bold", fontSize: "18px", marginTop: "15px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", color: "#fff", fontWeight: "bold", fontSize: "18px", marginBottom: "20px" }}>
           <span>Total</span>
           <span>${total.toFixed(2)}</span>
         </div>
 
-        {/* CONTENEDOR DEL BOTÓN: Fijo en móvil, relativo en desktop */}
-        <div style={{ 
-            position: isMobile ? "fixed" : "relative",
-            bottom: isMobile ? "0" : "auto",
-            left: isMobile ? "0" : "auto",
-            width: isMobile ? "100%" : "auto",
-            padding: isMobile ? "16px" : "0",
-            background: isMobile ? "rgba(20,20,20,0.98)" : "transparent",
-            borderTop: isMobile ? "1px solid rgba(255,255,255,0.1)" : "none",
-            zIndex: 100 
-        }}>
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              onClick={handleContinueOrder}
-              style={{ 
-                width: "100%", 
-                border: "none", 
-                borderRadius: "14px", 
-                padding: "16px", 
-                cursor: "pointer", 
-                fontWeight: "bold", 
-                background: "#f97316",
-                color: "#fff",
-                fontSize: "16px"
-              }}
-            >
-              Continuar Pedido
-            </motion.button>
-        </div>
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          onClick={handleContinueOrder}
+          style={{ 
+            width: "100%", 
+            border: "none", 
+            borderRadius: "14px", 
+            padding: "16px", 
+            cursor: "pointer", 
+            fontWeight: "bold", 
+            background: "#f97316",
+            color: "#fff",
+            fontSize: "16px"
+          }}
+        >
+          Continuar Pedido
+        </motion.button>
       </div>
     </div>
   );

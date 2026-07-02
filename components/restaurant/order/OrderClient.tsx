@@ -82,10 +82,18 @@ export default function OrderClient({ restaurant }: Props) {
   if (!isMounted) return null;
 
   return (
-    <main className="wolf-order-background" style={{ minHeight: "100vh", padding: isMobile ? "16px 8px" : "80px 20px" }}>
-      <div style={{ maxWidth: "1440px", margin: "0 auto" }}>
+    <main 
+      className="wolf-order-background" 
+      style={{ 
+        minHeight: "100vh", 
+        padding: isMobile ? "16px 8px" : "80px 20px",
+        width: "100%",
+        overflowX: "hidden"
+      }}
+    >
+      <div style={{ maxWidth: "1440px", margin: "0 auto", width: "100%" }}>
         
-        {/* Selector de modo (Delivery/Pickup) - Compacto */}
+        {/* Selector de modo */}
         <div style={{ marginBottom: "24px", maxWidth: "600px", margin: "0 auto 24px auto" }}>
           <OrderType
             selected={orderType}
@@ -101,17 +109,25 @@ export default function OrderClient({ restaurant }: Props) {
             display: "grid", 
             gridTemplateColumns: isMobile ? "1fr" : "280px minmax(0, 1fr) 340px", 
             gap: "16px", 
-            alignItems: "start" 
+            alignItems: "start",
+            width: "100%"
         }}>
           
-          {/* COLUMNA 1: Mapa + Formulario (Bloque de gestión unificado) */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px", position: isMobile ? "relative" : "sticky", top: "100px" }}>
-            <div className="glass-card" style={{ overflow: "hidden", borderRadius: "16px" }}>
+          {/* COLUMNA 1: Mapa + Formulario (Bloque unificado) */}
+          <div style={{ 
+            display: "flex", 
+            flexDirection: "column", 
+            gap: "16px", 
+            position: isMobile ? "static" : "sticky", 
+            top: "100px",
+            width: "100%"
+          }}>
+            <div className="glass-card" style={{ overflow: "hidden", borderRadius: "16px", width: "100%" }}>
               <RestaurantMap restaurant={restaurant} />
             </div>
             
             {orderType && (
-              <div className="glass-card" style={{ padding: "16px", borderRadius: "16px" }}>
+              <div style={{ width: "100%" }}>
                 <CustomerForm
                   orderType={orderType}
                   customerData={customerData}
@@ -121,13 +137,13 @@ export default function OrderClient({ restaurant }: Props) {
             )}
           </div>
 
-          {/* COLUMNA 2: Menú Digital */}
-          <div>
+          {/* COLUMNA 2: Menú */}
+          <div style={{ width: "100%" }}>
             <DigitalMenu restaurant={restaurant} addToCart={addToCart} />
           </div>
 
           {/* COLUMNA 3: Carrito */}
-          <div style={{ position: isMobile ? "relative" : "sticky", top: "100px" }}>
+          <div style={{ position: isMobile ? "static" : "sticky", top: "100px", width: "100%" }}>
             <Cart
               items={cartItems}
               orderType={orderType}
