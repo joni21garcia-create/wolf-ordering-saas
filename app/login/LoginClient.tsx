@@ -258,124 +258,114 @@ await supabase.auth.signInWithOAuth({
 
   return (
   <main
-    style={{
-      minHeight: "100vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "40px",
-      position: "relative",
-      overflow: "hidden",
-    }}
+
   >
     {/* GLOW */}
 
-    <div
-      style={{
-        position: "absolute",
-        width: "700px",
-        height: "700px",
-        borderRadius: "50%",
-        background:
-          "rgba(249,115,22,.12)",
-        filter: "blur(120px)",
-        right: "-200px",
-        top: "-150px",
-      }}
-    />
+   <div
+  style={{
+    position: "absolute",
+
+    top: "-180px",
+
+    left: "50%",
+
+    transform: "translateX(-50%)",
+
+    width: "520px",
+
+    height: "520px",
+
+    pointerEvents: "none",
+
+    borderRadius: "50%",
+
+    background: `
+      radial-gradient(
+        circle,
+        rgba(255,140,40,.14) 0%,
+        rgba(255,140,40,.08) 22%,
+        rgba(255,140,40,.035) 45%,
+        rgba(255,140,40,.015) 65%,
+        transparent 82%
+      )
+    `,
+
+    filter: "blur(80px)",
+
+    opacity: .95,
+  }}
+/>
+
+    
 
     <div
-      style={{
-        width: "100%",
-        maxWidth: "1450px",
-        display: "grid",
-        gridTemplateColumns:
-          "1.1fr 0.9fr",
-        gap: "60px",
-        alignItems: "center",
-      }}
+style={{
+  textAlign: "center",
+
+  position: "relative",
+
+  zIndex: 2,
+
+  display: "flex",
+
+  flexDirection: "column",
+
+  alignItems: "center",
+
+  gap: "6px",
+
+  marginBottom: "18px",
+}}
     >
-      {/* IZQUIERDA */}
-
-      <section>
-        <span
-          style={{
-            color: "#f97316",
-            fontWeight: 800,
-            letterSpacing: "2px",
-          }}
-        >
-          WOLF ORDERING OS
-        </span>
-
-        <h1
-          style={{
-            fontSize: "74px",
-            fontWeight: 900,
-            lineHeight: 1,
-            marginTop: "20px",
-            marginBottom: "25px",
-          }}
-        >
-          Plataforma SaaS
-          <br />
-          Multi-Restaurante
-        </h1>
-
-        <p
-          style={{
-            color: "#999",
-            fontSize: "22px",
-            lineHeight: 1.9,
-            maxWidth: "800px",
-          }}
-        >
-          Gestiona pedidos,
-          delivery, productos,
-          pagos, clientes,
-          marketing y analíticas
-          desde una única
-          plataforma inteligente.
-        </p>
-
-        <div
-          style={{
-            marginTop: "40px",
-            display: "grid",
-            gap: "18px",
-          }}
-        >
-          <Feature text="Pedidos en tiempo real" />
-          <Feature text="Dashboard inteligente" />
-          <Feature text="Multi restaurante" />
-          <Feature text="Roles y permisos" />
-          <Feature text="Analytics avanzado" />
-          <Feature text="Finanzas SaaS" />
-        </div>
-      </section>
-
+  
       {/* LOGIN */}
 
       {isMounted && (
       <section
-        style={{
-          background:
-            "rgba(10,10,10,.85)",
+ style={{
+  position: "relative",
 
-          border:
-            "1px solid rgba(255,255,255,.08)",
+  overflow: "hidden",
 
-          borderRadius: "36px",
+  width: "100%",
 
-          padding: "50px",
+  maxWidth: "540px",
 
-          backdropFilter:
-            "blur(35px)",
+  padding: "58px 46px 42px",
 
-          boxShadow:
-            "0 50px 120px rgba(0,0,0,.6)",
-        }}
+  borderRadius: "34px",
+
+  background: `
+    linear-gradient(
+      180deg,
+      rgba(22,22,22,.98) 0%,
+      rgba(15,15,15,.98) 18%,
+      rgba(10,10,10,.99) 58%,
+      rgba(7,7,7,1) 100%
+    )
+  `,
+
+  border: "1px solid rgba(255,255,255,.045)",
+
+  backdropFilter: "blur(30px)",
+
+  boxShadow: `
+    0 0 0 1px rgba(255,255,255,.015),
+
+    inset 0 1px 0 rgba(255,255,255,.03),
+
+    inset 0 -1px 0 rgba(255,255,255,.015),
+
+    0 20px 45px rgba(0,0,0,.35),
+
+    0 60px 140px rgba(0,0,0,.70)
+  `,
+
+  transition: "all .35s ease",
+}}
       >
+        
         {loginErrorText && (
           <div
             style={{
@@ -414,8 +404,8 @@ await supabase.auth.signInWithOAuth({
           >
             <div
               style={{
-                width: "170px",
-                height: "170px",
+                width: "370px",
+                height: "370px",
                 display: "flex",
                 alignItems:
                   "center",
@@ -430,10 +420,10 @@ await supabase.auth.signInWithOAuth({
               }}
             >
               <Image
-                src="/wolf-log.png"
+                src="/wolfloginv2.png"
                 alt="Wolf Ordering"
-                width={280}
-                height={280}
+                width={370}
+                height={370}
                 priority
                 style={{
                   objectFit:
@@ -443,16 +433,25 @@ await supabase.auth.signInWithOAuth({
             </div>
           </div>
 
-          <h1
-            style={{
-              color: "#fff",
-              margin: 0,
-              fontSize: "52px",
-              fontWeight: 900,
-            }}
-          >
-            Wolf Ordering
-          </h1>
+<span
+  style={{
+    color: "#f97316",
+
+    fontWeight: 700,
+
+    letterSpacing: "6px",
+
+    fontSize: "12px",
+
+    textTransform: "uppercase",
+
+    margin: "0",
+
+    lineHeight: 1,
+  }}
+>
+  WOLF ORDERING OS
+</span>
 
           <p
             style={{
@@ -462,23 +461,10 @@ await supabase.auth.signInWithOAuth({
             }}
           >
             Plataforma SaaS para
-            restaurantes digitales
+            restaurantes
           </p>
 
-          <div
-            style={{
-              marginTop: "20px",
-              display: "flex",
-              justifyContent:
-                "center",
-              gap: "10px",
-              flexWrap: "wrap",
-            }}
-          >
-            <StatusBadge text="🟢 Plataforma Online" />
-            <StatusBadge text="🔒 Seguridad Empresarial" />
-            <StatusBadge text="🚀 SaaS Multi-Restaurante" />
-          </div>
+
         </div>
                 <div
           style={{
