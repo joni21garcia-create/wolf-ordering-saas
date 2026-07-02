@@ -445,3 +445,28 @@ body {
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
 }
+/* Cart.tsx / CustomerForm.tsx styles */
+.container-responsive {
+  padding: 40px;
+  border-radius: 30px;
+}
+
+@media (max-width: 768px) {
+  .container-responsive {
+    padding: 20px;
+    border-radius: 20px;
+  }
+}
+
+/* Para el Grid de productos (DigitalMenu.tsx) */
+.grid-responsive {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .grid-responsive {
+    grid-template-columns: 1fr; /* Una sola columna en móvil */
+  }
+}
