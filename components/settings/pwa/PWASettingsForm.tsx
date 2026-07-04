@@ -225,11 +225,13 @@ console.log("Manager:", managerSettings.app_logo);
         display: "flex",
         flexDirection: "column",
         gap: 32,
+        boxSizing: "border-box",
+        width: "100%",
       }}
     >
 
       {/* ===========================================
-          CABECERA
+          CABECERA (BOTONES APILADOS VERTICALMENTE EN FILAS PREMIUM)
       =========================================== */}
 
       <SectionCard
@@ -244,10 +246,10 @@ console.log("Manager:", managerSettings.app_logo);
 
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(2,minmax(0,1fr))",
-            gap: 18,
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+            width: "100%",
           }}
         >
 
@@ -257,52 +259,69 @@ console.log("Manager:", managerSettings.app_logo);
               setAppType("restaurant")
             }
             style={{
-              height: 94,
-              borderRadius: 22,
+              minHeight: 86,
+              width: "100%",
+              borderRadius: 20,
               boxShadow:
                 appType === "restaurant"
-                 ? "0 0 0 1px rgba(249,115,22,.25), 0 18px 40px rgba(249,115,22,.12)"
-                 : "none",
+                  ? "0 0 0 1px rgba(249,115,22,.3), 0 8px 24px rgba(249,115,22,.12)"
+                  : "none",
               background:
                 appType === "restaurant"
                   ? "#cc6220"
                   : "#18181b",
+              border: 
+                appType === "restaurant" 
+                  ? "1px solid #f97316" 
+                  : "1px solid #27272a",
               color: "#fff",
               cursor: "pointer",
-              transition: ".25s",
+              transition: ".2s ease",
               display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
+              flexDirection: "row",
+              justifyContent: "flex-start",
               alignItems: "center",
-              gap: 4,
+              padding: "16px 20px",
+              gap: 16,
+              textAlign: "left",
+              boxSizing: "border-box",
             }}
           >
 
             <span
               style={{
-                fontSize: 30,
+                fontSize: 24,
+                background: appType === "restaurant" ? "rgba(255,255,255,0.1)" : "#27272a",
+                padding: "10px",
+                borderRadius: "14px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
               }}
             >
               🌐
             </span>
 
-            <span
-              style={{
-                fontWeight: 700,
-                fontSize: 16,
-              }}
-            >
-              Restaurante
-            </span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <span
+                style={{
+                  fontWeight: 700,
+                  fontSize: 15,
+                }}
+              >
+                Restaurante
+              </span>
 
-            <span
-              style={{
-                color: "#a1a1aa",
-                fontSize: 13,
-              }}
-            >
-              Aplicación para clientes
-            </span>
+              <span
+                style={{
+                  color: appType === "restaurant" ? "#ffedd5" : "#71717a",
+                  fontSize: 12.5,
+                }}
+              >
+                Aplicación para clientes
+              </span>
+            </div>
 
           </button>
 
@@ -312,52 +331,69 @@ console.log("Manager:", managerSettings.app_logo);
               setAppType("manager")
             }
             style={{
-              height: 94,
-              borderRadius: 22,
+              minHeight: 86,
+              width: "100%",
+              borderRadius: 20,
               boxShadow:
                 appType === "manager"
-                ? "0 0 0 1px rgba(249,115,22,.25), 0 18px 40px rgba(249,115,22,.12)"
+                ? "0 0 0 1px rgba(249,115,22,.3), 0 8px 24px rgba(249,115,22,.12)"
                  : "none",
               background:
                 appType === "manager"
                   ? "#cc6220"
                   : "#18181b",
+              border: 
+                appType === "manager" 
+                  ? "1px solid #f97316" 
+                  : "1px solid #27272a",
               color: "#fff",
               cursor: "pointer",
-              transition: ".25s",
+              transition: ".2s ease",
               display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
+              flexDirection: "row",
+              justifyContent: "flex-start",
               alignItems: "center",
-              gap: 4,
+              padding: "16px 20px",
+              gap: 16,
+              textAlign: "left",
+              boxSizing: "border-box",
             }}
           >
 
             <span
               style={{
-                fontSize: 30,
+                fontSize: 24,
+                background: appType === "manager" ? "rgba(255,255,255,0.1)" : "#27272a",
+                padding: "10px",
+                borderRadius: "14px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
               }}
             >
               🐺
             </span>
 
-            <span
-              style={{
-                fontWeight: 700,
-                fontSize: 16,
-              }}
-            >
-              Wolf Manager
-            </span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <span
+                style={{
+                  fontWeight: 700,
+                  fontSize: 15,
+                }}
+              >
+                Wolf Manager
+              </span>
 
-            <span
-              style={{
-                color: "#a1a1aa",
-                fontSize: 13,
-              }}
-            >
-              Aplicación administrativa
-            </span>
+              <span
+                style={{
+                  color: appType === "manager" ? "#ffedd5" : "#71717a",
+                  fontSize: 12.5,
+                }}
+              >
+                Aplicación administrativa
+              </span>
+            </div>
 
             
 
@@ -368,16 +404,16 @@ console.log("Manager:", managerSettings.app_logo);
       </SectionCard>
 
       {/* ===========================================
-          GRID PRINCIPAL
+          GRID PRINCIPAL AUTO-ADAPTATIVO RESPONSIVO
       =========================================== */}
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns:
-            "minmax(0,1fr) 420px",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 400px), 1fr))",
           gap: 32,
           alignItems: "start",
+          width: "100%",
         }}
       >
 
@@ -438,6 +474,7 @@ console.log("Manager:", managerSettings.app_logo);
           background: "#27272a",
           color: "#fff",
           padding: "0 16px",
+          boxSizing: "border-box",
         }}
       />
     </div>
@@ -472,6 +509,7 @@ console.log("Manager:", managerSettings.app_logo);
           background: "#27272a",
           color: "#fff",
           padding: "0 16px",
+          boxSizing: "border-box",
         }}
       />
     </div>
@@ -506,6 +544,7 @@ console.log("Manager:", managerSettings.app_logo);
           color: "#fff",
           padding: 16,
           resize: "vertical",
+          boxSizing: "border-box",
         }}
       />
     </div>
@@ -640,6 +679,7 @@ console.log("Manager:", managerSettings.app_logo);
           background: "#27272a",
           color: "#fff",
           padding: "0 14px",
+          boxSizing: "border-box",
         }}
       >
         <option value="standalone">
@@ -691,6 +731,7 @@ console.log("Manager:", managerSettings.app_logo);
           background: "#27272a",
           color: "#fff",
           padding: "0 14px",
+          boxSizing: "border-box",
         }}
       >
         <option value="portrait">
@@ -718,6 +759,7 @@ console.log("Manager:", managerSettings.app_logo);
         color: "#a1a1aa",
         fontSize: 14,
         lineHeight: 1.7,
+        boxSizing: "border-box",
       }}
     >
       <strong
@@ -762,8 +804,6 @@ console.log("Manager:", managerSettings.app_logo);
 
         <div
           style={{
-            position: "sticky",
-            top: 30,
             display: "flex",
             flexDirection: "column",
             gap: 28,
@@ -829,6 +869,7 @@ console.log("Manager:", managerSettings.app_logo);
                   padding: "14px 16px",
                   borderRadius: 12,
                   background: "#27272a",
+                  boxSizing: "border-box",
                 }}
               >
 
@@ -860,6 +901,7 @@ console.log("Manager:", managerSettings.app_logo);
                   padding: "14px 16px",
                   borderRadius: 12,
                   background: "#27272a",
+                  boxSizing: "border-box",
                 }}
               >
 
@@ -912,6 +954,7 @@ console.log("Manager:", managerSettings.app_logo);
                 color: "#fff",
                 padding: 18,
                 borderRadius: 12,
+                boxSizing: "border-box",
               }}
             >
               {error}

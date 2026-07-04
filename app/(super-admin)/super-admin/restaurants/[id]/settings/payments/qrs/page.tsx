@@ -66,50 +66,82 @@ export default function PaymentQRsPage() {
   };
 
   return (
-    <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px", color: "#fff" }}>
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "40px" }}>
+    <main style={{ maxWidth: "1100px", margin: "0 auto", padding: "clamp(16px, 4vw, 40px) 16px", color: "#fff", background: "#0a0a0a", minHeight: "100vh", fontFamily: "system-ui, -apple-system, sans-serif", boxSizing: "border-box" }}>
+      
+      {/* HEADER RESPONSIVO */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px", marginBottom: "32px" }}>
         <div>
-          <p style={{ color: "#888", marginBottom: "8px" }}>Configuración / Pagos / QRs</p>
-          <h1 style={{ fontSize: "48px", fontWeight: "900", margin: 0 }}>QRs de Pago</h1>
+          <p style={{ color: "#71717a", fontSize: "13px", marginBottom: "6px", fontWeight: "500" }}>Configuración / Pagos / QRs</p>
+          <h1 style={{ fontSize: "clamp(24px, 5vw, 36px)", fontWeight: "800", margin: 0, letterSpacing: "-0.5px" }}>QRs de Pago</h1>
         </div>
-        <Link href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/new`}>
-          <button style={buttonOrange}>+ Nuevo QR</button>
+        <Link href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/new`} style={{ textDecoration: "none", width: "auto" }}>
+          <button style={buttonOrange}>✨ Nuevo QR</button>
         </Link>
       </div>
 
-      {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px", marginBottom: "35px" }}>
-        <StatCard title="Total QRs" value={qrs.length} />
-        <StatCard title="Activos" value={qrs.filter(q => q.active).length} />
-        <StatCard title="Ocultos" value={qrs.filter(q => !q.active).length} />
+      {/* STATS CON SCROLL VERTICAL CONTROLADO EN GRID */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "16px", marginBottom: "32px" }}>
+        <StatCard title="Total QRs" value={qrs.length} color="#fff" />
+        <StatCard title="Activos" value={qrs.filter(q => q.active).length} color="#22c55e" />
+        <StatCard title="Ocultos" value={qrs.filter(q => !q.active).length} color="#ef4444" />
       </div>
 
       {loading ? (
-        <p style={{ color: "#888" }}>Cargando QRs...</p>
+        <div style={{ display: "flex", justifyContent: "center", padding: "40px", color: "#71717a" }}>Cargando QRs...</div>
       ) : qrs.length === 0 ? (
         <EmptyState restaurantId={restaurantId} />
       ) : (
-        <div style={{ display: "grid", gap: "20px" }}>
+        /* LISTADO DE TARJETAS FLUIDAS */
+        <div style={{ display: "grid", gap: "16px" }}>
           {qrs.map((qr) => (
-            <div key={qr.id} style={cardStyle}>
-              <img src={qr.qr_image_url} alt={qr.name} style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "16px" }} />
+            <div key={qr.id} style={{
+              ...cardStyle,
+              display: "flex",
+              flexWrap: "wrap", /* Permite romper fila a columna en móviles pequeños */
+              alignItems: "center",
+              gap: "20px"
+            }}>
               
-              <div style={{ flex: 1 }}>
-                <h3 style={{ margin: "0 0 5px 0" }}>{qr.name}</h3>
-                <p style={{ color: "#888", fontSize: "14px", margin: 0 }}>Titular: {qr.account_holder || "N/A"}</p>
-                <p style={{ color: "#888", fontSize: "14px", margin: 0 }}>Cuenta: {qr.account_number || "N/A"}</p>
-                <span style={{ display: "inline-block", marginTop: "10px", padding: "4px 10px", borderRadius: "99px", fontSize: "11px", fontWeight: "bold", background: qr.active ? "#22c55e20" : "#ef444420", color: qr.active ? "#22c55e" : "#ef4444" }}>
-                  {qr.active ? "ACTIVO" : "OCULTO"}
-                </span>
+              {/* IMAGEN DEL QR */}
+              <div style={{ display: "flex", justifyContent: "center", width: "100%", maxWidth: "100px", margin: "0 auto" }}>
+                <img src={qr.qr_image_url} alt={qr.name} style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "14px", border: "1px solid #262626" }} />
+              </div>
+              
+              {/* DATOS DE LA CUENTA */}
+              <div style={{ flex: "1 1 250px", textAlign: "left" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", marginBottom: "6px" }}>
+                  <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700" }}>{qr.name}</h3>
+                  <span style={{ 
+                    padding: "3px 8px", 
+                    borderRadius: "99px", 
+                    fontSize: "10px", 
+                    fontWeight: "700", 
+                    letterSpacing: "0.5px",
+                    background: qr.active ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", 
+                    color: qr.active ? "#22c55e" : "#ef4444",
+                    border: qr.active ? "1px solid rgba(34,197,94,0.15)" : "1px solid rgba(239,68,68,0.15)"
+                  }}>
+                    {qr.active ? "ACTIVO" : "OCULTO"}
+                  </span>
+                </div>
+                <p style={{ color: "#a1a1aa", fontSize: "13.5px", margin: "4px 0" }}>
+                  <strong style={{ color: "#71717a", fontWeight: "500" }}>Titular:</strong> {qr.account_holder || "—"}
+                </p>
+                <p style={{ color: "#a1a1aa", fontSize: "13.5px", margin: "4px 0" }}>
+                  <strong style={{ color: "#71717a", fontWeight: "500" }}>Cuenta:</strong> {qr.account_number || "—"}
+                </p>
               </div>
 
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button onClick={() => toggleQR(qr.id, qr.active)} style={buttonSecondary}>
-                  {qr.active ? "Ocultar" : "Mostrar"}
+              {/* ACCIONES (Se estiran al 100% en pantallas muy chicas) */}
+              <div style={{ display: "flex", gap: "10px", flex: "1 1 auto", width: "100%", maxWidth: "300px", justifyContent: "flex-end" }}>
+                <button onClick={() => toggleQR(qr.id, qr.active)} style={{ ...buttonSecondary, flex: 1 }}>
+                  {qr.active ? "👁️ Ocultar" : "👁️ Mostrar"}
                 </button>
-                <button onClick={() => deleteQR(qr.id)} style={buttonDelete}>Eliminar</button>
+                <button onClick={() => deleteQR(qr.id)} style={{ ...buttonDelete, flex: 1 }}>
+                  🗑️ Eliminar
+                </button>
               </div>
+
             </div>
           ))}
         </div>
@@ -118,30 +150,68 @@ export default function PaymentQRsPage() {
   );
 }
 
-function StatCard({ title, value }: any) {
+function StatCard({ title, value, color }: any) {
   return (
-    <div style={{ ...cardStyle, textAlign: "center", display: "block" }}>
-      <h2 style={{ margin: 0, fontSize: "24px" }}>{value}</h2>
-      <p style={{ color: "#888", fontSize: "12px", textTransform: "uppercase", marginTop: "5px" }}>{title}</p>
+    <div style={{ ...cardStyle, textAlign: "center", display: "block", padding: "16px" }}>
+      <h2 style={{ margin: 0, fontSize: "24px", fontWeight: "800", color: color }}>{value}</h2>
+      <p style={{ color: "#71717a", fontSize: "11px", textTransform: "uppercase", marginTop: "4px", fontWeight: "600", letterSpacing: "0.5px" }}>{title}</p>
     </div>
   );
 }
 
 function EmptyState({ restaurantId }: { restaurantId: string }) {
   return (
-    <div style={{ ...cardStyle, textAlign: "center", padding: "60px", display: "block" }}>
-      <h2>No hay QRs configurados</h2>
-      <p style={{ color: "#888", marginBottom: "20px" }}>Crea tu primer código para recibir pagos.</p>
-      <Link href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/new`}>
+    <div style={{ ...cardStyle, textAlign: "center", padding: "48px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+      <span style={{ fontSize: "40px" }}>📲</span>
+      <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>No hay QRs configurados</h2>
+      <p style={{ color: "#a1a1aa", fontSize: "14px", maxWidth: "320px", margin: "0 0 8px 0", lineHeight: 1.4 }}>
+        Registra tus códigos QR de bancos preferidos para facilitarle el proceso de checkout a tus clientes.
+      </p>
+      <Link href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/new`} style={{ textDecoration: "none" }}>
         <button style={buttonOrange}>Crear Primer QR</button>
       </Link>
     </div>
   );
 }
 
-// Estilos compartidos
-const cardStyle = { background: "#111", border: "1px solid rgba(255,255,255,.08)", borderRadius: "24px", padding: "20px", display: "flex", alignItems: "center", gap: "20px" };
-const buttonBase = { padding: "12px 20px", borderRadius: "12px", border: "none", cursor: "pointer", fontWeight: "700" };
-const buttonOrange = { ...buttonBase, background: "#f97316", color: "#fff" };
-const buttonSecondary = { ...buttonBase, background: "rgba(255,255,255,.05)", color: "#fff", border: "1px solid rgba(255,255,255,.1)" };
-const buttonDelete = { ...buttonBase, background: "#ef444420", color: "#ef4444", border: "1px solid #ef444455" };
+const cardStyle = { 
+  background: "#121212", 
+  border: "1px solid #222", 
+  borderRadius: "20px", 
+  padding: "20px",
+  boxSizing: "border-box" as const
+};
+
+const buttonBase = { 
+  padding: "12px 20px", 
+  borderRadius: "12px", 
+  border: "none", 
+  cursor: "pointer", 
+  fontWeight: "600" as const,
+  fontSize: "13.5px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  transition: "0.2s ease"
+};
+
+const buttonOrange = { 
+  ...buttonBase, 
+  background: "#f97316", 
+  color: "#fff",
+  boxShadow: "0 4px 12px rgba(249,115,22,0.15)"
+};
+
+const buttonSecondary = { 
+  ...buttonBase, 
+  background: "#161616", 
+  color: "#e4e4e7", 
+  border: "1px solid #262626" 
+};
+
+const buttonDelete = { 
+  ...buttonBase, 
+  background: "rgba(239,68,68,0.07)", 
+  color: "#ef4444", 
+  border: "1px solid rgba(239,68,68,0.2)" 
+};

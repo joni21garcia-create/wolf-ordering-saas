@@ -85,6 +85,30 @@ export default function Cart({
   const total =
     subtotal + deliveryFee;
 
+    
+
+    const hasFreeDelivery =
+  deliverySettings?.free_delivery_enabled &&
+  subtotal >=
+    Number(
+      deliverySettings?.free_delivery_minimum || 0
+    );
+
+const showPendingDeliveryMessage =
+  orderType === "delivery" &&
+  deliverySettings?.delivery_mode === "manual" &&
+  !hasFreeDelivery;
+
+const showFreeDeliveryMessage =
+  orderType === "delivery" &&
+  deliverySettings?.delivery_mode === "manual" &&
+  hasFreeDelivery;
+  
+  const showDeliveryRow =
+  orderType === "delivery" &&
+  deliverySettings?.delivery_mode !== "manual";
+
+
   const handleContinueOrder =
     () => {
       const customer =
@@ -407,8 +431,9 @@ export default function Cart({
       </div>
 
       <div style={{ marginTop: "20px", width: "100%", boxSizing: "border-box" }}>
-        {orderType === "delivery" &&
-          deliverySettings?.free_delivery_enabled && (
+      {orderType === "delivery" &&
+           deliverySettings?.free_delivery_enabled &&
+           !hasFreeDelivery && (
             <div
               style={{
                 background: "rgba(34,197,94,.08)",
@@ -439,7 +464,7 @@ export default function Cart({
           <span>${subtotal.toFixed(2)}</span>
         </div>
         
-        {orderType === "delivery" && (
+       {showPendingDeliveryMessage && (
   <div
     style={{
       marginBottom: "16px",
@@ -484,7 +509,42 @@ export default function Cart({
   </div>
 )}
 
-        {orderType === "delivery" && (
+{showFreeDeliveryMessage && (
+  <div
+    style={{
+      marginBottom: "16px",
+      padding: "14px",
+      borderRadius: "14px",
+      background: "rgba(34,197,94,.08)",
+      border: "1px solid rgba(34,197,94,.20)",
+    }}
+  >
+    <div
+      style={{
+        fontWeight: "700",
+        marginBottom: "8px",
+        color: "#22c55e",
+      }}
+    >
+      🎉 ¡Delivery GRATIS desbloqueado!
+    </div>
+
+    <div
+      style={{
+        color: "rgba(255,255,255,.75)",
+        lineHeight: "1.6",
+        fontSize: "13px",
+      }}
+    >
+      Tu pedido ya califica para envío gratuito.
+      <br />
+      Solo comparte tu ubicación por WhatsApp para coordinar la entrega.
+    </div>
+  </div>
+)}
+
+
+       {showDeliveryRow && (
           <div
             style={{
               display: "flex",

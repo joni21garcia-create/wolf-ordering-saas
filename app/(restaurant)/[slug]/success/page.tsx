@@ -23,9 +23,11 @@ export default async function SuccessPage({
           justifyContent: "center",
           alignItems: "center",
           color: "#fff",
+          background: "#0a0a0a",
+          fontFamily: "system-ui, -apple-system, sans-serif"
         }}
       >
-        <h1>
+        <h1 style={{ fontSize: "24px", fontWeight: "700", letterSpacing: "-0.5px" }}>
           Pedido no encontrado
         </h1>
       </main>
@@ -50,9 +52,6 @@ export default async function SuccessPage({
     )
     .single();
 
-
-
-
     const { data: deliverySettings } =
   await supabase
     .from(
@@ -68,8 +67,6 @@ export default async function SuccessPage({
     const isManualDelivery =
   deliverySettings?.delivery_mode ===
   "manual";
-
-
 
 const { data: items } =
   await supabase
@@ -93,7 +90,6 @@ const { data: items } =
         `• ${item.quantity} x ${item.products?.name}`
     )
     .join("\n") || "";
-
 
     const whatsappMessage =
   encodeURIComponent(`
@@ -144,7 +140,7 @@ ${itemsMessage}
 
 ${
   orderData.payment_method === "qr"
-    ? "Ya realicé el pago mediante QR y adjuntaré el comprobante."
+    ? "Ya realicé el pago mediante QR and adjuntaré el comprobante."
     : ""
 }
 
@@ -178,8 +174,6 @@ ${isManualDelivery
   : `¿Podrían confirmar mi pedido?`}
 `);
 
-
-
 const preparationTime =
   Number(
     deliverySettings?.preparation_time
@@ -208,9 +202,11 @@ const estimatedTime =
           justifyContent: "center",
           alignItems: "center",
           color: "#fff",
+          background: "#0a0a0a",
+          fontFamily: "system-ui, -apple-system, sans-serif"
         }}
       >
-        <h1>
+        <h1 style={{ fontSize: "24px", fontWeight: "700" }}>
           Pedido no encontrado
         </h1>
       </main>
@@ -220,9 +216,13 @@ const estimatedTime =
   return (
     <main
       style={{
-        maxWidth: "900px",
+        maxWidth: "760px",
         margin: "0 auto",
-        padding: "80px 20px",
+        padding: "clamp(20px, 5vw, 50px) 16px",
+        background: "#0a0a0a",
+        minHeight: "100vh",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        boxSizing: "border-box"
       }}
     >
 
@@ -233,13 +233,13 @@ const estimatedTime =
       <div
         style={{
           textAlign: "center",
-          marginBottom: "40px",
+          marginBottom: "30px",
         }}
       >
         <div
           style={{
-            fontSize: "80px",
-            marginBottom: "20px",
+            fontSize: "clamp(50px, 10vw, 70px)",
+            marginBottom: "10px",
           }}
         >
           🎉
@@ -248,9 +248,11 @@ const estimatedTime =
         <h1
           style={{
             color: "#fff",
-            fontSize: "52px",
+            fontSize: "clamp(32px, 7vw, 48px)",
             fontWeight: "800",
-            marginBottom: "15px",
+            marginBottom: "12px",
+            letterSpacing: "-1px",
+            lineHeight: "1.15"
           }}
         >
           ¡Pedido recibido!
@@ -258,86 +260,99 @@ const estimatedTime =
 
         <p
           style={{
-            color: "#aaa",
-            fontSize: "18px",
-            maxWidth: "600px",
+            color: "#a1a1aa",
+            fontSize: "clamp(15px, 4vw, 17px)",
+            maxWidth: "540px",
             margin: "0 auto",
+            lineHeight: "1.5"
           }}
         >
-          Tu pedido fue registrado correctamente.
-          Ya puedes seguir su estado en tiempo real.
+          Tu pedido fue registrado correctamente. Ya puedes seguir su estado en tiempo real.
         </p>
 
-<p
-  style={{
-    color: "#f97316",
-    marginTop: "15px",
-    fontWeight: "600",
-  }}
->
-  ⏳ Tu pedido está pendiente de aceptación por el restaurante.
-</p>
+        <p
+          style={{
+            color: "#f97316",
+            marginTop: "16px",
+            fontWeight: "600",
+            fontSize: "14px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            background: "rgba(249,115,22,0.08)",
+            padding: "8px 16px",
+            borderRadius: "999px",
+            border: "1px solid rgba(249,115,22,0.15)"
+          }}
+        >
+          ⏳ Tu pedido está pendiente de aceptación por el restaurante.
+        </p>
 
+        {restaurant && (
+          <div
+            style={{
+              marginTop: "24px",
+              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center"
+            }}
+          >
+            {restaurant.logo_url && (
+              <img
+                src={restaurant.logo_url}
+                alt={restaurant.name}
+                style={{
+                  width: "75px",
+                  height: "75px",
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  border: "2px solid #f97316",
+                  marginBottom: "10px",
+                  boxShadow: "0 8px 24px rgba(249,115,22,0.2)"
+                }}
+              />
+            )}
 
-{restaurant && (
-  <div
-    style={{
-      marginTop: "30px",
-      textAlign: "center",
-    }}
-  >
-    {restaurant.logo_url && (
-      <img
-        src={restaurant.logo_url}
-        alt={restaurant.name}
-        style={{
-          width: "90px",
-          height: "90px",
-          borderRadius: "50%",
-          objectFit: "cover",
-          border:
-            "3px solid #f97316",
-          marginBottom: "15px",
-        }}
-      />
-    )}
-
-    <h2
-      style={{
-        color: "#fff",
-      }}
-    >
-      {restaurant.name}
-    </h2>
-  </div>
-)}
-
+            <h2
+              style={{
+                color: "#fff",
+                fontSize: "18px",
+                fontWeight: "600",
+                margin: 0
+              }}
+            >
+              {restaurant.name}
+            </h2>
+          </div>
+        )}
       </div>
 
       <div
         style={{
-          background:
-            "rgba(17,17,17,.95)",
-          border:
-            "1px solid rgba(255,255,255,.08)",
-          borderRadius: "30px",
-          padding: "40px",
+          background: "rgba(18,18,18,0.8)",
+          border: "1px solid rgba(255,255,255,0.06)",
+          borderRadius: "24px",
+          padding: "clamp(20px, 5vw, 35px)",
           color: "#fff",
           backdropFilter: "blur(20px)",
-          boxShadow:
-            "0 20px 80px rgba(0,0,0,.35)",
+          boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
         }}
       >
         <div
           style={{
             textAlign: "center",
-            marginBottom: "35px",
+            marginBottom: "30px",
           }}
         >
           <p
             style={{
-              color: "#888",
-              marginBottom: "10px",
+              color: "#71717a",
+              marginBottom: "6px",
+              fontSize: "13px",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              fontWeight: "500"
             }}
           >
             Código de seguimiento
@@ -345,465 +360,404 @@ const estimatedTime =
 
           <h2
             style={{
-              fontSize: "42px",
-              letterSpacing: "3px",
+              fontSize: "clamp(32px, 8vw, 44px)",
+              letterSpacing: "4px",
               color: "#f97316",
+              fontWeight: "900",
               margin: 0,
+              textShadow: "0 0 30px rgba(249,115,22,0.2)"
             }}
           >
-            {
-              orderData.tracking_code
-            }
+            {orderData.tracking_code}
           </h2>
 
-{/* PASOS DEL PEDIDO */}
+          {/* PASOS DEL PEDIDO CON SCROLL HACIA LA DERECHA EN MÓVIL */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "16px",
+              marginTop: "35px",
+              marginBottom: "35px",
+              overflowX: "auto",
+              width: "100%",
+              paddingBottom: "10px",
+              WebkitOverflowScrolling: "touch"
+            }}
+          >
+            {[
+              "Recibido",
+              "Preparando",
+              "En camino",
+              "Entregado",
+            ].map((step, index) => (
+              <div
+                key={step}
+                style={{
+                  flex: "1 0 75px",
+                  textAlign: "center",
+                }}
+              >
+                <div
+                  style={{
+                    width: "46px",
+                    height: "46px",
+                    borderRadius: "50%",
+                    background: index === 0 ? "#f97316" : "#222",
+                    boxShadow: index === 0 ? "0 0 15px rgba(249,115,22,0.4)" : "none",
+                    margin: "0 auto 8px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: index === 0 ? "#fff" : "#71717a",
+                    fontWeight: "700",
+                    fontSize: "15px",
+                    border: index === 0 ? "none" : "1px solid #2d2d2d"
+                  }}
+                >
+                  {index + 1}
+                </div>
 
-<div
-  style={{
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "20px",
-    marginTop: "40px",
-    marginBottom: "40px",
-  }}
->
-  {[
-    "Recibido",
-    "Preparando",
-    "En camino",
-    "Entregado",
-  ].map((step, index) => (
-    <div
-      key={step}
-      style={{
-        flex: 1,
-        textAlign: "center",
-      }}
-    >
-      <div
-        style={{
-          width: "55px",
-          height: "55px",
-          borderRadius: "50%",
-          background:
-            index === 0
-              ? "#f97316"
-              : "#222",
-          margin:
-            "0 auto 12px",
-          display: "flex",
-          alignItems:
-            "center",
-          justifyContent:
-            "center",
-          color: "#fff",
-          fontWeight: "700",
-          fontSize: "18px",
-        }}
-      >
-        {index + 1}
-      </div>
+                <div
+                  style={{
+                    color: index === 0 ? "#fff" : "#71717a",
+                    fontSize: "12px",
+                    fontWeight: index === 0 ? "600" : "400",
+                    whiteSpace: "nowrap"
+                  }}
+                >
+                  {step}
+                </div>
+              </div>
+            ))}
+          </div>
 
-      <div
-        style={{
-          color: "#aaa",
-          fontSize: "13px",
-        }}
-      >
-        {step}
-      </div>
-    </div>
-  ))}
-</div>
+          {/* TIEMPO ESTIMADO */}
+          <div
+            style={{
+              maxWidth: "100%",
+              margin: "0 auto 30px auto",
+              background: "linear-gradient(180deg, #161616, #111111)",
+              border: "1px solid rgba(249,115,22,0.12)",
+              borderRadius: "20px",
+              padding: "24px 16px",
+              textAlign: "center",
+              boxShadow: "0 12px 40px rgba(249,115,22,0.04)",
+            }}
+          >
+            <div
+              style={{
+                color: "#71717a",
+                fontSize: "12px",
+                letterSpacing: "1.5px",
+                textTransform: "uppercase",
+                marginBottom: "8px",
+                fontWeight: "500"
+              }}
+            >
+              ⏱ Tiempo estimado
+            </div>
 
-{/* TIEMPO ESTIMADO */}
+            <div
+              style={{
+                color: "#f97316",
+                fontSize: "clamp(44px, 10vw, 56px)",
+                fontWeight: "800",
+                lineHeight: 1,
+                marginBottom: "8px",
+              }}
+            >
+              {estimatedTime}
+            </div>
 
-<div
-  style={{
-    maxWidth: "600px",
-    margin: "0 auto 40px auto",
-    background:
-      "linear-gradient(180deg,#171717,#111)",
-    border:
-      "1px solid rgba(249,115,22,.15)",
-    borderRadius: "30px",
-    padding: "35px",
-    textAlign: "center",
-    boxShadow:
-      "0 20px 60px rgba(249,115,22,.08)",
-  }}
->
-  <div
-    style={{
-      color: "#888",
-      fontSize: "13px",
-      letterSpacing: "2px",
-      textTransform: "uppercase",
-      marginBottom: "12px",
-    }}
-  >
-    ⏱ Tiempo estimado
-  </div>
-
-  <div
-    style={{
-      color: "#f97316",
-      fontSize: "62px",
-      fontWeight: "800",
-      lineHeight: 1,
-      marginBottom: "12px",
-    }}
-  >
-    {estimatedTime}
-  </div>
-
-  <div
-    style={{
-      color:
-        "rgba(255,255,255,.55)",
-      fontSize: "14px",
-    }}
-  >
-    Tiempo aproximado de preparación
-    y entrega del pedido.
-  </div>
-</div>
-
+            <div
+              style={{
+                color: "#71717a",
+                fontSize: "13px",
+                lineHeight: "1.4"
+              }}
+            >
+              Tiempo aproximado de preparación y entrega.
+            </div>
+          </div>
         </div>
 
+        {/* CONTENEDOR DE ESTADO CON COLORES WOW DEPENDIENDO DEL VALOR */}
         <div
           style={{
             display: "flex",
             justifyContent: "center",
-            marginBottom: "35px",
+            marginBottom: "30px",
           }}
         >
           <div
             style={{
-              background:
-                "#f9731620",
-              color: "#f97316",
-              padding:
-                "12px 22px",
-              borderRadius:
-                "999px",
+              background: orderData.status === "pending" || orderData.status === "Recibido" ? "rgba(249,115,22,0.12)" : "rgba(34,197,94,0.12)",
+              color: orderData.status === "pending" || orderData.status === "Recibido" ? "#f97316" : "#22c55e",
+              border: orderData.status === "pending" || orderData.status === "Recibido" ? "1px solid rgba(249,115,22,0.25)" : "1px solid rgba(34,197,94,0.25)",
+              padding: "8px 20px",
+              borderRadius: "999px",
               fontWeight: "700",
+              fontSize: "14px",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
             }}
           >
             ⏳ {orderData.status}
           </div>
         </div>
 
+        {/* DETALLES EN CUADRÍCULA GRID RESPONSIVE */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit,minmax(220px,1fr))",
-            gap: "20px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+            gap: "12px",
           }}
         >
-          <div
-            style={cardStyle}
-          >
-            <h3>
-              💰 Total
-            </h3>
-
-            <p>
-              $
-              {Number(
-                orderData.total
-              ).toFixed(2)}
+          <div style={cardStyle}>
+            <h3 style={cardTitleStyle}>💰 Total</h3>
+            <p style={cardValueStyle}>
+              ${Number(orderData.total).toFixed(2)}
             </p>
           </div>
 
-          <div
-            style={cardStyle}
-          >
-            <h3>
-              📦 Tipo
-            </h3>
+          <div style={cardStyle}>
+            <h3 style={cardTitleStyle}>📦 Tipo</h3>
+            <p style={cardValueStyle}>{orderData.order_type}</p>
+          </div>
 
-            <p>
-              {
-                orderData.order_type
-              }
+          {/* COLOR DINÁMICO PARA PAGO PENDIENTE O APROBADO */}
+          <div style={{
+            ...cardStyle,
+            borderColor: orderData.payment_status === "paid" || orderData.payment_status === "pagado" ? "rgba(34,197,94,0.2)" : "rgba(255,255,255,0.06)",
+            background: orderData.payment_status === "paid" || orderData.payment_status === "pagado" ? "rgba(34,197,94,0.02)" : "rgba(255,255,255,0.02)"
+          }}>
+            <h3 style={cardTitleStyle}>💳 Pago</h3>
+            <p style={{
+              ...cardValueStyle,
+              color: orderData.payment_status === "paid" || orderData.payment_status === "pagado" ? "#22c55e" : "#fff"
+            }}>
+              {orderData.payment_status}
             </p>
           </div>
 
-          <div
-            style={cardStyle}
-          >
-            <h3>
-              💳 Pago
-            </h3>
-
-            <p>
-              {
-                orderData.payment_status
-              }
-            </p>
-          </div>
-
-          <div
-            style={cardStyle}
-          >
-            <h3>
-              🔁 Estado
-            </h3>
-
-            <p>
-              {
-                orderData.status
-              }
-            </p>
+          <div style={cardStyle}>
+            <h3 style={cardTitleStyle}>🔁 Estado</h3>
+            <p style={cardValueStyle}>{orderData.status}</p>
           </div>
         </div>
 
-{items &&
-  items.length > 0 && (
-    <div
-      style={{
-        marginTop: "40px",
-      }}
-    >
-      <h2
-        style={{
-          color: "#fff",
-          marginBottom: "20px",
-        }}
-      >
-         🛍️Productos del pedido
-      </h2>
-
-      {items.map(
-        (item: any) => (
-          <div
-            key={item.id}
-            style={{
-              display: "flex",
-              justifyContent:
-                "space-between",
-              alignItems:
-                "center",
-              padding: "16px",
-              marginBottom:
-                "12px",
-              borderRadius:
-                "16px",
-              background:
-                "rgba(255,255,255,.03)",
-              border:
-                "1px solid rgba(255,255,255,.08)",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  color: "#fff",
-                  fontWeight:
-                    "600",
-                }}
-              >
-                {
-                  item.products
-                    ?.name
-                }
-              </div>
-
-              <div
-                style={{
-                  color: "#888",
-                  fontSize:
-                    "14px",
-                }}
-              >
-                Cantidad:
-                {item.quantity}
-              </div>
-            </div>
-
-            <div
+        {items && items.length > 0 && (
+          <div style={{ marginTop: "35px" }}>
+            <h2
               style={{
-                color:
-                  "#f97316",
-                fontWeight:
-                  "700",
+                color: "#fff",
+                fontSize: "16px",
+                fontWeight: "700",
+                marginBottom: "16px",
+                letterSpacing: "-0.3px"
               }}
             >
-              $
-              {Number(
-                item.subtotal
-              ).toFixed(2)}
-            </div>
-          </div>
-        )
-      )}
-    </div>
-)}
+               🛍️ Productos del pedido
+            </h2>
 
+            {items.map((item: any) => (
+              <div
+                key={item.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "14px 16px",
+                  marginBottom: "10px",
+                  borderRadius: "14px",
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.05)",
+                }}
+              >
+                <div style={{ marginRight: "10px" }}>
+                  <div
+                    style={{
+                      color: "#fff",
+                      fontWeight: "600",
+                      fontSize: "14px",
+                    }}
+                  >
+                    {item.products?.name}
+                  </div>
+
+                  <div
+                    style={{
+                      color: "#71717a",
+                      fontSize: "12.5px",
+                      marginTop: "2px"
+                    }}
+                  >
+                    Cantidad: {item.quantity}
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    color: "#f97316",
+                    fontWeight: "700",
+                    fontSize: "14.5px",
+                    flexShrink: 0
+                  }}
+                >
+                  ${Number(item.subtotal).toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ACCIONES GLOBALES */}
         <div
           style={{
-            marginTop: "40px",
+            marginTop: "35px",
             display: "flex",
-            flexDirection:
-              "column",
-            gap: "15px",
-            alignItems:
-              "center",
+            flexDirection: "column",
+            gap: "14px",
+            alignItems: "center",
           }}
         >
           <Link
             href={`/tracking/${orderData.tracking_code}`}
             style={{
               width: "100%",
-              maxWidth: "400px",
-              textDecoration:
-                "none",
+              textDecoration: "none",
             }}
           >
             <button
               style={{
                 width: "100%",
-                padding:
-                  "18px 30px",
+                padding: "16px 24px",
                 border: "none",
-                borderRadius:
-                  "16px",
-                cursor:
-                  "pointer",
-                background:
-                  "#f97316",
+                borderRadius: "14px",
+                cursor: "pointer",
+                background: "#f97316",
                 color: "#fff",
-                fontSize:
-                  "17px",
-                fontWeight:
-                  "700",
+                fontSize: "16px",
+                fontWeight: "700",
+                transition: "0.2s ease",
+                boxShadow: "0 4px 20px rgba(249,115,22,0.25)"
               }}
             >
               🔍 Ver seguimiento en tiempo real
             </button>
           </Link>
 
-{isManualDelivery && (
+          {isManualDelivery && (
+            <div
+              style={{
+                marginTop: "10px",
+                padding: "20px",
+                borderRadius: "16px",
+                background: "rgba(37,211,102,0.05)",
+                border: "1px solid rgba(37,211,102,0.15)",
+                width: "100%",
+                boxSizing: "border-box"
+              }}
+            >
+              <h3
+                style={{
+                  color: "#25D366",
+                  fontSize: "16px",
+                  fontWeight: "700",
+                  marginBottom: "10px",
+                  margin: 0
+                }}
+              >
+                📍 Último paso para confirmar tu pedido
+              </h3>
 
-<div
-  style={{
-    marginTop: "30px",
-    marginBottom: "20px",
-    padding: "24px",
-    borderRadius: "18px",
-    background: "rgba(37,211,102,.08)",
-    border: "1px solid rgba(37,211,102,.25)",
-  }}
->
-  <h3
-    style={{
-      color: "#25D366",
-      fontSize: "20px",
-      fontWeight: "700",
-      marginBottom: "14px",
-    }}
-  >
-    📍 Último paso para confirmar tu pedido
-  </h3>
+              <p
+                style={{
+                  color: "#a1a1aa",
+                  lineHeight: "1.5",
+                  fontSize: "13.5px",
+                  marginTop: "6px",
+                  marginBottom: "14px",
+                }}
+              >
+                Este restaurante calcula el costo del envío según la ubicación de entrega.
+              </p>
 
-  <p
-    style={{
-      color: "#d1d5db",
-      lineHeight: "1.8",
-      marginBottom: "16px",
-    }}
-  >
-    Este restaurante calcula el costo del envío según la ubicación de entrega.
-  </p>
+              <div
+                style={{
+                  display: "grid",
+                  gap: "8px",
+                  color: "#e4e4e7",
+                  fontSize: "13px",
+                }}
+              >
+                <span>✅ Presiona el botón de WhatsApp.</span>
+                <span>✅ Se enviará automáticamente el resumen.</span>
+                <span>✅ Comparte tu ubicación desde WhatsApp.</span>
+                <span>✅ El restaurante calculará el envío y te responderá.</span>
+              </div>
+            </div>
+          )}
 
-  <div
-    style={{
-      display: "grid",
-      gap: "10px",
-      color: "#fff",
-      fontSize: "15px",
-    }}
-  >
-    <span>
-      ✅ Presiona el botón de WhatsApp.
-    </span>
-
-    <span>
-      ✅ Se enviará automáticamente el resumen de tu pedido.
-    </span>
-
-    <span>
-      ✅ Comparte tu ubicación desde WhatsApp.
-    </span>
-
-    <span>
-      ✅ El restaurante calculará el costo del envío y te responderá con el total final.
-    </span>
-  </div>
-</div>
-
-)}
-
-<a
- href={`https://wa.me/${
-  restaurant?.whatsapp_url
-    ?.replace(/\D/g, "")
-    ?.replace(/^0/, "593")
-}?text=${whatsappMessage}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  style={{
-    width: "100%",
-    maxWidth: "400px",
-    textDecoration: "none",
-  }}
->
-<button
-  style={{
-    width: "100%",
-    padding: "18px 30px",
-    border: "none",
-    borderRadius: "16px",
-    cursor: "pointer",
-    background: "#25D366",
-    color: "#fff",
-    fontSize: "17px",
-    fontWeight: "700",
-  }}
->
-  {isManualDelivery
-    ? "📍 Confirmar pedido por WhatsApp"
-    : "📲 Enviar pedido por WhatsApp"}
-</button>
-</a>
+          <a
+            href={`https://wa.me/${
+              restaurant?.whatsapp_url
+                ?.replace(/\D/g, "")
+                ?.replace(/^0/, "593")
+            }?text=${whatsappMessage}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              width: "100%",
+              textDecoration: "none",
+            }}
+          >
+            <button
+              style={{
+                width: "100%",
+                padding: "16px 24px",
+                border: "none",
+                borderRadius: "14px",
+                cursor: "pointer",
+                background: "#25D366",
+                color: "#fff",
+                fontSize: "16px",
+                fontWeight: "700",
+                boxShadow: "0 4px 20px rgba(37,211,102,0.2)"
+              }}
+            >
+              {isManualDelivery
+                ? "📍 Confirmar pedido por WhatsApp"
+                : "📲 Enviar pedido por WhatsApp"}
+            </button>
+          </a>
 
           <p
             style={{
-              color: "#777",
-              textAlign:
-                "center",
-              fontSize:
-                "14px",
+              color: "#52525b",
+              textAlign: "center",
+              fontSize: "13px",
+              marginTop: "10px",
+              flexGrow: 0,
+              lineHeight: 1.4
             }}
           >
-            Guarda este código para consultar
-            tu pedido en cualquier momento.
+            Guarda este código para consultar tu pedido en cualquier momento.
           </p>
 
           <div
             style={{
               color: "#f97316",
-              fontWeight: "700",
-              fontSize: "22px",
-              letterSpacing: "2px",
+              fontWeight: "800",
+              fontSize: "20px",
+              letterSpacing: "3px",
             }}
           >
-            {
-              orderData.tracking_code
-            }
+            {orderData.tracking_code}
           </div>
         </div>
       </div>
@@ -812,11 +766,25 @@ const estimatedTime =
 }
 
 const cardStyle = {
-  background:
-    "rgba(255,255,255,.03)",
-  border:
-    "1px solid rgba(255,255,255,.08)",
-  borderRadius: "20px",
-  padding: "20px",
+  background: "rgba(255,255,255,0.02)",
+  border: "1px solid rgba(255,255,255,0.06)",
+  borderRadius: "16px",
+  padding: "14px",
   textAlign: "center" as const,
+};
+
+const cardTitleStyle = {
+  color: "#71717a",
+  fontSize: "12px",
+  fontWeight: "500",
+  margin: "0 0 6px 0",
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.5px"
+};
+
+const cardValueStyle = {
+  color: "#fff",
+  fontSize: "15px",
+  fontWeight: "600",
+  margin: 0
 };

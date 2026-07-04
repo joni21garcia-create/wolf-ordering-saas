@@ -54,9 +54,7 @@ export default function Services({
   restaurant,
 }: Props) {
 
-const theme =
-  getTheme(restaurant);
-
+  const theme = getTheme(restaurant);
 
   const services =
     restaurant.services?.filter(
@@ -71,111 +69,106 @@ const theme =
     <section
       style={{
         maxWidth: "1200px",
-        margin: "-20px auto 80px",
+        margin: "-20px auto 60px",
         padding: "0 20px",
         position: "relative",
         zIndex: 10,
+        boxSizing: "border-box",
+        width: "100%",
       }}
     >
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: `repeat(${services.length},1fr)`,
-          gap: "20px",
+          // auto-fit y minmax hacen que se ajusten solos y bajen de fila dinámicamente
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))",
+          gap: "24px 16px",
+          justifyContent: "center",
+          width: "100%",
         }}
       >
         {services.map(
           (
             service: any,
             index: number
-          ) => (
-            <div
-              key={service.id}
-              style={{
-                textAlign: "center",
-                position: "relative",
-              }}
-            >
-              {index <
-                services.length - 1 && (
+          ) => {
+            const Icon = ICONS[service.icon] || Icons.Star;
+
+            return (
+              <div
+                key={service.id}
+                style={{
+                  textAlign: "center",
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  boxSizing: "border-box",
+                  padding: "12px",
+                }}
+              >
+                {/* Contenedor del Icono (Reducido de 90px a 64px) */}
+                <div
+                  className={styles.serviceIcon}
+                  style={{
+                    width: "64px",
+                    height: "64px",
+                    margin: "0 auto 14px",
+                    borderRadius: "50%",
+                    border: `2px solid ${theme.primary}40`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: theme.primary,
+                    boxShadow: `0 0 20px ${theme.primary}30`,
+                    background: "rgba(0,0,0,0.2)",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Icon size={26} />
+                </div>
+
+                {/* Título (Reducido de 24px a 17px) */}
+                <h3
+                  style={{
+                    color: "var(--text-color)",
+                    fontSize: "17px",
+                    fontWeight: "700",
+                    marginBottom: "6px",
+                    marginTop: 0,
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {service.title}
+                </h3>
+
+                {/* Descripción (Reducido de 15px a 13px) */}
+                <p
+                  style={{
+                    color: "rgba(255,255,255,.65)",
+                    fontSize: "13px",
+                    maxWidth: "180px",
+                    margin: "0 auto",
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {service.description}
+                </p>
+
+                {/* Pequeña línea decorativa inferior */}
                 <div
                   style={{
-                    position: "absolute",
-                    right: "-10px",
-                    top: "50%",
-                    transform:
-                      "translateY(-50%)",
-                    width: "1px",
-                    height: "120px",
-                    background:
-                      "rgba(255,255,255,.15)",
+                    width: "35px",
+                    height: "2px",
+                    background: theme.primary,
+                    margin: "14px auto 0 auto",
+                    borderRadius: "999px",
+                    opacity: 0.8,
                   }}
                 />
-              )}
-
-              {(() => {
-  const Icon =
-    ICONS[service.icon] || Icons.Star;
-
-  return (
-    <div
-      className={styles.serviceIcon}
-      style={{
-        width: "90px",
-        height: "90px",
-        margin: "0 auto 20px",
-        borderRadius: "50%",
-        border:
-  `2px solid ${theme.primary}55`,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color:
-theme.primary,
-       boxShadow:
-  `0 0 30px ${theme.primary}55`,
-      }}
-    >
-      <Icon size={42} />
-    </div>
-  );
-})()}
-              <h3
-                style={{
-                  color: "var(--text-color)",
-                  fontSize: "24px",
-                  fontWeight: "700",
-                  marginBottom: "10px",
-                }}
-              >
-                {service.title}
-              </h3>
-
-              <p
-                style={{
-                  color:
-                    "rgba(255,255,255,.7)",
-                  fontSize: "15px",
-                  maxWidth: "220px",
-                  margin: "0 auto",
-                }}
-              >
-                {service.description}
-              </p>
-
-              <div
-                style={{
-                  width: "70px",
-                  height: "3px",
-                  background:
-  theme.primary,
-                  margin:
-                    "25px auto 0 auto",
-                  borderRadius: "999px",
-                }}
-              />
-            </div>
-          )
+              </div>
+            );
+          }
         )}
       </div>
     </section>

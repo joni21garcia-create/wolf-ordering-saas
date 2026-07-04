@@ -18,8 +18,12 @@ export default function HeroSettingsPage() {
 
   const loadSlides = async () => {
     try {
-      const { data } = await supabase.from("restaurant_hero_slides")
-        .select("*").eq("restaurant_id", restaurantId).order("sort_order", { ascending: true });
+      const { data } = await supabase
+        .from("restaurant_hero_slides")
+        .select("*")
+        .eq("restaurant_id", restaurantId)
+        .order("sort_order", { ascending: true });
+      
       if (data && data.length > 0) {
         setSlides(data);
         setSelectedSlide(data[0]);
@@ -31,7 +35,8 @@ export default function HeroSettingsPage() {
     if (!selectedSlide) return;
     try {
       setSaving(true);
-      await supabase.from("restaurant_hero_slides")
+      await supabase
+        .from("restaurant_hero_slides")
         .update({
           title: selectedSlide.title ?? "",
           subtitle: selectedSlide.subtitle ?? "",
@@ -41,8 +46,12 @@ export default function HeroSettingsPage() {
           active: !!selectedSlide.active,
         })
         .eq("id", selectedSlide.id);
-      alert("Hero actualizado");
+      
+      alert("Slide actualizado correctamente");
       loadSlides();
+    } catch (error) {
+      console.error(error);
+      alert("Error al guardar");
     } finally { setSaving(false); }
   };
 
@@ -56,12 +65,7 @@ export default function HeroSettingsPage() {
           <h1 style={{ fontSize: "clamp(1.8rem, 5vw, 2.5rem)", margin: "10px 0" }}>🚀 Hero Slides</h1>
         </div>
 
-        {/* CSS Grid blindado: auto-fit maneja la adaptabilidad sin media queries en el JS */}
-        <div style={{ 
-          display: "grid", 
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", 
-          gap: "20px" 
-        }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
           
           {/* SIDEBAR */}
           <div style={{ background: "rgba(17,17,17,.95)", border: "1px solid rgba(255,255,255,.08)", borderRadius: "20px", padding: "20px" }}>
@@ -69,9 +73,20 @@ export default function HeroSettingsPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {slides.map((slide, i) => (
                 <div key={slide.id} onClick={() => setSelectedSlide(slide)} 
-                  style={{ padding: "12px", borderRadius: "12px", cursor: "pointer", background: selectedSlide?.id === slide.id ? "rgba(249,115,22,.15)" : "rgba(255,255,255,.03)", border: `1px solid ${selectedSlide?.id === slide.id ? "#f97316" : "transparent"}` }}>
-                  <strong>Slide {i + 1}</strong>
-                  <div style={{ color: "#888", fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{slide.title || "Sin título"}</div>
+                  style={{ 
+                    padding: "12px", 
+                    borderRadius: "12px", 
+                    cursor: "pointer", 
+                    background: selectedSlide?.id === slide.id ? "rgba(249,115,22,.15)" : "rgba(255,255,255,.03)", 
+                    border: `1px solid ${selectedSlide?.id === slide.id ? "#f97316" : "transparent"}` 
+                  }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <strong>Slide {i + 1}</strong>
+                    <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: slide.active ? "#22c55e" : "#ef4444" }} />
+                  </div>
+                  <div style={{ color: "#888", fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {slide.title || "Sin título"}
+                  </div>
                 </div>
               ))}
             </div>
@@ -83,6 +98,19 @@ export default function HeroSettingsPage() {
               <>
                 <label style={{ display: "block", color: "#aaa", marginBottom: "10px" }}>Imagen del Slide</label>
                 {selectedSlide.image_url && <img src={selectedSlide.image_url} style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: "12px", marginBottom: "15px" }} />}
+                
+                {/* CHECKBOX DE ACTIVACIÓN */}
+                <div style={{ marginBottom: "20px", padding: "15px", background: "rgba(255,255,255,.03)", borderRadius: "12px" }}>
+                  <label style={{ display: "flex", alignItems: "center", cursor: "pointer", color: "#fff", fontWeight: "bold" }}>
+                    <input 
+                      type="checkbox" 
+                      checked={!!selectedSlide.active} 
+                      onChange={(e) => setSelectedSlide({ ...selectedSlide, active: e.target.checked })}
+                      style={{ marginRight: "12px", width: "18px", height: "18px", cursor: "pointer" }}
+                    />
+                    {selectedSlide.active ? "✅ Slide Activo (Visible)" : "❌ Slide Inactivo (Oculto)"}
+                  </label>
+                </div>
                 
                 <InputField label="Título" value={selectedSlide.title ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, title: v })} />
                 <InputField label="Subtítulo" value={selectedSlide.subtitle ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, subtitle: v })} />

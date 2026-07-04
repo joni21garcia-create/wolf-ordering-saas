@@ -1,6 +1,6 @@
 export async function subscribeToPush(
   restaurantId: string,
-  userId: string
+  userId?: string
 ) {
   if (!("serviceWorker" in navigator)) {
     return false;
@@ -60,36 +60,60 @@ export async function subscribeToPush(
 
       body: JSON.stringify({
 
-        restaurant_id:
-          restaurantId,
+       restaurant_id:
+       restaurantId,
 
-        user_id:
-          userId,
+       user_id:
+       userId ?? null,
 
-        subscription,
+       subscription,
 
-        user_agent:
-          navigator.userAgent,
+       user_agent:
+       navigator.userAgent,
 
       }),
 
-    });
+      });
 
-  if (!response.ok) {
+if (!response.ok) {
 
-    console.error(
-      "[PUSH] Error registrando dispositivo."
-    );
-
-    return false;
-
-  }
-
-  console.log(
-    "[PUSH] Dispositivo registrado."
+  console.error(
+    "[PUSH] Error registrando dispositivo."
   );
 
-  return true;
+  return false;
+
+}
+
+const result =
+  await response.json();
+
+console.log(
+  "RESULTADO PUSH =>",
+  result
+);
+
+localStorage.setItem(
+  "wolf_push_subscription_id",
+  String(result.subscription_id)
+);
+
+console.log(
+  "ID GUARDADO =>",
+  result.subscription_id
+);
+
+console.log(
+  "RESULTADO PUSH",
+  result
+);
+
+console.log(
+  "[PUSH] Dispositivo registrado."
+);
+
+return true;
+
 }
 
 function urlBase64ToUint8Array(

@@ -27,39 +27,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { error } = await supabase
-      .from("push_subscriptions")
-      .upsert(
-        {
-          restaurant_id,
-          user_id,
+ const { data, error } = await supabase
+  .from("push_subscriptions")
+  .upsert(
+    {
+      restaurant_id,
+      user_id,
 
-          // Endpoint único del dispositivo
-          endpoint: subscription.endpoint,
+      endpoint: subscription.endpoint,
 
-          // Suscripción completa (JSON)
-          subscription,
+      subscription,
 
-          // Información del navegador
-          user_agent,
+      user_agent,
 
-          active: true,
+      active: true,
 
-          updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "endpoint",
-        }
-      );
+      updated_at: new Date().toISOString(),
+    },
+    {
+      onConflict: "endpoint",
+    }
+  )
+  .select()
+  .single();
 
     if (error) {
       throw error;
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Suscripción registrada correctamente",
-    });
+return NextResponse.json({
+  success: true,
+  subscription_id: data.id,
+});
 
   } catch (error) {
     console.error(

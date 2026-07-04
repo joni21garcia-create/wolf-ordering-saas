@@ -265,6 +265,27 @@ const deliveryFee =
 const total =
   subtotal + deliveryFee;
 
+  const hasFreeDelivery =
+  deliverySettings?.free_delivery_enabled &&
+  subtotal >=
+    Number(
+      deliverySettings?.free_delivery_minimum || 0
+    );
+    
+const showPendingDeliveryMessage =
+  orderType === "delivery" &&
+  deliverySettings?.delivery_mode === "manual" &&
+  !hasFreeDelivery;
+
+const showFreeDeliveryMessage =
+  orderType === "delivery" &&
+  deliverySettings?.delivery_mode === "manual" &&
+  hasFreeDelivery;
+
+const showDeliveryRow =
+  orderType === "delivery" &&
+  deliverySettings?.delivery_mode !== "manual";
+
   const handleSubmit = async () => {
   if (!acceptedTerms) {
     alert(
@@ -272,6 +293,7 @@ const total =
     );
     return;
   }
+  
 
 if (!paymentMethod) {
   alert(
@@ -334,6 +356,11 @@ console.log(
   "restaurant_id enviado:",
   localStorage.getItem("restaurant_id")
 );
+ 
+  const pushSubscriptionId =
+  localStorage.getItem(
+    "wolf_push_subscription_id"
+  );
 
    const response =
   await fetch(
@@ -351,6 +378,9 @@ console.log(
           localStorage.getItem(
             "restaurant_id"
           ),
+
+          push_subscription_id:
+            pushSubscriptionId,
 
         customer_name:
   customerName,
@@ -479,16 +509,22 @@ router.push(
     <div
       className="glass-card wolf-shadow"
       style={{
-        padding: "40px",
-        borderRadius: "28px",
+        padding: "clamp(20px, 5vw, 40px)",
+        borderRadius: "24px",
+        width: "100%",
+        maxWidth: "680px",
+        margin: "0 auto",
+        boxSizing: "border-box",
       }}
     >
       <h1
         className="wolf-title"
         style={{
-          fontSize: "48px",
-          fontWeight: 700,
-          marginBottom: "40px",
+          fontSize: "clamp(28px, 6vw, 36px)",
+          fontWeight: 800,
+          marginBottom: "32px",
+          textAlign: "center",
+          letterSpacing: "-0.025em",
         }}
       >
         Finalizar Pedido
@@ -498,11 +534,11 @@ router.push(
 
       <div
         style={{
-          marginBottom: "40px",
-          padding: "25px",
-          borderRadius: "18px",
+          marginBottom: "32px",
+          padding: "24px",
+          borderRadius: "20px",
           background:
-            "rgba(255,255,255,.03)",
+            "linear-gradient(135deg, rgba(255,255,255,.04) 0%, rgba(255,255,255,.01) 100%)",
           border:
             "1px solid rgba(255,255,255,.08)",
         }}
@@ -510,39 +546,46 @@ router.push(
         <h3
           style={{
             color: "#fff",
-            marginBottom: "20px",
+            marginBottom: "18px",
+            fontSize: "18px",
+            fontWeight: 600,
           }}
         >
           Resumen del Pedido
         </h3>
 
-       {products.map((product, index) => (
-  <div
-    key={index}
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      marginBottom: "12px",
-      color: "rgba(255,255,255,.8)",
-    }}
-  >
-    <span>
-      {product.name} x {product.quantity}
-    </span>
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          {products.map((product, index) => (
+            <div
+              key={index}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                color: "rgba(255,255,255,.85)",
+                fontSize: "15px",
+              }}
+            >
+              <span style={{ fontWeight: 500 }}>
+                {product.name} <span style={{ color: "#f97316", marginLeft: "4px" }}>x{product.quantity}</span>
+              </span>
 
-    <span>
-      $
-      {(
-        (product.display_price ?? product.price) *
-        product.quantity
-      ).toFixed(2)}
-    </span>
-  </div>
-))}
+              <span style={{ fontFamily: "monospace", fontWeight: 600 }}>
+                $
+                {(
+                  (product.display_price ?? product.price) *
+                  product.quantity
+                ).toFixed(2)}
+              </span>
+            </div>
+          ))}
+        </div>
 
         <hr
           style={{
             margin: "20px 0",
+            border: "0",
+            borderTop: "1px dashed rgba(255,255,255,.12)",
           }}
         />
 
@@ -551,14 +594,15 @@ router.push(
             display: "flex",
             justifyContent:
               "space-between",
-            marginBottom: "10px",
+            marginBottom: "12px",
             color:
-              "rgba(255,255,255,.7)",
+              "rgba(255,255,255,.6)",
+            fontSize: "15px",
           }}
         >
           <span>Subtotal</span>
 
-          <span>
+          <span style={{ fontFamily: "monospace" }}>
             ${subtotal.toFixed(2)}
           </span>
         </div>
@@ -567,36 +611,74 @@ router.push(
 
   deliverySettings?.delivery_mode === "manual" ? (
 
-    <div
-      style={{
-        marginBottom: "15px",
-        padding: "16px",
-        borderRadius: "14px",
-        background: "rgba(37,211,102,.08)",
-        border: "1px solid rgba(37,211,102,.25)",
-      }}
-    >
-      <div
-        style={{
-          color: "#25D366",
-          fontWeight: "700",
-          marginBottom: "8px",
-        }}
-      >
-        📍 Delivery Manual
-      </div>
+    showFreeDeliveryMessage ? (
 
       <div
         style={{
-          color: "rgba(255,255,255,.75)",
-          lineHeight: "1.7",
-          fontSize: "14px",
+          marginBottom: "15px",
+          padding: "16px",
+          borderRadius: "14px",
+          background: "rgba(34,197,94,.08)",
+          border: "1px solid rgba(34,197,94,.25)",
         }}
       >
-        El costo del envío será calculado por el restaurante
-        después de que compartas tu ubicación por WhatsApp.
+        <div
+          style={{
+            color: "#22c55e",
+            fontWeight: "700",
+            marginBottom: "8px",
+          }}
+        >
+          🎉 ¡Delivery GRATIS desbloqueado!
+        </div>
+
+        <div
+          style={{
+            color: "rgba(255,255,255,.75)",
+            lineHeight: "1.7",
+            fontSize: "14px",
+          }}
+        >
+          Tu pedido ya califica para Delivery GRATIS.
+          <br />
+          Solo comparte tu ubicación por WhatsApp para coordinar la entrega.
+        </div>
       </div>
-    </div>
+
+    ) : (
+
+      <div
+        style={{
+          marginBottom: "15px",
+          padding: "16px",
+          borderRadius: "14px",
+          background: "rgba(37,211,102,.08)",
+          border: "1px solid rgba(37,211,102,.25)",
+        }}
+      >
+        <div
+          style={{
+            color: "#25D366",
+            fontWeight: "700",
+            marginBottom: "8px",
+          }}
+        >
+          📍 Delivery Manual
+        </div>
+
+        <div
+          style={{
+            color: "rgba(255,255,255,.75)",
+            lineHeight: "1.7",
+            fontSize: "14px",
+          }}
+        >
+          El costo del envío será calculado por el restaurante
+          después de que compartas tu ubicación por WhatsApp.
+        </div>
+      </div>
+
+    )
 
   ) : (
 
@@ -604,13 +686,14 @@ router.push(
       style={{
         display: "flex",
         justifyContent: "space-between",
-        marginBottom: "10px",
-        color: "rgba(255,255,255,.7)",
+        marginBottom: "12px",
+        color: "rgba(255,255,255,.6)",
+        fontSize: "15px",
       }}
     >
       <span>Delivery</span>
 
-      <span>
+      <span style={{ fontFamily: "monospace" }}>
         ${deliveryFee.toFixed(2)}
       </span>
     </div>
@@ -619,10 +702,11 @@ router.push(
 
 )}
 
-
         <hr
           style={{
-            margin: "15px 0",
+            margin: "20px 0",
+            border: "0",
+            borderTop: "1px solid rgba(255,255,255,.1)",
           }}
         />
 
@@ -631,14 +715,16 @@ router.push(
             display: "flex",
             justifyContent:
               "space-between",
+            alignItems: "center",
             color: "#fff",
-            fontWeight: 700,
-            fontSize: "22px",
+            fontWeight: 800,
+            fontSize: "24px",
+            letterSpacing: "-0.02em",
           }}
         >
           <span>Total</span>
 
-          <span>
+          <span style={{ color: "#f97316", fontFamily: "monospace" }}>
             ${total.toFixed(2)}
           </span>
         </div>
@@ -646,88 +732,97 @@ router.push(
 
       {/* CLIENTE */}
 
-      <input
-        placeholder="Nombre completo"
-        className="wolf-input"
-        value={customerName}
-        onChange={(e) =>
-          setCustomerName(
-            e.target.value
-          )
-        }
-      />
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "32px" }}>
+        <input
+          placeholder="Nombre completo"
+          className="wolf-input"
+          value={customerName}
+          onChange={(e) =>
+            setCustomerName(
+              e.target.value
+            )
+          }
+          style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", boxSizing: "border-box" }}
+        />
 
-      <input
-        placeholder="Teléfono"
-        className="wolf-input"
-        value={customerPhone}
-        onChange={(e) =>
-          setCustomerPhone(
-            e.target.value
-          )
-        }
-      />
+        <input
+          placeholder="Teléfono"
+          className="wolf-input"
+          value={customerPhone}
+          onChange={(e) =>
+            setCustomerPhone(
+              e.target.value
+            )
+          }
+          style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", boxSizing: "border-box" }}
+        />
 
+        <input
+          placeholder="Dirección"
+          className="wolf-input"
+          value={customerAddress}
+          onChange={(e) =>
+            setCustomerAddress(
+              e.target.value
+            )
+          }
+          style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", boxSizing: "border-box" }}
+        />
 
-      <input
-        placeholder="Dirección"
-        className="wolf-input"
-        value={customerAddress}
-        onChange={(e) =>
-          setCustomerAddress(
-            e.target.value
-          )
-        }
-      />
+        <input
+          placeholder="Sector"
+          className="wolf-input"
+          value={customerZone}
+          onChange={(e) =>
+            setCustomerZone(
+              e.target.value
+            )
+          }
+          style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", boxSizing: "border-box" }}
+        />
 
-<input
-  placeholder="Sector"
-  className="wolf-input"
-  value={customerZone}
-  onChange={(e) =>
-    setCustomerZone(
-      e.target.value
-    )
-  }
-/>
+        <textarea
+          placeholder="Referencia"
+          className="wolf-input"
+          rows={3}
+          value={customerReference}
+          onChange={(e) =>
+            setCustomerReference(
+              e.target.value
+            )
+          }
+          style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", boxSizing: "border-box", resize: "none" }}
+        />
 
-   <textarea
-  placeholder="Referencia"
-  className="wolf-input"
-  rows={3}
-  value={customerReference}
-  onChange={(e) =>
-    setCustomerReference(
-      e.target.value
-    )
-  }
-/>
-
-<textarea
-  placeholder="Instrucciones para entrega"
-  className="wolf-input"
-  rows={3}
-  value={
-    deliveryInstructions
-  }
-  onChange={(e) =>
-    setDeliveryInstructions(
-      e.target.value
-    )
-  }
-/>
+        <textarea
+          placeholder="Instrucciones para entrega"
+          className="wolf-input"
+          rows={3}
+          value={
+            deliveryInstructions
+          }
+          onChange={(e) =>
+            setDeliveryInstructions(
+              e.target.value
+            )
+          }
+          style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", boxSizing: "border-box", resize: "none" }}
+        />
+      </div>
 
      {/* MÉTODO DE PAGO */}
 
 <div
   style={{
-    marginTop: "30px",
+    marginBottom: "32px",
   }}
 >
   <h3
     style={{
       color: "#fff",
-      marginBottom: "15px",
+      marginBottom: "16px",
+      fontSize: "18px",
+      fontWeight: 600,
     }}
   >
     Método de Pago *
@@ -738,154 +833,196 @@ router.push(
       style={{
         color:
           "rgba(255,255,255,.6)",
+        fontSize: "14px",
       }}
     >
       Cargando métodos...
     </p>
   )}
 
-  {restaurant?.accepts_cash && (
-    <label
-      style={{
-        color: "#fff",
-        display: "block",
-        marginBottom:
-          "10px",
-      }}
-    >
-      <input
-        type="radio"
-        value="cash"
-        checked={
-          paymentMethod ===
-          "cash"
-        }
-        onChange={(e) =>
-          setPaymentMethod(
-            e.target.value
-          )
-        }
-      />
-      {" "}Efectivo
-    </label>
-  )}
+  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+    {restaurant?.accepts_cash && (
+      <label
+        style={{
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          padding: "14px 16px",
+          borderRadius: "14px",
+          background: paymentMethod === "cash" ? "rgba(249,115,22,.1)" : "rgba(255,255,255,.02)",
+          border: paymentMethod === "cash" ? "1px solid #f97316" : "1px solid rgba(255,255,255,.08)",
+          cursor: "pointer",
+          fontSize: "15px",
+        }}
+      >
+        <input
+          type="radio"
+          value="cash"
+          checked={
+            paymentMethod ===
+            "cash"
+          }
+          onChange={(e) =>
+            setPaymentMethod(
+              e.target.value
+            )
+          }
+          style={{ accentColor: "#f97316", width: "18px", height: "18px" }}
+        />
+        Efectivo
+      </label>
+    )}
 
-  {restaurant?.accepts_transfer && (
-    <label
-      style={{
-        color: "#fff",
-        display: "block",
-        marginBottom:
-          "10px",
-      }}
-    >
-      <input
-        type="radio"
-        value="transfer"
-        checked={
-          paymentMethod ===
-          "transfer"
-        }
-        onChange={(e) =>
-          setPaymentMethod(
-            e.target.value
-          )
-        }
-      />
-      {" "}Transferencia Bancaria
-    </label>
-  )}
+    {restaurant?.accepts_transfer && (
+      <label
+        style={{
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          padding: "14px 16px",
+          borderRadius: "14px",
+          background: paymentMethod === "transfer" ? "rgba(249,115,22,.1)" : "rgba(255,255,255,.02)",
+          border: paymentMethod === "transfer" ? "1px solid #f97316" : "1px solid rgba(255,255,255,.08)",
+          cursor: "pointer",
+          fontSize: "15px",
+        }}
+      >
+        <input
+          type="radio"
+          value="transfer"
+          checked={
+            paymentMethod ===
+            "transfer"
+          }
+          onChange={(e) =>
+            setPaymentMethod(
+              e.target.value
+            )
+          }
+          style={{ accentColor: "#f97316", width: "18px", height: "18px" }}
+        />
+        Transferencia Bancaria
+      </label>
+    )}
 
-  {restaurant?.accepts_qr && (
-    <label
-      style={{
-        color: "#fff",
-        display: "block",
-        marginBottom:
-          "10px",
-      }}
-    >
-      <input
-        type="radio"
-        value="qr"
-        checked={
-          paymentMethod ===
-          "qr"
-        }
-        onChange={(e) =>
-          setPaymentMethod(
-            e.target.value
-          )
-        }
-      />
-      {" "}Pago por QR
-    </label>
-  )}
+    {restaurant?.accepts_qr && (
+      <label
+        style={{
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          padding: "14px 16px",
+          borderRadius: "14px",
+          background: paymentMethod === "qr" ? "rgba(249,115,22,.1)" : "rgba(255,255,255,.02)",
+          border: paymentMethod === "qr" ? "1px solid #f97316" : "1px solid rgba(255,255,255,.08)",
+          cursor: "pointer",
+          fontSize: "15px",
+        }}
+      >
+        <input
+          type="radio"
+          value="qr"
+          checked={
+            paymentMethod ===
+            "qr"
+          }
+          onChange={(e) =>
+            setPaymentMethod(
+              e.target.value
+            )
+          }
+          style={{ accentColor: "#f97316", width: "18px", height: "18px" }}
+        />
+        Pago por QR
+      </label>
+    )}
 
-  {restaurant?.accepts_delivery_payment && (
-    <label
-      style={{
-        color: "#fff",
-        display: "block",
-      }}
-    >
-      <input
-        type="radio"
-        value="delivery"
-        checked={
-          paymentMethod ===
-          "delivery"
-        }
-        onChange={(e) =>
-          setPaymentMethod(
-            e.target.value
-          )
-        }
-      />
-      {" "}Pago contra entrega
-    </label>
-  )}
+    {restaurant?.accepts_delivery_payment && (
+      <label
+        style={{
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          padding: "14px 16px",
+          borderRadius: "14px",
+          background: paymentMethod === "delivery" ? "rgba(249,115,22,.1)" : "rgba(255,255,255,.02)",
+          border: paymentMethod === "delivery" ? "1px solid #f97316" : "1px solid rgba(255,255,255,.08)",
+          cursor: "pointer",
+          fontSize: "15px",
+        }}
+      >
+        <input
+          type="radio"
+          value="delivery"
+          checked={
+            paymentMethod ===
+            "delivery"
+          }
+          onChange={(e) =>
+            setPaymentMethod(
+              e.target.value
+            )
+          }
+          style={{ accentColor: "#f97316", width: "18px", height: "18px" }}
+        />
+        Pago contra entrega
+      </label>
+    )}
+  </div>
 </div>
 
 {paymentMethod === "transfer" && (
   <div
     style={{
-      marginTop: "25px",
-      padding: "20px",
-      borderRadius: "16px",
-      background: "rgba(255,255,255,.04)",
-      border:
-        "1px solid rgba(255,255,255,.08)",
+      marginTop: "20px",
+      marginBottom: "32px",
+      padding: "24px",
+      borderRadius: "20px",
+      background: "rgba(255,255,255,.03)",
+      border: "1px solid rgba(255,255,255,.08)",
       color: "#fff",
     }}
   >
     <h3
       style={{
-        marginBottom: "20px",
+        marginBottom: "18px",
+        fontSize: "16px",
+        fontWeight: 600,
       }}
     >
       Datos Bancarios
     </h3>
 
-    <p>
-      <strong>Banco:</strong>{" "}
-      {restaurant?.bank_name}
-    </p>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "15px", marginBottom: "20px" }}>
+      <p style={{ margin: 0, color: "rgba(255,255,255,.7)" }}>
+        <strong style={{ color: "#fff" }}>Banco:</strong>{" "}
+        {restaurant?.bank_name}
+      </p>
 
-    <p>
-      <strong>Titular:</strong>{" "}
-      {restaurant?.account_holder}
-    </p>
+      <p style={{ margin: 0, color: "rgba(255,255,255,.7)" }}>
+        <strong style={{ color: "#fff" }}>Titular:</strong>{" "}
+        {restaurant?.account_holder}
+      </p>
 
-    <p>
-      <strong>Cuenta:</strong>{" "}
-      {restaurant?.account_number}
-    </p>
+      <p style={{ margin: 0, color: "rgba(255,255,255,.7)" }}>
+        <strong style={{ color: "#fff" }}>Cuenta:</strong>{" "}
+        <span style={{ fontFamily: "monospace" }}>{restaurant?.account_number}</span>
+      </p>
+    </div>
 
     <label
       style={{
-        display: "block",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: "10px",
         marginTop: "20px",
+        fontSize: "14px",
+        color: "rgba(255,255,255,.85)",
+        cursor: "pointer",
       }}
     >
       <input
@@ -896,18 +1033,19 @@ router.push(
             e.target.checked
           )
         }
+        style={{ accentColor: "#f97316", marginTop: "2px", width: "16px", height: "16px" }}
       />
-
-      {" "}
       Confirmo que realizaré la transferencia bancaria
     </label>
 
     <div
       style={{
-        marginTop: "20px",
+        marginTop: "24px",
+        paddingTop: "20px",
+        borderTop: "1px solid rgba(255,255,255,.08)",
       }}
     >
-      <label>
+      <label style={{ display: "block", fontSize: "14px", fontWeight: 500, marginBottom: "10px" }}>
         Subir comprobante:
       </label>
 
@@ -921,8 +1059,9 @@ router.push(
         }
         style={{
           display: "block",
-          marginTop: "10px",
-          color: "#fff",
+          width: "100%",
+          color: "rgba(255,255,255,.6)",
+          fontSize: "14px",
         }}
       />
     </div>
@@ -932,19 +1071,20 @@ router.push(
 {paymentMethod === "qr" && (
   <div
     style={{
-      marginTop: "25px",
-      padding: "20px",
-      borderRadius: "16px",
-      background:
-        "rgba(255,255,255,.04)",
-      border:
-        "1px solid rgba(255,255,255,.08)",
+      marginTop: "20px",
+      marginBottom: "32px",
+      padding: "24px",
+      borderRadius: "20px",
+      background: "rgba(255,255,255,.03)",
+      border: "1px solid rgba(255,255,255,.08)",
       color: "#fff",
     }}
   >
     <h3
       style={{
-        marginBottom: "20px",
+        marginBottom: "18px",
+        fontSize: "16px",
+        fontWeight: 600,
       }}
     >
       Selecciona un QR
@@ -953,6 +1093,7 @@ router.push(
     <div
       style={{
         display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
         gap: "12px",
       }}
     >
@@ -967,23 +1108,26 @@ router.push(
             style={{
               background:
                 selectedQr?.id === qr.id
-                  ? "#f97316"
-                  : "rgba(255,255,255,.04)",
+                  ? "rgba(249,115,22,.15)"
+                  : "rgba(255,255,255,.02)",
 
-              color: "#fff",
+              color: selectedQr?.id === qr.id ? "#f97316" : "#fff",
 
               border:
                 selectedQr?.id === qr.id
-                  ? "1px solid #f97316"
+                  ? "2px solid #f97316"
                   : "1px solid rgba(255,255,255,.08)",
 
-              borderRadius: "14px",
+              borderRadius: "12px",
 
               padding: "14px",
 
               cursor: "pointer",
 
-              textAlign: "left",
+              textAlign: "center",
+              fontSize: "14px",
+              fontWeight: selectedQr?.id === qr.id ? 600 : 400,
+              transition: "all 0.2s ease",
             }}
           >
             {qr.name}
@@ -995,19 +1139,19 @@ router.push(
     {selectedQr && (
       <div
         style={{
-          marginTop: "25px",
+          marginTop: "24px",
           padding: "20px",
           borderRadius: "18px",
-          background:
-            "rgba(255,255,255,.03)",
-          border:
-            "1px solid rgba(255,255,255,.08)",
+          background: "rgba(0,0,0,.15)",
+          border: "1px solid rgba(255,255,255,.06)",
         }}
       >
         <h3
           style={{
             color: "#fff",
-            marginBottom: "15px",
+            marginBottom: "16px",
+            fontSize: "15px",
+            textAlign: "center",
           }}
         >
           {selectedQr.name}
@@ -1018,49 +1162,39 @@ router.push(
           alt={selectedQr.name}
           style={{
             width: "100%",
-            maxWidth: "280px",
-            borderRadius: "16px",
+            maxWidth: "240px",
+            borderRadius: "12px",
             display: "block",
-            margin: "0 auto",
+            margin: "0 auto 20px auto",
+            border: "4px solid rgba(255,255,255,0.05)",
           }}
         />
 
-        {selectedQr.account_holder && (
-          <p
-            style={{
-              color: "#fff",
-              marginTop: "20px",
-            }}
-          >
-            <strong>
-              Titular:
-            </strong>{" "}
-            {
-              selectedQr.account_holder
-            }
-          </p>
-        )}
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "14px", marginBottom: "20px" }}>
+          {selectedQr.account_holder && (
+            <p style={{ margin: 0, color: "rgba(255,255,255,.7)" }}>
+              <strong style={{ color: "#fff" }}>Titular:</strong>{" "}
+              {selectedQr.account_holder}
+            </p>
+          )}
 
-        {selectedQr.account_number && (
-          <p
-            style={{
-              color: "#fff",
-            }}
-          >
-            <strong>
-              Cuenta:
-            </strong>{" "}
-            {
-              selectedQr.account_number
-            }
-          </p>
-        )}
+          {selectedQr.account_number && (
+            <p style={{ margin: 0, color: "rgba(255,255,255,.7)" }}>
+              <strong style={{ color: "#fff" }}>Cuenta:</strong>{" "}
+              <span style={{ fontFamily: "monospace" }}>{selectedQr.account_number}</span>
+            </p>
+          )}
+        </div>
 
 <label
   style={{
-    display: "block",
-    marginTop: "20px",
-    color: "#fff",
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "10px",
+    marginTop: "16px",
+    color: "rgba(255,255,255,.85)",
+    fontSize: "14px",
+    cursor: "pointer",
   }}
 >
   <input
@@ -1071,18 +1205,19 @@ router.push(
         e.target.checked
       )
     }
+    style={{ accentColor: "#f97316", marginTop: "2px", width: "16px", height: "16px" }}
   />
-
-  {" "}
   Confirmo que realicé el pago mediante QR
 </label>
 
 <div
   style={{
     marginTop: "20px",
+    paddingTop: "16px",
+    borderTop: "1px solid rgba(255,255,255,.08)",
   }}
 >
-  <label>
+  <label style={{ display: "block", fontSize: "14px", marginBottom: "8px" }}>
     Subir comprobante:
   </label>
 
@@ -1096,8 +1231,9 @@ router.push(
     }
     style={{
       display: "block",
-      marginTop: "10px",
-      color: "#fff",
+      width: "100%",
+      color: "rgba(255,255,255,.6)",
+      fontSize: "14px",
     }}
   />
 </div>
@@ -1111,24 +1247,25 @@ router.push(
   paymentMethod === "delivery") && (
   <div
     style={{
-      marginTop: "25px",
-      padding: "20px",
-      borderRadius: "16px",
-      background:
-        "rgba(255,255,255,.04)",
-      border:
-        "1px solid rgba(255,255,255,.08)",
+      marginTop: "20px",
+      marginBottom: "32px",
+      padding: "24px",
+      borderRadius: "20px",
+      background: "rgba(255,255,255,.03)",
+      border: "1px solid rgba(255,255,255,.08)",
       color: "#fff",
     }}
   >
-    <h3>
+    <h3 style={{ fontSize: "16px", fontWeight: 600, margin: "0 0 6px 0" }}>
       Cambio para el pago
     </h3>
 
     <p
       style={{
         color:
-          "rgba(255,255,255,.7)",
+          "rgba(255,255,255,.55)",
+        fontSize: "14px",
+        margin: "0 0 16px 0",
       }}
     >
       ¿Con cuánto vas a pagar?
@@ -1152,22 +1289,29 @@ router.push(
       }}
       placeholder="Ej: 20"
       className="wolf-input"
+      style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", boxSizing: "border-box" }}
     />
 
     {cashAmount && (
       <div
         style={{
-          marginTop: "15px",
+          marginTop: "16px",
+          padding: "12px 16px",
+          borderRadius: "10px",
+          background: "rgba(255,255,255,.03)",
+          fontSize: "15px",
+          display: "flex",
+          justifyContent: "space-between",
         }}
       >
-        <strong>
-          Cambio requerido:
-        </strong>{" "}
-        $
-        {Math.max(
-          changeAmount,
-          0
-        ).toFixed(2)}
+        <span style={{ color: "rgba(255,255,255,.6)" }}>Cambio requerido:</span>
+        <strong style={{ color: "#22c55e", fontFamily: "monospace" }}>
+          $
+          {Math.max(
+            changeAmount,
+            0
+          ).toFixed(2)}
+        </strong>
       </div>
     )}
   </div>
@@ -1177,11 +1321,13 @@ router.push(
 
       <div
         style={{
-          marginTop: "30px",
-          color: "#fff",
+          marginTop: "24px",
+          color: "rgba(255,255,255,.8)",
+          fontSize: "14px",
+          lineHeight: "1.5",
         }}
       >
-        <label>
+        <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", cursor: "pointer" }}>
           <input
             type="checkbox"
             checked={
@@ -1192,33 +1338,37 @@ router.push(
                 e.target.checked
               )
             }
+            style={{ accentColor: "#f97316", marginTop: "3px", width: "16px", height: "16px", flexShrink: 0 }}
           />
 
-          {" "}Acepto los{" "}
-
-          <a
-            href="https://www.wolfordering.com/terminos-y-condiciones"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: "#f97316",
-            }}
-          >
-            términos y condiciones
-          </a>
-
-          {" "}y la{" "}
-
-          <a
-            href="https://www.wolfordering.com/politica-de-privacidad"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: "#f97316",
-            }}
-          >
-            política de privacidad
-          </a>
+          <span>
+            Acepto los{" "}
+            <a
+              href="https://www.wolfordering.com/terminos-y-condiciones"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "#f97316",
+                textDecoration: "underline",
+                fontWeight: 500,
+              }}
+            >
+              términos y condiciones
+            </a>
+            {" "}y la{" "}
+            <a
+              href="https://www.wolfordering.com/politica-de-privacidad"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "#f97316",
+                textDecoration: "underline",
+                fontWeight: 500,
+              }}
+            >
+              política de privacidad
+            </a>
+          </span>
         </label>
       </div>
 
@@ -1233,11 +1383,17 @@ router.push(
         className="wolf-button"
         style={{
           width: "100%",
-          marginTop: "30px",
+          padding: "16px",
+          borderRadius: "14px",
+          fontSize: "16px",
+          fontWeight: 700,
+          marginTop: "32px",
+          cursor: !acceptedTerms || loading ? "not-allowed" : "pointer",
+          transition: "all 0.2s ease",
           opacity:
             !acceptedTerms ||
             loading
-              ? 0.5
+              ? 0.4
               : 1,
         }}
       >

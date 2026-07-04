@@ -66,6 +66,8 @@ console.log(
     const {
 restaurant_id,
 
+push_subscription_id,
+
 customer_name,
 customer_phone,
 customer_email,
@@ -268,12 +270,19 @@ if (
 
     // Crear pedido
 
+    console.log(
+  "PUSH SUBSCRIPTION:",
+  push_subscription_id
+);
+
     const { data: order, error: orderError } =
       await supabase
         .from("orders")
         .insert({
 
   restaurant_id,
+
+  push_subscription_id,
 
   customer_name,
   customer_phone,
