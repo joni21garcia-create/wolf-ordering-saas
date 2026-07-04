@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 
 import OrderType from "@/components/restaurant/order/OrderType";
 import CustomerForm from "@/components/restaurant/order/CustomerForm";
-import RestaurantMap from "@/components/restaurant/order/RestaurantMap"; 
+import RestaurantMap from "@/components/restaurant/order/RestaurantMap";
 import DigitalMenu from "@/components/restaurant/order/DigitalMenu";
 import Cart from "@/components/restaurant/order/Cart";
-
-import { getFinalPrice, getCommissionConfig } from "@/lib/configuration/pricing";
+import {
+  getFinalPrice,
+  getCommissionConfig,
+} from "@/lib/configuration/pricing";
 
 interface Props {
   restaurant: any;
@@ -23,137 +25,353 @@ interface CartItem {
   image_url?: string | null;
 }
 
-export default function OrderClient({ restaurant }: Props) {
-  const [isMobile, setIsMobile] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+export default function OrderClient({
+  restaurant,
+}: Props) {
 
-  const [orderType, setOrderType] = useState<"delivery" | "pickup" | null>(null);
-  const [customerData, setCustomerData] = useState<any>({});
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  console.log("RESTAURANT:", restaurant);
+
+  const [orderType, setOrderType] = useState<
+    "delivery" | "pickup" | null
+  >(null);
+
+  const [customerData, setCustomerData] =
+    useState<any>({});
+
+  const [cartItems, setCartItems] =
+    useState<CartItem[]>([]);
+
+  /* ===========================
+      CARGAR LOCAL STORAGE
+  =========================== */
 
   useEffect(() => {
-    setIsMounted(true);
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    
-    const savedCart = localStorage.getItem("wolf_cart");
-    if (savedCart) setCartItems(JSON.parse(savedCart));
-    
-    const savedCustomer = localStorage.getItem("wolf_customer");
-    if (savedCustomer) setCustomerData(JSON.parse(savedCustomer));
-    
-    const savedOrderType = localStorage.getItem("wolf_order_type");
-    if (savedOrderType === "delivery" || savedOrderType === "pickup") setOrderType(savedOrderType);
+    const savedCart =
+      localStorage.getItem(
+        "wolf_cart"
+      );
 
-    return () => window.removeEventListener("resize", checkMobile);
+    if (savedCart) {
+      setCartItems(
+        JSON.parse(savedCart)
+      );
+    }
+
+    const savedCustomer =
+      localStorage.getItem(
+        "wolf_customer"
+      );
+
+    if (savedCustomer) {
+      setCustomerData(
+        JSON.parse(savedCustomer)
+      );
+    }
+
+    const savedOrderType =
+      localStorage.getItem(
+        "wolf_order_type"
+      );
+
+    if (
+      savedOrderType ===
+        "delivery" ||
+      savedOrderType === "pickup"
+    ) {
+      setOrderType(
+        savedOrderType
+      );
+    }
   }, []);
 
-  useEffect(() => {
-    if (isMounted) {
-      localStorage.setItem("wolf_cart", JSON.stringify(cartItems));
-      localStorage.setItem("wolf_customer", JSON.stringify(customerData));
-      if (orderType) localStorage.setItem("wolf_order_type", orderType);
-    }
-  }, [cartItems, customerData, orderType, isMounted]);
+  /* ===========================
+      GUARDAR LOCAL STORAGE
+  =========================== */
 
-  const addToCart = (product: any) => {
+  useEffect(() => {
+    localStorage.setItem(
+      "wolf_cart",
+      JSON.stringify(cartItems)
+    );
+  }, [cartItems]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "wolf_customer",
+      JSON.stringify(customerData)
+    );
+  }, [customerData]);
+
+  useEffect(() => {
+    if (orderType) {
+      localStorage.setItem(
+        "wolf_order_type",
+        orderType
+      );
+    }
+  }, [orderType]);
+
+  useEffect(() => {
+    console.log(
+      "CUSTOMER STATE:",
+      customerData
+    );
+  }, [customerData]);
+
+  useEffect(() => {
+    const deliveryEnabled =
+      restaurant?.deliverySettings
+        ?.delivery_enabled;
+
+    const pickupEnabled =
+      restaurant?.deliverySettings
+        ?.pickup_enabled;
+
+    if (
+      deliveryEnabled === true &&
+      pickupEnabled === false
+    ) {
+      setOrderType(
+        "delivery"
+      );
+    }
+
+    if (
+      deliveryEnabled === false &&
+      pickupEnabled === true
+    ) {
+      setOrderType(
+        "pickup"
+      );
+    }
+  }, [
+    restaurant?.deliverySettings,
+  ]);
+
+  /* ===========================
+      AGREGAR PRODUCTO
+  =========================== */
+
+  const addToCart = (
+    product: any
+  ) => {
     setCartItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
+      const existing =
+        prev.find(
+          (item) =>
+            item.id ===
+            product.id
+        );
+
       if (existing) {
-        return prev.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+        return prev.map(
+          (item) =>
+            item.id ===
+            product.id
+              ? {
+                  ...item,
+                  quantity:
+                    item.quantity + 1,
+                }
+              : item
+        );
       }
-      return [...prev, {
-        id: product.id,
-        restaurant_id: product.restaurant_id,
-        name: product.name,
-        price: Number(product.price) || 0,
-        display_price: getFinalPrice(Number(product.price), getCommissionConfig(restaurant)),
-        image_url: product.image_url,
-        quantity: 1,
-      }];
+
+      return [
+        ...prev,
+        {
+          id: product.id,
+          restaurant_id:
+            product.restaurant_id,
+          name: product.name,
+          price:
+            Number(
+              product.price
+            ) || 0,
+          display_price:
+            getFinalPrice(
+              Number(product.price),
+              getCommissionConfig(restaurant)
+            ),
+          image_url:
+            product.image_url,
+          quantity: 1,
+        },
+      ];
     });
   };
 
-  const increaseQuantity = (id: string) => setCartItems((prev) => prev.map((item) => item.id === id ? { ...item, quantity: item.quantity + 1 } : item));
-  const decreaseQuantity = (id: string) => setCartItems((prev) => prev.map((item) => item.id === id ? { ...item, quantity: item.quantity - 1 } : item).filter((item) => item.quantity > 0));
-  const removeItem = (id: string) => setCartItems((prev) => prev.filter((item) => item.id !== id));
+  /* ===========================
+      AUMENTAR
+  =========================== */
 
-  if (!isMounted) return null;
+  const increaseQuantity = (
+    id: string
+  ) => {
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              quantity:
+                item.quantity + 1,
+            }
+          : item
+      )
+    );
+  };
+
+  /* ===========================
+      DISMINUIR
+  =========================== */
+
+  const decreaseQuantity = (
+    id: string
+  ) => {
+    setCartItems((prev) =>
+      prev
+        .map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                quantity:
+                  item.quantity - 1,
+              }
+            : item
+        )
+        .filter(
+          (item) =>
+            item.quantity > 0
+        )
+    );
+  };
+
+  /* ===========================
+      ELIMINAR
+  =========================== */
+
+  const removeItem = (
+    id: string
+  ) => {
+    setCartItems((prev) =>
+      prev.filter(
+        (item) =>
+          item.id !== id
+      )
+    );
+  };
+
+  const subtotal = cartItems.reduce(
+    (total, item) =>
+      total + item.price * item.quantity,
+    0
+  );
 
   return (
-    <main 
-      className="wolf-order-background" 
-      style={{ 
-        minHeight: "100vh", 
-        padding: isMobile ? "16px 8px" : "80px 20px",
-        width: "100%",
-        overflowX: "hidden"
+    <main
+      className="wolf-order-background"
+      style={{
+        minHeight: "100vh",
+        padding: "40px 16px 120px",
+        boxSizing: "border-box"
       }}
     >
-      <div style={{ maxWidth: "1440px", margin: "0 auto", width: "100%" }}>
-        
-        {/* Selector de modo */}
-        <div style={{ marginBottom: "24px", maxWidth: "600px", margin: "0 auto 24px auto" }}>
+      {/* ESTILOS INYECTADOS NATIVAMENTE PARA HACER EL GRID RESPONSIVO SIN ROMPER NADA */}
+      <style>{`
+        .wolf-grid-container {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+          max-width: 1700px;
+          margin: 0 auto;
+        }
+        .wolf-map-wrapper {
+          width: 100%;
+          position: relative;
+          top: 0;
+        }
+        .wolf-menu-wrapper {
+          width: 100%;
+        }
+        .wolf-cart-wrapper {
+          width: 100%;
+          position: relative;
+          top: 0;
+        }
+        @media (min-width: 1024px) {
+          .wolf-grid-container {
+            display: grid;
+            grid-template-columns: 340px minmax(0, 1fr) 390px;
+            gap: 32px;
+            align-items: start;
+          }
+          .wolf-map-wrapper {
+            position: sticky;
+            top: 100px;
+          }
+          .wolf-cart-wrapper {
+            position: sticky;
+            top: 100px;
+          }
+        }
+      `}</style>
+
+      <div className="wolf-grid-container">
+
+        {/* COLUMNA 1: MAPA DE UBICACIÓN */}
+        <div className="wolf-map-wrapper">
+          <RestaurantMap restaurant={restaurant} />
+        </div>
+
+        {/* COLUMNA 2: FLUJO DE MENÚ DIGITAL Y FORMULARIOS */}
+        <div className="wolf-menu-wrapper">
+          <h1
+            className="wolf-title"
+            style={{
+              fontSize: " clamp(32px, 5vw, 48px)",
+              marginBottom: "30px",
+              fontWeight: 800,
+              letterSpacing: "-0.5px"
+            }}
+          >
+            Realizar Pedido
+          </h1>
+
           <OrderType
             selected={orderType}
-            onSelect={setOrderType}
+            onSelect={(value) => setOrderType(value)}
             deliveryEnabled={restaurant.deliverySettings?.delivery_enabled}
             pickupEnabled={restaurant.deliverySettings?.pickup_enabled}
+            deliverySettings={restaurant.deliverySettings}
+            subtotal={subtotal}
+          />
+
+          {orderType && (
+            <CustomerForm
+              orderType={orderType}
+              customerData={customerData}
+              setCustomerData={setCustomerData}
+            />
+          )}
+
+          <DigitalMenu
+            restaurant={restaurant}
+            addToCart={addToCart}
+          />
+        </div>
+
+        {/* COLUMNA 3: CARRITO DE COMPRAS Y RESUMEN */}
+        <div className="wolf-cart-wrapper">
+          <Cart
+            items={cartItems}
+            orderType={orderType}
+            increaseQuantity={increaseQuantity}
+            decreaseQuantity={decreaseQuantity}
+            removeItem={removeItem}
             deliverySettings={restaurant.deliverySettings}
           />
         </div>
 
-        {/* Grid de 3 columnas */}
-        <div style={{ 
-            display: "grid", 
-            gridTemplateColumns: isMobile ? "1fr" : "280px minmax(0, 1fr) 340px", 
-            gap: "16px", 
-            alignItems: "start",
-            width: "100%"
-        }}>
-          
-          {/* COLUMNA 1: Mapa + Formulario (Bloque unificado) */}
-          <div style={{ 
-            display: "flex", 
-            flexDirection: "column", 
-            gap: "16px", 
-            position: isMobile ? "static" : "sticky", 
-            top: "100px",
-            width: "100%"
-          }}>
-            <div className="glass-card" style={{ overflow: "hidden", borderRadius: "16px", width: "100%" }}>
-              <RestaurantMap restaurant={restaurant} />
-            </div>
-            
-            {orderType && (
-              <div style={{ width: "100%" }}>
-                <CustomerForm
-                  orderType={orderType}
-                  customerData={customerData}
-                  setCustomerData={setCustomerData}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* COLUMNA 2: Menú */}
-          <div style={{ width: "100%" }}>
-            <DigitalMenu restaurant={restaurant} addToCart={addToCart} />
-          </div>
-
-          {/* COLUMNA 3: Carrito */}
-          <div style={{ position: isMobile ? "static" : "sticky", top: "100px", width: "100%" }}>
-            <Cart
-              items={cartItems}
-              orderType={orderType}
-              increaseQuantity={increaseQuantity}
-              decreaseQuantity={decreaseQuantity}
-              removeItem={removeItem}
-              deliverySettings={restaurant.deliverySettings}
-            />
-          </div>
-        </div>
       </div>
     </main>
   );

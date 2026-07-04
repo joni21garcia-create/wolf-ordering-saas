@@ -242,8 +242,12 @@ const orderType =
     : null;
 
 const deliveryFee =
-  orderType === "delivery"
-    ? getDeliveryFee(
+  orderType !== "delivery"
+    ? 0
+    : deliverySettings?.delivery_mode ===
+      "manual"
+    ? 0
+    : getDeliveryFee(
         subtotal,
 
         Number(
@@ -256,8 +260,7 @@ const deliveryFee =
               deliverySettings.free_delivery_minimum
             )
           : 999999999
-      )
-    : 0;
+      );
 
 const total =
   subtotal + deliveryFee;
@@ -561,23 +564,61 @@ router.push(
         </div>
 
 {orderType === "delivery" && (
-  <div
-    style={{
-      display: "flex",
-      justifyContent:
-        "space-between",
-      marginBottom: "10px",
-      color:
-        "rgba(255,255,255,.7)",
-    }}
-  >
-    <span>Delivery</span>
 
-    <span>
-      ${deliveryFee.toFixed(2)}
-    </span>
-  </div>
+  deliverySettings?.delivery_mode === "manual" ? (
+
+    <div
+      style={{
+        marginBottom: "15px",
+        padding: "16px",
+        borderRadius: "14px",
+        background: "rgba(37,211,102,.08)",
+        border: "1px solid rgba(37,211,102,.25)",
+      }}
+    >
+      <div
+        style={{
+          color: "#25D366",
+          fontWeight: "700",
+          marginBottom: "8px",
+        }}
+      >
+        📍 Delivery Manual
+      </div>
+
+      <div
+        style={{
+          color: "rgba(255,255,255,.75)",
+          lineHeight: "1.7",
+          fontSize: "14px",
+        }}
+      >
+        El costo del envío será calculado por el restaurante
+        después de que compartas tu ubicación por WhatsApp.
+      </div>
+    </div>
+
+  ) : (
+
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        marginBottom: "10px",
+        color: "rgba(255,255,255,.7)",
+      }}
+    >
+      <span>Delivery</span>
+
+      <span>
+        ${deliveryFee.toFixed(2)}
+      </span>
+    </div>
+
+  )
+
 )}
+
 
         <hr
           style={{

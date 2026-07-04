@@ -3,6 +3,7 @@
 import {
   Phone,
   MapPin,
+  Mail,
 } from "lucide-react";
 
 import {
@@ -61,7 +62,7 @@ const socialButton = {
       style={{
         position: "relative",
         overflow: "hidden",
-       background:
+        background:
   `linear-gradient(
     180deg,
     ${theme.background} 0%,
@@ -141,109 +142,129 @@ opacity: 0.65,
 
           {/* CONTACTO */}
 
-          <div>
-            <h3
-              style={{
-                color: theme.text,
-                marginBottom: "25px",
-              }}
-            >
-              Contacto
-            </h3>
-
-            <div
-              style={{
-                display: "flex",
-                flexDirection:
-                  "column",
-                gap: "18px",
-              }}
-            >
-              <div
+          {(restaurant.show_whatsapp || restaurant.show_contact || restaurant.show_contact_email) && (
+            <div>
+              <h3
                 style={{
-                  display: "flex",
-                  gap: "12px",
-                  alignItems:
-                    "center",
                   color: theme.text,
-opacity: 0.75,
+                  marginBottom: "25px",
                 }}
               >
-                <Phone size={18} />
-
-                {restaurant.whatsapp_number}
-              </div>
+                Contacto
+              </h3>
 
               <div
                 style={{
                   display: "flex",
-                  gap: "12px",
-                  alignItems:
-                    "center",
-                  color: theme.text,
-opacity: 0.75,
+                  flexDirection:
+                    "column",
+                  gap: "18px",
                 }}
               >
-                <MapPin size={18} />
+                {restaurant.show_whatsapp && restaurant.whatsapp_url && (
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "12px",
+                      alignItems: "center",
+                      color: theme.text,
+                      opacity: 0.75,
+                    }}
+                  >
+                    <Phone size={18} />
+                    {restaurant.whatsapp_url}
+                  </div>
+                )}
 
-                {restaurant.address}
+                {restaurant.show_contact && restaurant.address && (
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "12px",
+                      alignItems:
+                        "center",
+                      color: theme.text,
+                      opacity: 0.75,
+                    }}
+                  >
+                    <MapPin size={18} />
+                    {restaurant.address}
+                  </div>
+                )}
+
+                {restaurant.show_contact_email && restaurant.contact_email && (
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "12px",
+                      alignItems: "center",
+                      color: theme.text,
+                      opacity: 0.75,
+                    }}
+                  >
+                    <Mail size={18} />
+                    {restaurant.contact_email}
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
 
           {/* REDES */}
 
-          <div>
-            <h3
-              style={{
-                color: theme.text,
-                marginBottom: "25px",
-              }}
-            >
-              Síguenos en nuestras redes sociales
-            </h3>
+          {restaurant.show_socials && (
+            <div>
+              <h3
+                style={{
+                  color: theme.text,
+                  marginBottom: "25px",
+                }}
+              >
+                Síguenos en nuestras redes sociales
+              </h3>
 
-            <div
-              style={{
-                display: "flex",
-                gap: "16px",
-                flexWrap: "wrap",
-              }}
-            >
-              {restaurant.show_instagram && (
-                <a
-                  href={restaurant.instagram || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={socialButton}
-                >
-                  <FaInstagram size={22} />
-                </a>
-              )}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "16px",
+                  flexWrap: "wrap",
+                }}
+              >
+                {restaurant.instagram && (
+                  <a
+                    href={restaurant.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={socialButton}
+                  >
+                    <FaInstagram size={22} />
+                  </a>
+                )}
 
-              {restaurant.show_facebook && (
-                <a
-                  href={restaurant.facebook || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={socialButton}
-                >
-                  <FaFacebookF size={22} />
-                </a>
-              )}
+                {restaurant.facebook && (
+                  <a
+                    href={restaurant.facebook}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={socialButton}
+                  >
+                    <FaFacebookF size={22} />
+                  </a>
+                )}
 
-              {restaurant.show_tiktok && (
-                <a
-                  href={restaurant.tiktok || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={socialButton}
-                >
-                  <FaTiktok size={20} />
-                </a>
-              )}
+                {restaurant.tiktok && (
+                  <a
+                    href={restaurant.tiktok}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={socialButton}
+                  >
+                    <FaTiktok size={20} />
+                  </a>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* DIVIDER */}
@@ -294,5 +315,4 @@ opacity: 0.45,
       </div>
     </footer>
   );
-}
-
+}             

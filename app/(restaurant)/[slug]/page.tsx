@@ -6,7 +6,7 @@ import FeaturedMenu from "@/components/restaurant/FeaturedMenu";
 import Services from "@/components/restaurant/Services";
 import Gallery from "@/components/restaurant/Gallery";
 import About from "@/components/restaurant/About";
-import FloatingWhatsApp from "@/components/restaurant/FloatingWhatsApp";
+
 import Menu from "@/components/restaurant/Menu";
 import CTA from "@/components/restaurant/sections/CTA";
 import Navbar from "@/components/restaurant/Navbar";
@@ -93,9 +93,6 @@ export default async function RestaurantPage({
         restaurant={restaurant}
       />
 
-      <FloatingWhatsApp
-        restaurant={restaurant}
-      />
     </>
   );
 }

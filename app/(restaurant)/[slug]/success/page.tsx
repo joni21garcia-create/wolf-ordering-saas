@@ -50,6 +50,9 @@ export default async function SuccessPage({
     )
     .single();
 
+
+
+
     const { data: deliverySettings } =
   await supabase
     .from(
@@ -62,7 +65,37 @@ export default async function SuccessPage({
     )
     .single();
 
-const whatsappMessage =
+    const isManualDelivery =
+  deliverySettings?.delivery_mode ===
+  "manual";
+
+
+
+const { data: items } =
+  await supabase
+    .from("order_items")
+    .select(`
+      *,
+      products (
+        name,
+        image_url
+      )
+    `)
+    .eq(
+      "order_id",
+      orderData.id
+    );
+
+  const itemsMessage =
+  items
+    ?.map(
+      (item: any) =>
+        `• ${item.quantity} x ${item.products?.name}`
+    )
+    .join("\n") || "";
+
+
+    const whatsappMessage =
   encodeURIComponent(`
 
 🛍️ NUEVO PEDIDO
@@ -75,6 +108,20 @@ ${orderData.customer_name}
 
 Teléfono:
 ${orderData.customer_phone}
+
+🚚 ENTREGA
+
+Dirección:
+${orderData.delivery_address}
+
+Sector:
+${orderData.delivery_sector}
+
+Referencia:
+${orderData.notes || "Sin referencia"}
+
+Indicaciones:
+${orderData.delivery_instructions || "Sin indicaciones"}
 
 Tipo:
 ${orderData.order_type}
@@ -91,6 +138,9 @@ ${orderData.selected_qr_name}`
 
 Total:
 $${orderData.total}
+
+Productos:
+${itemsMessage}
 
 ${
   orderData.payment_method === "qr"
@@ -123,23 +173,12 @@ $${orderData.cash_amount}`
     : ""
 }
 
-¿Podrían confirmar mi pedido?
+${isManualDelivery
+  ? `📍 Comparto mi ubicación en el siguiente mensaje para que puedan calcular el costo del envío y confirmar mi pedido.`
+  : `¿Podrían confirmar mi pedido?`}
 `);
 
-const { data: items } =
-  await supabase
-    .from("order_items")
-    .select(`
-      *,
-      products (
-        name,
-        image_url
-      )
-    `)
-    .eq(
-      "order_id",
-      orderData.id
-    );
+
 
 const preparationTime =
   Number(
@@ -647,8 +686,73 @@ const estimatedTime =
             </button>
           </Link>
 
+{isManualDelivery && (
+
+<div
+  style={{
+    marginTop: "30px",
+    marginBottom: "20px",
+    padding: "24px",
+    borderRadius: "18px",
+    background: "rgba(37,211,102,.08)",
+    border: "1px solid rgba(37,211,102,.25)",
+  }}
+>
+  <h3
+    style={{
+      color: "#25D366",
+      fontSize: "20px",
+      fontWeight: "700",
+      marginBottom: "14px",
+    }}
+  >
+    📍 Último paso para confirmar tu pedido
+  </h3>
+
+  <p
+    style={{
+      color: "#d1d5db",
+      lineHeight: "1.8",
+      marginBottom: "16px",
+    }}
+  >
+    Este restaurante calcula el costo del envío según la ubicación de entrega.
+  </p>
+
+  <div
+    style={{
+      display: "grid",
+      gap: "10px",
+      color: "#fff",
+      fontSize: "15px",
+    }}
+  >
+    <span>
+      ✅ Presiona el botón de WhatsApp.
+    </span>
+
+    <span>
+      ✅ Se enviará automáticamente el resumen de tu pedido.
+    </span>
+
+    <span>
+      ✅ Comparte tu ubicación desde WhatsApp.
+    </span>
+
+    <span>
+      ✅ El restaurante calculará el costo del envío y te responderá con el total final.
+    </span>
+  </div>
+</div>
+
+)}
+
 <a
-  href={`https://wa.me/${restaurant?.whatsapp}?text=${whatsappMessage}`}
+ href={`https://wa.me/${
+  restaurant?.whatsapp_url
+    ?.replace(/\D/g, "")
+    ?.replace(/^0/, "593")
+}?text=${whatsappMessage}`}
   target="_blank"
   rel="noopener noreferrer"
   style={{
@@ -657,21 +761,23 @@ const estimatedTime =
     textDecoration: "none",
   }}
 >
-  <button
-    style={{
-      width: "100%",
-      padding: "18px 30px",
-      border: "none",
-      borderRadius: "16px",
-      cursor: "pointer",
-      background: "#25D366",
-      color: "#fff",
-      fontSize: "17px",
-      fontWeight: "700",
-    }}
-  >
-    📲 Enviar pedido por WhatsApp
-  </button>
+<button
+  style={{
+    width: "100%",
+    padding: "18px 30px",
+    border: "none",
+    borderRadius: "16px",
+    cursor: "pointer",
+    background: "#25D366",
+    color: "#fff",
+    fontSize: "17px",
+    fontWeight: "700",
+  }}
+>
+  {isManualDelivery
+    ? "📍 Confirmar pedido por WhatsApp"
+    : "📲 Enviar pedido por WhatsApp"}
+</button>
 </a>
 
           <p
