@@ -7,6 +7,8 @@ from "@/lib/auth/getCurrentUser";
 
 import { checkPermission }
 from "@/lib/auth/checkPermission";
+import { sendCustomerPush }
+from "@/lib/push/sendCustomerPush";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -90,15 +92,16 @@ export async function POST(
     const { data: order } =
   await supabase
     .from("orders")
-    .select(`
+     .select(`
       id,
-      restaurant_id
-    `)
+     restaurant_id,
+     tracking_code
+     `)
     .eq(
       "id",
       orderId
     )
-    .single();
+    .maybeSingle();
 
 if (!order) {
   return NextResponse.json(
@@ -192,6 +195,8 @@ if (
           orderId
         );
 
+        
+
     if (error) {
       return NextResponse.json(
         {
@@ -204,6 +209,84 @@ if (
         }
       );
     }
+
+let title = "";
+let message = "";
+
+switch (status) {
+
+  case "accepted":
+
+    title = "🍽️ Pedido aceptado";
+
+    message =
+      "El restaurante aceptó tu pedido y comenzará a prepararlo.";
+
+    break;
+
+  case "preparing":
+
+    title = "👨‍🍳 Preparando tu pedido";
+
+    message =
+      "Tu pedido ya está siendo preparado.";
+
+    break;
+
+  case "ready":
+
+    title = "📦 Pedido listo";
+
+    message =
+      "Tu pedido está listo para ser retirado o entregado.";
+
+    break;
+
+  case "out_for_delivery":
+
+    title = "🛵 Pedido en camino";
+
+    message =
+      "Tu pedido salió para entrega.";
+
+    break;
+
+  case "completed":
+
+    title = "✅ Pedido entregado";
+
+    message =
+      "Gracias por ordenar con Wolf Ordering.";
+
+    break;
+
+  case "cancelled":
+
+    title = "❌ Pedido cancelado";
+
+    message =
+      "El restaurante canceló tu pedido.";
+
+    break;
+
+}
+
+if (title) {
+
+  await sendCustomerPush({
+
+    orderId,
+
+    title,
+
+    body: message,
+
+    url: `/tracking/${order.tracking_code}`,
+
+  });
+
+}
+
 
     return NextResponse.json({
       success: true,

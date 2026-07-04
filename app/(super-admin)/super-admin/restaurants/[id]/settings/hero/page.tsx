@@ -59,7 +59,7 @@ export default function HeroSettingsPage() {
 
   return (
     <PermissionGuard permission="hero">
-      <main style={{ maxWidth: "1000px", margin: "0 auto", padding: "20px", color: "#fff" }}>
+      <main style={{ maxWidth: "1000px", margin: "0 auto", padding: "20px", color: "#fff", fontFamily: "system-ui, sans-serif" }}>
         <div style={{ marginBottom: "30px" }}>
           <BackToSettings restaurantId={restaurantId} />
           <h1 style={{ fontSize: "clamp(1.8rem, 5vw, 2.5rem)", margin: "10px 0" }}>🚀 Hero Slides</h1>
@@ -97,7 +97,7 @@ export default function HeroSettingsPage() {
             {!selectedSlide ? <p>Selecciona un slide</p> : (
               <>
                 <label style={{ display: "block", color: "#aaa", marginBottom: "10px" }}>Imagen del Slide</label>
-                {selectedSlide.image_url && <img src={selectedSlide.image_url} style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: "12px", marginBottom: "15px" }} />}
+                {selectedSlide.image_url && <img src={selectedSlide.image_url} alt="Hero preview" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: "12px", marginBottom: "15px" }} />}
                 
                 {/* CHECKBOX DE ACTIVACIÓN */}
                 <div style={{ marginBottom: "20px", padding: "15px", background: "rgba(255,255,255,.03)", borderRadius: "12px" }}>
@@ -112,9 +112,11 @@ export default function HeroSettingsPage() {
                   </label>
                 </div>
                 
-                <InputField label="Título" value={selectedSlide.title ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, title: v })} />
-                <InputField label="Subtítulo" value={selectedSlide.subtitle ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, subtitle: v })} />
+                {/* CAMPOS MULTILÍNEA (Aceptan Enter) */}
+                <InputField multiline label="Título" value={selectedSlide.title ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, title: v })} />
+                <InputField multiline label="Subtítulo" value={selectedSlide.subtitle ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, subtitle: v })} />
                 
+                {/* CAMPOS DE UNA SOLA LÍNEA */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   <InputField label="Texto Botón" value={selectedSlide.button_text ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, button_text: v })} />
                   <InputField label="URL" value={selectedSlide.button_url ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, button_url: v })} />
@@ -132,15 +134,48 @@ export default function HeroSettingsPage() {
   );
 }
 
-function InputField({ label, value, onChange }: any) {
+// =====================================================
+// COMPONENTE INPUTFIELD CONTROLADO (Soporta Input y Textarea)
+// =====================================================
+function InputField({ label, value, onChange, multiline = false }: any) {
+  const commonStyles = {
+    width: "100%",
+    background: "#111",
+    border: "1px solid #333",
+    color: "#fff",
+    padding: "12px",
+    borderRadius: "10px",
+    fontSize: "14px",
+    fontFamily: "inherit",
+    boxSizing: "border-box" as const,
+    outline: "none",
+    transition: "border-color 0.2s"
+  };
+
   return (
     <div style={{ marginBottom: "15px" }}>
       <label style={{ display: "block", marginBottom: "5px", color: "#777", fontSize: "12px" }}>{label}</label>
-      <input 
-        value={value} 
-        onChange={(e) => onChange(e.target.value)} 
-        style={{ width: "100%", background: "#111", border: "1px solid #333", color: "#fff", padding: "12px", borderRadius: "10px" }} 
-      />
+      
+      {multiline ? (
+        <textarea
+          rows={3}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          style={{ 
+            ...commonStyles, 
+            resize: "vertical", // Permite al usuario ajustar el alto manualmente si quiere
+            minHeight: "80px",
+            lineHeight: "1.5"
+          }}
+        />
+      ) : (
+        <input 
+          type="text"
+          value={value} 
+          onChange={(e) => onChange(e.target.value)} 
+          style={commonStyles} 
+        />
+      )}
     </div>
   );
 }
