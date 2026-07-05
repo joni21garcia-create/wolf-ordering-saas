@@ -36,12 +36,12 @@ export async function GET(
       ].filter(icon => icon.src) // CRUCIAL: Elimina iconos vacíos que bloquean la instalación
     };
 
-    return new NextResponse(JSON.stringify(manifest), {
+      return new NextResponse(JSON.stringify(manifest), {
       headers: {
-        "Content-Type": "application/manifest+json",
-        "Cache-Control": "public, max-age=86400", // Mejora velocidad de carga
-      },
-    });
+    "Content-Type": "application/manifest+json",
+    "Cache-Control": "no-cache, must-revalidate",
+  },
+});
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

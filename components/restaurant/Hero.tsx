@@ -105,20 +105,24 @@ export default function Hero({
         }}
       >
         <div style={{ maxWidth: "750px" }}>
+          
+          {/* TÍTULO ENRIQUECIDO: Procesa los tamaños de letra guardados */}
           <h1
             style={{
-              fontSize: "clamp(3.5rem, 7vw, 6rem)", // Ajuste ligero de escala para evitar desbordes móviles
-              lineHeight: 1.1,
+              fontSize: "clamp(2.5rem, 6vw, 5.5rem)", // Ajuste adaptativo ideal para que los tamaños personalizados luzcan bien en mobile
+              lineHeight: 1.2,
               fontWeight: "900",
               color: "#ffffff",
               marginBottom: "24px",
             }}
-          >
-            {slides.length > 0
-              ? slides[currentSlide]?.title
-              : (restaurant.name || "Wolf Ordering")}
-          </h1>
+            dangerouslySetInnerHTML={{
+              __html: slides.length > 0
+                ? (slides[currentSlide]?.title || "")
+                : (restaurant.name || "Wolf Ordering")
+            }}
+          />
 
+          {/* SUBTÍTULO ENRIQUECIDO: Procesa los tamaños de letra guardados */}
           <p
             style={{
               fontSize: "1.2rem",
@@ -127,11 +131,12 @@ export default function Hero({
               maxWidth: "650px",
               marginBottom: "40px",
             }}
-          >
-            {slides.length > 0
-              ? slides[currentSlide]?.subtitle
-              : (restaurant.description || "Las mejores hamburguesas artesanales.")}
-          </p>
+            dangerouslySetInnerHTML={{
+              __html: slides.length > 0
+                ? (slides[currentSlide]?.subtitle || "")
+                : (restaurant.description || "Las mejores hamburguesas artesanales.")
+            }}
+          />
           
           <div
             style={{

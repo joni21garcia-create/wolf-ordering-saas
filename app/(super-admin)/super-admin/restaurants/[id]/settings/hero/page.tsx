@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import BackToSettings from "@/components/admin/BackToSettings";
@@ -84,9 +84,8 @@ export default function HeroSettingsPage() {
                     <strong>Slide {i + 1}</strong>
                     <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: slide.active ? "#22c55e" : "#ef4444" }} />
                   </div>
-                  <div style={{ color: "#888", fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {slide.title || "Sin título"}
-                  </div>
+                  <div style={{ color: "#888", fontSize: "12px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                       dangerouslySetInnerHTML={{ __html: slide.title || "Sin título" }} />
                 </div>
               ))}
             </div>
@@ -112,11 +111,11 @@ export default function HeroSettingsPage() {
                   </label>
                 </div>
                 
-                {/* CAMPOS MULTILÍNEA (Aceptan Enter) */}
-                <InputField multiline label="Título" value={selectedSlide.title ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, title: v })} />
-                <InputField multiline label="Subtítulo" value={selectedSlide.subtitle ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, subtitle: v })} />
+                {/* CAMPOS EDITABLES EN VIVO CON IDENTIFICADOR ÚNICO DE RESETEO */}
+                <EditableField key={`title-${selectedSlide.id}`} label="Título" value={selectedSlide.title ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, title: v })} />
+                <EditableField key={`subtitle-${selectedSlide.id}`} label="Subtítulo" value={selectedSlide.subtitle ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, subtitle: v })} />
                 
-                {/* CAMPOS DE UNA SOLA LÍNEA */}
+                {/* CAMPOS DE UNA SOLA LÍNEA NORMALES */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                   <InputField label="Texto Botón" value={selectedSlide.button_text ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, button_text: v })} />
                   <InputField label="URL" value={selectedSlide.button_url ?? ""} onChange={(v: string) => setSelectedSlide({ ...selectedSlide, button_url: v })} />
@@ -135,47 +134,141 @@ export default function HeroSettingsPage() {
 }
 
 // =====================================================
-// COMPONENTE INPUTFIELD CONTROLADO (Soporta Input y Textarea)
+// COMPONENTE EDITABLE CON RESETEO DE FOCO POR ID
 // =====================================================
-function InputField({ label, value, onChange, multiline = false }: any) {
-  const commonStyles = {
-    width: "100%",
-    background: "#111",
-    border: "1px solid #333",
-    color: "#fff",
-    padding: "12px",
-    borderRadius: "10px",
-    fontSize: "14px",
-    fontFamily: "inherit",
-    boxSizing: "border-box" as const,
-    outline: "none",
-    transition: "border-color 0.2s"
+function EditableField({ label, value, onChange }: any) {
+  const editorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.innerHTML !== value) {
+      editorRef.current.innerHTML = value;
+    }
+  }, [value]);
+
+  const changeSize = (direction: "increase" | "decrease") => {
+    editorRef.current?.focus();
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    
+    let targetElement = range.commonAncestorContainer as HTMLElement;
+    if (targetElement.nodeType === Node.TEXT_NODE) {
+      targetElement = targetElement.parentElement!;
+    }
+
+    const isInternalSpan = targetElement !== editorRef.current && targetElement.tagName === "SPAN";
+
+    let currentSize = 16;
+    const computedSize = window.getComputedStyle(targetElement).fontSize;
+    if (computedSize) {
+      currentSize = parseInt(computedSize, 10);
+    }
+
+    const newSize = direction === "increase" ? currentSize + 3 : Math.max(10, currentSize - 3);
+    const sizeString = `${newSize}px`;
+
+    if (range.toString().length > 0) {
+      if (isInternalSpan && targetElement.innerText.trim() === range.toString().trim()) {
+        targetElement.style.fontSize = sizeString;
+      } else {
+        const span = document.createElement("span");
+        span.style.fontSize = sizeString;
+        span.style.display = "inline-block";
+        span.style.lineHeight = "1.2";
+        
+        span.appendChild(range.extractContents());
+        range.insertNode(span);
+      }
+    } else {
+      const span = document.createElement("span");
+      span.style.fontSize = sizeString;
+      span.style.display = "inline-block";
+      span.style.lineHeight = "1.2";
+      span.innerHTML = "&#8203;"; 
+
+      range.deleteContents();
+      range.insertNode(span);
+
+      const newRange = document.createRange();
+      newRange.setStart(span, 1);
+      newRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
+    }
+
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+    }
   };
 
   return (
+    <div style={{ marginBottom: "20px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+        <label style={{ color: "#777", fontSize: "12px" }}>{label}</label>
+        
+        <div style={{ display: "flex", gap: "4px", background: "#222", padding: "3px", borderRadius: "6px", border: "1px solid #333" }}>
+          <button type="button" onClick={() => changeSize("decrease")} style={btnStyle}>─ A</button>
+          <button type="button" onClick={() => changeSize("increase")} style={btnStyle}>┼ A</button>
+        </div>
+      </div>
+
+      <div
+        ref={editorRef}
+        contentEditable
+        onInput={(e) => onChange(e.currentTarget.innerHTML)}
+        style={{
+          width: "100%",
+          minHeight: "85px",
+          background: "#111",
+          border: "1px solid #333",
+          color: "#fff",
+          padding: "12px",
+          borderRadius: "10px",
+          fontSize: "16px",
+          fontFamily: "inherit",
+          boxSizing: "border-box",
+          outline: "none",
+          whiteSpace: "pre-wrap",
+          overflowWrap: "break-word"
+        }}
+      />
+    </div>
+  );
+}
+
+const btnStyle = {
+  background: "#1a1a1a",
+  color: "#fff",
+  border: "none",
+  padding: "4px 14px",
+  fontSize: "12px",
+  borderRadius: "4px",
+  cursor: "pointer",
+  fontWeight: "700" as const,
+  transition: "all 0.15s"
+};
+
+function InputField({ label, value, onChange }: any) {
+  return (
     <div style={{ marginBottom: "15px" }}>
       <label style={{ display: "block", marginBottom: "5px", color: "#777", fontSize: "12px" }}>{label}</label>
-      
-      {multiline ? (
-        <textarea
-          rows={3}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          style={{ 
-            ...commonStyles, 
-            resize: "vertical", // Permite al usuario ajustar el alto manualmente si quiere
-            minHeight: "80px",
-            lineHeight: "1.5"
-          }}
-        />
-      ) : (
-        <input 
-          type="text"
-          value={value} 
-          onChange={(e) => onChange(e.target.value)} 
-          style={commonStyles} 
-        />
-      )}
+      <input 
+        type="text"
+        value={value} 
+        onChange={(e) => onChange(e.target.value)} 
+        style={{
+          width: "100%",
+          background: "#111",
+          border: "1px solid #333",
+          color: "#fff",
+          padding: "12px",
+          borderRadius: "10px",
+          fontSize: "14px",
+          boxSizing: "border-box",
+          outline: "none"
+        }} 
+      />
     </div>
   );
 }

@@ -69,8 +69,8 @@ export default function Services({
     <section
       style={{
         maxWidth: "1200px",
-        margin: "-20px auto 60px",
-        padding: "0 20px",
+        margin: "-20px auto 40px", // Reducido el margen inferior de la sección
+        padding: "0 16px",
         position: "relative",
         zIndex: 10,
         boxSizing: "border-box",
@@ -80,9 +80,10 @@ export default function Services({
       <div
         style={{
           display: "grid",
-          // auto-fit y minmax hacen que se ajusten solos y bajen de fila dinámicamente
-          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))",
-          gap: "24px 16px",
+          // Reducido el tamaño mínimo de 200px a 160px para juntarlos en la misma fila
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))",
+          // Gap reducido de 24px 16px a 12px 8px para máxima proximidad
+          gap: "12px 8px",
           justifyContent: "center",
           width: "100%",
         }}
@@ -104,16 +105,16 @@ export default function Services({
                   flexDirection: "column",
                   alignItems: "center",
                   boxSizing: "border-box",
-                  padding: "12px",
+                  padding: "8px", // Reducido el padding de la tarjeta de 12px a 8px
                 }}
               >
-                {/* Contenedor del Icono (Reducido de 90px a 64px) */}
+                {/* Contenedor del Icono */}
                 <div
                   className={styles.serviceIcon}
                   style={{
-                    width: "64px",
-                    height: "64px",
-                    margin: "0 auto 14px",
+                    width: "60px", // Sutil ajuste de 64px a 60px para mayor compresión
+                    height: "60px",
+                    margin: "0 auto 8px", // Reducido el margen inferior de 14px a 8px
                     borderRadius: "50%",
                     border: `2px solid ${theme.primary}40`,
                     display: "flex",
@@ -125,31 +126,31 @@ export default function Services({
                     flexShrink: 0,
                   }}
                 >
-                  <Icon size={26} />
+                  <Icon size={24} />
                 </div>
 
-                {/* Título (Reducido de 24px a 17px) */}
+                {/* Título */}
                 <h3
                   style={{
                     color: "var(--text-color)",
-                    fontSize: "17px",
+                    fontSize: "16px", // Sutil ajuste de 17px a 16px
                     fontWeight: "700",
-                    marginBottom: "6px",
+                    marginBottom: "4px", // Reducido de 6px a 4px
                     marginTop: 0,
-                    lineHeight: 1.3,
+                    lineHeight: 1.2,
                   }}
                 >
                   {service.title}
                 </h3>
 
-                {/* Descripción (Reducido de 15px a 13px) */}
+                {/* Descripción */}
                 <p
                   style={{
                     color: "rgba(255,255,255,.65)",
-                    fontSize: "13px",
-                    maxWidth: "180px",
+                    fontSize: "12.5px", // Sutil ajuste de 13px a 12.5px
+                    maxWidth: "160px", // Estrechado un poco para acompañar la compresión
                     margin: "0 auto",
-                    lineHeight: 1.4,
+                    lineHeight: 1.3,
                   }}
                 >
                   {service.description}
@@ -158,10 +159,10 @@ export default function Services({
                 {/* Pequeña línea decorativa inferior */}
                 <div
                   style={{
-                    width: "35px",
+                    width: "25px", // Reducido de 35px a 25px
                     height: "2px",
                     background: theme.primary,
-                    margin: "14px auto 0 auto",
+                    margin: "8px auto 0 auto", // Reducido el margen superior de 14px a 8px
                     borderRadius: "999px",
                     opacity: 0.8,
                   }}

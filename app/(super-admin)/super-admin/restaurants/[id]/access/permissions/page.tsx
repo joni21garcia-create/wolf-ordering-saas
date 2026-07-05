@@ -65,41 +65,95 @@ export default function PermissionsPage() {
 
   return (
     <PermissionGuard permission="permissions">
-      <main style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px", color: "#fff" }}>
-        <p style={{ color: "#666", marginBottom: "8px" }}>Acceso / Permisos</p>
-        <h1 style={{ fontSize: "clamp(2rem, 5vw, 3rem)", marginBottom: "30px" }}>🔐 Gestión de Permisos</h1>
+      <main style={mainContainerStyle}>
+        
+        {/* HEADER SECTION */}
+        <header style={{ marginBottom: "35px" }}>
+          <p style={{ color: "#71717a", marginBottom: "8px", fontSize: "14px", fontWeight: "500" }}>
+            Acceso / Gestión de Seguridad
+          </p>
+          <h1 style={{ fontSize: "clamp(28px, 5vw, 42px)", fontWeight: "900", margin: 0, letterSpacing: "-1px" }}>
+            🔐 Control de Permisos
+          </h1>
+          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "15px", marginTop: "6px", maxWidth: "600px" }}>
+            Asigna qué secciones y herramientas de la plataforma Wolf tiene permitidas visualizar cada rol.
+          </p>
+        </header>
 
-        <div style={{ background: "rgba(17,17,17,.95)", border: "1px solid rgba(255,255,255,.08)", borderRadius: "24px", padding: "30px" }}>
+        {/* CONTENEDOR PRINCIPAL */}
+        <div style={panelCardStyle}>
           
-          <div style={{ marginBottom: "30px" }}>
-            <label style={{ fontSize: "14px", color: "#aaa" }}>Seleccionar Rol para configurar</label>
-            <select value={selectedRole} onChange={(e) => { setSelectedRole(e.target.value); loadPermissions(e.target.value); }} 
-              style={selectStyle}>
-              {roles.map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}
+          {/* SELECTOR DE ROL */}
+          <div style={{ marginBottom: "35px" }}>
+            <label style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)", fontWeight: "600", letterSpacing: "0.2px", display: "block" }}>
+              Seleccionar Rol para Configurar
+            </label>
+            <select 
+              value={selectedRole} 
+              onChange={(e) => { setSelectedRole(e.target.value); loadPermissions(e.target.value); }} 
+              style={selectStyle}
+            >
+              {roles.map((role) => (
+                <option key={role.id} value={role.id} style={{ background: "#0b0b0b", color: "#fff" }}>
+                  {role.name}
+                </option>
+              ))}
             </select>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "15px", marginBottom: "30px" }}>
+          {/* GRID DE MÓDULOS DE SISTEMA */}
+          <div style={gridStyle}>
             {modules.map((module) => {
               const isSelected = permissions.includes(module.code);
               return (
-                <div key={module.id} onClick={() => isSelected ? setPermissions(permissions.filter(p => p !== module.code)) : setPermissions([...permissions, module.code])}
+                <div 
+                  key={module.id} 
+                  onClick={() => isSelected ? setPermissions(permissions.filter(p => p !== module.code)) : setPermissions([...permissions, module.code])}
                   style={{ 
-                    background: isSelected ? "rgba(249,115,22,.1)" : "rgba(255,255,255,.03)",
-                    border: `1px solid ${isSelected ? "#f97316" : "rgba(255,255,255,.08)"}`,
-                    borderRadius: "16px", padding: "20px", cursor: "pointer", transition: ".3s",
-                    display: "flex", justifyContent: "space-between", alignItems: "center"
+                    background: isSelected ? "rgba(249,115,22,.08)" : "rgba(255,255,255,.02)",
+                    border: `1px solid ${isSelected ? "#f97316" : "rgba(255,255,255,.06)"}`,
+                    borderRadius: "16px", 
+                    padding: "18px 20px", 
+                    cursor: "pointer", 
+                    transition: "all 0.2s ease",
+                    display: "flex", 
+                    justifyContent: "space-between", 
+                    alignItems: "center",
+                    boxSizing: "border-box"
+                  }}
+                >
+                  <span style={{ 
+                    fontSize: "14px", 
+                    fontWeight: isSelected ? "600" : "500", 
+                    color: isSelected ? "#fff" : "rgba(255,255,255,0.8)" 
                   }}>
-                  <span style={{ fontWeight: isSelected ? "600" : "400" }}>{module.name}</span>
-                  <span style={{ fontSize: "20px" }}>{isSelected ? "✅" : "○"}</span>
+                    {module.name}
+                  </span>
+                  
+                  <span style={{ 
+                    fontSize: "18px", 
+                    color: isSelected ? "#f97316" : "rgba(255,255,255,0.2)",
+                    userSelect: "none"
+                  }}>
+                    {isSelected ? "●" : "○"}
+                  </span>
                 </div>
               );
             })}
           </div>
 
-          <button onClick={savePermissions} disabled={saving}
-            style={{ background: "#f97316", color: "#fff", border: "none", padding: "16px 32px", borderRadius: "14px", fontWeight: "700", cursor: "pointer" }}>
-            {saving ? "Guardando..." : "Guardar Cambios"}
+          {/* BOTÓN DE ACCIÓN GLOBAL */}
+          <button 
+            onClick={savePermissions} 
+            disabled={saving}
+            style={{ 
+              ...saveBtnStyle,
+              background: saving ? "rgba(255,255,255,0.1)" : "#f97316",
+              color: saving ? "rgba(255,255,255,0.3)" : "#fff",
+              boxShadow: saving ? "none" : "0 8px 24px rgba(249,115,22,0.2)"
+            }}
+          >
+            {saving ? "Actualizando políticas de seguridad..." : "Guardar Cambios de Acceso"}
           </button>
         </div>
       </main>
@@ -107,7 +161,58 @@ export default function PermissionsPage() {
   );
 }
 
+// =====================================================
+// ARQUITECTURA DE ESTILOS PREMIUM
+// =====================================================
+const mainContainerStyle = { 
+  maxWidth: "1200px", 
+  margin: "0 auto", 
+  padding: "clamp(24px, 5vw, 50px)", 
+  color: "#fff",
+  fontFamily: "system-ui, sans-serif"
+};
+
+const panelCardStyle = { 
+  background: "rgba(15, 15, 15, 0.6)", 
+  backdropFilter: "blur(20px)",
+  WebkitBackdropFilter: "blur(20px)",
+  border: "1px solid rgba(255,255,255,.06)", 
+  borderRadius: "28px", 
+  padding: "clamp(20px, 4vw, 35px)",
+  boxShadow: "0 20px 40px rgba(0,0,0,0.3)"
+};
+
 const selectStyle: React.CSSProperties = {
-  width: "100%", padding: "14px", marginTop: "10px", background: "#111", color: "#fff",
-  border: "1px solid #333", borderRadius: "12px", fontSize: "16px", outline: "none"
+  width: "100%", 
+  padding: "14px 16px", 
+  marginTop: "10px", 
+  background: "#0b0b0b", 
+  color: "#fff",
+  border: "1px solid rgba(255,255,255,.08)", 
+  borderRadius: "14px", 
+  fontSize: "15px", 
+  fontWeight: "500",
+  outline: "none",
+  cursor: "pointer",
+  colorScheme: "dark", // Sincroniza con el fix global de CSS que agregamos
+  boxSizing: "border-box"
+};
+
+const gridStyle = { 
+  display: "grid", 
+  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", 
+  gap: "14px", 
+  marginBottom: "35px" 
+};
+
+const saveBtnStyle = { 
+  border: "none", 
+  padding: "16px 32px", 
+  borderRadius: "14px", 
+  fontWeight: "700" as const, 
+  fontSize: "14px",
+  cursor: "pointer", 
+  width: "100%",
+  letterSpacing: "0.2px",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
 };

@@ -470,3 +470,6 @@ body {
     grid-template-columns: 1fr; /* Una sola columna en móvil */
   }
 }
+html, body {
+  color-scheme: dark !important;
+}

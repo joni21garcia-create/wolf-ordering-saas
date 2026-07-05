@@ -37,9 +37,13 @@ export async function GET() {
     };
 
     return new NextResponse(JSON.stringify(finalManifest), {
-      status: 200,
-      headers: { "Content-Type": "application/manifest+json" },
-    });
+     status: 200,
+     headers: {
+    "Content-Type": "application/manifest+json",
+    "Cache-Control": "no-cache, must-revalidate",
+  },
+});
+
   } catch (error: any) {
     console.error("Error crítico en manifiesto:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

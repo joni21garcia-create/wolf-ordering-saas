@@ -59,33 +59,97 @@ export default function SchedulePage() {
 
   return (
     <PermissionGuard permission="schedule">
-      <main style={{ minHeight: "100vh", padding: "clamp(20px, 5vw, 40px)", background: "#050505", color: "#fff" }}>
-        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+      <main style={{ minHeight: "100vh", padding: "clamp(24px, 5vw, 50px)", background: "#060606", color: "#fff", fontFamily: "system-ui, sans-serif" }}>
+        <div style={{ maxWidth: "750px", margin: "0 auto" }}>
           
-          <header style={{ marginBottom: "30px" }}>
+          <header style={{ marginBottom: "40px" }}>
             <BackToSettings restaurantId={restaurantId} />
-            <h1 style={{ fontSize: "clamp(28px, 6vw, 42px)", fontWeight: "900", margin: "10px 0" }}>🕒 Horarios</h1>
+            <h1 style={{ fontSize: "clamp(32px, 5vw, 42px)", fontWeight: "900", margin: "16px 0 8px", letterSpacing: "-1px" }}>
+              Horarios de Atención
+            </h1>
+            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", margin: 0 }}>
+              Define los bloques de apertura y cierre para los pedidos digitales de tu local.
+            </p>
           </header>
 
           {loading ? (
-            <p style={{ textAlign: "center", color: "#9ca3af" }}>Cargando configuración...</p>
+            <div style={{ padding: "60px 0", textAlign: "center" }}>
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "15px", letterSpacing: "0.5px" }}>Cargando configuración de la plataforma...</p>
+            </div>
           ) : (
-            <section style={{ background: "rgba(17,17,17,.95)", border: "1px solid rgba(255,255,255,.08)", borderRadius: "24px", padding: "20px" }}>
+            <section style={{ 
+              background: "rgba(15, 15, 15, 0.6)", 
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(255,255,255,0.06)", 
+              borderRadius: "28px", 
+              padding: "clamp(16px, 4vw, 32px)",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.3)"
+            }}>
+              
+              {/* Encabezado Opcional Visual de Columnas en escritorio */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid rgba(255,255,255,0.06)", opacity: 0.4, fontSize: "12px", fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase" }} className="hide-on-mobile">
+                <span>Día</span>
+                <span>Apertura</span>
+                <span>Cierre</span>
+              </div>
+
               {days.map((day, index) => {
                 const key = dayKeys[index];
                 return (
-                  <div key={day} style={{ display: "grid", gridTemplateColumns: "100px 1fr 1fr", gap: "10px", alignItems: "center", padding: "12px 0", borderBottom: index !== days.length - 1 ? "1px solid rgba(255,255,255,.06)" : "none" }}>
-                    <strong style={{ fontSize: "14px" }}>{day}</strong>
-                    <input type="time" value={schedule[`${key}_open` as keyof typeof schedule]} onChange={(e) => setSchedule({...schedule, [`${key}_open`]: e.target.value})} style={inputStyle} />
-                    <input type="time" value={schedule[`${key}_close` as keyof typeof schedule]} onChange={(e) => setSchedule({...schedule, [`${key}_close`]: e.target.value})} style={inputStyle} />
+                  <div 
+                    key={day} 
+                    style={{ 
+                      display: "grid", 
+                      gridTemplateColumns: "1fr 1fr 1fr", 
+                      gap: "16px", 
+                      alignItems: "center", 
+                      padding: "16px 0", 
+                      borderBottom: index !== days.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                    }}
+                  >
+                    <strong style={{ fontSize: "15px", fontWeight: "600", color: "rgba(255,255,255,0.95)" }}>
+                      {day}
+                    </strong>
+                    
+                    <div style={{ position: "relative" }}>
+                      <input 
+                        type="time" 
+                        value={schedule[`${key}_open` as keyof typeof schedule]} 
+                        onChange={(e) => setSchedule({...schedule, [`${key}_open`]: e.target.value})} 
+                        style={inputStyle} 
+                      />
+                    </div>
+
+                    <div style={{ position: "relative" }}>
+                      <input 
+                        type="time" 
+                        value={schedule[`${key}_close` as keyof typeof schedule]} 
+                        onChange={(e) => setSchedule({...schedule, [`${key}_close`]: e.target.value})} 
+                        style={inputStyle} 
+                      />
+                    </div>
                   </div>
                 );
               })}
             </section>
           )}
 
-          <button onClick={saveSchedule} disabled={saving || loading} style={saveBtn}>
-            {saving ? "Guardando..." : "💾 Guardar Horarios"}
+          <button 
+            onClick={saveSchedule} 
+            disabled={saving || loading} 
+            style={{
+              ...saveBtn,
+              background: saving ? "rgba(255,255,255,0.1)" : "#f97316",
+              color: saving ? "rgba(255,255,255,0.4)" : "#fff",
+              boxShadow: saving ? "none" : "0 10px 25px rgba(249, 115, 22, 0.25)"
+            }}
+          >
+            {saving ? (
+              <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+                Actualizando base de datos...
+              </span>
+            ) : "Guardar Horarios de Operación"}
           </button>
         </div>
       </main>
@@ -93,5 +157,30 @@ export default function SchedulePage() {
   );
 }
 
-const inputStyle = { background: "#0f0f0f", color: "#fff", border: "1px solid #333", borderRadius: "8px", padding: "10px", width: "100%", fontSize: "14px" };
-const saveBtn = { width: "100%", marginTop: "25px", background: "#f97316", color: "#fff", border: "none", padding: "18px", borderRadius: "16px", fontWeight: "800", fontSize: "16px", cursor: "pointer" };
+const inputStyle = { 
+  background: "#0b0b0b", 
+  color: "#fff", 
+  border: "1px solid rgba(255,255,255,0.08)", 
+  borderRadius: "14px", 
+  padding: "12px 16px", 
+  width: "100%", 
+  fontSize: "14px",
+  fontWeight: "500",
+  outline: "none",
+  transition: "all 0.2s ease",
+  boxSizing: "border-box" as const,
+  colorScheme: "dark" // Fix definitivo para que el modal del reloj nativo en Chrome sea oscuro
+};
+
+const saveBtn = { 
+  width: "100%", 
+  marginTop: "30px", 
+  border: "none", 
+  padding: "18px", 
+  borderRadius: "20px", 
+  fontWeight: "700" as const, 
+  fontSize: "16px", 
+  cursor: "pointer",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  letterSpacing: "0.3px"
+};

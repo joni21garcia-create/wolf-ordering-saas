@@ -28,18 +28,39 @@ export default function Gallery({ restaurant }: Props) {
           </h2>
         </div>
 
-        <div className={styles.grid}>
+        {/* Forzamos el grid a mostrar 2 fotos (columnas) usando estilos inline de alta prioridad */}
+        <div 
+          className={styles.grid}
+          style={{
+            display: "grid",
+            // repeat(2, 1fr) asegura 2 columnas fijas. En pantallas muy grandes se puede expandir si lo deseas, pero aquí queda en 2.
+            gridTemplateColumns: "repeat(2, 1fr)", 
+            gap: "12px", // Un gap optimizado para que luzca simétrico en formato de doble columna
+            width: "100%",
+          }}
+        >
           {gallery.map((image: any) => (
             <motion.div
               key={image.id}
               className={styles.card}
               whileHover={{ scale: 0.98 }}
               transition={{ duration: 0.3 }}
+              style={{
+                width: "100%",
+                overflow: "hidden",
+                position: "relative",
+              }}
             >
               <img
                 src={image.image_url}
                 alt={image.title || "Imagen de galería"}
                 loading="lazy"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
               />
               <div className={styles.overlay}>
                 <h3 style={{ color: "#fff", fontSize: "1.1rem", margin: 0 }}>

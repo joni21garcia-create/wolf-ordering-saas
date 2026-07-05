@@ -217,7 +217,7 @@ switch (status) {
 
   case "accepted":
 
-    title = "🍽️ Pedido aceptado";
+    title = "🍽️ Pedido confirmado";
 
     message =
       "El restaurante aceptó tu pedido y comenzará a prepararlo.";
@@ -226,7 +226,7 @@ switch (status) {
 
   case "preparing":
 
-    title = "👨‍🍳 Preparando tu pedido";
+    title = "👨‍🍳 Estamos preparando tu pedido";
 
     message =
       "Tu pedido ya está siendo preparado.";
@@ -235,7 +235,7 @@ switch (status) {
 
   case "ready":
 
-    title = "📦 Pedido listo";
+    title = "📦 Tu pedido está listo";
 
     message =
       "Tu pedido está listo para ser retirado o entregado.";
@@ -244,7 +244,7 @@ switch (status) {
 
   case "out_for_delivery":
 
-    title = "🛵 Pedido en camino";
+    title = "🛵 Tu pedido va en camino";
 
     message =
       "Tu pedido salió para entrega.";
@@ -253,16 +253,16 @@ switch (status) {
 
   case "completed":
 
-    title = "✅ Pedido entregado";
+    title = title = "❤️ Gracias por tu compra";
 
     message =
-      "Gracias por ordenar con Wolf Ordering.";
+      "¡Gracias por ordenar con nuestro restaurante! Esperamos verte nuevamente.";
 
     break;
 
   case "cancelled":
 
-    title = "❌ Pedido cancelado";
+    title = "⚠️ Pedido cancelado";
 
     message =
       "El restaurante canceló tu pedido.";

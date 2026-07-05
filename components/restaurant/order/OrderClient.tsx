@@ -18,10 +18,15 @@ interface Props {
 
 interface CartItem {
   id: string;
+
   restaurant_id: string;
+
   name: string;
+
   price: number;
+
   quantity: number;
+
   image_url?: string | null;
 }
 
@@ -29,7 +34,7 @@ export default function OrderClient({
   restaurant,
 }: Props) {
 
-  console.log("RESTAURANT:", restaurant);
+console.log("RESTAURANT:", restaurant);
 
   const [orderType, setOrderType] = useState<
     "delivery" | "pickup" | null
@@ -89,68 +94,70 @@ export default function OrderClient({
   =========================== */
 
   useEffect(() => {
+  localStorage.setItem(
+    "wolf_cart",
+    JSON.stringify(cartItems)
+  );
+}, [cartItems]);
+
+useEffect(() => {
+  localStorage.setItem(
+    "wolf_customer",
+    JSON.stringify(customerData)
+  );
+}, [customerData]);
+
+useEffect(() => {
+  if (orderType) {
     localStorage.setItem(
-      "wolf_cart",
-      JSON.stringify(cartItems)
+      "wolf_order_type",
+      orderType
     );
-  }, [cartItems]);
+  }
+}, [orderType]);
+
+useEffect(() => {
+  console.log(
+    "CUSTOMER STATE:",
+    customerData
+  );
+}, [customerData]);
 
   useEffect(() => {
-    localStorage.setItem(
-      "wolf_customer",
-      JSON.stringify(customerData)
+  const deliveryEnabled =
+    restaurant?.deliverySettings
+      ?.delivery_enabled;
+
+  const pickupEnabled =
+    restaurant?.deliverySettings
+      ?.pickup_enabled;
+
+  if (
+    deliveryEnabled === true &&
+    pickupEnabled === false
+  ) {
+    setOrderType(
+      "delivery"
     );
-  }, [customerData]);
+  }
 
-  useEffect(() => {
-    if (orderType) {
-      localStorage.setItem(
-        "wolf_order_type",
-        orderType
-      );
-    }
-  }, [orderType]);
-
-  useEffect(() => {
-    console.log(
-      "CUSTOMER STATE:",
-      customerData
+  if (
+    deliveryEnabled === false &&
+    pickupEnabled === true
+  ) {
+    setOrderType(
+      "pickup"
     );
-  }, [customerData]);
-
-  useEffect(() => {
-    const deliveryEnabled =
-      restaurant?.deliverySettings
-        ?.delivery_enabled;
-
-    const pickupEnabled =
-      restaurant?.deliverySettings
-        ?.pickup_enabled;
-
-    if (
-      deliveryEnabled === true &&
-      pickupEnabled === false
-    ) {
-      setOrderType(
-        "delivery"
-      );
-    }
-
-    if (
-      deliveryEnabled === false &&
-      pickupEnabled === true
-    ) {
-      setOrderType(
-        "pickup"
-      );
-    }
-  }, [
-    restaurant?.deliverySettings,
-  ]);
+  }
+}, [
+  restaurant?.deliverySettings,
+]);
 
   /* ===========================
       AGREGAR PRODUCTO
   =========================== */
+
+
 
   const addToCart = (
     product: any
@@ -177,27 +184,33 @@ export default function OrderClient({
         );
       }
 
-      return [
-        ...prev,
-        {
-          id: product.id,
-          restaurant_id:
-            product.restaurant_id,
-          name: product.name,
-          price:
-            Number(
-              product.price
-            ) || 0,
-          display_price:
-            getFinalPrice(
-              Number(product.price),
-              getCommissionConfig(restaurant)
-            ),
-          image_url:
-            product.image_url,
-          quantity: 1,
-        },
-      ];
+return [
+  ...prev,
+  {
+    id: product.id,
+
+    restaurant_id:
+      product.restaurant_id,
+
+    name: product.name,
+
+    price:
+      Number(
+        product.price
+      ) || 0,
+
+display_price:
+  getFinalPrice(
+    Number(product.price),
+    getCommissionConfig(restaurant)
+  ),
+
+    image_url:
+      product.image_url,
+
+    quantity: 1,
+  },
+];
     });
   };
 
@@ -246,6 +259,9 @@ export default function OrderClient({
     );
   };
 
+
+
+
   /* ===========================
       ELIMINAR
   =========================== */
@@ -262,10 +278,10 @@ export default function OrderClient({
   };
 
   const subtotal = cartItems.reduce(
-    (total, item) =>
-      total + item.price * item.quantity,
-    0
-  );
+  (total, item) =>
+    total + item.price * item.quantity,
+  0
+);
 
   return (
     <main
@@ -276,7 +292,7 @@ export default function OrderClient({
         boxSizing: "border-box"
       }}
     >
-      {/* ESTILOS INYECTADOS NATIVAMENTE PARA HACER EL GRID RESPONSIVO SIN ROMPER NADA */}
+      {/* ESTILOS INYECTADOS RESPONSIVOS */}
       <style>{`
         .wolf-grid-container {
           display: flex;
@@ -301,37 +317,38 @@ export default function OrderClient({
         @media (min-width: 1024px) {
           .wolf-grid-container {
             display: grid;
-            grid-template-columns: 340px minmax(0, 1fr) 390px;
-            gap: 32px;
+            grid-template-columns: 320px minmax(0, 1fr) 380px;
+            gap: 40px;
             align-items: start;
           }
           .wolf-map-wrapper {
             position: sticky;
-            top: 100px;
+            top: 120px;
           }
           .wolf-cart-wrapper {
             position: sticky;
-            top: 100px;
+            top: 120px;
           }
         }
       `}</style>
 
       <div className="wolf-grid-container">
 
-        {/* COLUMNA 1: MAPA DE UBICACIÓN */}
+        {/* MAPA */}
         <div className="wolf-map-wrapper">
-          <RestaurantMap restaurant={restaurant} />
+          <RestaurantMap
+            restaurant={restaurant}
+          />
         </div>
 
-        {/* COLUMNA 2: FLUJO DE MENÚ DIGITAL Y FORMULARIOS */}
+        {/* MENU */}
         <div className="wolf-menu-wrapper">
           <h1
             className="wolf-title"
             style={{
-              fontSize: " clamp(32px, 5vw, 48px)",
-              marginBottom: "30px",
-              fontWeight: 800,
-              letterSpacing: "-0.5px"
+              fontSize: "48px",
+              marginBottom: "50px",
+              fontWeight: 700,
             }}
           >
             Realizar Pedido
@@ -339,10 +356,21 @@ export default function OrderClient({
 
           <OrderType
             selected={orderType}
-            onSelect={(value) => setOrderType(value)}
-            deliveryEnabled={restaurant.deliverySettings?.delivery_enabled}
-            pickupEnabled={restaurant.deliverySettings?.pickup_enabled}
-            deliverySettings={restaurant.deliverySettings}
+            onSelect={(value) =>
+              setOrderType(value)
+            }
+            deliveryEnabled={
+              restaurant.deliverySettings
+                ?.delivery_enabled
+            }
+            pickupEnabled={
+              restaurant.deliverySettings
+                ?.pickup_enabled
+            }
+            deliverySettings={
+              restaurant.deliverySettings
+            }
+
             subtotal={subtotal}
           />
 
@@ -360,7 +388,7 @@ export default function OrderClient({
           />
         </div>
 
-        {/* COLUMNA 3: CARRITO DE COMPRAS Y RESUMEN */}
+        {/* CARRITO */}
         <div className="wolf-cart-wrapper">
           <Cart
             items={cartItems}
@@ -368,10 +396,11 @@ export default function OrderClient({
             increaseQuantity={increaseQuantity}
             decreaseQuantity={decreaseQuantity}
             removeItem={removeItem}
-            deliverySettings={restaurant.deliverySettings}
+            deliverySettings={
+              restaurant.deliverySettings
+            }
           />
         </div>
-
       </div>
     </main>
   );

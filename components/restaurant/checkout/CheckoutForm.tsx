@@ -226,11 +226,8 @@ useEffect(() => {
 const subtotal = products.reduce(
   (acc, item) =>
     acc +
-    (
-      item.display_price ||
-      item.price
-    ) *
-      item.quantity,
+    (item.display_price ?? item.price) *
+    item.quantity,
   0
 );
 
@@ -448,19 +445,11 @@ selected_qr_name:
         terms_accepted:
           acceptedTerms,
 
-        items: products.map(
-  (item) => ({
-    product_id:
-      item.id,
-
-    quantity:
-      item.quantity,
-
-    price:
-      item.display_price ||
-      item.price,
-  })
-),
+items: products.map((item) => ({
+    product_id: item.id,
+    quantity: item.quantity,
+    price: item.price,
+}))
       }),
     }
   );

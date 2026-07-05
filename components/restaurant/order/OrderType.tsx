@@ -38,266 +38,314 @@ export default function OrderType({
   primaryColor = "#f97316",
 }: Props) {
 
-  const estimatedTime =
-    getEstimatedTime(
-      deliverySettings
-    );
+const estimatedTime =
+  getEstimatedTime(
+    deliverySettings
+  );
 
   const isManualDelivery =
-    deliverySettings?.delivery_mode ===
-    "manual";
+  deliverySettings?.delivery_mode ===
+  "manual";
 
   const hasFreeDelivery =
-    deliverySettings?.free_delivery_enabled;
+  deliverySettings?.free_delivery_enabled;
 
-  const freeDeliveryMinimum =
-    Number(
-      deliverySettings?.free_delivery_minimum
-    ) || 0;
+const freeDeliveryMinimum =
+  Number(
+    deliverySettings?.free_delivery_minimum
+  ) || 0;
 
   const qualifiesForFreeDelivery =
-    hasFreeDelivery &&
-    subtotal >= freeDeliveryMinimum;
+  hasFreeDelivery &&
+  subtotal >= freeDeliveryMinimum;
 
   return (
-    <div style={{ width: "100%", marginBottom: "30px", boxSizing: "border-box" }}>
-      {/* ESTILOS DE RESPONSIVIDAD PARA EVITAR EL COLAPSO EN PANTAILLAS PEQUEÑAS */}
-      <style>{`
-        .wolf-ordertype-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-          gap: 20px;
-          width: 100%;
-        }
-        .wolf-ordertype-card {
-          cursor: pointer;
-          padding: 24px;
-          border-radius: 24px;
-          backdrop-filter: blur(20px);
-          transition: border-color 0.3s ease, background-color 0.3s ease;
-          box-sizing: border-box;
-          width: 100%;
-        }
-        @media (min-width: 640px) {
-          .wolf-ordertype-grid {
-            gap: 30px;
+    <div
+      style={{
+        display: "grid",
+        // Cambiado a min(100%, 320px) para que en pantallas pequeñas de 320px o menos no desborde
+        gridTemplateColumns:
+          "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
+        gap: "20px", // Reducido ligeramente de 30px a 20px para mejorar compactación en móvil
+      }}
+    >
+      {deliveryEnabled && (
+        <motion.div
+          whileHover={{
+            y: -10,
+            scale: 1.02,
+          }}
+          whileTap={{
+            scale: 0.98,
+          }}
+          onClick={() =>
+            onSelect("delivery")
           }
-          .wolf-ordertype-card {
-            padding: 40px;
-            border-radius: 30px;
-          }
-        }
-      `}</style>
-
-      <div className="wolf-ordertype-grid">
-        {deliveryEnabled && (
-          <motion.div
-            whileHover={{
-              y: -5,
-              scale: 1.01,
-            }}
-            whileTap={{
-              scale: 0.99,
-            }}
-            onClick={() => onSelect("delivery")}
-            className="wolf-ordertype-card"
+          style={{
+            cursor: "pointer",
+            padding: "clamp(20px, 4vw, 40px)", // Padding fluido responsivo
+            borderRadius: "24px", // Reducido de 30px a 24px para mejor estética móvil
+            backdropFilter:
+              "blur(20px)",
+            background:
+              selected ===
+              "delivery"
+                ? `${primaryColor}20`
+                : "rgba(255,255,255,.04)",
+            border:
+              selected ===
+              "delivery"
+                ? `2px solid ${primaryColor}`
+                : "1px solid rgba(255,255,255,.08)",
+            transition: ".3s",
+            boxSizing: "border-box", // Asegura que el padding no rompa el ancho total
+          }}
+        >
+          <div
             style={{
-              background:
-                selected === "delivery"
-                  ? `${primaryColor}15`
-                  : "rgba(255,255,255,.03)",
-              border:
-                selected === "delivery"
-                  ? `2px solid ${primaryColor}`
-                  : "1px solid rgba(255,255,255,.08)",
+              fontSize: "clamp(48px, 8vw, 64px)", // Tamaño de emoji fluido
+              marginBottom: "15px",
             }}
           >
-            <div
-              style={{
-                fontSize: "clamp(48px, 8vw, 64px)",
-                marginBottom: "16px",
-                lineHeight: 1
-              }}
-            >
-              🚚
-            </div>
+            🚚
+          </div>
 
-            <h2
-              style={{
-                color: "#fff",
-                fontSize: "clamp(24px, 5vw, 32px)",
-                fontWeight: "800",
-                marginBottom: "8px",
-                margin: 0,
-                letterSpacing: "-0.5px"
-              }}
-            >
-              Delivery
-            </h2>
-
-            <p
-              style={{
-                color: "rgba(255,255,255,.65)",
-                lineHeight: 1.6,
-                fontSize: "14px",
-                marginTop: "8px",
-                marginBottom: 0
-              }}
-            >
-              Recibe tu pedido en la puerta de tu casa.
-            </p>
-
-            {deliverySettings && (
-              <div
-                style={{
-                  marginTop: "20px",
-                  padding: "16px",
-                  borderRadius: "16px",
-                  background: "rgba(0,0,0,.2)",
-                  border: "1px solid rgba(255,255,255,.04)",
-                }}
-              >
-                {isManualDelivery ? (
-                  <div
-                    style={{
-                      padding: "12px",
-                      borderRadius: "12px",
-                      background: "rgba(249,115,22,.06)",
-                      border: "1px solid rgba(249,115,22,.15)",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: "#f97316",
-                        fontWeight: "700",
-                        marginBottom: "6px",
-                        fontSize: "14px"
-                      }}
-                    >
-                      🚚 Delivery Manual
-                    </div>
-
-                    <div
-                      style={{
-                        color: "#f5f5f5",
-                        lineHeight: "1.6",
-                        fontSize: "13px",
-                      }}
-                    >
-                      {qualifiesForFreeDelivery ? (
-                        <>
-                          🎉 Tu pedido ya califica para <strong>ENVÍO GRATIS</strong>.
-                          <br /><br />
-                          Solo comparte tu ubicación por WhatsApp para coordinar la entrega.
-                        </>
-                      ) : (
-                        <>
-                          El costo del envío será calculado después de que compartas tu ubicación por WhatsApp.
-                          {hasFreeDelivery && (
-                            <>
-                              <br /><br />
-                              <span style={{ color: "#4ade80", fontWeight: "700" }}>
-                                🎁 Envío GRATIS desde ${freeDeliveryMinimum}
-                              </span>
-                            </>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ fontSize: "13px", lineHeight: "1.6", marginBottom: "12px" }}>
-                    <div style={{ color: "#fff", marginBottom: "4px", fontWeight: "600" }}>
-                      📍 Radio: {deliverySettings.delivery_radius_km} km
-                    </div>
-
-                    <div style={{ color: "#fff", marginBottom: "4px" }}>
-                      🚚 Delivery: ${deliverySettings.delivery_fee}
-                    </div>
-
-                    {deliverySettings.free_delivery_enabled && (
-                      <div style={{ color: "#4ade80", marginBottom: "4px", fontWeight: "600" }}>
-                        🎁 Gratis desde ${deliverySettings.free_delivery_minimum}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div
-                  style={{
-                    color: "rgba(255,255,255,.5)",
-                    fontSize: "12px",
-                    borderTop: "1px solid rgba(255,255,255,.06)",
-                    paddingTop: "10px"
-                  }}
-                >
-                  ⏱ Tiempo estimado: {estimatedTime.preparation} - {estimatedTime.total} min
-                </div>
-              </div>
-            )}
-          </motion.div>
-        )}
-
-        {pickupEnabled && (
-          <motion.div
-            whileHover={{
-              y: -5,
-              scale: 1.01,
-            }}
-            whileTap={{
-              scale: 0.99,
-            }}
-            onClick={() => onSelect("pickup")}
-            className="wolf-ordertype-card"
+          <h2
             style={{
-              background:
-                selected === "pickup"
-                  ? `${primaryColor}15`
-                  : "rgba(255,255,255,.03)",
-              border:
-                selected === "pickup"
-                  ? `2px solid ${primaryColor}`
-                  : "1px solid rgba(255,255,255,.08)",
+              color: "#fff",
+              fontSize: "clamp(24px, 4vw, 32px)", // Título fluido
+              fontWeight: "700",
+              marginBottom: "10px",
             }}
           >
+            Delivery
+          </h2>
+
+          <p
+            style={{
+              color:
+                "rgba(255,255,255,.7)",
+              lineHeight: 1.6,
+              fontSize: "clamp(14px, 2vw, 15px)",
+            }}
+          >
+            Recibe tu pedido en la
+            puerta de tu casa.
+          </p>
+
+          {deliverySettings && (
             <div
               style={{
-                fontSize: "clamp(48px, 8vw, 64px)",
-                marginBottom: "16px",
-                lineHeight: 1
+                marginTop: "20px",
+                padding: "clamp(14px, 3vw, 18px)", // Padding interno fluido
+                borderRadius: "18px",
+                background:
+                  "rgba(255,255,255,.04)",
+                border:
+                  "1px solid rgba(255,255,255,.08)",
+                boxSizing: "border-box",
               }}
             >
-              🛍️
-            </div>
+  {isManualDelivery ? (
 
-            <h2
-              style={{
-                color: "#fff",
-                fontSize: "clamp(24px, 5vw, 32px)",
-                fontWeight: "800",
-                marginBottom: "8px",
-                margin: 0,
-                letterSpacing: "-0.5px"
-              }}
-            >
-              Pickup
-            </h2>
+  <div
+    style={{
+      padding: "12px",
+      borderRadius: "14px",
+      background: "rgba(249,115,22,.08)",
+      border: "1px solid rgba(249,115,22,.2)",
+      marginBottom: "14px",
+      boxSizing: "border-box",
+    }}
+  >
+    <div
+      style={{
+        color: "#f97316",
+        fontWeight: "700",
+        marginBottom: "10px",
+        fontSize: "14px",
+      }}
+    >
+      🚚 Delivery Manual
+    </div>
 
-            <p
-              style={{
-                color: "rgba(255,255,255,.65)",
-                lineHeight: 1.6,
-                fontSize: "14px",
-                marginTop: "8px",
-                marginBottom: 0
-              }}
-            >
-              Retira tu pedido directamente en el local de forma rápida.
-            </p>
-          </motion.div>
-        )}
+ <div
+  style={{
+    color: "#fff",
+    lineHeight: "1.7",
+    fontSize: "14px",
+  }}
+>
+  {qualifiesForFreeDelivery ? (
+    <>
+      🎉 Tu pedido ya califica para
+      <br />
+      <strong>
+        ENVÍO GRATIS
+      </strong>
+      <br />
+      <br />
+      Solo comparte tu ubicación por
+      WhatsApp para coordinar la entrega.
+    </>
+  ) : (
+    <>
+      El costo del envío será calculado
+      después de que compartas tu ubicación
+      por WhatsApp.
+      {hasFreeDelivery && (
+        <>
+          <br />
+          <br />
+          <span
+            style={{
+              color: "#22c55e",
+              fontWeight: "700",
+            }}
+          >
+            🎁 Envío GRATIS desde $
+            {freeDeliveryMinimum}
+          </span>
+        </>
+      )}
+    </>
+  )}
+</div>
+
+  </div>
+
+) : (
+
+  <>
+    <div
+      style={{
+        color: "#fff",
+        marginBottom: "10px",
+        fontWeight: "600",
+        fontSize: "14px",
+      }}
+    >
+      📍 Radio:{" "}
+      {deliverySettings.delivery_radius_km}
+      km
+    </div>
+
+    <div
+      style={{
+        color: "#fff",
+        marginBottom: "10px",
+        fontSize: "14px",
+      }}
+    >
+      🚚 Delivery: $
+      {deliverySettings.delivery_fee}
+    </div>
+
+    {deliverySettings.free_delivery_enabled && (
+      <div
+        style={{
+          color: "#22c55e",
+          marginBottom: "10px",
+          fontWeight: "600",
+          fontSize: "14px",
+        }}
+      >
+        🎁 Gratis desde $
+        {deliverySettings.free_delivery_minimum}
       </div>
+    )}
+  </>
+
+)}
+
+              <div
+  style={{
+    color:
+      "rgba(255,255,255,.7)",
+    fontSize: "14px",
+  }}
+>
+  ⏱ Tiempo estimado:
+  {" "}
+  {
+    estimatedTime.preparation
+  }
+  -
+  {
+    estimatedTime.total
+  }
+  min
+</div>
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {pickupEnabled && (
+        <motion.div
+          whileHover={{
+            y: -10,
+            scale: 1.02,
+          }}
+          whileTap={{
+            scale: 0.98,
+          }}
+          onClick={() =>
+            onSelect("pickup")
+          }
+          style={{
+            cursor: "pointer",
+            padding: "clamp(20px, 4vw, 40px)", // Padding fluido responsivo
+            borderRadius: "24px",
+            backdropFilter:
+              "blur(20px)",
+            background:
+              selected ===
+              "pickup"
+                ? `${primaryColor}20`
+                : "rgba(255,255,255,.04)",
+            border:
+              selected ===
+              "pickup"
+                ? `2px solid ${primaryColor}`
+                : "1px solid rgba(255,255,255,.08)",
+            transition: ".3s",
+            boxSizing: "border-box",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "clamp(48px, 8vw, 64px)", // Tamaño de emoji fluido
+              marginBottom: "15px",
+            }}
+          >
+            🛍️
+          </div>
+
+          <h2
+            style={{
+              color: "#fff",
+              fontSize: "clamp(24px, 4vw, 32px)",
+              fontWeight: "700",
+              marginBottom: "10px",
+            }}
+          >
+            Pickup
+          </h2>
+
+          <p
+            style={{
+              color:
+                "rgba(255,255,255,.7)",
+              lineHeight: 1.6,
+              fontSize: "clamp(14px, 2vw, 15px)",
+            }}
+          >
+            Retira tu pedido
+            directamente en el local.
+          </p>
+        </motion.div>
+      )}
     </div>
   );
 }
