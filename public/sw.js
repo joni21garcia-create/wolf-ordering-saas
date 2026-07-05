@@ -1,9 +1,11 @@
 /* ==========================================
- Wolf Ordering Service Worker V8
+ Wolf Ordering Service Worker V9
 ========================================== */
 
-const STATIC_CACHE = "wolf-static-v6";
-const PAGES_CACHE = "wolf-pages-v3";
+const SW_VERSION = "10";
+
+const STATIC_CACHE = `wolf-static-${SW_VERSION}`;
+const PAGES_CACHE = `wolf-pages-${SW_VERSION}`;
 
 const CACHE_NAMES = [
   STATIC_CACHE,
@@ -51,48 +53,65 @@ self.addEventListener("activate", (event) => {
 ========================================== */
 
 self.addEventListener("push", (event) => {
-  const data = event.data
-    ? event.data.json()
-    : {
-        title: "Wolf Ordering",
-        body: "Nuevo pedido recibido",
-        url: "/manager",
-      };
+
+  let data = {
+    title: "Wolf Ordering",
+    body: "Nuevo pedido recibido",
+    url: "/manager",
+  };
+
+  try {
+
+    if (event.data) {
+
+      data = event.data.json();
+
+    }
+
+  } catch (err) {
+
+    console.error(
+      "Push inválido",
+      err
+    );
+
+  }
 
   const options = {
+
     body: data.body,
+
+    icon:
+      data.icon ??
+      "/icons/icon-192.png",
+
+    badge:
+      data.badge ??
+      "/icons/badge.png",
 
     data: {
       url: data.url ?? "/manager",
     },
 
-    vibrate: [300, 100, 300],
+    tag: "orders",
+
+    renotify: true,
 
     requireInteraction: true,
 
-    actions: [
-      {
-        action: "open",
-        title: "Ver pedido",
-      },
-    ],
+    vibrate: [300,100,300],
+
   };
 
-  // Solo agrega iconos si vienen en el payload
-  if (data.icon) {
-    options.icon = data.icon;
-  }
-
-  if (data.badge) {
-    options.badge = data.badge;
-  }
-
   event.waitUntil(
+
     self.registration.showNotification(
       data.title,
       options
     )
+
   );
+
 });
 
 /* ==========================================
@@ -105,19 +124,21 @@ self.addEventListener(
 
     event.notification.close();
 
+    const url =
+      event.notification.data?.url || "/";
+
     event.waitUntil(
 
       clients.matchAll({
-        type: "window",
-      }).then((clientList) => {
+        type:"window",
+        includeUncontrolled:true,
+      })
 
-        for (const client of clientList) {
+      .then((clientList)=>{
 
-          if ("focus" in client) {
+        for(const client of clientList){
 
-            client.navigate(
-              event.notification.data.url
-            );
+          if(client.url.includes(url)){
 
             return client.focus();
 
@@ -125,9 +146,7 @@ self.addEventListener(
 
         }
 
-        return clients.openWindow(
-          event.notification.data.url
-        );
+        return clients.openWindow(url);
 
       })
 
@@ -174,19 +193,74 @@ self.addEventListener("fetch", (event) => {
 
     event.respondWith(
 
-      (async () => {
+  (async () => {
 
-        const cache =
-          await caches.open(
-            STATIC_CACHE
-          );
+    const cache =
+      await caches.open(
+        STATIC_CACHE
+      );
 
-        const cached =
-          await cache.match(request);
+    const cached =
+      await cache.match(request);
 
-        if (cached) {
-          return cached;
-        }
+    if (cached) {
+      return cached;
+    }
+
+    try {
+
+      const response =
+        await fetch(request);
+
+if (response.ok) {
+
+   cache.put(
+      request,
+      response.clone()
+   );
+
+}
+
+      return response;
+
+    } catch (error) {
+
+      console.log(
+        "Error cargando recurso:",
+        request.url
+      );
+
+      const cached =
+        await cache.match(request);
+
+      if (cached) {
+        return cached;
+      }
+
+      throw error;
+
+    }
+
+  })()
+
+);
+
+    return;
+
+  }
+
+ if (request.mode === "navigate") {
+
+  event.respondWith(
+
+    (async () => {
+
+      const cache =
+        await caches.open(
+          PAGES_CACHE
+        );
+
+      try {
 
         const response =
           await fetch(request);
@@ -198,33 +272,31 @@ self.addEventListener("fetch", (event) => {
 
         return response;
 
-      })()
+      } catch {
 
-    );
+        const cached =
+          await cache.match(request);
 
-    return;
+        if (cached) {
 
-  }
-
-  if (request.mode === "navigate") {
-
-    event.respondWith(
-
-      fetch(request).catch(
-        async () => {
-
-          const cache =
-            await caches.open(
-              PAGES_CACHE
-            );
-
-          return cache.match(request);
+          return cached;
 
         }
-      )
 
-    );
-
+      return new Response(
+  "Offline",
+  {
+    status:503,
+    statusText:"Offline",
   }
+);
+
+      }
+
+    })()
+
+  );
+
+}
 
 });
