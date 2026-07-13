@@ -25,6 +25,8 @@ interface CartItem {
 
   price: number;
 
+  display_price: number;
+
   quantity: number;
 
   image_url?: string | null;
@@ -202,7 +204,7 @@ return [
 display_price:
   getFinalPrice(
     Number(product.price),
-    getCommissionConfig(restaurant)
+    commissionConfig
   ),
 
     image_url:
@@ -276,6 +278,9 @@ display_price:
       )
     );
   };
+
+const commissionConfig =
+  getCommissionConfig(restaurant);
 
   const subtotal = cartItems.reduce(
   (total, item) =>

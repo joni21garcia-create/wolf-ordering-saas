@@ -88,12 +88,13 @@ delivery_instructions,
   change_amount,
 
   order_type,
-  subtotal,
+
   delivery_fee,
-  total,
+
   terms_accepted,
+
   items,
-} = body;
+ } = body;
 
 
 console.log("restaurant_id:", restaurant_id);
@@ -113,15 +114,85 @@ const commissionConfig =
     restaurant
   );
 
+  const {
+  data: deliverySettings,
+} = await supabase
+  .from("restaurant_delivery_settings")
+  .select(`
+    delivery_mode,
+    delivery_fee,
+    free_delivery_enabled,
+    free_delivery_minimum
+  `)
+  .eq("restaurant_id", restaurant_id)
+  .maybeSingle();
+
+  const productIds = items.map(
+  (item: any) => item.product_id
+);
+
+const {
+  data: products,
+  error: productsError,
+} = await supabase
+  .from("products")
+  .select("id, price")
+  .in("id", productIds);
+
+if (productsError) {
+  return NextResponse.json(
+    {
+      success: false,
+      error:
+        "No fue posible validar los productos.",
+    },
+    {
+      status: 400,
+    }
+  );
+}
+
+if (!products || products.length !== productIds.length) {
+  return NextResponse.json(
+    {
+      success: false,
+      error: "Uno o más productos ya no existen.",
+    },
+    {
+      status: 400,
+    }
+  );
+}
+
 /*
-subtotal que llega del checkout:
-
-- customer:
-  YA incluye comisión.
-
-- restaurant:
-  Es precio base.
+El subtotal siempre se recalcula desde los items.
+Nunca confiamos en el valor enviado por el cliente.
 */
+
+const subtotalCalculated = Number(
+  items
+    .reduce(
+      (acc: number, item: any) => {
+
+        const product = products?.find(
+          (p) => p.id === item.product_id
+        );
+
+        const unitPrice = Number(
+          product?.price ?? 0
+        );
+
+        return (
+          acc +
+          unitPrice *
+            Number(item.quantity)
+        );
+      },
+      0
+    )
+    .toFixed(2)
+);
+
 
 const percentage =
   Number(
@@ -134,11 +205,11 @@ const baseSubtotal =
     "customer"
     ? Number(
         (
-          subtotal /
+          subtotalCalculated /
           (1 + percentage / 100)
         ).toFixed(2)
       )
-    : subtotal;
+    : subtotalCalculated;
 
 const commission_amount =
   getCommissionAmount(
@@ -155,10 +226,29 @@ const restaurant_amount =
 const wolf_amount =
   commission_amount;
 
+let deliveryFeeCalculated = 0;
+
+if (deliverySettings) {
+
+  if (deliverySettings.delivery_mode !== "manual") {
+
+    deliveryFeeCalculated =
+      Number(deliverySettings.delivery_fee) || 0;
+
+    if (
+      deliverySettings.free_delivery_enabled &&
+      subtotalCalculated >=
+        Number(deliverySettings.free_delivery_minimum)
+    ) {
+      deliveryFeeCalculated = 0;
+    }
+  }
+}
+
 const final_total =
   getOrderTotal(
-    subtotal,
-    delivery_fee
+    subtotalCalculated,
+    deliveryFeeCalculated
   );
 
     // Validaciones básicas
@@ -267,6 +357,24 @@ if (
   );
 }
 
+for (const item of items) {
+  if (
+    !item.product_id ||
+    Number(item.quantity) <= 0
+  ) {
+    return NextResponse.json(
+      {
+        success: false,
+        error:
+          "Cantidad de producto inválida.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+}
+
 
     // Crear pedido
 
@@ -309,12 +417,11 @@ if (
 
   order_type,
 
-subtotal,
+subtotal: subtotalCalculated,
 
-delivery_fee,
+delivery_fee: deliveryFeeCalculated,
 
-total:
-  final_total,
+total: final_total,
 
   commission_amount,
   restaurant_amount,
@@ -368,25 +475,35 @@ if (orderError) {
 
  console.log("ITEMS RECIBIDOS:", items);
 
-      const orderItems =
-     
-        items.map((item: any) => ({
-          order_id: order.id,
+const orderItems =
+  items.map((item: any) => {
 
-          product_id:
-            item.product_id,
+    const product = products?.find(
+      (p) => p.id === item.product_id
+    );
 
-          quantity:
-            item.quantity,
+    const unitPrice = Number(
+      product?.price ?? 0
+    );
 
-          unit_price:
-            item.price,
+    return {
+      order_id: order.id,
 
-          subtotal:
-            item.price *
-            item.quantity,
-        }));
+      product_id: item.product_id,
 
+      quantity: item.quantity,
+
+      unit_price: Number(
+        unitPrice.toFixed(2)
+      ),
+
+      subtotal: Number(
+        (
+          unitPrice * item.quantity
+        ).toFixed(2)
+      ),
+    };
+  });
       const {
         error: itemsError,
       } = await supabase

@@ -250,53 +250,7 @@ if (response.ok) {
   }
 
  if (request.mode === "navigate") {
-
-  event.respondWith(
-
-    (async () => {
-
-      const cache =
-        await caches.open(
-          PAGES_CACHE
-        );
-
-      try {
-
-        const response =
-          await fetch(request);
-
-        cache.put(
-          request,
-          response.clone()
-        );
-
-        return response;
-
-      } catch {
-
-        const cached =
-          await cache.match(request);
-
-        if (cached) {
-
-          return cached;
-
-        }
-
-      return new Response(
-  "Offline",
-  {
-    status:503,
-    statusText:"Offline",
-  }
-);
-
-      }
-
-    })()
-
-  );
-
+  return;
 }
 
 });

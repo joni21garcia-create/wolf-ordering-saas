@@ -1,0 +1,97 @@
+[33mb4e4a8f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m feat: improve service worker caching and push reliability
+[33m008a488[m feat: financial fixes, dynamic PWA manifest and marketing module
+[33m005ca7c[m feat: add customer PWA push notifications and order status updates
+[33m5e2b233[m feat: responsive checkout, PWA client push registration and payment QR improvements
+[33mee82b10[m UI premium: order, checkout, socials, services y footer
+[33m5e7bdb6[m Deploy final: UI optimizada, responsive y blindada contra hidratación
+[33m9aa4791[m Layout final: Carrito con scroll interno y estructura vertical móvil
+[33m3f5c355[m Layout optimizado: tarjetas compactas y formulario unificado
+[33mf4ff26f[m Layout final: Grid de 3 columnas con mapa y formulario a la izquierda
+[33m7254c5a[m Versión final del Menú Digital con layout optimizado
+[33mcfa3d55[m Fix: corrección de errores de hidratación y mejora de diseño responsivo
+[33m2cb66a4[m Refactor financial engine and commission system
+[33m47229dd[m feat: responsive layout for order details page
+[33md8056b9[m Actualización: mejoras en componentes, pagos y optimización de build
+[33me08d9b2[m Rediseño premium del login y mejoras visuales
+[33mb74d9e2[m Mejora UI del login y experiencia de zoom en PWA
+[33m089b44a[m Rediseño premium del login SaaS
+[33m1b83653[m Implement monthly liquidation workflow
+[33mec8f448[m Finaliza correcciones de Navbar y page.tsx para despliegue
+[33m19c96bb[m Fix: Soluciona hydration mismatch en Navbar
+[33m9826598[m Solución de error de hidratación en Navbar
+[33mcb8c9fd[m Actualización de favicon y corrección de hidratación en Navbar
+[33mb7845f7[m feat: add premium WhatsApp unlock flow with first-order access
+[33m1643105[m feat: implementar favicon dinámico por restaurante
+[33m95d2646[m feat: implementar Push Notifications y mejorar diseño premium del menú digital
+[33m92a8fd9[m feat: optimización de viewport y metadatos PWA para Wolf Ordering
+[33m0d5775c[m refactor: optimizar viewport y metadatos para experiencia PWA nativa
+[33mdcd2ae5[m feat: optimizacion PWA nativa, viewport fit y manejo de teclado
+[33mcc5f57e[m Actualizacion de layout para diseño armónico y centrado
+[33mccc02c5[m Layout responsivo premium y optimización de estructura global
+[33m9ed66e4[m Deploy: Ajuste de diseño a look premium con tarjetas y estilos optimizados
+[33mfc0880a[m Deploy: Diseño de interfaz premium siguiendo image_662055.png
+[33m466e2c8[m Deploy: Ajuste a navegación web estándar, eliminando restricciones de modo app
+[33m0603902[m Deploy: Ajuste visual de viewport y metadata para modo pantalla completa
+[33m363407a[m Deploy: Configuración final PWA nativa, viewport fijo y RLS deshabilitado para pruebas de push
+[33m8219214[m Deploy: Ajustes de PWA, viewport de app nativa y lógica de push
+[33mfbb2f80[m Deploy: Carga instantánea, ajustes de viewport y registro de suscripciones push
+[33m46cb69e[m Deploy: Web-style layout, Push notifications, y ajustes de viewport
+[33mc0fab03[m Update PWA: Service Worker push notifications y correcciones de build
+[33mba3c90a[m Deploy final: PWA nativa, Push Notifications y optimización de Viewport
+[33m30da936[m Implementación notificaciones Push y PWA nativa final
+[33ma1ea5a7[m Implementación notificaciones Push y PWA nativa final
+[33m356fe94[m Deploy PWA: Configuración nativa y ajustes CSS
+[33m9b2f9fb[m Optimización PWA para pantalla completa
+[33m755bec5[m feat: optimización de CSS, forzado de viewport para fidelidad PWA y control total de caché
+[33m1f05f44[m feat: optimización de caché, logs de diagnóstico y escalado de viewport para fidelidad de escritorio
+[33ma0b2cce[m fix: APIs de horario con forzado de no-caché y logs de diagnóstico
+[33m2ea392c[m fix: sincronización de horarios, force-dynamic en APIs y limpieza de caché
+[33m02eadb8[m fix: optimización de API de horarios para evitar caché en producción
+[33m1090abf[m refactor: optimización profesional de Service Worker y estructura de caché
+[33ma620bb7[m feat: actualizar diseño y responsividad en paginas de configuracion
+[33m9e233bd[m Fix: PWA settings types and build configuration
+[33meb23c3b[m Fix: Optimización de PWA y pipeline de imágenes
+[33m02aa746[m fix: conectar layout dinámico con la ruta real del manifest
+[33mb254f21[m fix: inyectar manifest dinámico con slug en los metadatos del restaurante
+[33ma71fc69[m fix: extraer slug de forma resiliente desde params y referer en el manifest
+[33m754b2c9[m fix: ajustar deteccion dinamica de tipo de imagen en iconos de manifiesto
+[33me686965[m fix: forzar urls absolutas de supabase para los iconos de la pwa
+[33m0278135[m fix: mapear iconos pwa limpiando urls de almacenamiento sin alterar urls core
+[33mddedeb3[m fix: omitir validacion estricta de propiedades raiz en manifest
+[33m46ccb71[m fix: estructurar iconos dinamicos de la pwa para coger pwa_icon_url de supabase
+[33ma227ee2[m design: optimizar navbar responsivo eliminando enlaces encimados en móvil
+[33m4ec83a2[m design: optimizar paddings, fuentes y botones responsivos del hero para móvil
+[33mda838a0[m fix: optimizar responsividad de inputs y corregir variables del service worker
+[33md249f80[m fix: corregir variables indefinidas y manejo de errores en service worker
+[33m0f5c2a5[m design: optimizar layout de columnas responsivo para movil y escritorio
+[33meff543e[m fix: forzar renderizado dinamico en la pagina del restaurante para actualizar datos e imagenes
+[33md931598[m fix: blindar componente hero contra payloads vacios de restaurant
+[33ma399397[m fix: limpiar url de iconos de pwa removiendo subcarpeta restaurants
+[33m185d307[m fix: combo manifest con crossorigin y api dinamica en powershell
+[33m8def634[m fix: forzar dynamic y usar NextRequest en endpoint del manifest
+[33m91b6ceb[m Complete PWA improvements and install flow
+[33m5bd6b03[m Add offline support to Service Worker
+[33m1f7922f[m Improve Service Worker cache strategy
+[33m8f2afd4[m fix: retorno seguro de buffer con promesa en optimizeImage
+[33mea00172[m fix: reparar buffer binario e integracion typescript para vercel
+[33mf45c2cb[m fix: unificar rutas de almacenamiento y corregir buffer en Vercel
+[33m06fa8ea[m fix: aplicar envoltura Uint8Array en upload-logo para corregir imagenes en vercel
+[33m354b28d[m fix: aplicar envoltura Uint8Array en upload-logo para corregir imagenes en vercel
+[33m50fb600[m fix: arreglar buffer corrupto en upload manager logo para vercel
+[33m5c7bf59[m Fix optimized image upload
+[33mb79d156[m fix: solucionar conflicto de tipos de Buffer en ruta de carga
+[33mb0f4bff[m fix: corregir fragmento JSX en formulario de producto
+[33m082e768[m fix: saltar optimizacion en produccion para evitar archivos corruptos
+[33m2512098[m fix: restaurar buffer nativo limpio
+[33mb11cf15[m fix: usar Buffer nativo desde arrayBuffer para vercel
+[33me2730a2[m fix: corrección de buffer de imagen para producción en vercel
+[33m6842778[m Debug optimizeImage
+[33mb06fe69[m Allow Supabase images
+[33m7fe0e24[m feat: PWA manager, restaurant branding, logo upload, icons and settings
+[33m12fb6bc[m Use official Next.js manifest
+[33m7a2bd5a[m Migrate dynamic manifest to API route
+[33m534df00[m Remove duplicate metadata
+[33ma0a6ba1[m Test manifest metadata cleanup
+[33ma670a8c[m Fix build for Next.js 16
+[33m5531d3f[m Primera versión de Wolf Ordering SaaS
+[33mc9ce49e[m Initial commit from Create Next App

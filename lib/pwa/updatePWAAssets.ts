@@ -30,8 +30,6 @@ export async function updatePWAAssets({
     
     if (!url) return null;
     
-    // Eliminamos todo después del signo de interrogación si existiera, 
-    // para asegurar que guardamos la URL pública pura.
     return url.split("?")[0];
   };
 
@@ -53,18 +51,50 @@ export async function updatePWAAssets({
 
   console.log("DEBUG: Payload enviado a Supabase:", payload);
 
-  const { data, error } = await supabase
+  // 1. Verificamos si ya existe una configuración previa para este restaurante
+  const { data: existing, error: checkError } = await supabase
     .from("restaurant_pwa_settings")
-    .update(payload)
+    .select("id")
     .eq("restaurant_id", restaurantId)
-    .select()
-    .single();
+    .maybeSingle();
 
-  if (error) {
-    console.error("Error actualizando assets PWA:", error);
-    throw error;
+  if (checkError) {
+    console.error("Error comprobando existencia en restaurant_pwa_settings:", checkError);
+    throw checkError;
   }
 
-  console.log("DEBUG: Actualización en base de datos finalizada correctamente.");
-  return data;
+  let resultData = null;
+
+  if (existing) {
+    // 2A. Si ya existe, ejecutamos el UPDATE original
+    console.log("DEBUG: El registro existe, ejecutando UPDATE...");
+    const { data, error } = await supabase
+      .from("restaurant_pwa_settings")
+      .update(payload)
+      .eq("restaurant_id", restaurantId)
+      .select()
+      .maybeSingle();
+
+    if (error) throw error;
+    resultData = data;
+  } else {
+    // 2B. Si NO existe (Restaurante Nuevo), ejecutamos un INSERT incorporando los campos requeridos NOT NULL
+    console.log("DEBUG: El registro NO existe (Nuevo Restaurante), ejecutando INSERT...");
+    const { data, error } = await supabase
+      .from("restaurant_pwa_settings")
+      .insert({
+        ...payload,
+        restaurant_id: restaurantId,
+        app_name: "Mi Aplicación PWA", // Fallback obligatorio requerido por la BD
+        short_name: "PWA",             // Fallback obligatorio requerido por la BD
+      })
+      .select()
+      .maybeSingle();
+
+    if (error) throw error;
+    resultData = data;
+  }
+
+  console.log("DEBUG: Operación en base de datos finalizada correctamente.");
+  return resultData;
 }

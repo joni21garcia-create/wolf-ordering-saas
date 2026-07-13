@@ -68,6 +68,13 @@ export default async function SuccessPage({
   deliverySettings?.delivery_mode ===
   "manual";
 
+  const hasFreeDelivery =
+  deliverySettings?.free_delivery_enabled &&
+  Number(orderData.subtotal) >=
+    Number(
+      deliverySettings?.free_delivery_minimum
+    );
+
 const { data: items } =
   await supabase
     .from("order_items")
@@ -133,7 +140,7 @@ ${orderData.selected_qr_name}`
 }
 
 Total:
-$${orderData.total}
+$${Number(orderData.total).toFixed(2)}
 
 Productos:
 ${itemsMessage}
@@ -651,57 +658,94 @@ const estimatedTime =
             </button>
           </Link>
 
-          {isManualDelivery && (
-            <div
-              style={{
-                marginTop: "10px",
-                padding: "20px",
-                borderRadius: "16px",
-                background: "rgba(37,211,102,0.05)",
-                border: "1px solid rgba(37,211,102,0.15)",
-                width: "100%",
-                boxSizing: "border-box"
-              }}
-            >
-              <h3
-                style={{
-                  color: "#25D366",
-                  fontSize: "16px",
-                  fontWeight: "700",
-                  marginBottom: "10px",
-                  margin: 0
-                }}
-              >
-                📍 Último paso para confirmar tu pedido
-              </h3>
+{isManualDelivery && !hasFreeDelivery ? (
 
-              <p
-                style={{
-                  color: "#a1a1aa",
-                  lineHeight: "1.5",
-                  fontSize: "13.5px",
-                  marginTop: "6px",
-                  marginBottom: "14px",
-                }}
-              >
-                Este restaurante calcula el costo del envío según la ubicación de entrega.
-              </p>
+  <div
+    style={{
+      marginTop: "10px",
+      padding: "20px",
+      borderRadius: "16px",
+      background: "rgba(37,211,102,.05)",
+      border: "1px solid rgba(37,211,102,.15)",
+      width: "100%",
+      boxSizing: "border-box",
+    }}
+  >
+    <h3
+      style={{
+        color: "#25D366",
+        fontSize: 16,
+        fontWeight: 700,
+        margin: 0,
+      }}
+    >
+      📍 Último paso para confirmar tu pedido
+    </h3>
 
-              <div
-                style={{
-                  display: "grid",
-                  gap: "8px",
-                  color: "#e4e4e7",
-                  fontSize: "13px",
-                }}
-              >
-                <span>✅ Presiona el botón de WhatsApp.</span>
-                <span>✅ Se enviará automáticamente el resumen.</span>
-                <span>✅ Comparte tu ubicación desde WhatsApp.</span>
-                <span>✅ El restaurante calculará el envío y te responderá.</span>
-              </div>
-            </div>
-          )}
+    <p
+      style={{
+        color: "#a1a1aa",
+        marginTop: 8,
+        marginBottom: 14,
+        lineHeight: 1.5,
+        fontSize: 13.5,
+      }}
+    >
+      Este restaurante calcula el costo del envío según tu ubicación.
+    </p>
+
+    <div
+      style={{
+        display: "grid",
+        gap: 8,
+        color: "#e4e4e7",
+        fontSize: 13,
+      }}
+    >
+      <span>✅ Presiona el botón de WhatsApp.</span>
+      <span>✅ Comparte tu ubicación.</span>
+      <span>✅ El restaurante calculará el envío.</span>
+      <span>✅ Luego confirmará tu pedido.</span>
+    </div>
+  </div>
+
+) : hasFreeDelivery ? (
+
+  <div
+    style={{
+      marginTop: "10px",
+      padding: "18px",
+      borderRadius: "16px",
+      background:
+        "linear-gradient(135deg,#0f2e1b,#11351f)",
+      border:
+        "1px solid rgba(34,197,94,.25)",
+      textAlign: "center",
+    }}
+  >
+    <div
+      style={{
+        color: "#22c55e",
+        fontWeight: 800,
+        fontSize: 18,
+      }}
+    >
+      🎉 Delivery GRATIS desbloqueado
+    </div>
+
+    <div
+      style={{
+        color: "#d1fae5",
+        marginTop: 8,
+        lineHeight: 1.5,
+        fontSize: 14,
+      }}
+    >
+      Tu pedido calificó para envío gratuito.
+    </div>
+  </div>
+
+) : null}
 
           <a
             href={`https://wa.me/${
@@ -730,9 +774,9 @@ const estimatedTime =
                 boxShadow: "0 4px 20px rgba(37,211,102,0.2)"
               }}
             >
-              {isManualDelivery
-                ? "📍 Confirmar pedido por WhatsApp"
-                : "📲 Enviar pedido por WhatsApp"}
+{isManualDelivery && !hasFreeDelivery
+  ? "📍 Confirmar pedido por WhatsApp"
+  : "📲 Enviar pedido por WhatsApp"}
             </button>
           </a>
 

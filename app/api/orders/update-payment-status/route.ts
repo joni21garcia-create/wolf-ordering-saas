@@ -1,36 +1,27 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { headers } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-import { getCurrentUser }
-from "@/lib/auth/getCurrentUser";
 
-import { checkPermission }
-from "@/lib/auth/checkPermission";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-export async function POST(
-  request: Request
-) {
+export async function POST(request: NextRequest) {
   try {
+    const supabase = await createSupabaseServerClient();
 
-    const headersList =
-      await headers();
+    /*
+    ==========================================================
+    USUARIO
+    ==========================================================
+    */
 
-    const authorization =
-      headersList.get(
-        "authorization"
-      );
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-    if (!authorization) {
+    if (authError || !user) {
       return NextResponse.json(
         {
           success: false,
-          error: "Unauthorized",
+          error: "No autorizado",
         },
         {
           status: 401,
@@ -38,40 +29,38 @@ export async function POST(
       );
     }
 
-    const token =
-      authorization.replace(
-        "Bearer ",
-        ""
-      );
+    /*
+    ==========================================================
+    RESTAURANTE
+    ==========================================================
+    */
 
-    const authUser =
-      await getCurrentUser(
-        token
-      );
+    const {
+      data: restaurantUser,
+      error: restaurantError,
+    } = await supabase
+      .from("restaurant_users")
+      .select("restaurant_id")
+      .eq("auth_user_id", user.id)
+      .maybeSingle();
 
-    if (!authUser) {
+    if (restaurantError) {
       return NextResponse.json(
         {
           success: false,
-          error: "Unauthorized",
+          error: restaurantError.message,
         },
         {
-          status: 401,
+          status: 500,
         }
       );
     }
 
-    const canView =
-      await checkPermission(
-        authUser.auth_user_id,
-        "orders"
-      );
-
-    if (!canView) {
+    if (!restaurantUser) {
       return NextResponse.json(
         {
           success: false,
-          error: "Forbidden",
+          error: "No pertenece a ningún restaurante",
         },
         {
           status: 403,
@@ -79,61 +68,20 @@ export async function POST(
       );
     }
 
-    const body =
+    /*
+    ==========================================================
+    BODY
+    ==========================================================
+    */
+
+    const { orderId, paymentStatus } =
       await request.json();
-
-    const {
-      orderId,
-      paymentStatus,
-    } = body;
-
-    const { data: order } =
-  await supabase
-    .from("orders")
-    .select(`
-      id,
-      restaurant_id
-    `)
-    .eq(
-      "id",
-      orderId
-    )
-    .single();
-
-if (!order) {
-  return NextResponse.json(
-    {
-      success: false,
-      error:
-        "Pedido no encontrado",
-    },
-    {
-      status: 404,
-    }
-  );
-}
-
-if (
-  order.restaurant_id !==
-  authUser.restaurant_id
-) {
-  return NextResponse.json(
-    {
-      success: false,
-      error: "Forbidden",
-    },
-    {
-      status: 403,
-    }
-  );
-}
 
     if (!orderId) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "orderId requerido",
+          error: "orderId requerido",
         },
         {
           status: 400,
@@ -145,14 +93,19 @@ if (
       return NextResponse.json(
         {
           success: false,
-          error:
-            "paymentStatus requerido",
+          error: "paymentStatus requerido",
         },
         {
           status: 400,
         }
       );
     }
+
+    /*
+    ==========================================================
+    VALIDAR ESTADO
+    ==========================================================
+    */
 
     const validStatuses = [
       "pending",
@@ -160,16 +113,11 @@ if (
       "refunded",
     ];
 
-    if (
-      !validStatuses.includes(
-        paymentStatus
-      )
-    ) {
+    if (!validStatuses.includes(paymentStatus)) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Estado de pago inválido",
+          error: "Estado inválido",
         },
         {
           status: 400,
@@ -177,28 +125,33 @@ if (
       );
     }
 
-    const { error } =
-      await supabase
-        .from("orders")
-        .update({
-          payment_status:
-            paymentStatus,
+    /*
+    ==========================================================
+    VALIDAR PEDIDO
+    ==========================================================
+    */
 
-          payment_confirmed:
-            paymentStatus ===
-            "paid",
-        })
-        .eq(
-          "id",
-          orderId
-        );
+    const {
+      data: order,
+      error: orderError,
+    } = await supabase
+      .from("orders")
+      .select(`
+        id,
+        restaurant_id
+      `)
+      .eq("id", orderId)
+      .eq(
+        "restaurant_id",
+        restaurantUser.restaurant_id
+      )
+      .maybeSingle();
 
-    if (error) {
+    if (orderError) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            error.message,
+          error: orderError.message,
         },
         {
           status: 500,
@@ -206,19 +159,78 @@ if (
       );
     }
 
+    if (!order) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Pedido no encontrado",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    /*
+    ==========================================================
+    UPDATE
+    ==========================================================
+    */
+
+const {
+  error: updateError,
+} = await supabase
+  .from("orders")
+  .update({
+    payment_status: paymentStatus,
+    payment_confirmed:
+      paymentStatus === "paid",
+  })
+  .eq("id", orderId)
+  .eq(
+    "restaurant_id",
+    restaurantUser.restaurant_id
+  );
+
+    if (updateError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: updateError.message,
+        },
+        {
+          status: 500,
+        }
+      );
+    }
+
+    /*
+    ==========================================================
+    RESPUESTA
+    ==========================================================
+    */
+
     return NextResponse.json({
       success: true,
+      payment_status: paymentStatus,
+      payment_confirmed:
+        paymentStatus === "paid",
     });
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "[UPDATE PAYMENT]",
+      error
+    );
 
     return NextResponse.json(
       {
         success: false,
         error:
-          "Error interno del servidor",
+          error instanceof Error
+            ? error.message
+            : "Internal server error",
       },
       {
         status: 500,

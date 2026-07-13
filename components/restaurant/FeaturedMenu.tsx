@@ -1,5 +1,9 @@
 import { getTheme } from "@/lib/theme/getTheme";
 import Link from "next/link";
+import {
+  getFinalPrice,
+  getCommissionConfig,
+} from "@/lib/configuration/pricing";
 
 
 
@@ -7,43 +11,18 @@ interface Props {
   restaurant: any;
 }
 
-function getDisplayPrice(
-  product: any,
-  restaurant: any
-) {
-  const basePrice =
-    Number(product.price) || 0;
-
-  if (
-    !restaurant?.commission_active
-  ) {
-    return basePrice;
-  }
-
-  const percentage =
-    Number(
-      restaurant.commission_percentage
-    ) || 0;
-
-  if (
-    restaurant.commission_type ===
-    "customer"
-  ) {
-    return (
-      basePrice +
-      (basePrice * percentage) / 100
-    );
-  }
-
-  return basePrice;
-}
-
+  
 export default function FeaturedMenu({
   restaurant,
 }: Props) {
 
 const theme =
   getTheme(restaurant);
+
+  const commissionConfig =
+  getCommissionConfig(
+    restaurant
+  );
 
     console.log("PRODUCTS:", restaurant.products);
 
@@ -153,7 +132,10 @@ const theme =
                     }}
                   >
                     $
-                    {getDisplayPrice(product, restaurant).toFixed(2)}
+                    {getFinalPrice(
+  Number(product.price),
+  commissionConfig
+).toFixed(2)}
                   </strong>
 
                   {restaurant.is_open && (

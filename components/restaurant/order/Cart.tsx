@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
+import { getDeliveryDisplay } from "@/lib/delivery/getDeliveryDisplay";
 
 interface CartItem {
   id: string;
@@ -43,71 +44,44 @@ export default function Cart({
   const router = useRouter();
   const params = useParams();
 
-  const subtotal = items.reduce(
-    (acc, item) =>
-      acc +
-      (
-        (
-          item as any
-        ).display_price ||
-        item.price
-      ) *
-        item.quantity,
-    0
-  );
+const subtotal = items.reduce(
+  (sum, item) =>
+    sum +
+    (item.display_price ?? item.price) *
+      item.quantity,
+  0
+);
 
-  let deliveryFee = 0;
+const delivery = getDeliveryDisplay({
+  settings: {
+    delivery_mode:
+      deliverySettings?.delivery_mode ?? "fixed",
 
-  if (
-    orderType === "delivery" &&
-    items.length > 0
-  ) {
-    const fee =
+    delivery_fee:
       Number(
         deliverySettings?.delivery_fee
-      ) || 0;
+      ) || 0,
 
-    const freeEnabled =
-      deliverySettings?.free_delivery_enabled;
+    free_delivery_enabled:
+      Boolean(
+        deliverySettings?.free_delivery_enabled
+      ),
 
-    const freeMinimum =
+    free_delivery_minimum:
       Number(
         deliverySettings?.free_delivery_minimum
-      ) || 0;
+      ) || 0,
+  },
 
-    deliveryFee =
-      freeEnabled &&
-      subtotal >= freeMinimum
-        ? 0
-        : fee;
-  }
+  orderTotal: subtotal,
+});
 
-  const total =
-    subtotal + deliveryFee;
-
-    
-
-    const hasFreeDelivery =
-  deliverySettings?.free_delivery_enabled &&
-  subtotal >=
-    Number(
-      deliverySettings?.free_delivery_minimum || 0
-    );
-
-const showPendingDeliveryMessage =
-  orderType === "delivery" &&
-  deliverySettings?.delivery_mode === "manual" &&
-  !hasFreeDelivery;
-
-const showFreeDeliveryMessage =
-  orderType === "delivery" &&
-  deliverySettings?.delivery_mode === "manual" &&
-  hasFreeDelivery;
-  
-  const showDeliveryRow =
-  orderType === "delivery" &&
-  deliverySettings?.delivery_mode !== "manual";
-
+const total = Number(
+  (
+    subtotal +
+    delivery.amount
+  ).toFixed(2)
+);
 
   const handleContinueOrder =
     () => {
@@ -430,156 +404,169 @@ const showFreeDeliveryMessage =
         ))}
       </div>
 
-      <div style={{ marginTop: "20px", width: "100%", boxSizing: "border-box" }}>
-      {orderType === "delivery" &&
-           deliverySettings?.free_delivery_enabled &&
-           !hasFreeDelivery && (
-            <div
+  <div style={{ marginTop: "20px", width: "100%", boxSizing: "border-box" }}>
+
+  {orderType === "delivery" &&
+    deliverySettings?.free_delivery_enabled &&
+    !delivery.isFree && (
+      <div
+        style={{
+          background: "rgba(34,197,94,.08)",
+          border: "1px solid rgba(34,197,94,.15)",
+          color: "#4ade80",
+          padding: "12px",
+          borderRadius: "12px",
+          marginBottom: "16px",
+          fontSize: "13px",
+          fontWeight: "600",
+          textAlign: "center",
+        }}
+      >
+        🚚 Delivery gratis desde $
+        {Number(
+          deliverySettings.free_delivery_minimum
+        ).toFixed(2)}
+      </div>
+    )}
+
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      color: "rgba(255,255,255,.6)",
+      marginBottom: "10px",
+      fontSize: "14px",
+    }}
+  >
+    <span>Subtotal</span>
+
+    <span>${subtotal.toFixed(2)}</span>
+  </div>
+
+  {orderType === "delivery" && (
+
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        marginBottom: "16px",
+        gap: 14,
+      }}
+    >
+      <span
+        style={{
+          color: "rgba(255,255,255,.6)",
+        }}
+      >
+        Delivery
+      </span>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          gap: 6,
+          maxWidth: 220,
+        }}
+      >
+
+        {delivery.isManual && !delivery.isFree && (
+          <>
+            <span
               style={{
-                background: "rgba(34,197,94,.08)",
-                border: "1px solid rgba(34,197,94,.15)",
-                color: "#4ade80",
-                padding: "12px",
-                borderRadius: "12px",
-                marginBottom: "16px",
-                fontSize: "13px",
-                fontWeight: "600",
-                textAlign: "center"
+                background: "rgba(249,115,22,.15)",
+                color: "#f97316",
+                padding: "5px 12px",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 700,
               }}
             >
-              🚚 Delivery gratis desde ${deliverySettings.free_delivery_minimum}
-            </div>
-          )}
+              📍 Manual
+            </span>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            color: "rgba(255,255,255,.6)",
-            marginBottom: "10px",
-            fontSize: "14px"
-          }}
-        >
-          <span>Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
-        </div>
-        
-       {showPendingDeliveryMessage && (
-  <div
-    style={{
-      marginBottom: "16px",
-      padding: "14px",
-      borderRadius: "14px",
-      background:
-        deliverySettings?.delivery_mode === "manual"
-          ? "rgba(34,197,94,.08)"
-          : "rgba(245,158,11,.08)",
-      border:
-        deliverySettings?.delivery_mode === "manual"
-          ? "1px solid rgba(34,197,94,.20)"
-          : "1px solid rgba(245,158,11,.25)",
-    }}
-  >
-    <div
-      style={{
-        fontWeight: "700",
-        marginBottom: "8px",
-        color:
-          deliverySettings?.delivery_mode === "manual"
-            ? "#22c55e"
-            : "#f59e0b",
-      }}
-    >
-      {deliverySettings?.delivery_mode === "manual"
-        ? "📍 Costo de entrega pendiente"
-        : "⚠ Pendiente calcular el costo del delivery"}
-    </div>
-
-    <div
-      style={{
-        color: "rgba(255,255,255,.75)",
-        lineHeight: "1.6",
-        fontSize: "13px",
-      }}
-    >
-      {deliverySettings?.delivery_mode === "manual"
-        ? "El restaurante calculará el costo del envío después de recibir tu ubicación por WhatsApp."
-        : "Comparte tu ubicación para obtener el valor exacto del delivery antes de finalizar el pedido."}
-    </div>
-  </div>
-)}
-
-{showFreeDeliveryMessage && (
-  <div
-    style={{
-      marginBottom: "16px",
-      padding: "14px",
-      borderRadius: "14px",
-      background: "rgba(34,197,94,.08)",
-      border: "1px solid rgba(34,197,94,.20)",
-    }}
-  >
-    <div
-      style={{
-        fontWeight: "700",
-        marginBottom: "8px",
-        color: "#22c55e",
-      }}
-    >
-      🎉 ¡Delivery GRATIS desbloqueado!
-    </div>
-
-    <div
-      style={{
-        color: "rgba(255,255,255,.75)",
-        lineHeight: "1.6",
-        fontSize: "13px",
-      }}
-    >
-      Tu pedido ya califica para envío gratuito.
-      <br />
-      Solo comparte tu ubicación por WhatsApp para coordinar la entrega.
-    </div>
-  </div>
-)}
-
-
-       {showDeliveryRow && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              color: "rgba(255,255,255,.6)",
-              marginBottom: "10px",
-              fontSize: "14px"
-            }}
-          >
-            <span>Delivery</span>
-            <span>${deliveryFee.toFixed(2)}</span>
-          </div>
+            <span
+              style={{
+                color: "#a1a1aa",
+                fontSize: 12,
+                textAlign: "right",
+                lineHeight: 1.5,
+              }}
+            >
+              Costo acordado con el restaurante
+            </span>
+          </>
         )}
 
-        <hr
-          style={{
-            border: "none",
-            borderTop: "1px solid rgba(255,255,255,.06)",
-            margin: "16px 0",
-          }}
-        />
+        {delivery.isFree && (
+          <>
+            <span
+              style={{
+                background: "rgba(34,197,94,.15)",
+                color: "#22c55e",
+                padding: "5px 12px",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
+              🎉 Delivery GRATIS
+            </span>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            color: "#fff",
-            fontWeight: "800",
-            fontSize: "18px",
-            marginBottom: "24px",
-          }}
-        >
-          <span>Total</span>
-          <span>${total.toFixed(2)}</span>
-        </div>
+            <span
+              style={{
+                color: "#a1a1aa",
+                fontSize: 12,
+                textAlign: "right",
+                lineHeight: 1.5,
+              }}
+            >
+              Tu pedido supera el monto mínimo para envío gratuito.
+            </span>
+          </>
+        )}
+
+        {!delivery.isManual &&
+          !delivery.isFree && (
+            <strong
+              style={{
+                color: "#fff",
+              }}
+            >
+              {delivery.label}
+            </strong>
+          )}
+
+      </div>
+
+    </div>
+
+  )}
+
+  <hr
+    style={{
+      border: "none",
+      borderTop: "1px solid rgba(255,255,255,.06)",
+      margin: "16px 0",
+    }}
+  />
+
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      color: "#fff",
+      fontWeight: "800",
+      fontSize: "18px",
+      marginBottom: "24px",
+    }}
+  >
+    <span>Total</span>
+
+    <span>${total.toFixed(2)}</span>
+  </div>
 
         <motion.button
           whileHover={{ scale: 1.01 }}
@@ -598,7 +585,7 @@ const showFreeDeliveryMessage =
             boxSizing: "border-box"
           }}
         >
-          Continuar Pedido
+          Continuar pago
         </motion.button>
       </div>
     </div>

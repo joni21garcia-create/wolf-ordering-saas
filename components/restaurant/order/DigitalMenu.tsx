@@ -107,6 +107,9 @@ export default function DigitalMenu({
     ? products.filter((product) => product.category === selectedCategory)
     : products;
 
+    const commissionConfig =
+  getCommissionConfig(restaurant);
+
   return (
     <section style={{ marginTop: "40px", width: "100%", boxSizing: "border-box" }}>
       {/* INYECTAMOS CLASES CSS PROFESIONALES PARA MÓVILES Y ESCRITORIO */}
@@ -251,11 +254,11 @@ export default function DigitalMenu({
                     margin: "0 0 16px 0"
                   }}
                 >
-                  $
-                  {getFinalPrice(
-                    product.price,
-                    getCommissionConfig(restaurant)
-                  ).toFixed(2)}
+$
+{getFinalPrice(
+  product.price,
+  commissionConfig
+).toFixed(2)}
                 </p>
               </div>
 

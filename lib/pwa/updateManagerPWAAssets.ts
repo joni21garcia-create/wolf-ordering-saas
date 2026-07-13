@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-// 1. Inicializa el cliente AQUÍ, dentro de este archivo
+// Inicialización del cliente en el servidor
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -37,16 +37,22 @@ export async function updateManagerPWAAssets({
     updated_at: new Date().toISOString(),
   };
 
-  // 2. Ahora 'supabase' ya está definido arriba y funcionará
-  const { data: existing } = await supabase
+  // Consultamos si existe el registro base global
+  const { data: existing, error: checkError } = await supabase
     .from("manager_pwa_settings")
     .select("id")
     .limit(1)
     .maybeSingle();
 
+  if (checkError) {
+    console.error("Error consultando manager_pwa_settings:", checkError);
+    throw checkError;
+  }
+
   let result;
   
   if (existing) {
+    // Si la fila ya existe, actualizamos los logos e iconos
     const { data, error } = await supabase
       .from("manager_pwa_settings")
       .update(payload)
@@ -57,9 +63,14 @@ export async function updateManagerPWAAssets({
     if (error) throw error;
     result = data;
   } else {
+    // Si la tabla está vacía (Primer inicio), insertamos incluyendo campos NOT NULL requeridos
     const { data, error } = await supabase
       .from("manager_pwa_settings")
-      .insert(payload)
+      .insert({
+        ...payload,
+        app_name: "Wolf Ordering Manager", // Requerido por el esquema de tu BD
+        short_name: "Wolf Manager",         // Requerido por el esquema de tu BD
+      })
       .select()
       .single();
       

@@ -1,6 +1,12 @@
 "use client";
 
 import { getDeliveryFee } from "@/lib/configuration/delivery";
+import {
+  getCommissionAmount,
+  getRestaurantAmount,
+  getCommissionConfig,
+  getOrderTotal,
+} from "@/lib/configuration/pricing";
 
 import {
   useState,
@@ -223,12 +229,16 @@ useEffect(() => {
 }, []);
 
 
-const subtotal = products.reduce(
-  (acc, item) =>
-    acc +
-    (item.display_price ?? item.price) *
-    item.quantity,
-  0
+const subtotal = Number(
+  products
+    .reduce(
+      (acc, item) =>
+        acc +
+        (item.display_price ?? item.price) *
+          item.quantity,
+      0
+    )
+    .toFixed(2)
 );
 
 const orderType =
@@ -259,8 +269,10 @@ const deliveryFee =
           : 999999999
       );
 
-const total =
-  subtotal + deliveryFee;
+const total = getOrderTotal(
+  subtotal,
+  deliveryFee
+);
 
   const hasFreeDelivery =
   deliverySettings?.free_delivery_enabled &&
@@ -359,6 +371,11 @@ console.log(
     "wolf_push_subscription_id"
   );
 
+if (!products || products.length === 0) {
+  alert("El carrito está vacío.");
+  return;
+}
+
    const response =
   await fetch(
     "/api/orders/create",
@@ -428,27 +445,13 @@ selected_qr_name:
         order_type:
           orderType || "pickup",
 
-        subtotal,
 
-        delivery_fee:
-          deliveryFee,
-
-        total,
-
-        commission_amount: 0,
-
-        restaurant_amount:
-          subtotal,
-
-        wolf_amount: 0,
-
-        terms_accepted:
-          acceptedTerms,
+terms_accepted:
+  acceptedTerms,
 
 items: products.map((item) => ({
-    product_id: item.id,
-    quantity: item.quantity,
-    price: item.price,
+  product_id: item.id,
+  quantity: item.quantity,
 }))
       }),
     }
@@ -457,6 +460,11 @@ items: products.map((item) => ({
   
 const data =
   await response.json();
+
+  if (!response.ok) {
+  alert(data.error || "No se pudo crear el pedido.");
+  return;
+}
 
 console.log(
   "API RESPONSE:",
@@ -598,76 +606,70 @@ router.push(
 
 {orderType === "delivery" && (
 
-  deliverySettings?.delivery_mode === "manual" ? (
+  hasFreeDelivery ? (
 
-    showFreeDeliveryMessage ? (
+    <div
+      style={{
+        marginBottom: "15px",
+        padding: "16px",
+        borderRadius: "14px",
+        background: "rgba(34,197,94,.08)",
+        border: "1px solid rgba(34,197,94,.25)",
+      }}
+    >
+      <div
+        style={{
+          color: "#22c55e",
+          fontWeight: 700,
+          marginBottom: 8,
+        }}
+      >
+        🎉 ¡Delivery GRATIS desbloqueado!
+      </div>
 
       <div
         style={{
-          marginBottom: "15px",
-          padding: "16px",
-          borderRadius: "14px",
-          background: "rgba(34,197,94,.08)",
-          border: "1px solid rgba(34,197,94,.25)",
+          color: "rgba(255,255,255,.75)",
+          lineHeight: 1.7,
+          fontSize: 14,
         }}
       >
-        <div
-          style={{
-            color: "#22c55e",
-            fontWeight: "700",
-            marginBottom: "8px",
-          }}
-        >
-          🎉 ¡Delivery GRATIS desbloqueado!
-        </div>
-
-        <div
-          style={{
-            color: "rgba(255,255,255,.75)",
-            lineHeight: "1.7",
-            fontSize: "14px",
-          }}
-        >
-          Tu pedido ya califica para Delivery GRATIS.
-          <br />
-          Solo comparte tu ubicación por WhatsApp para coordinar la entrega.
-        </div>
+        Tu pedido ya califica para envío gratuito.
       </div>
+    </div>
 
-    ) : (
+  ) : deliverySettings?.delivery_mode === "manual" ? (
+
+    <div
+      style={{
+        marginBottom: "15px",
+        padding: "16px",
+        borderRadius: "14px",
+        background: "rgba(37,211,102,.08)",
+        border: "1px solid rgba(37,211,102,.25)",
+      }}
+    >
+      <div
+        style={{
+          color: "#25D366",
+          fontWeight: 700,
+          marginBottom: 8,
+        }}
+      >
+        📍 Delivery Manual
+      </div>
 
       <div
         style={{
-          marginBottom: "15px",
-          padding: "16px",
-          borderRadius: "14px",
-          background: "rgba(37,211,102,.08)",
-          border: "1px solid rgba(37,211,102,.25)",
+          color: "rgba(255,255,255,.75)",
+          lineHeight: 1.7,
+          fontSize: 14,
         }}
       >
-        <div
-          style={{
-            color: "#25D366",
-            fontWeight: "700",
-            marginBottom: "8px",
-          }}
-        >
-          📍 Delivery Manual
-        </div>
-
-        <div
-          style={{
-            color: "rgba(255,255,255,.75)",
-            lineHeight: "1.7",
-            fontSize: "14px",
-          }}
-        >
-          El costo del envío será calculado por el restaurante
-          después de que compartas tu ubicación por WhatsApp.
-        </div>
+        El costo del envío será calculado por el restaurante
+        después de compartir tu ubicación.
       </div>
-
-    )
+    </div>
 
   ) : (
 
@@ -682,7 +684,11 @@ router.push(
     >
       <span>Delivery</span>
 
-      <span style={{ fontFamily: "monospace" }}>
+      <span
+        style={{
+          fontFamily: "monospace",
+        }}
+      >
         ${deliveryFee.toFixed(2)}
       </span>
     </div>
@@ -1271,10 +1277,13 @@ router.push(
 
         setCashAmount(value);
 
-        setChangeAmount(
-          Number(value) -
-            total
-        );
+setChangeAmount(
+  Number(
+    (
+      Number(value) - total
+    ).toFixed(2)
+  )
+);
       }}
       placeholder="Ej: 20"
       className="wolf-input"

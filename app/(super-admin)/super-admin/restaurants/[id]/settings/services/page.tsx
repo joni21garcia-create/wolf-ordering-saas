@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase/client";
 import BackToSettings from "@/components/admin/BackToSettings";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 
-export default function ServicesPage() {
+function ServicesPage() {
   const params = useParams();
 
   const restaurantId =
@@ -21,12 +21,16 @@ export default function ServicesPage() {
   const [settings, setSettings] =
     useState<any>(null);
 
+  // 🌟 CORRECCIÓN CRUCIAL: Agregamos [restaurantId] para que recargue la data limpia al cambiar de restaurante
   useEffect(() => {
     loadSettings();
-  }, []);
+  }, [restaurantId]);
 
   const loadSettings =
     async () => {
+      setLoading(true);
+      
+      // 1. Traemos la configuración específica de delivery utilizando el ID real de la URL
       const { data } =
         await supabase
           .from(
@@ -39,8 +43,26 @@ export default function ServicesPage() {
           )
           .maybeSingle();
 
+      // 2. Traemos los datos base del restaurante para heredar configuraciones si el delivery está en null
+      const { data: restaurant } =
+        await supabase
+          .from("restaurants")
+          .select("*")
+          .eq("id", restaurantId)
+          .maybeSingle();
+
+      // Sincronizamos garantizando strings o números válidos (evita inputs "uncontrolled")
       setSettings({
-        delivery_mode: "fixed",
+        delivery_mode: data?.delivery_mode || restaurant?.delivery_mode || "fixed",
+        delivery_enabled: data?.delivery_enabled ?? restaurant?.service_delivery ?? false,
+        pickup_enabled: data?.pickup_enabled ?? restaurant?.service_pickup ?? false,
+        delivery_radius_km: data?.delivery_radius_km ?? 0,
+        delivery_fee: data?.delivery_fee ?? restaurant?.delivery_fee ?? 0,
+        minimum_order: data?.minimum_order ?? restaurant?.minimum_order ?? 0,
+        free_delivery_enabled: data?.free_delivery_enabled ?? false,
+        free_delivery_minimum: data?.free_delivery_minimum ?? restaurant?.free_delivery_from ?? 0,
+        preparation_time: data?.preparation_time ?? restaurant?.prep_time_min ?? 0,
+        delivery_time: data?.delivery_time ?? 0,
         ...data,
       });
 
@@ -52,12 +74,24 @@ export default function ServicesPage() {
       try {
         setSaving(true);
 
-        const { error } =
-          await supabase
-            .from(
-              "restaurant_delivery_settings"
-            )
-            .update({
+const { data: existing, error: existingError } = await supabase
+  .from("restaurant_delivery_settings")
+  .select("id")
+  .eq("restaurant_id", restaurantId)
+  .maybeSingle();
+
+if (existingError) {
+  console.error(existingError);
+  return;
+}
+
+let error = null;
+
+if (existing) {
+  console.log("ENTRO AL UPDATE");
+  ({ error } = await supabase
+    .from("restaurant_delivery_settings")
+    .update({
               delivery_enabled:
                 settings.delivery_enabled,
 
@@ -91,7 +125,48 @@ export default function ServicesPage() {
             .eq(
               "restaurant_id",
               restaurantId
-            );
+            ));
+
+            } else {
+              console.log("ENTRO AL INSERT");
+  ({ error } = await supabase
+    .from("restaurant_delivery_settings")
+    .insert({
+
+      
+      restaurant_id: restaurantId,
+
+      delivery_enabled:
+        settings.delivery_enabled,
+
+      pickup_enabled:
+        settings.pickup_enabled,
+
+      delivery_mode:
+        settings.delivery_mode,
+
+      delivery_radius_km:
+        settings.delivery_radius_km,
+
+      delivery_fee:
+        settings.delivery_fee,
+
+      minimum_order:
+        settings.minimum_order,
+
+      free_delivery_enabled:
+        settings.free_delivery_enabled,
+
+      free_delivery_minimum:
+        settings.free_delivery_minimum,
+
+      preparation_time:
+        settings.preparation_time,
+
+      delivery_time:
+        settings.delivery_time,
+    }));
+}
 
         if (error) {
           console.error(error);
@@ -104,7 +179,7 @@ export default function ServicesPage() {
         }
 
         alert(
-          "Configuración guardada"
+          "Configuración guardada exitosamente"
         );
       } finally {
         setSaving(false);
@@ -601,7 +676,7 @@ function InputCard({
 
       <input
         type="number"
-        value={value}
+        value={value ?? ""}
         onChange={(e) =>
           onChange(
             e.target.value
@@ -622,4 +697,10 @@ function InputCard({
       />
     </div>
   );
+}
+
+export default function ServicesPageWrapper() {
+  const params = useParams();
+  const restaurantId = (params?.id as string) || "";
+  return <ServicesPage key={restaurantId} />;
 }

@@ -1,50 +1,37 @@
-import { createClient }
-from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 
-export async function getCurrentUser(
-  accessToken: string
-) {
-  const supabase =
-    createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          headers: {
-            Authorization:
-              `Bearer ${accessToken}`,
-          },
-        },
-      }
-    );
+export async function getCurrentUser(token: string) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
   const {
     data: { user },
-  } =
-    await supabase.auth.getUser();
+    error,
+  } = await supabase.auth.getUser(token);
 
-  if (!user) {
+  if (error || !user) {
     return null;
   }
 
-  const {
-    data: restaurantUser,
-  } =
-    await supabase
-      .from("restaurant_users")
-      .select(`
-        id,
-        auth_user_id,
-        restaurant_id,
-        role_id,
-        email,
-        full_name
-      `)
-      .eq(
-        "auth_user_id",
-        user.id
-      )
-      .single();
+  const { data: restaurantUser } = await supabase
+    .from("restaurant_users")
+    .select(`
+      auth_user_id,
+      restaurant_id,
+      role_id,
+      email
+    `)
+    .eq("auth_user_id", user.id)
+    .maybeSingle();
 
-  return restaurantUser;
+  if (!restaurantUser) {
+    return null;
+  }
+
+  return {
+    ...restaurantUser,
+    email: user.email,
+  };
 }
