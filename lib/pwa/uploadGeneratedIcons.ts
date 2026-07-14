@@ -25,23 +25,28 @@ export async function uploadGeneratedIcons({
   const uploaded: UploadedIcon[] = [];
 
   // Normalizamos el folder: quitamos espacios y barras redundantes al inicio/final
-  const cleanFolder = folder.replace(/^\/+|\/+$/g, "");
+  const cleanFolder = folder.replace(/^\/+|\/+$/g, "").trim();
 
-  console.log(`Subiendo ${icons.length} iconos a la carpeta: ${cleanFolder}`);
+  console.log(`[PWA Upload] Iniciando subida de ${icons.length} iconos a la carpeta: "${cleanFolder}"`);
 
   for (const icon of icons) {
     // Ruta limpia y estandarizada dentro del bucket
     const path = `${cleanFolder}/${icon.filename}`;
 
+    // 🛡️ SUBIDA BLINDADA: 
+    // Forzamos "contentType: image/png" y configuramos "cacheControl" agresivo (1 año).
+    // Esto garantiza que el validador de PWAs de Chrome nunca reciba un archivo corrupto "octet-stream"
+    // y descargue las imágenes de manera ultra rápida.
     const { error } = await supabase.storage
       .from("restaurant-pwa")
       .upload(path, icon.buffer, {
         contentType: "image/png",
         upsert: true,
+        cacheControl: "public, max-age=31536000, must-revalidate", // Cacheo óptimo recomendado por Google
       });
 
     if (error) {
-      console.error(`Error crítico subiendo icono PWA a ${path}:`, error);
+      console.error(`[PWA Upload] Error crítico subiendo icono PWA a ${path}:`, error);
       throw error;
     }
 
@@ -50,11 +55,14 @@ export async function uploadGeneratedIcons({
       .from("restaurant-pwa")
       .getPublicUrl(path);
 
+    if (!data?.publicUrl) {
+      console.error(`[PWA Upload] Error: No se pudo resolver la URL pública de Supabase para ${path}`);
+      throw new Error(`Error al resolver URL pública del icono: ${icon.filename}`);
+    }
+
     // 🛠️ SOLUCIÓN PARA IMÁGENES ROTAS: Cache-Busting
-    // Agregamos un timestamp único al final de la URL.
-    // Esto obliga al navegador y a los Service Workers a ignorar
-    // las versiones antiguas o rotas guardadas en caché, forzando
-    // la descarga de la nueva versión del icono.
+    // Agregamos un timestamp único al final de la URL pública limpia para saltarnos
+    // la memoria física temporal del Service Worker cuando el usuario actualiza sus logos.
     const uniqueUrl = `${data.publicUrl}?t=${Date.now()}`;
 
     uploaded.push({
@@ -64,7 +72,7 @@ export async function uploadGeneratedIcons({
     });
   }
 
-  console.log("Subida de iconos PWA completada exitosamente.");
+  console.log("[PWA Upload] Subida de iconos PWA completada exitosamente.");
 
   return uploaded;
 }

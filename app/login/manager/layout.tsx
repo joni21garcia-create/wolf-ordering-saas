@@ -1,12 +1,33 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import RegisterSW from "../RegisterSW"; // 👈 CORRECCIÓN: Agregamos ".." para subir de carpeta
 
-// Next.js inyectará automáticamente este enlace en el <head> principal
-export const metadata: Metadata = {
-  manifest: "/api/manifest/manager",
-  title: "Wolf Ordering",
+// 1. Next.js requiere themeColor por separado en "viewport" para evitar advertencias de compilación
+export const viewport: Viewport = {
+  themeColor: "#000000",
 };
 
-export default function LoginLayout({ children }: { children: React.ReactNode }) {
-  // NO incluyas <html> ni <head> aquí, solo los componentes
-  return <>{children}</>;
+// 2. Tu metadata original queda intacta y apuntando al manifiesto correcto
+export const metadata: Metadata = {
+  manifest: "/api/manifest/manager", 
+  title: "Wolf Manager | Administración",
+  description: "Panel de control administrativo de Wolf Ordering",
+  
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Wolf Manager",
+  },
+};
+
+export default function ManagerLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="manager-layout-wrapper">
+      <RegisterSW /> {/* Mantén aquí tu registrador que ya está funcionando */}
+      {children}
+    </div>
+  );
 }

@@ -1,50 +1,175 @@
 /**
- * Registrar el Service Worker con control estricto de scope
- * y manejo de ciclo de vida para evitar conflictos con el manifiesto.
+ * Wolf Ordering
+ * Service Worker Registration V2
+ *
+ * Compatible con Wolf Service Worker V11 Enterprise
  */
+
 export async function registerSW(path: string) {
-  // 1. Verificaciones de entorno: Solo correr en el navegador
-  if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
-    return;
-  }
+  if (typeof window === "undefined") return;
+
+  if (!("serviceWorker" in navigator)) return;
 
   try {
-    // 2. Registro explícito con scope definido
-    // Forzamos scope: "/" para asegurar que el SW gestione toda la app
     const registration = await navigator.serviceWorker.register(path, {
-      scope: "/", 
+      scope: "/",
     });
 
-    console.log("[SW] Registrado con éxito en el scope:", registration.scope);
+    console.log(
+      "[SW] Registrado correctamente:",
+      registration.scope
+    );
 
-    // 3. Manejo del ciclo de vida y actualizaciones
+    /* ======================================================
+       NUEVA VERSION DETECTADA
+    ====================================================== */
+
     registration.addEventListener("updatefound", () => {
-      const newWorker = registration.installing;
-      if (!newWorker) return;
+      const installingWorker = registration.installing;
 
-      newWorker.addEventListener("statechange", () => {
-        console.log("[SW] Estado del worker:", newWorker.state);
+      if (!installingWorker) return;
 
-        // Si el worker llega a 'installed' y ya existía un controlador,
-        // notificamos al usuario para que recargue y vea la nueva versión.
-        if (newWorker.state === "installed") {
-          if (navigator.serviceWorker.controller) {
-            console.log("[SW] Nueva versión detectada, esperando activación...");
-            window.dispatchEvent(new CustomEvent("wolf-update-available"));
-          } else {
-            console.log("[SW] Instalación inicial completada.");
-          }
+      console.log("[SW] Descargando nueva versión...");
+
+      installingWorker.addEventListener("statechange", () => {
+        console.log(
+          "[SW] Estado:",
+          installingWorker.state
+        );
+
+        if (installingWorker.state !== "installed") {
+          return;
         }
+
+        /*
+         Primera instalación
+        */
+
+        if (!navigator.serviceWorker.controller) {
+          console.log(
+            "[SW] Instalación inicial completada."
+          );
+
+          return;
+        }
+
+        /*
+         Nueva versión disponible
+        */
+
+        console.log(
+          "[SW] Nueva versión detectada."
+        );
+
+        registration.waiting?.postMessage({
+          type: "SKIP_WAITING",
+        });
+
+        window.dispatchEvent(
+          new CustomEvent("wolf-update-available")
+        );
       });
     });
 
-    // 4. Verificación de activación para evitar bloqueos
-    // Esto asegura que el SW tome control inmediatamente
+    /* ======================================================
+       YA EXISTE UNA VERSION ESPERANDO
+    ====================================================== */
+
     if (registration.waiting) {
-        window.dispatchEvent(new CustomEvent("wolf-update-available"));
+      console.log(
+        "[SW] Hay una actualización pendiente."
+      );
+
+      registration.waiting.postMessage({
+        type: "SKIP_WAITING",
+      });
+
+      window.dispatchEvent(
+        new CustomEvent("wolf-update-available")
+      );
     }
 
+    /* ======================================================
+       NUEVO SW TOMO EL CONTROL
+    ====================================================== */
+
+    let refreshing = false;
+
+    navigator.serviceWorker.addEventListener(
+      "controllerchange",
+      () => {
+        if (refreshing) return;
+
+        refreshing = true;
+
+        console.log(
+          "[SW] Nuevo Service Worker activo."
+        );
+
+        window.location.reload();
+      }
+    );
+
+    /* ======================================================
+       MENSAJES DEL SERVICE WORKER
+    ====================================================== */
+
+    navigator.serviceWorker.addEventListener(
+      "message",
+      (event) => {
+        if (!event.data) return;
+
+        switch (event.data.type) {
+          case "SW_READY":
+
+            console.log(
+              "[SW] Ready",
+              event.data.version
+            );
+
+            break;
+
+          case "SW_ACTIVATED":
+
+            console.log(
+              "[SW] Activado",
+              event.data.version
+            );
+
+            break;
+
+          case "VERSION":
+
+            console.log(
+              "[SW] Version:",
+              event.data.version
+            );
+
+            break;
+        }
+      }
+    );
+
+    /* ======================================================
+       BUSCAR ACTUALIZACIONES
+    ====================================================== */
+
+    try {
+      registration.update();
+    } catch {}
+
+    /*
+      Buscar nuevas versiones cada minuto
+    */
+
+    setInterval(() => {
+      registration.update();
+    }, 60000);
+
   } catch (error) {
-    console.error("[SW] Error crítico al registrar el Service Worker:", error);
+    console.error(
+      "[SW] Error registrando Service Worker:",
+      error
+    );
   }
 }

@@ -24,14 +24,19 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // Sincroniza la sesión entre navegador y SSR
+  // Sincroniza la sesión entre navegador y SSR (Mantenido intacto)
   await supabase.auth.getUser();
 
   return response;
 }
 
 export const config = {
+  /* 
+   * Modificado exclusivamente para incluir:
+   * - manifest.json y manifest.webmanifest
+   * - La carpeta /icons de forma explícita
+   */
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|icons|favicon.ico|manifest.json|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

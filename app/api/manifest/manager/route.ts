@@ -2,9 +2,12 @@ import { NextResponse } from "next/server";
 import { getManagerPWASettings } from "@/lib/pwa/getManagerPWASettings";
 import { buildManagerManifest } from "@/lib/pwa/manifest/buildManagerManifest";
 
+// Esto le dice a Next.js que NO guarde en caché esta ruta bajo ningún concepto
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
-    // Obtenemos datos mediante la función dedicada (patrón limpio)
     const p = await getManagerPWASettings();
     const manifest = await buildManagerManifest();
 
@@ -12,14 +15,14 @@ export async function GET() {
       return NextResponse.json({ error: "Configuración no encontrada" }, { status: 404 });
     }
 
-    // Estructuramos el manifiesto con la misma lógica que tu API de restaurante
     const finalManifest = {
       ...manifest,
       name: p.app_name || "Wolf Manager",
       short_name: p.short_name || "Wolf",
       start_url: "/login",
       scope: "/",
-      display: p.display || "standalone",
+      // 🚨 FORZADO: Eliminamos p.display para asegurar standalone y cumplir con Chrome
+      display: "standalone", 
       orientation: p.orientation || "portrait",
       background_color: p.background_color || "#000000",
       theme_color: p.theme_color || "#f97316",
@@ -37,12 +40,15 @@ export async function GET() {
     };
 
     return new NextResponse(JSON.stringify(finalManifest), {
-     status: 200,
-     headers: {
-    "Content-Type": "application/manifest+json",
-    "Cache-Control": "no-cache, must-revalidate",
-  },
-});
+      status: 200,
+      headers: {
+        "Content-Type": "application/manifest+json",
+        // Cabeceras ultra-estrictas para que el navegador y Next.js no cacheen el JSON viejo
+        "Cache-Control": "no-store, no-cache, must-revalidate, force-revalidate, max-age=0",
+        "Pragma": "no-cache",
+        "Expires": "0"
+      },
+    });
 
   } catch (error: any) {
     console.error("Error crítico en manifiesto:", error);

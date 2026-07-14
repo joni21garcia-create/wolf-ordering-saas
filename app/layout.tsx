@@ -23,7 +23,8 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://app.wolfordering.com"),
   title: "Wolf Ordering",
   description: "Sistema SaaS de pedidos digitales para restaurantes",
-  manifest: "/api/manifest/manager",
+  // ❌ SE ELIMINÓ LA PROPIEDAD "manifest" DE AQUÍ
+  // Esto evita que el login y el restaurante intenten cargar el manifest del manager por defecto.
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -40,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es" className={`${geistSans.variable} ${geistMono.variable}`} data-scroll-behavior="smooth">
       <body className="text-white bg-[#050505] antialiased overflow-x-hidden">
         
-        {/* Capas decorativas fijas: añadimos pointer-events-none para no bloquear clics */}
+        {/* Capas decorativas fijas con pointer-events-none */}
         <div className="fixed inset-0 pointer-events-none -z-10">
           <div className="wolf-orb-top" />
           <div className="wolf-orb-bottom" />
