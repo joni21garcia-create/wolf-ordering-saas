@@ -1,48 +1,70 @@
-export function getCurrentDayKey() {
-  const day = new Date().getDay();
+const TIMEZONE = "America/Guayaquil";
 
-  const days = [
-    "sunday",
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-  ];
+export function getCurrentDayKey() {
+  const day =
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        timeZone: TIMEZONE,
+        weekday: "long",
+      }
+    ).format(new Date());
+
+
+  const days: Record<string, string> = {
+    Sunday: "sunday",
+    Monday: "monday",
+    Tuesday: "tuesday",
+    Wednesday: "wednesday",
+    Thursday: "thursday",
+    Friday: "friday",
+    Saturday: "saturday",
+  };
+
 
   return days[day];
 }
 
+
 export function isRestaurantOpen(
   schedule: any
 ) {
-  if (!schedule) return true;
+  if (!schedule) return false;
+
 
   const dayKey =
     getCurrentDayKey();
+
 
   const open =
     schedule[
       `${dayKey}_open`
     ];
 
+
   const close =
     schedule[
       `${dayKey}_close`
     ];
 
+
   if (!open || !close) {
     return false;
   }
 
-  const now =
-    new Date();
 
   const currentTime =
-    now
-      .toTimeString()
-      .slice(0, 5);
+    new Intl.DateTimeFormat(
+      "en-GB",
+      {
+        timeZone: TIMEZONE,
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }
+    )
+    .format(new Date());
+
 
   return (
     currentTime >= open &&
