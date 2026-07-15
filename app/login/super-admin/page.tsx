@@ -16,13 +16,9 @@ export default function SuperAdminLoginPage() {
       "Validando credenciales..."
     );
 
-useEffect(() => {
-  const timer = setTimeout(() => {
-    validateUser();
-  }, 2000);
-
-  return () => clearTimeout(timer);
-}, []);
+useEffect(()=>{
+   validateUser();
+},[]);
 
   async function validateUser() {
     try {
@@ -57,7 +53,7 @@ useEffect(() => {
             "auth_user_id",
             authUser.id
           )
-          .single();
+          .maybeSingle();
 
       if (!user) {
         router.push("/login");
