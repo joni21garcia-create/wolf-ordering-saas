@@ -15,18 +15,85 @@ export default function CategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
 
-  useEffect(() => { loadCategories(); }, []);
+  useEffect(() => {
+    loadCategories();
+  }, []);
 
+  // 1. CARGAR CATEGORÍAS
   const loadCategories = async () => {
-    const { data } = await supabase.from("categories").select("*").eq("restaurant_id", restaurantId).order("sort_order", { ascending: true });
+    const { data } = await supabase
+      .from("categories")
+      .select("*")
+      .eq("restaurant_id", restaurantId)
+      .order("sort_order", { ascending: true });
     setCategories(data || []);
   };
 
+  // 2. CREAR CATEGORÍA
   const createCategory = async () => {
     if (!newCategory) return;
     setLoading(true);
-    await supabase.from("categories").insert({ restaurant_id: restaurantId, name: newCategory, active: true, sort_order: categories.length + 1 });
+    await supabase.from("categories").insert({
+      restaurant_id: restaurantId,
+      name: newCategory,
+      active: true,
+      sort_order: categories.length + 1,
+    });
     setNewCategory("");
+    await loadCategories();
+    setLoading(false);
+  };
+
+  // 3. INICIAR EDICIÓN
+  const startEditing = (category: any) => {
+    setEditingId(category.id);
+    setEditingName(category.name);
+  };
+
+  // 4. GUARDAR EDICIÓN
+  const saveEdit = async (id: string) => {
+    if (!editingName.trim()) return;
+    setLoading(true);
+    const { error } = await supabase
+      .from("categories")
+      .update({ name: editingName })
+      .eq("id", id);
+
+    if (!error) {
+      setEditingId(null);
+      setEditingName("");
+      await loadCategories();
+    }
+    setLoading(false);
+  };
+
+  // 5. ELIMINAR CATEGORÍA
+  const deleteCategory = async (id: string) => {
+    const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer.");
+    if (!confirmDelete) return;
+
+    setLoading(true);
+    const { error } = await supabase
+      .from("categories")
+      .delete()
+      .eq("id", id);
+
+    if (!error) {
+      await loadCategories();
+    } else {
+      alert("No se pudo eliminar. Asegúrate de que la categoría no tenga productos asociados.");
+    }
+    setLoading(false);
+  };
+
+  // 6. ACTIVAR / DESACTIVAR (Ocultar o Mostrar)
+  const toggleActive = async (id: string, currentStatus: boolean) => {
+    setLoading(true);
+    await supabase
+      .from("categories")
+      .update({ active: !currentStatus })
+      .eq("id", id);
+    
     await loadCategories();
     setLoading(false);
   };
@@ -61,22 +128,44 @@ export default function CategoriesPage() {
               style={inputStyle}
             />
             <button onClick={createCategory} disabled={loading} style={primaryBtn}>
-              {loading ? "Creando..." : "+ Crear Categoría"}
+              {loading ? "Procesando..." : "+ Crear Categoría"}
             </button>
           </div>
 
           {/* LISTADO */}
           <div style={{ display: "grid", gap: "12px" }}>
-            {categories.map((cat, idx) => (
+            {categories.map((cat) => (
               <div key={cat.id} style={categoryItem}>
                 {editingId === cat.id ? (
-                  <input value={editingName} onChange={(e) => setEditingName(e.target.value)} style={inputStyle} />
+                  <input 
+                    value={editingName} 
+                    onChange={(e) => setEditingName(e.target.value)} 
+                    style={{...inputStyle, maxWidth: "300px"}} 
+                    autoFocus
+                  />
                 ) : (
-                  <span style={{ fontWeight: "600", fontSize: "18px" }}>{cat.name}</span>
+                  <span style={{ fontWeight: "600", fontSize: "18px", opacity: cat.active ? 1 : 0.5 }}>
+                    {cat.name} {!cat.active && " (Oculta)"}
+                  </span>
                 )}
+
                 <div style={{ display: "flex", gap: "8px" }}>
-                   <button onClick={() => {/* Lógica de edición */}} style={editBtn}>Editar</button>
-                   <button style={hideBtn}>{cat.active ? "Ocultar" : "Mostrar"}</button>
+                  {editingId === cat.id ? (
+                    <>
+                      <button onClick={() => saveEdit(cat.id)} disabled={loading} style={saveBtn}>Guardar</button>
+                      <button onClick={() => setEditingId(null)} style={cancelBtn}>Cancelar</button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => startEditing(cat)} style={editBtn}>Editar</button>
+                      <button onClick={() => toggleActive(cat.id, cat.active)} style={hideBtn}>
+                        {cat.active ? "Ocultar" : "Mostrar"}
+                      </button>
+                      <button onClick={() => deleteCategory(cat.id)} style={deleteBtn} disabled={loading}>
+                        Eliminar
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
@@ -95,8 +184,13 @@ const formCard = { background: "#0a0a0a", border: "1px solid #1f1f1f", borderRad
 const inputStyle = { flex: 1, background: "#171717", border: "1px solid #333", borderRadius: "12px", padding: "12px 16px", color: "#fff" };
 const primaryBtn = { background: "#f97316", color: "#fff", border: "none", padding: "12px 24px", borderRadius: "12px", fontWeight: "700", cursor: "pointer" };
 const categoryItem = { background: "#0a0a0a", border: "1px solid #1f1f1f", borderRadius: "16px", padding: "20px", display: "flex", justifyContent: "space-between", alignItems: "center" };
+
+// Botones de acción estresados
 const editBtn = { background: "rgba(255,255,255,0.05)", border: "1px solid #333", padding: "8px 16px", borderRadius: "8px", color: "#fff", cursor: "pointer" };
 const hideBtn = { background: "rgba(255,255,255,0.05)", border: "1px solid #333", padding: "8px 16px", borderRadius: "8px", color: "#fff", cursor: "pointer" };
+const deleteBtn = { background: "rgba(239, 68, 68, 0.1)", border: "1px solid #ef4444", padding: "8px 16px", borderRadius: "8px", color: "#ef4444", cursor: "pointer" };
+const saveBtn = { background: "#22c55e", border: "none", padding: "8px 16px", borderRadius: "8px", color: "#fff", cursor: "pointer", fontWeight: "600" };
+const cancelBtn = { background: "#3b82f6", border: "none", padding: "8px 16px", borderRadius: "8px", color: "#fff", cursor: "pointer" };
 
 function StatCard({ title, value }: any) {
   return (
