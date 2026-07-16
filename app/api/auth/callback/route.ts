@@ -4,6 +4,9 @@ import { createServerClient } from "@supabase/ssr";
 
 export async function GET(request: NextRequest) {
 
+    console.log("🔥 CALLBACK EJECUTADO");
+console.log(request.url);
+
   const { searchParams, origin } =
     new URL(request.url);
 
@@ -102,7 +105,18 @@ const next =
 
   }
 
+// Si viene desde recuperación de contraseña,
+// enviarlo directamente a la página de reset.
+if (next === "/reset-password") {
 
+  response.headers.set(
+    "Location",
+    `${origin}/reset-password`
+  );
+
+  return response;
+
+}
 
   const {
     data:restaurantUser
@@ -180,15 +194,12 @@ const next =
   }
 
 
-
-  // IMPORTANTE:
-  // reutilizar response para conservar cookies
-
-  response.headers.set(
-    "Location",
-    redirectUrl
+  return NextResponse.redirect(
+    redirectUrl,
+    {
+      headers: response.headers,
+    }
   );
-
 
   return response;
 
