@@ -11,13 +11,7 @@ console.log(request.url);
     new URL(request.url);
 
 
-  const code =
-    searchParams.get("code");
-
-const next =
-  searchParams.get("next") ?? "";
-
-  const code = searchParams.get("code");
+const code = searchParams.get("code");
 
 const next = searchParams.get("next") ?? "";
 
