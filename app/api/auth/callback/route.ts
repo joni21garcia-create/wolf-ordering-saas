@@ -17,6 +17,13 @@ console.log(request.url);
 const next =
   searchParams.get("next") ?? "";
 
+  const code = searchParams.get("code");
+
+const next = searchParams.get("next") ?? "";
+
+console.log("URL:", request.url);
+console.log("CODE:", code);
+console.log("NEXT:", next);
 
   if (!code) {
     return NextResponse.redirect(

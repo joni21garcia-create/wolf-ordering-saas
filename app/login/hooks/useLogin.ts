@@ -38,12 +38,10 @@ console.log(
 
 const result =
   await supabase.auth.resetPasswordForEmail(
-    email,
-    {
-      redirectTo:
-        `${window.location.origin}/api/auth/callback?next=/reset-password`,
-    }
+    email
   );
+
+console.log(result);
 
 console.log("RESET RESULT:", result);
 
