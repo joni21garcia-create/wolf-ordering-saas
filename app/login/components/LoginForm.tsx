@@ -1,183 +1,219 @@
 "use client";
 
-import { useState } from "react";
-import { useLogin } from "../hooks/useLogin";
+import InstallSection from "./InstallSection";
+import GoogleButton from "./GoogleButton";
 
-type Props = {
-  login: ReturnType<typeof useLogin>;
-};
+interface LoginFormProps {
+  email: string;
+  setEmail: (value: string) => void;
 
-export function LoginForm({ login }: Props) {
-  const [showPassword, setShowPassword] =
-    useState(false);
+  password: string;
+  setPassword: (value: string) => void;
 
-  const inputContainer: React.CSSProperties = {
-    position: "relative",
-    marginBottom: "20px",
-  };
+  rememberMe: boolean;
+  setRememberMe: (value: boolean) => void;
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "16px",
-    paddingLeft: "48px",
-    paddingRight: "48px",
-    borderRadius: "16px",
-    border: "1px solid rgba(255,255,255,.08)",
-    background: "rgba(255,255,255,.03)",
-    color: "#fff",
-    outline: "none",
-    boxSizing: "border-box",
-    fontSize: "16px",
-    transition: "all .25s ease",
-  };
+  loading: boolean;
 
-  const iconStyle: React.CSSProperties = {
-    position: "absolute",
-    left: "16px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    color: "#777",
-    fontSize: "18px",
-    pointerEvents: "none",
-  };
+  login: () => void;
+  resetPassword: () => void;
+  loginWithGoogle: () => void;
+}
 
+export default function LoginForm({
+  email,
+  setEmail,
+  password,
+  setPassword,
+  rememberMe,
+  setRememberMe,
+  loading,
+  login,
+  resetPassword,
+  loginWithGoogle,
+}: LoginFormProps) {
   return (
-    <>
-      {/* EMAIL */}
-
-      <label
+    <aside
+      style={{
+        width: "100%",
+        maxWidth: 520,
+        margin: "0 auto",
+        padding: "60px 50px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        boxSizing: "border-box",
+      }}
+    >
+      <div
         style={{
-          color: "#B0B0B0",
-          fontSize: "14px",
+          marginBottom: 40,
         }}
       >
-        Correo electrónico
-      </label>
+        <span
+          style={{
+            color: "#f97316",
+            fontWeight: 800,
+            letterSpacing: 4,
+            fontSize: 12,
+          }}
+        >
+          WOLF ORDERING OS
+        </span>
 
-      <div style={inputContainer}>
-        <span style={iconStyle}>✉</span>
+        <h2
+          style={{
+            color: "#fff",
+            fontSize: 38,
+            marginTop: 16,
+            marginBottom: 12,
+          }}
+        >
+          Bienvenido
+        </h2>
+
+        <p
+          style={{
+            color: "#9ca3af",
+            lineHeight: 1.7,
+            fontSize: 15,
+          }}
+        >
+          Inicia sesión para acceder a tu restaurante.
+        </p>
+      </div>
+
+      {/* EMAIL */}
+
+      <div style={{ marginBottom: 20 }}>
+        <label
+          style={{
+            color: "#b5b5b5",
+            display: "block",
+            marginBottom: 8,
+            fontSize: 14,
+          }}
+        >
+          Correo electrónico
+        </label>
 
         <input
           type="email"
-          value={login.email}
-          onChange={(e) =>
-            login.setEmail(e.target.value)
-          }
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           placeholder="correo@empresa.com"
-          style={inputStyle}
+          style={{
+            width: "100%",
+            height: 58,
+            padding: "0 18px",
+            borderRadius: 16,
+            border: "1px solid rgba(255,255,255,.08)",
+            background: "rgba(255,255,255,.03)",
+            color: "#fff",
+            outline: "none",
+            fontSize: 16,
+            boxSizing: "border-box",
+          }}
         />
       </div>
 
       {/* PASSWORD */}
 
-      <label
-        style={{
-          color: "#B0B0B0",
-          fontSize: "14px",
-        }}
-      >
-        Contraseña
-      </label>
-
-      <div style={inputContainer}>
-        <span style={iconStyle}>🔒</span>
-
-        <input
-          type={
-            showPassword
-              ? "text"
-              : "password"
-          }
-          value={login.password}
-          onChange={(e) =>
-            login.setPassword(
-              e.target.value
-            )
-          }
-          placeholder="••••••••••••"
-          style={inputStyle}
-        />
-
-        <button
-          type="button"
-          onClick={() =>
-            setShowPassword(
-              !showPassword
-            )
-          }
+      <div style={{ marginBottom: 24 }}>
+        <label
           style={{
-            position: "absolute",
-            right: "16px",
-            top: "50%",
-            transform:
-              "translateY(-50%)",
-            background: "none",
-            border: "none",
-            color: "#888",
-            cursor: "pointer",
-            fontSize: "18px",
+            color: "#b5b5b5",
+            display: "block",
+            marginBottom: 8,
+            fontSize: 14,
           }}
         >
-          {showPassword
-            ? "🙈"
-            : "👁"}
-        </button>
-      </div>
+          Contraseña
+        </label>
 
-      {/* FOOTER */}
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          style={{
+            width: "100%",
+            height: 58,
+            padding: "0 18px",
+            borderRadius: 16,
+            border: "1px solid rgba(255,255,255,.08)",
+            background: "rgba(255,255,255,.03)",
+            color: "#fff",
+            outline: "none",
+            fontSize: 16,
+            boxSizing: "border-box",
+          }}
+        />
+      </div>
 
       <div
         style={{
           display: "flex",
-          justifyContent:
-            "space-between",
+          justifyContent: "space-between",
           alignItems: "center",
-          gap: "12px",
-          marginBottom: "28px",
-          flexWrap: "wrap",
+          marginBottom: 28,
+          fontSize: 14,
         }}
       >
         <label
           style={{
             display: "flex",
-            gap: "8px",
             alignItems: "center",
-            color: "#999",
+            gap: 8,
+            color: "#9ca3af",
             cursor: "pointer",
-            fontSize: "14px",
           }}
         >
           <input
             type="checkbox"
-            checked={
-              login.rememberMe
-            }
-            onChange={(e) =>
-              login.setRememberMe(
-                e.target.checked
-              )
-            }
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
           />
-
           Recordarme
         </label>
 
         <button
+          onClick={resetPassword}
           type="button"
-          onClick={
-            login.resetPassword
-          }
           style={{
-            background: "none",
             border: "none",
+            background: "transparent",
             color: "#f97316",
             cursor: "pointer",
-            fontSize: "14px",
+            fontWeight: 600,
           }}
         >
           ¿Olvidaste tu contraseña?
         </button>
       </div>
-    </>
+
+      <button
+        onClick={login}
+        disabled={loading}
+        style={{
+          width: "100%",
+          height: 60,
+          borderRadius: 18,
+          border: "none",
+          cursor: "pointer",
+          color: "#fff",
+          fontSize: 16,
+          fontWeight: 700,
+          background:
+            "linear-gradient(90deg,#f97316,#ff8c2f)",
+        }}
+      >
+        {loading ? "Ingresando..." : "Ingresar"}
+      </button>
+
+      <GoogleButton onClick={loginWithGoogle} />
+
+      <InstallSection />
+    </aside>
   );
 }

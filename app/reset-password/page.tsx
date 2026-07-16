@@ -1,327 +1,152 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
-
   const router = useRouter();
 
-  const [
-    password,
-    setPassword
-  ] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [
-    confirmPassword,
-    setConfirmPassword
-  ] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
 
-  const [
-    loading,
-    setLoading
-  ] = useState(false);
+ useEffect(() => {
+  let mounted = true;
 
-  const [
-    success,
-    setSuccess
-  ] = useState(false);
-
-  const [
-    checkingSession,
-    setCheckingSession
-  ] = useState(true);
-
-
-
-  /*
-   * Esperar a que Supabase cree
-   * la sesión temporal del Recovery.
-   *
-   * Esto evita:
-   * Auth session missing!
-   */
-  useEffect(() => {
-
-    let mounted = true;
-
-    const {
-      data: {
-        subscription
-      },
-    } =
-      supabase.auth.onAuthStateChange(
-        (event) => {
-
-          console.log(
-            "RESET EVENT:",
-            event
-          );
-
-        }
-      );
-
-
-
-    async function initialize() {
-
-      let session = null;
-
-      for (let i = 0; i < 10; i++) {
-
-        const result =
-          await supabase.auth.getSession();
-
-        session =
-          result.data.session;
-
-        console.log(
-          `INTENTO ${i + 1}:`,
-          session
-        );
-
-        if (session) {
-          break;
-        }
-
-        await new Promise(
-          (resolve) =>
-            setTimeout(
-              resolve,
-              500
-            )
-        );
-
-      }
-
-      if (!mounted) {
-        return;
-      }
-
-      if (!session) {
-
-        router.replace("/login");
-
-        return;
-
-      }
-
-      setCheckingSession(false);
-
-    }
-
-
-
-    initialize();
-
-
-
-    return () => {
-
-      mounted = false;
-
-      subscription.unsubscribe();
-
-    };
-
-  }, [router]);
-    async function updatePassword() {
-
-    const {
-      data: {
-        session
-      },
-    } =
-      await supabase.auth.getSession();
-
-    if (!session) {
-
-      alert(
-        "La sesión de recuperación expiró."
-      );
-
-      router.replace("/login");
-
-      return;
-
-    }
-
-
-
-    if (!password) {
-
-      alert(
-        "Ingrese una contraseña"
-      );
-
-      return;
-
-    }
-
-
-
-    if (
-      password !== confirmPassword
-    ) {
-
-      alert(
-        "Las contraseñas no coinciden"
-      );
-
-      return;
-
-    }
-
-
-
-    if (
-      password.length < 8
-    ) {
-
-      alert(
-        "La contraseña debe tener al menos 8 caracteres"
-      );
-
-      return;
-
-    }
-
-
-
+  async function init() {
     try {
-
-      setLoading(true);
-
-
+      // Intercambia el código de recuperación por una sesión
+      await supabase.auth.exchangeCodeForSession(window.location.href);
 
       const {
-        error
-      } =
-      await supabase.auth.updateUser({
+        data: { session },
+      } = await supabase.auth.getSession();
 
-        password,
+      console.log("SESSION:", session);
 
-      });
-
-
-
-      if (error) {
-
-        alert(
-          error.message
-        );
-
+      if (!session) {
+        alert("La sesión de recuperación expiró.");
+        router.replace("/login");
         return;
-
       }
 
+      if (mounted) {
+        setCheckingSession(false);
+      }
+    } catch (err) {
+      console.error(err);
+      router.replace("/login");
+    }
+  }
 
+  init();
+
+  return () => {
+    mounted = false;
+  };
+}, [router]);
+
+  async function updatePassword() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      alert("La sesión de recuperación expiró.");
+      router.replace("/login");
+      return;
+    }
+
+    if (!password) {
+      alert("Ingrese una contraseña.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert("Las contraseñas no coinciden.");
+      return;
+    }
+
+    if (password.length < 8) {
+      alert("La contraseña debe tener mínimo 8 caracteres.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const { error } =
+        await supabase.auth.updateUser({
+          password,
+        });
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
 
       setSuccess(true);
 
-
-
-      /*
-       * Cerramos la sesión temporal
-       * creada por el enlace de recuperación.
-       */
-
       await supabase.auth.signOut();
 
-
-
       setTimeout(() => {
-
         router.replace("/login");
-
-      }, 3500);
-
-
-
-    } catch (error) {
-
-      console.error(error);
-
-      alert(
-        "Error actualizando contraseña."
-      );
-
+      }, 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Error actualizando la contraseña.");
     } finally {
-
       setLoading(false);
-
     }
-
   }
-    if (
-    checkingSession &&
-    !success
-  ) {
 
+  if (checkingSession) {
     return (
-
       <main
         style={{
-          minHeight:"100vh",
-          display:"flex",
-          justifyContent:"center",
-          alignItems:"center",
-          background:"#0f0f0f",
-          color:"#fff",
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "#fff",
         }}
       >
-
-        <p
-          style={{
-            color:"#888",
-            fontSize:"18px",
-          }}
-        >
-          Verificando enlace de recuperación...
-        </p>
-
+        Verificando sesión...
       </main>
-
     );
-
   }
-
-
 
   if (success) {
-
     return (
-
       <main
         style={{
-          minHeight:"100vh",
-          display:"flex",
-          justifyContent:"center",
-          alignItems:"center",
-          padding:"30px",
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "30px",
         }}
       >
-
         <div
           style={{
-            width:"100%",
-            maxWidth:"620px",
-            background:"rgba(15,15,15,.95)",
-            border:"1px solid rgba(249,115,22,.20)",
-            borderRadius:"32px",
-            padding:"60px",
-            textAlign:"center",
-            backdropFilter:"blur(30px)",
-            boxShadow:"0 30px 80px rgba(0,0,0,.45)",
+            width: "100%",
+            maxWidth: "620px",
+            background: "rgba(15,15,15,.95)",
+            border: "1px solid rgba(249,115,22,.2)",
+            borderRadius: "32px",
+            padding: "60px",
+            textAlign: "center",
           }}
         >
-
           <div
             style={{
-              fontSize:"90px",
-              marginBottom:"20px",
+              fontSize: "90px",
+              marginBottom: "20px",
             }}
           >
             ✅
@@ -329,275 +154,165 @@ export default function ResetPasswordPage() {
 
           <h1
             style={{
-              color:"#fff",
-              fontSize:"46px",
-              fontWeight:900,
-              marginBottom:"15px",
+              color: "#fff",
+              fontSize: "40px",
             }}
           >
-            Contraseña Actualizada
+            Contraseña actualizada
           </h1>
 
           <p
             style={{
-              color:"#999",
-              lineHeight:1.9,
-              fontSize:"18px",
+              color: "#999",
+              marginTop: "20px",
             }}
           >
-            Tu contraseña fue actualizada
-            correctamente.
-
-            Serás redirigido al login
-            automáticamente.
+            Serás redirigido al login...
           </p>
-
         </div>
-
       </main>
-
     );
-
   }
-
-
-
-
-
-  return (
-
+    return (
     <main
       style={{
-        minHeight:"100vh",
-        display:"flex",
-        justifyContent:"center",
-        alignItems:"center",
-        padding:"30px",
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "20px",
+        overflow: "hidden",
       }}
     >
-
-
       <div
         style={{
-          width:"100%",
-          maxWidth:"560px",
-          background:"rgba(15,15,15,.92)",
-          border:"1px solid rgba(255,255,255,.08)",
-          borderRadius:"32px",
-          padding:"45px",
-          backdropFilter:"blur(30px)",
-          boxShadow:"0 30px 80px rgba(0,0,0,.45)",
+          width: "100%",
+          maxWidth: "560px",
+          background: "rgba(15,15,15,.95)",
+          border: "1px solid rgba(255,255,255,.05)",
+          borderRadius: "32px",
+          padding: "45px",
+          boxShadow: "0 25px 70px rgba(0,0,0,.45)",
         }}
       >
-
-
-
         <div
           style={{
-            textAlign:"center",
-            marginBottom:"35px",
+            textAlign: "center",
+            marginBottom: "35px",
           }}
         >
-
-
-          <div
-            style={{
-              display:"flex",
-              justifyContent:"center",
-              marginBottom:"15px",
-            }}
-          >
-
-            <Image
-              src="/wolf-log.png"
-              alt="Wolf Ordering"
-              width={280}
-              height={280}
-              priority
-            />
-
-          </div>
-
-
+          <Image
+            src="/wolfloginv2.png"
+            alt="Wolf Ordering"
+            width={170}
+            height={170}
+            priority
+          />
 
           <h1
             style={{
-              color:"#fff",
-              margin:0,
-              fontSize:"42px",
-              fontWeight:900,
+              color: "#fff",
+              marginTop: "20px",
+              fontSize: "34px",
+              fontWeight: 800,
             }}
           >
-            Nueva Contraseña
+            Restablecer contraseña
           </h1>
-
-
 
           <p
             style={{
-              color:"#888",
-              marginTop:"12px",
-              lineHeight:1.8,
+              color: "#999",
+              marginTop: "10px",
             }}
           >
-            Crea una nueva contraseña
-            para acceder nuevamente a
-            Wolf Ordering.
+            Ingresa tu nueva contraseña.
           </p>
-
-
         </div>
 
-
-
-
-
-        <div
-          style={{
-            marginBottom:"20px",
-          }}
-        >
-
+        <div style={{ marginBottom: "20px" }}>
           <label
             style={{
-              color:"#aaa",
+              color: "#bbb",
+              display: "block",
+              marginBottom: "8px",
             }}
           >
             Nueva contraseña
           </label>
 
-
           <input
             type="password"
             value={password}
-            onChange={(e)=>
-              setPassword(
-                e.target.value
-              )
+            onChange={(e) =>
+              setPassword(e.target.value)
             }
-            placeholder="********"
-            style={inputStyle}
+            style={{
+              width: "100%",
+              padding: "14px",
+              borderRadius: "14px",
+              border: "1px solid rgba(255,255,255,.08)",
+              background: "rgba(255,255,255,.03)",
+              color: "#fff",
+              fontSize: "16px",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
           />
-
-
         </div>
 
-
-
-
-
-        <div
-          style={{
-            marginBottom:"25px",
-          }}
-        >
-
-
+        <div style={{ marginBottom: "30px" }}>
           <label
             style={{
-              color:"#aaa",
+              color: "#bbb",
+              display: "block",
+              marginBottom: "8px",
             }}
           >
             Confirmar contraseña
           </label>
 
-
           <input
             type="password"
             value={confirmPassword}
-            onChange={(e)=>
-              setConfirmPassword(
-                e.target.value
-              )
+            onChange={(e) =>
+              setConfirmPassword(e.target.value)
             }
-            placeholder="********"
-            style={inputStyle}
+            style={{
+              width: "100%",
+              padding: "14px",
+              borderRadius: "14px",
+              border: "1px solid rgba(255,255,255,.08)",
+              background: "rgba(255,255,255,.03)",
+              color: "#fff",
+              fontSize: "16px",
+              outline: "none",
+              boxSizing: "border-box",
+            }}
           />
-
-
         </div>
-
-
-
-
 
         <button
           onClick={updatePassword}
           disabled={loading}
           style={{
-            width:"100%",
-            border:"none",
-            cursor:"pointer",
-            padding:"16px",
-            borderRadius:"16px",
-            fontWeight:800,
-            fontSize:"16px",
-            color:"#fff",
-            background:
-              "linear-gradient(135deg,#ff7b00,#ff9900)",
+            width: "100%",
+            padding: "16px",
+            borderRadius: "16px",
+            border: "none",
+            background: "#f97316",
+            color: "#fff",
+            fontSize: "16px",
+            fontWeight: 700,
+            cursor: loading ? "default" : "pointer",
+            opacity: loading ? 0.7 : 1,
           }}
         >
-
-          {
-            loading
-              ? "Actualizando..."
-              : "Actualizar Contraseña"
-          }
-
+          {loading
+            ? "Actualizando..."
+            : "Actualizar contraseña"}
         </button>
-                <div
-          style={{
-            marginTop:"30px",
-            textAlign:"center",
-          }}
-        >
-
-          <button
-            onClick={() =>
-              router.replace("/login")
-            }
-            style={{
-              background:"transparent",
-              border:"none",
-              color:"#f97316",
-              cursor:"pointer",
-            }}
-          >
-
-            Volver al Login
-
-          </button>
-
-        </div>
-
       </div>
-
     </main>
-
   );
-
 }
-
-
-
-const inputStyle = {
-
-  width:"100%",
-
-  marginTop:"10px",
-
-  padding:"16px",
-
-  background:
-    "rgba(255,255,255,.03)",
-
-  color:"#fff",
-
-  border:
-    "1px solid rgba(255,255,255,.08)",
-
-  borderRadius:"14px",
-
-  outline:"none",
-
-};

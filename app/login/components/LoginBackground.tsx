@@ -1,121 +1,101 @@
 "use client";
 
-import { ReactNode } from "react";
+interface LoginBackgroundProps {
+  children: React.ReactNode;
+}
 
-type Props = {
-  children: ReactNode;
-};
-
-export function LoginBackground({
+export default function LoginBackground({
   children,
-}: Props) {
+}: LoginBackgroundProps) {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px",
-        position: "relative",
-        overflow: "hidden",
-        background: "#050505",
-      }}
-    >
-      {/* Glow izquierdo */}
+    <>
+      {/* Fondo principal */}
       <div
         style={{
-          position: "absolute",
-          left: "-250px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          width: "500px",
-          height: "500px",
+          position: "fixed",
+          inset: 0,
+          background: "#050505",
+          overflow: "hidden",
+          zIndex: -20,
+        }}
+      />
+
+      {/* Glow superior derecho */}
+      <div
+        style={{
+          position: "fixed",
+          top: "-280px",
+          right: "-220px",
+          width: "900px",
+          height: "900px",
           borderRadius: "50%",
           background:
             "radial-gradient(circle, rgba(249,115,22,.18), transparent 70%)",
           filter: "blur(100px)",
           pointerEvents: "none",
+          zIndex: -19,
         }}
       />
 
-      {/* Glow derecho */}
+      {/* Glow inferior izquierdo */}
       <div
         style={{
-          position: "absolute",
-          right: "-250px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          width: "500px",
-          height: "500px",
+          position: "fixed",
+          bottom: "-320px",
+          left: "-260px",
+          width: "900px",
+          height: "900px",
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(249,115,22,.14), transparent 70%)",
-          filter: "blur(100px)",
+            "radial-gradient(circle, rgba(249,115,22,.10), transparent 72%)",
+          filter: "blur(120px)",
           pointerEvents: "none",
+          zIndex: -19,
         }}
       />
 
-      {/* Grid */}
+      {/* Cuadrícula */}
       <div
         style={{
-          position: "absolute",
+          position: "fixed",
           inset: 0,
-          backgroundImage: `
-            linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px)
-          `,
-          backgroundSize: "72px 72px",
           pointerEvents: "none",
+          opacity: 0.06,
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px)
+          `,
+          backgroundSize: "52px 52px",
+          zIndex: -18,
         }}
       />
 
       {/* Líneas diagonales */}
       <div
         style={{
-          position: "absolute",
+          position: "fixed",
           inset: 0,
-          background:
-            "repeating-linear-gradient(-15deg, transparent 0px, transparent 55px, rgba(249,115,22,.04) 56px, transparent 57px)",
           pointerEvents: "none",
+          opacity: 0.08,
+          backgroundImage:
+            "repeating-linear-gradient(-28deg, transparent 0px, transparent 58px, rgba(249,115,22,.22) 60px, transparent 61px)",
+          zIndex: -17,
         }}
       />
 
-      {/* Partículas */}
-      <div
+      <main
         style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: `
-            radial-gradient(circle at 15% 20%, rgba(249,115,22,.7) 1px, transparent 2px),
-            radial-gradient(circle at 80% 30%, rgba(249,115,22,.6) 1px, transparent 2px),
-            radial-gradient(circle at 35% 75%, rgba(249,115,22,.6) 1px, transparent 2px),
-            radial-gradient(circle at 70% 85%, rgba(249,115,22,.5) 1px, transparent 2px),
-            radial-gradient(circle at 55% 50%, rgba(249,115,22,.7) 1px, transparent 2px)
-          `,
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* Card */}
-      <section
-        style={{
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "20px",
           position: "relative",
-          width: "100%",
-          maxWidth: "540px",
-          padding: "40px 24px",
-          borderRadius: "34px",
-          background:
-            "linear-gradient(180deg, rgba(10,10,10,.97), rgba(0,0,0,.98))",
-          border:
-            "1px solid rgba(255,255,255,.05)",
-          boxShadow:
-            "0 25px 80px rgba(0,0,0,.6)",
-          backdropFilter: "blur(20px)",
+          zIndex: 1,
         }}
       >
         {children}
-      </section>
-    </main>
+      </main>
+    </>
   );
 }
