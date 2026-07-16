@@ -3,6 +3,7 @@
 import {
   useState,
   useEffect,
+  useRef,
 } from "react";
 
 import { motion } from "framer-motion";
@@ -17,6 +18,7 @@ interface Product {
   restaurant_id: string;
   category: string;
   name: string;
+  description: string;
   price: number;
   image: string;
 }
@@ -43,6 +45,21 @@ export default function DigitalMenu({
     selectedCategory,
     setSelectedCategory,
   ] = useState("");
+
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  // Ajustado a -284px (260px de tarjeta + 24px de gap) para un scroll exacto
+  const scrollLeft = () => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({ left: -284, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({ left: 284, behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     loadProducts();
@@ -82,6 +99,7 @@ export default function DigitalMenu({
           id: product.id,
           restaurant_id: product.restaurant_id,
           name: product.name,
+          description: product.description || "",
           price: Number(product.price) || 0,
           image: product.image_url || "/placeholder-product.jpg",
           category: product.categories?.name || "Disponibles",
@@ -107,17 +125,17 @@ export default function DigitalMenu({
     ? products.filter((product) => product.category === selectedCategory)
     : products;
 
-    const commissionConfig =
-  getCommissionConfig(restaurant);
+  const commissionConfig =
+    getCommissionConfig(restaurant);
 
   return (
-    <section style={{ marginTop: "40px", width: "100%", boxSizing: "border-box" }}>
+    <section style={{ marginTop: "30px", width: "100%", boxSizing: "border-box" }}>
       {/* INYECTAMOS CLASES CSS PROFESIONALES PARA MÓVILES Y ESCRITORIO */}
       <style>{`
         .wolf-categories-container {
           display: flex;
-          gap: 10px;
-          margin-bottom: 24px;
+          gap: 8px;
+          margin-bottom: 20px;
           overflow-x: auto;
           scrollbar-width: none; /* Firefox */
           -ms-overflow-style: none;  /* IE and Edge */
@@ -128,48 +146,97 @@ export default function DigitalMenu({
           display: none; /* Chrome, Safari and Opera */
         }
         .wolf-categories-btn {
-          padding: 10px 18px;
+          padding: 8px 16px;
           border-radius: 999px;
           border: none;
           cursor: pointer;
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 600;
           white-space: nowrap;
           transition: background-color 0.2s ease, color 0.2s ease;
         }
-        .wolf-products-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-          gap: 20px;
+        .wolf-products-slider {
+          display: flex;
+          gap: 24px;
+          overflow-x: auto;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+          padding-bottom: 12px;
           width: 100%;
+          scroll-behavior: smooth;
+        }
+        .wolf-products-slider::-webkit-scrollbar {
+          display: none;
         }
         @media (min-width: 640px) {
           .wolf-categories-container {
-            gap: 14px;
+            gap: 10px;
             overflow-x: visible;
             flex-wrap: wrap;
           }
           .wolf-categories-btn {
-            padding: 12px 22px;
-            font-size: 15px;
-          }
-          .wolf-products-grid {
-            gap: 24px;
+            padding: 10px 20px;
+            font-size: 14px;
           }
         }
       `}</style>
 
-      <h2
-        className="wolf-title"
-        style={{
-          fontSize: "clamp(26px, 5vw, 36px)",
-          marginBottom: "24px",
-          fontWeight: "800",
-          margin: "0 0 20px 0"
-        }}
-      >
-        Menú Digital
-      </h2>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+        <h2
+          className="wolf-title"
+          style={{
+            fontSize: "clamp(22px, 4vw, 30px)",
+            fontWeight: "800",
+            margin: 0
+          }}
+        >
+          Menú Digital
+        </h2>
+
+        {/* FLECHAS DE NAVEGACIÓN HORIZONTAL COMPACTAS */}
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={scrollLeft}
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              background: "rgba(255,255,255,.05)",
+              border: "1px solid rgba(255,255,255,.1)",
+              color: "#fff",
+              fontSize: "14px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              transition: "background 0.2s ease",
+            }}
+            aria-label="Anterior"
+          >
+            &#10094;
+          </button>
+          <button
+            onClick={scrollRight}
+            style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              background: "rgba(255,255,255,.05)",
+              border: "1px solid rgba(255,255,255,.1)",
+              color: "#fff",
+              fontSize: "14px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              transition: "background 0.2s ease",
+            }}
+            aria-label="Siguiente"
+          >
+            &#10095;
+          </button>
+        </div>
+      </div>
 
       {/* CONTENEDOR DE CATEGORÍAS EN MÓVIL ESTILO CAROUSEL */}
       <div className="wolf-categories-container">
@@ -189,28 +256,29 @@ export default function DigitalMenu({
         ))}
       </div>
 
-      {/* GRILLA FLEXIBLE DE TARJETAS DE PRODUCTOS */}
-      <div className="wolf-products-grid">
+      {/* FILA DE SCROLL HORIZONTAL DE PRODUCTOS (TARJETAS MÁS PEQUEÑAS) */}
+      <div ref={sliderRef} className="wolf-products-slider">
         {filteredProducts.map((product) => (
           <motion.div
             key={product.id}
             whileHover={{
-              y: -6,
+              y: -4,
               scale: 1.01,
             }}
             className="glass-card wolf-shadow"
             style={{
+              flex: "0 0 260px", // Tarjeta reducida de 320px a 260px
               overflow: "hidden",
-              borderRadius: "24px",
+              borderRadius: "20px",
               background: "rgba(255,255,255,.03)",
               border: "1px solid rgba(255,255,255,.06)",
               display: "flex",
               flexDirection: "column",
-              boxSizing: "border-box",
-              width: "100%"
+              boxSizing: "border-box"
             }}
           >
-            <div style={{ width: "100%", height: "180px", position: "relative", background: "#1a1a1a" }}>
+            {/* Imagen con altura optimizada a 160px */}
+            <div style={{ width: "100%", height: "160px", position: "relative", background: "#1a1a1a" }}>
               <img
                 src={product.image}
                 alt={product.name}
@@ -225,22 +293,26 @@ export default function DigitalMenu({
 
             <div
               style={{
-                padding: "20px",
+                padding: "16px", // Padding interior más compacto
                 display: "flex",
                 flexDirection: "column",
                 flexGrow: 1,
-                justifyContent: "between"
+                justifyContent: "space-between"
               }}
             >
               <div style={{ flexGrow: 1 }}>
                 <h3
                   style={{
                     color: "#fff",
-                    fontSize: "18px",
+                    fontSize: "16px", // Título ligeramente más pequeño
                     fontWeight: "700",
-                    marginBottom: "8px",
+                    marginBottom: "6px",
                     marginTop: 0,
-                    lineHeight: "1.3"
+                    lineHeight: "1.3",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 1,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden"
                   }}
                 >
                   {product.name}
@@ -248,17 +320,33 @@ export default function DigitalMenu({
 
                 <p
                   style={{
-                    color: "#f97316",
-                    fontWeight: "800",
-                    fontSize: "18px",
-                    margin: "0 0 16px 0"
+                    color: "rgba(255,255,255,0.6)",
+                    fontSize: "13px", // Descripción compacta
+                    lineHeight: "1.4",
+                    margin: "0 0 10px 0",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    height: "36px" // Altura fija para que todas las tarjetas midan exactamente lo mismo
                   }}
                 >
-$
-{getFinalPrice(
-  product.price,
-  commissionConfig
-).toFixed(2)}
+                  {product.description}
+                </p>
+
+                <p
+                  style={{
+                    color: "#f97316",
+                    fontWeight: "800",
+                    fontSize: "18px", // Precio más sutil
+                    margin: "0 0 12px 0"
+                  }}
+                >
+                  $
+                  {getFinalPrice(
+                    product.price,
+                    commissionConfig
+                  ).toFixed(2)}
                 </p>
               </div>
 
@@ -269,12 +357,12 @@ $
                 className="wolf-button"
                 style={{
                   width: "100%",
-                  padding: "12px",
+                  padding: "10px", // Botón más esbelto
                   border: "none",
-                  borderRadius: "12px",
+                  borderRadius: "10px",
                   cursor: "pointer",
                   fontWeight: "700",
-                  fontSize: "14px",
+                  fontSize: "13px",
                   boxSizing: "border-box"
                 }}
               >

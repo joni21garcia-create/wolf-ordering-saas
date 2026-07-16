@@ -60,15 +60,13 @@ export async function uploadGeneratedIcons({
       throw new Error(`Error al resolver URL pública del icono: ${icon.filename}`);
     }
 
-    // 🛠️ SOLUCIÓN PARA IMÁGENES ROTAS: Cache-Busting
-    // Agregamos un timestamp único al final de la URL pública limpia para saltarnos
-    // la memoria física temporal del Service Worker cuando el usuario actualiza sus logos.
-    const uniqueUrl = `${data.publicUrl}?t=${Date.now()}`;
+    // URL pública limpia y directa (aprovecha la caché real del navegador y Supabase)
+    const cleanUrl = data.publicUrl;
 
     uploaded.push({
       name: icon.name,
       filename: icon.filename,
-      url: uniqueUrl, // Guardamos la URL blindada contra caché
+      url: cleanUrl, 
     });
   }
 

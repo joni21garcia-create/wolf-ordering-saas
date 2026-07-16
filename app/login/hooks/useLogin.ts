@@ -31,14 +31,23 @@ export function useLogin() {
         return;
       }
 
-      const { error } =
-        await supabase.auth.resetPasswordForEmail(
-          email,
-          {
-            redirectTo:
-               `${window.location.origin}/api/auth/callback?next=/reset-password`,
-          }
-        );
+console.log(
+  "REDIRECT:",
+  `${window.location.origin}/api/auth/callback?next=/reset-password`
+);
+
+const result =
+  await supabase.auth.resetPasswordForEmail(
+    email,
+    {
+      redirectTo:
+        `${window.location.origin}/api/auth/callback?next=/reset-password`,
+    }
+  );
+
+console.log("RESET RESULT:", result);
+
+const { error } = result;
 
       if (error) {
         alert(error.message);

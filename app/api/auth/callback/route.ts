@@ -194,13 +194,11 @@ if (next === "/reset-password") {
   }
 
 
-  return NextResponse.redirect(
-    redirectUrl,
-    {
-      headers: response.headers,
-    }
-  );
-
-  return response;
+return NextResponse.redirect(
+  redirectUrl,
+  {
+    headers: response.headers,
+  }
+);
 
 }

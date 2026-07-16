@@ -12,12 +12,27 @@ export default function ProductsPage() {
   const restaurantId = params.id as string;
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   useEffect(() => {
-    loadProducts();
+    if (restaurantId) {
+      loadData();
+    }
   }, [restaurantId]);
 
-  const loadProducts = async () => {
+  const loadData = async () => {
+    setLoading(true);
+
+    // 1. Cargamos las categorías del restaurante
+    const { data: catData } = await supabase
+      .from("categories")
+      .select("*")
+      .eq("restaurant_id", restaurantId)
+      .order("sort_order", { ascending: true });
+    setCategories(catData || []);
+
+    // 2. Cargamos los productos
     const { data, error } = await supabase
       .from("products")
       .select("*, categories(name)")
@@ -33,17 +48,27 @@ export default function ProductsPage() {
     if (!confirm("¿Eliminar producto?")) return;
     const { error } = await supabase.from("products").delete().eq("id", productId);
     if (error) alert("Error eliminando producto");
-    else loadProducts();
+    else loadData();
   };
 
+  // Botón para Encender / Apagar la visibilidad del producto en el landing
   const toggleProductVisibility = async (productId: string, currentValue: boolean) => {
     const { error } = await supabase
       .from("products")
       .update({ available: !currentValue })
       .eq("id", productId);
-    if (error) alert("Error actualizando producto");
-    else loadProducts();
+    
+    if (error) {
+      alert("Error actualizando la visibilidad del producto");
+    } else {
+      loadData();
+    }
   };
+
+  // Filtrar productos según la categoría seleccionada en la barra horizontal
+  const filteredProducts = selectedCategory === "all"
+    ? products
+    : products.filter((p) => p.category_id === selectedCategory);
 
   const statCard = {
     background: "rgba(17,17,17,.95)",
@@ -72,26 +97,75 @@ export default function ProductsPage() {
           </Link>
         </div>
 
-        {/* ESTADÍSTICAS RESPONSIVAS */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "15px", marginBottom: "35px" }}>
+        {/* ESTADÍSTICAS */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "15px", marginBottom: "25px" }}>
           <div style={statCard}><h2>{products.length}</h2><p style={{fontSize: "14px"}}>Total</p></div>
-          <div style={statCard}><h2>{products.filter(p => p.available).length}</h2><p style={{fontSize: "14px"}}>Disponibles</p></div>
-          <div style={statCard}><h2>{products.filter(p => !p.available).length}</h2><p style={{fontSize: "14px"}}>Ocultos</p></div>
+          <div style={statCard}><h2>{products.filter(p => p.available).length}</h2><p style={{fontSize: "14px"}}>Disponibles (Encendidos)</p></div>
+          <div style={statCard}><h2>{products.filter(p => !p.available).length}</h2><p style={{fontSize: "14px"}}>Ocultos (Apagados)</p></div>
+        </div>
+
+        {/* BARRA DE CATEGORÍAS CON SCROLL HORIZONTAL */}
+        <div style={{ position: "sticky", top: 0, zIndex: 40, background: "rgba(5, 5, 5, 0.95)", backdropFilter: "blur(10px)", padding: "12px 0", marginBottom: "30px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+          <div style={{ display: "flex", gap: "10px", overflowX: "auto", paddingBottom: "5px", scrollbarWidth: "none" }}>
+            
+            <button
+              onClick={() => setSelectedCategory("all")}
+              style={{
+                flexShrink: 0,
+                padding: "10px 20px",
+                borderRadius: "99px",
+                border: "1px solid rgba(255,255,255,0.1)",
+                background: selectedCategory === "all" ? "#f97316" : "#111",
+                color: "#fff",
+                fontWeight: "600",
+                cursor: "pointer",
+                fontSize: "14px"
+              }}
+            >
+              🔥 Todas ({products.length})
+            </button>
+
+            {categories.map((cat) => {
+              const count = products.filter(p => p.category_id === cat.id).length;
+              const isSelected = selectedCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  style={{
+                    flexShrink: 0,
+                    padding: "10px 20px",
+                    borderRadius: "99px",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: isSelected ? "#f97316" : "#111",
+                    color: "#fff",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    fontSize: "14px"
+                  }}
+                >
+                  {cat.name} ({count})
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {loading && <p style={{ color: "#aaa" }}>Cargando...</p>}
 
-        {/* LISTA DE PRODUCTOS RESPONSIVA */}
+        {/* LISTA DE PRODUCTOS FILTRADOS */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "25px" }}>
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <div key={product.id} style={{ background: "rgba(17,17,17,.95)", border: "1px solid rgba(255,255,255,.08)", borderRadius: "24px", overflow: "hidden", backdropFilter: "blur(20px)" }}>
               {product.image_url && <img src={product.image_url} alt={product.name} style={{ width: "100%", height: "200px", objectFit: "cover" }} />}
               
               <div style={{ padding: "20px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "15px", gap: "10px" }}>
                   <span style={{ background: "#f9731620", color: "#f97316", padding: "4px 10px", borderRadius: "99px", fontSize: "11px", fontWeight: "700" }}>{product.categories?.name}</span>
+                  
+                  {/* Indicador visual de estado */}
                   <span style={{ background: product.available ? "#22c55e20" : "#ef444420", color: product.available ? "#22c55e" : "#ef4444", padding: "4px 10px", borderRadius: "99px", fontSize: "11px", fontWeight: "700" }}>
-                    {product.available ? "Disponible" : "Oculto"}
+                    {product.available ? "🟢 Encendido (Visible)" : "🔴 Apagado (Oculto)"}
                   </span>
                 </div>
 
@@ -99,13 +173,29 @@ export default function ProductsPage() {
                 <p style={{ color: "#888", fontSize: "14px", minHeight: "40px", marginBottom: "15px" }}>{product.description}</p>
                 <div style={{ fontSize: "28px", fontWeight: "800", color: "#f97316" }}>${Number(product.price).toFixed(2)}</div>
 
+                {/* BOTONES DE ACCIÓN: EDITAR, APAGAR/ENCENDER Y ELIMINAR */}
                 <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
                   <Link href={`/super-admin/restaurants/${restaurantId}/settings/products/${product.id}/edit`} style={{ flex: 1 }}>
                     <button style={{ width: "100%", padding: "12px", border: "none", borderRadius: "12px", cursor: "pointer", background: "#f97316", color: "#fff", fontWeight: "700" }}>Editar</button>
                   </Link>
-                  <button onClick={() => toggleProductVisibility(product.id, product.available)} style={{ flex: 1, padding: "12px", border: "none", borderRadius: "12px", cursor: "pointer", background: product.available ? "rgba(234,179,8,.1)" : "rgba(34,197,94,.1)", color: product.available ? "#eab308" : "#22c55e", fontWeight: "700" }}>
-                    {product.available ? "Ocultar" : "Mostrar"}
+
+                  {/* Botón de Apagar / Encender */}
+                  <button 
+                    onClick={() => toggleProductVisibility(product.id, product.available)} 
+                    style={{ 
+                      flex: 1, 
+                      padding: "12px", 
+                      border: "none", 
+                      borderRadius: "12px", 
+                      cursor: "pointer", 
+                      background: product.available ? "rgba(234,179,8,.15)" : "rgba(34,197,94,.15)", 
+                      color: product.available ? "#eab308" : "#22c55e", 
+                      fontWeight: "700" 
+                    }}
+                  >
+                    {product.available ? "Apagar" : "Encender"}
                   </button>
+
                   <button onClick={() => deleteProduct(product.id)} style={{ flex: 1, padding: "12px", border: "none", borderRadius: "12px", cursor: "pointer", background: "rgba(239,68,68,.1)", color: "#ef4444", fontWeight: "700" }}>Eliminar</button>
                 </div>
               </div>
