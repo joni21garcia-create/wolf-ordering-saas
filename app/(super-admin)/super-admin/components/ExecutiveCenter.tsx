@@ -17,221 +17,207 @@ interface Props {
 }
 
 export default function ExecutiveCenter({
-  operationModules,
+  operationModules = [],
+  settingsModules = [],
 }: Props) {
-  return (
-    <section
-      style={{
-        marginBottom: 70,
-      }}
-    >
-      {/* HERO */}
+  const totalModulesCount = operationModules.length + settingsModules.length;
 
+  return (
+    <section style={{ marginBottom: 48 }}>
+      {/* HERO BANNER REDISEÑADO (SIN GIGANTISMO) */}
       <div
         style={{
-          marginBottom: 34,
-
-          padding: "34px",
-
-          borderRadius: 32,
-
-          background:
-            "linear-gradient(180deg,#171717,#0c0c0c)",
-
-          border:
-            "1px solid rgba(255,255,255,.07)",
+          marginBottom: 24,
+          padding: "24px 32px",
+          borderRadius: 20,
+          background: "linear-gradient(180deg, #141414, #0d0d0d)",
+          border: "1px solid rgba(255, 255, 255, 0.05)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 24,
         }}
       >
+        <div style={{ flex: 1, minWidth: 280 }}>
+          <span
+            style={{
+              color: "#f97316",
+              fontWeight: 700,
+              letterSpacing: "1.5px",
+              textTransform: "uppercase",
+              fontSize: 11,
+            }}
+          >
+            Executive Command Center
+          </span>
+
+          <h2
+            style={{
+              margin: "6px 0 0",
+              color: "#fff",
+              fontSize: 24,
+              fontWeight: 800,
+              letterSpacing: "-0.5px",
+            }}
+          >
+            Módulos Globales
+          </h2>
+
+          <p
+            style={{
+              marginTop: 8,
+              color: "#666666",
+              fontSize: 13,
+              lineHeight: 1.5,
+              margin: "8px 0 0 0",
+              maxWidth: 680,
+            }}
+          >
+            Control centralizado para Wolf Ordering SaaS. Estos accesos administran parámetros 
+            globales del sistema, mientras que cada restaurante cuenta con su panel operativo independiente.
+          </p>
+        </div>
+
+        {/* CONTADOR DE MÓDULOS MINIATURIZADO */}
         <div
           style={{
-            display: "flex",
-
-            justifyContent: "space-between",
-
-            alignItems: "center",
-
-            flexWrap: "wrap",
-
-            gap: 24,
+            padding: "16px 24px",
+            borderRadius: 14,
+            background: "rgba(255, 255, 255, 0.01)",
+            border: "1px solid rgba(255, 255, 255, 0.03)",
+            textAlign: "right",
+            minWidth: 180,
           }}
         >
-          <div>
-            <div
-              style={{
-                color: "#f97316",
-
-                fontWeight: 800,
-
-                letterSpacing: 2,
-
-                textTransform: "uppercase",
-
-                fontSize: 13,
-              }}
-            >
-              Executive Command Center
-            </div>
-
-            <h2
-              style={{
-                margin: "12px 0 0",
-
-                color: "#fff",
-
-                fontSize:
-                  "clamp(34px,5vw,46px)",
-
-                fontWeight: 900,
-              }}
-            >
-              Módulos Globales
-            </h2>
-
-            <p
-              style={{
-                marginTop: 16,
-
-                color: "#8d8d95",
-
-                lineHeight: 1.8,
-
-                maxWidth: 760,
-              }}
-            >
-              Desde aquí administras toda la
-              plataforma Wolf Ordering SaaS.
-              Cada restaurante posee su propio
-              Centro de Configuración, mientras
-              este panel controla únicamente
-              los módulos globales.
-            </p>
+          <div
+            style={{
+              color: "#666666",
+              fontSize: 11,
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+            }}
+          >
+            Módulos Activos
           </div>
 
           <div
             style={{
-              minWidth: 240,
-
-              padding: 26,
-
-              borderRadius: 24,
-
-              background:
-                "rgba(255,255,255,.03)",
-
-              border:
-                "1px solid rgba(255,255,255,.06)",
+              color: "#fff",
+              fontWeight: 800,
+              fontSize: 32,
+              lineHeight: 1,
+              margin: "4px 0",
             }}
           >
-            <div
-              style={{
-                color: "#8d8d95",
+            {totalModulesCount}
+          </div>
 
-                fontSize: 13,
-
-                fontWeight: 700,
-
-                letterSpacing: 1.5,
-
-                textTransform: "uppercase",
-              }}
-            >
-              Módulos Globales
-            </div>
-
-            <div
-              style={{
-                marginTop: 12,
-
-                color: "#fff",
-
-                fontWeight: 900,
-
-                fontSize: 46,
-              }}
-            >
-              {operationModules.length}
-            </div>
-
-            <div
-              style={{
-                marginTop: 8,
-
-                color: "#22c55e",
-
-                fontWeight: 700,
-              }}
-            >
-              Plataforma sincronizada
-            </div>
+          <div
+            style={{
+              color: "#22c55e",
+              fontWeight: 600,
+              fontSize: 11,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              gap: 4,
+            }}
+          >
+            <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#22c55e" }} />
+            Sincronizado
           </div>
         </div>
       </div>
 
-      {/* GRID */}
+      {/* SECCIÓN: OPERATIVOS */}
+      {operationModules.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <h4 style={{ color: "#404040", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 16 }}>
+            Operaciones Globales
+          </h4>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: 16,
+            }}
+          >
+            {operationModules.map((module) => (
+              <ExecutiveCard
+                key={module.code}
+                title={module.title}
+                description={module.description}
+                href={module.href}
+                color={module.color}
+                icon={module.icon}
+                badge="Operación"
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
-      <div
-        style={{
-          display: "grid",
+      {/* SECCIÓN: CONFIGURACIÓN (Por si añades de esta categoría en config/modules.tsx) */}
+      {settingsModules.length > 0 && (
+        <div>
+          <h4 style={{ color: "#404040", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 16 }}>
+            Configuración de Plataforma
+          </h4>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: 16,
+            }}
+          >
+            {settingsModules.map((module) => (
+              <ExecutiveCard
+                key={module.code}
+                title={module.title}
+                description={module.description}
+                href={module.href}
+                color={module.color}
+                icon={module.icon}
+                badge="Configuración"
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(360px,1fr))",
-
-          gap: 28,
-        }}
-      >
-        {operationModules.map((module) => (
-          <ExecutiveCard
-            key={module.code}
-            title={module.title}
-            description={module.description}
-            href={module.href}
-            color={module.color}
-            icon={module.icon}
-            badge="Global"
-          />
-        ))}
-      </div>
-
-      {operationModules.length === 0 && (
+      {/* PANTALLA VACÍA */}
+      {totalModulesCount === 0 && (
         <div
           style={{
-            marginTop: 34,
-
-            padding: 50,
-
-            borderRadius: 28,
-
+            padding: 40,
+            borderRadius: 14,
             textAlign: "center",
-
-            background:
-              "rgba(255,255,255,.03)",
-
-            border:
-              "1px solid rgba(255,255,255,.06)",
+            background: "rgba(255, 255, 255, 0.01)",
+            border: "1px solid rgba(255, 255, 255, 0.03)",
           }}
         >
           <h3
             style={{
               color: "#fff",
-
-              marginBottom: 14,
+              fontSize: 16,
+              fontWeight: 600,
+              marginBottom: 8,
             }}
           >
-            No existen módulos asignados
+            No tienes módulos asignados
           </h3>
 
           <p
             style={{
-              color: "#8d8d95",
-
+              color: "#666666",
               margin: 0,
-
-              lineHeight: 1.8,
+              fontSize: 13,
+              lineHeight: 1.5,
             }}
           >
-            Los módulos aparecerán automáticamente
-            cuando existan permisos asociados al
-            Super Administrador.
+            Los módulos autorizados para tu rol de Super Administrador aparecerán aquí automáticamente.
           </p>
         </div>
       )}

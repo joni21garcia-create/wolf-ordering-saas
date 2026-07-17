@@ -21,79 +21,51 @@ export default function ExecutiveStatCard({
     <article
       style={{
         position: "relative",
-
         overflow: "hidden",
-
         display: "flex",
-
         flexDirection: "column",
-
         justifyContent: "space-between",
-
-        minHeight: 210,
-
-        borderRadius: 28,
-
-        padding: 28,
-
-        background:
-          "linear-gradient(180deg,#191919,#141414)",
-
-        border:
-          "1px solid rgba(255,255,255,.06)",
-
-        boxShadow:
-          "0 18px 45px rgba(0,0,0,.20)",
+        minHeight: 150, // Altura súper optimizada y compacta
+        borderRadius: 16, // Consistencia de diseño premium con las tarjetas de módulos
+        padding: 18,
+        background: "linear-gradient(180deg, #141414, #0d0d0d)",
+        border: "1px solid rgba(255, 255, 255, 0.04)",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
       }}
     >
       {/* Glow */}
-
       <div
         style={{
           position: "absolute",
-
-          top: -55,
-
-          right: -55,
-
-          width: 160,
-
-          height: 160,
-
+          top: -30,
+          right: -30,
+          width: 100,
+          height: 100,
           borderRadius: "50%",
-
-          background: `${color}20`,
-
-          filter: "blur(34px)",
+          background: `${color}10`,
+          filter: "blur(24px)",
+          pointerEvents: "none",
         }}
       />
 
       {/* Header */}
-
       <div
         style={{
           position: "relative",
-
           zIndex: 2,
-
           display: "flex",
-
           justifyContent: "space-between",
-
           alignItems: "flex-start",
+          gap: 16,
         }}
       >
-        <div>
+        <div style={{ flex: 1 }}>
           <div
             style={{
               color,
-
-              fontSize: 13,
-
-              fontWeight: 800,
-
-              letterSpacing: 1.2,
-
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: "1px",
               textTransform: "uppercase",
             }}
           >
@@ -102,15 +74,12 @@ export default function ExecutiveStatCard({
 
           <div
             style={{
-              marginTop: 16,
-
+              marginTop: 6,
               color: "#fff",
-
-              fontSize: "clamp(34px,4vw,46px)",
-
-              fontWeight: 900,
-
+              fontSize: 28,
+              fontWeight: 800,
               lineHeight: 1,
+              letterSpacing: "-0.5px",
             }}
           >
             {value}
@@ -119,13 +88,10 @@ export default function ExecutiveStatCard({
           {subtitle && (
             <div
               style={{
-                marginTop: 12,
-
-                color: "#9d9d9d",
-
-                fontSize: 14,
-
-                lineHeight: 1.6,
+                marginTop: 6,
+                color: "#666666",
+                fontSize: 12,
+                lineHeight: 1.4,
               }}
             >
               {subtitle}
@@ -133,82 +99,61 @@ export default function ExecutiveStatCard({
           )}
         </div>
 
+        {/* Contenedor del Icono Sutil */}
         <div
           style={{
-            width: 68,
-
-            height: 68,
-
-            borderRadius: 22,
-
+            width: 36,
+            height: 36,
+            borderRadius: 8,
             display: "flex",
-
             justifyContent: "center",
-
             alignItems: "center",
-
-            background:
-              "rgba(255,255,255,.05)",
-
-            border:
-              "1px solid rgba(255,255,255,.08)",
-
+            background: "rgba(255, 255, 255, 0.02)",
+            border: "1px solid rgba(255, 255, 255, 0.04)",
             color,
-
-            fontSize: 30,
-
             flexShrink: 0,
           }}
         >
-          {icon}
+          <div style={{ display: "flex", transform: "scale(0.55)" }}>
+            {icon}
+          </div>
         </div>
       </div>
-            {/* Footer */}
 
+      {/* Footer */}
       <div
         style={{
           position: "relative",
-
           zIndex: 2,
-
-          marginTop: 30,
-
+          marginTop: 16,
           display: "flex",
-
           justifyContent: "space-between",
-
           alignItems: "center",
+          borderTop: "1px solid rgba(255, 255, 255, 0.03)",
+          paddingTop: 10,
         }}
       >
         <div
           style={{
             display: "flex",
-
             alignItems: "center",
-
-            gap: 10,
+            gap: 6,
           }}
         >
           <span
             style={{
-              width: 10,
-
-              height: 10,
-
+              width: 5,
+              height: 5,
               borderRadius: "50%",
-
               background: color,
-
-              boxShadow: `0 0 14px ${color}`,
+              boxShadow: `0 0 6px ${color}`,
             }}
           />
 
           <span
             style={{
-              color: "#9b9b9b",
-
-              fontSize: 13,
-
+              color: "#444444",
+              fontSize: 10,
               fontWeight: 600,
             }}
           >
@@ -218,41 +163,28 @@ export default function ExecutiveStatCard({
 
         <div
           style={{
-            padding: "8px 14px",
-
-            borderRadius: 999,
-
-            background: `${color}18`,
-
-            border: `1px solid ${color}40`,
-
+            padding: "2px 6px",
+            borderRadius: 4,
+            background: `${color}08`,
+            border: `1px solid ${color}15`,
             color,
-
-            fontSize: 12,
-
-            fontWeight: 700,
-
-            letterSpacing: .5,
+            fontSize: 9,
+            fontWeight: 800,
+            letterSpacing: "0.5px",
           }}
         >
           LIVE
         </div>
       </div>
 
-      {/* Barra inferior */}
-
+      {/* Sutil indicador inferior */}
       <div
         style={{
           position: "absolute",
-
           left: 0,
-
           right: 0,
-
           bottom: 0,
-
-          height: 5,
-
+          height: 1.5,
           background: `linear-gradient(90deg, ${color}, transparent)`,
         }}
       />

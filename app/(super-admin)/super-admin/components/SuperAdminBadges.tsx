@@ -15,42 +15,27 @@ function Badge({
     <div
       style={{
         display: "flex",
-
         alignItems: "center",
-
-        gap: 10,
-
-        padding: "10px 18px",
-
+        gap: 6,
+        padding: "4px 10px",
         borderRadius: 999,
-
-        background: `${color}18`,
-
-        border: `1px solid ${color}35`,
-
+        background: `${color}10`,
+        border: `1px solid ${color}25`,
         color,
-
         fontWeight: 700,
-
-        fontSize: 14,
-
+        fontSize: 11,
         whiteSpace: "nowrap",
       }}
     >
       <span
         style={{
-          width: 9,
-
-          height: 9,
-
+          width: 5,
+          height: 5,
           borderRadius: "50%",
-
           background: color,
-
-          boxShadow: `0 0 12px ${color}`,
+          boxShadow: `0 0 6px ${color}`,
         }}
       />
-
       {text}
     </div>
   );
@@ -63,12 +48,9 @@ export default function SuperAdminBadges({
     <div
       style={{
         display: "flex",
-
         flexWrap: "wrap",
-
-        gap: 14,
-
-        marginTop: 28,
+        gap: 8,
+        marginTop: 16,
       }}
     >
       <Badge

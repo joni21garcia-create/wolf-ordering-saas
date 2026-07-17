@@ -1,100 +1,56 @@
 "use client";
 
 import Link from "next/link";
-
-import type {
-  QuickAction,
-} from "./types";
+import type { QuickAction } from "./types";
 
 interface Props {
   actions: QuickAction[];
 }
 
-export default function SettingsQuickActions({
-  actions,
-}: Props) {
+export default function SettingsQuickActions({ actions }: Props) {
   return (
     <section
       style={{
-        marginBottom: 42,
+        marginBottom: 24,
       }}
     >
-      {/* HEADER */}
-
+      {/* HEADER COMPACTO */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          flexWrap: "wrap",
-          gap: 18,
-          marginBottom: 24,
+          marginBottom: 10,
         }}
       >
-        <div>
-          <div
-            style={{
-              color: "#f97316",
-              fontSize: 13,
-              fontWeight: 800,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              marginBottom: 8,
-            }}
-          >
-            Centro Ejecutivo
-          </div>
-
-          <h2
-            style={{
-              margin: 0,
-              color: "#fff",
-              fontSize: "clamp(28px,4vw,38px)",
-              fontWeight: 900,
-            }}
-          >
-            Accesos Rápidos
-          </h2>
-
-          <p
-            style={{
-              marginTop: 10,
-              color: "#8d8d95",
-              lineHeight: 1.8,
-              maxWidth: 720,
-            }}
-          >
-            Accede rápidamente a los módulos más
-            utilizados del restaurante para agilizar
-            tu administración diaria.
-          </p>
-        </div>
-
-        <div
+        <h2
           style={{
-            padding: "10px 18px",
-            borderRadius: 999,
-            background: "rgba(255,255,255,.04)",
-            border: "1px solid rgba(255,255,255,.08)",
-            color: "#bdbdbd",
-            fontWeight: 700,
-            fontSize: 14,
+            margin: 0,
+            color: "#fff",
+            fontSize: 16,
+            fontWeight: 800,
+            letterSpacing: "-0.2px",
           }}
         >
-          {actions.length} accesos
-        </div>
+          Accesos Rápidos
+        </h2>
+        <span
+          style={{
+            color: "#8b8b95",
+            fontSize: 11,
+            fontWeight: 700,
+          }}
+        >
+          {actions.length} módulos
+        </span>
       </div>
 
-      {/* GRID */}
-
+      {/* GRID DE FILAS COMPACTAS */}
       <div
         style={{
           display: "grid",
-
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(230px,1fr))",
-
-          gap: 22,
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: 10,
         }}
       >
         {actions.map((action) => (
@@ -103,238 +59,118 @@ export default function SettingsQuickActions({
             href={action.href}
             style={{
               textDecoration: "none",
+              display: "block",
             }}
           >
             <article
               style={{
                 position: "relative",
-
                 overflow: "hidden",
-
-                height: "100%",
-
                 display: "flex",
-
-                flexDirection: "column",
-
+                alignItems: "center",
                 justifyContent: "space-between",
-
-                gap: 22,
-
-                padding: 24,
-
-                borderRadius: 26,
-
-                background:
-                  "linear-gradient(180deg,#171717,#0b0b0b)",
-
-                border:
-                  "1px solid rgba(255,255,255,.07)",
-
-                transition: ".25s",
-
-                boxShadow:
-                  "0 18px 45px rgba(0,0,0,.18)",
+                gap: 12,
+                padding: "10px 14px",
+                borderRadius: 14,
+                background: "linear-gradient(180deg,#171717,#0b0b0b)",
+                border: "1px solid rgba(255,255,255,.06)",
+                boxShadow: "0 4px 12px rgba(0,0,0,.1)",
+                boxSizing: "border-box",
+                transition: "transform 0.2s ease, border-color 0.2s ease",
               }}
             >
-              {/* Glow */}
-
+              {/* Barra lateral de color distintivo */}
               <div
                 style={{
                   position: "absolute",
-
-                  top: -40,
-
-                  right: -40,
-
-                  width: 130,
-
-                  height: 130,
-
-                  borderRadius: "50%",
-
-                  background: `${action.color}18`,
-
-                  filter: "blur(30px)",
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  width: 3,
+                  background: action.color,
                 }}
               />
 
-              {/* ICONO */}
-
+              {/* LADO IZQUIERDO: Icono y Título */}
               <div
                 style={{
-                  position: "relative",
-
-                  zIndex: 2,
-
                   display: "flex",
-
-                  justifyContent:
-                    "space-between",
-
                   alignItems: "center",
+                  gap: 10,
+                  minWidth: 0,
                 }}
               >
                 <div
                   style={{
-                    width: 66,
-
-                    height: 66,
-
-                    borderRadius: 20,
-
-                    background: `${action.color}18`,
-
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    background: `${action.color}15`,
+                    border: `1px solid ${action.color}30`,
                     display: "flex",
-
                     justifyContent: "center",
-
                     alignItems: "center",
-
-                    fontSize: 30,
+                    fontSize: 15,
+                    color: action.color,
+                    flexShrink: 0,
                   }}
                 >
                   {action.icon}
                 </div>
 
-                <div
-                  style={{
-                    width: 12,
-
-                    height: 12,
-
-                    borderRadius: 999,
-
-                    background: action.color,
-
-                    boxShadow: `0 0 14px ${action.color}`,
-                  }}
-                />
-              </div>
-
-              {/* CONTENIDO */}
-
-              <div
-                style={{
-                  position: "relative",
-                  zIndex: 2,
-                }}
-              >
-                <div
-                  style={{
-                    display: "inline-flex",
-
-                    padding: "6px 12px",
-
-                    borderRadius: 999,
-
-                    background: `${action.color}15`,
-
-                    color: action.color,
-
-                    fontWeight: 700,
-
-                    fontSize: 12,
-
-                    marginBottom: 16,
-                  }}
-                >
-                  Acción rápida
-                </div>
-
-                <h3
-                  style={{
-                    margin: 0,
-
-                    color: "#fff",
-
-                    fontWeight: 800,
-
-                    fontSize: 22,
-                  }}
-                >
-                  {action.title}
-                </h3>
-
-                <p
-                  style={{
-                    marginTop: 14,
-
-                    color: "#8b8b95",
-
-                    fontSize: 14,
-
-                    lineHeight: 1.7,
-                  }}
-                >
-                  Accede directamente al módulo y
-                  continúa administrando tu
-                  restaurante sin navegar por todo
-                  el panel.
-                </p>
-              </div>
-
-              {/* FOOTER */}
-
-              <div
-                style={{
-                  position: "relative",
-
-                  zIndex: 2,
-
-                  display: "flex",
-
-                  justifyContent:
-                    "space-between",
-
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-
-                    alignItems: "center",
-
-                    gap: 10,
-                  }}
-                >
-                  <div
+                <div style={{ minWidth: 0 }}>
+                  <h3
                     style={{
-                      width: 10,
-
-                      height: 10,
-
-                      borderRadius: 999,
-
-                      background: "#22c55e",
-                    }}
-                  />
-
-                  <span
-                    style={{
-                      color: "#22c55e",
-
+                      margin: 0,
+                      color: "#fff",
                       fontWeight: 700,
-
                       fontSize: 13,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
                     }}
                   >
-                    Disponible
-                  </span>
+                    {action.title}
+                  </h3>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                      marginTop: 2,
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 5,
+                        height: 5,
+                        borderRadius: "50%",
+                        background: "#22c55e",
+                      }}
+                    />
+                    <span
+                      style={{
+                        color: "#22c55e",
+                        fontSize: 10,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Disponible
+                    </span>
+                  </div>
                 </div>
+              </div>
 
-                <span
-                  style={{
-                    color: action.color,
-
-                    fontSize: 24,
-
-                    fontWeight: 800,
-                  }}
-                >
-                  →
-                </span>
+              {/* FLECHA DERECHA */}
+              <div
+                style={{
+                  color: action.color,
+                  fontSize: 14,
+                  fontWeight: 800,
+                  flexShrink: 0,
+                }}
+              >
+                →
               </div>
             </article>
           </Link>

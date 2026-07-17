@@ -3,7 +3,7 @@
 import DashboardStatCard from "./DashboardStatCard";
 
 type Props = {
-  permissions: number;
+  permissions: number; // Recibe el valor ya sincronizado (14) desde el cliente principal
 };
 
 export default function DashboardStats({
@@ -18,11 +18,12 @@ export default function DashboardStats({
       subtitle: "Todos los servicios operativos",
     },
     {
-      title: "Permisos",
+      // Cambiado de "Permisos" a "Módulos" para que coincida perfectamente con el valor real (14)
+      title: "Módulos", 
       value: permissions.toString(),
       color: "#f97316",
       icon: "🔐",
-      subtitle: "Módulos habilitados",
+      subtitle: "Módulos habilitados en tu cuenta",
     },
     {
       title: "Sesión",
@@ -36,7 +37,7 @@ export default function DashboardStats({
       value: "Listo",
       color: "#8b5cf6",
       icon: "⚡",
-      subtitle: "Todo preparado",
+      subtitle: "Todo preparado para operar",
     },
   ];
 
@@ -44,13 +45,11 @@ export default function DashboardStats({
     <section
       style={{
         display: "grid",
-
+        // Optimizado: minmax de 220px permite un grid responsivo más limpio en móviles y tablets
         gridTemplateColumns:
-          "repeat(auto-fit,minmax(250px,1fr))",
-
-        gap: 22,
-
-        marginBottom: 42,
+          "repeat(auto-fit,minmax(220px,1fr))",
+        gap: 16, // Reducido de 22 para compactar el diseño general
+        marginBottom: 24, // Reducido de 42 para evitar espacio muerto vertical
       }}
     >
       {stats.map((item) => (

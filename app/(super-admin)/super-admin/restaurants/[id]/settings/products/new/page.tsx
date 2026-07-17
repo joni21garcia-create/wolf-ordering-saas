@@ -12,78 +12,111 @@ export default function NewProductPage() {
     <main
       style={{
         minHeight: "100vh",
-        background: "radial-gradient(circle at top right, #331300 0%, #050505 45%)",
-        padding: "20px",
+        background: "radial-gradient(circle at top right, #240b00 0%, #050505 60%)",
+        padding: "clamp(16px, 4vw, 40px) clamp(12px, 3vw, 24px)",
+        color: "#ffffff",
+        fontFamily: "system-ui, -apple-system, sans-serif"
       }}
     >
-      {/* Estilos para corregir el comportamiento de los selectores en image_4a5972.jpg */}
+      {/* 🛠️ Estilos globales inyectados para inputs y selects más premium */}
       <style jsx global>{`
         select, option, input, textarea {
-          background-color: #111 !important;
-          color: #fff !important;
-          border-color: #333 !important;
+          background-color: #0d0d0d !important;
+          color: #ffffff !important;
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+          border-radius: 12px !important;
+          padding: 12px 16px !important;
+          transition: all 0.2s ease !important;
         }
-        /* Esto asegura que al abrir el desplegable, el fondo sea oscuro */
-        select:focus {
-          outline: 2px solid #f97316 !important;
+        select:focus, input:focus, textarea:focus {
+          outline: none !important;
+          border-color: #f97316 !important;
+          box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15) !important;
+        }
+        /* Estilizar el dropdown del select en navegadores */
+        select option {
+          background: #0d0d0d !important;
+          color: #fff !important;
         }
       `}</style>
 
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+      <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
         
-        {/* HEADER */}
+        {/* HEADER RESPONSIVO Y PREMIUM */}
         <div style={{ 
           display: "flex", 
           flexDirection: "column",
-          gap: "10px", 
-          marginBottom: "40px",
-          paddingBottom: "20px",
-          borderBottom: "1px solid rgba(255,255,255,0.1)"
+          gap: "16px", 
+          marginBottom: "35px",
+          paddingBottom: "24px",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.06)"
         }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "space-between", 
+            alignItems: "center", 
+            flexWrap: "wrap", 
+            gap: "14px" 
+          }}>
             <BackToSettings restaurantId={restaurantId} />
             <div style={{ 
-              background: "rgba(249,115,22,0.1)", 
+              background: "linear-gradient(135deg, rgba(249,115,22,0.15) 0%, rgba(249,115,22,0.03) 100%)", 
               color: "#f97316", 
-              padding: "6px 16px", 
-              borderRadius: "50px", 
-              fontSize: "12px", 
-              fontWeight: "700",
-              letterSpacing: "0.5px"
+              padding: "8px 18px", 
+              borderRadius: "100px", 
+              fontSize: "11px", 
+              fontWeight: "800",
+              letterSpacing: "1.5px",
+              border: "1px solid rgba(249,115,22,0.2)",
+              textTransform: "uppercase"
             }}>
-              WOLF ORDERING
+              ✨ Wolf Ordering Creator
             </div>
           </div>
           
-          <h1 style={{ margin: 0, color: "#fff", fontSize: "clamp(28px, 6vw, 48px)", fontWeight: "900" }}>
-            🍔 Nuevo Producto
-          </h1>
-          <p style={{ color: "#9ca3af", margin: 0, fontSize: "16px" }}>
-            Carga los detalles de tu nuevo plato al menú.
-          </p>
+          <div style={{ marginTop: "8px" }}>
+            <h1 style={{ 
+              margin: "0 0 8px 0", 
+              color: "#fff", 
+              fontSize: "clamp(24px, 5vw, 42px)", 
+              fontWeight: "950",
+              letterSpacing: "-0.5px",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px"
+            }}>
+              <span style={{ filter: "drop-shadow(0 0 10px rgba(249,115,22,0.3))" }}>🍔</span> Nuevo Producto
+            </h1>
+            <p style={{ color: "#9ca3af", margin: 0, fontSize: "clamp(14px, 2vw, 16px)", fontWeight: "400" }}>
+              Diseña, configura y lanza un nuevo plato directamente en tu menú digital.
+            </p>
+          </div>
         </div>
 
-        {/* STATS */}
+        {/* CONTENEDOR DE TARJETAS DE INFORMACIÓN (RESPONSIVO EN GRID) */}
         <div style={{ 
           display: "grid", 
           gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", 
-          gap: "15px", 
-          marginBottom: "40px" 
+          gap: "16px", 
+          marginBottom: "35px" 
         }}>
-          <InfoCard title="Inventario" value="Nuevo" />
-          <InfoCard title="Imagen" value="Requerida" />
-          <InfoCard title="Categoría" value="Seleccionar" />
-          <InfoCard title="Estado" value="Activo" />
+          <InfoCard icon="📦" title="Inventario" value="Disponible" color="#10b981" />
+          <InfoCard icon="🖼️" title="Imagen" value="Requerida" color="#f59e0b" />
+          <InfoCard icon="📁" title="Categoría" value="Asignar" color="#3b82f6" />
+          <InfoCard icon="⚡" title="Estado" value="Visible" color="#10b981" />
         </div>
 
-        {/* FORM CONTAINER */}
+        {/* CONTENEDOR DEL FORMULARIO CON GLASSMORPHISM PREMIUM */}
         <div style={{ 
-          background: "rgba(10, 10, 10, 0.6)", 
+          background: "linear-gradient(135deg, rgba(15, 15, 15, 0.7) 0%, rgba(5, 5, 5, 0.85) 100%)", 
           border: "1px solid rgba(255, 255, 255, 0.05)", 
-          borderRadius: "24px", 
-          padding: "24px",
-          backdropFilter: "blur(10px)"
+          borderRadius: "28px", 
+          padding: "clamp(16px, 4vw, 35px)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.03)"
         }}>
+          {/* Conservamos intacta la llamada a tu componente y props originales */}
           <ProductForm mode="create" restaurantId={restaurantId} />
         </div>
       </div>
@@ -91,20 +124,59 @@ export default function NewProductPage() {
   );
 }
 
-function InfoCard({ title, value }: { title: string; value: string }) {
+interface InfoCardProps {
+  icon: string;
+  title: string;
+  value: string;
+  color?: string;
+}
+
+function InfoCard({ icon, title, value, color = "#fff" }: InfoCardProps) {
   return (
     <div style={{ 
-      background: "rgba(255, 255, 255, 0.02)", 
-      border: "1px solid rgba(255, 255, 255, 0.05)", 
+      background: "linear-gradient(135deg, rgba(255, 255, 255, 0.01) 0%, rgba(255, 255, 255, 0.03) 100%)", 
+      border: "1px solid rgba(255, 255, 255, 0.04)", 
       borderRadius: "20px", 
-      padding: "20px" 
+      padding: "20px",
+      display: "flex",
+      alignItems: "center",
+      gap: "16px",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.15)"
     }}>
-      <p style={{ color: "#6b7280", marginBottom: "8px", fontSize: "12px", fontWeight: "600", textTransform: "uppercase" }}>
-        {title}
-      </p>
-      <h2 style={{ margin: 0, color: "#fff", fontSize: "20px", fontWeight: "700" }}>
-        {value}
-      </h2>
+      <div style={{
+        fontSize: "24px",
+        background: "rgba(255,255,255,0.03)",
+        width: "48px",
+        height: "48px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "14px",
+        border: "1px solid rgba(255,255,255,0.03)"
+      }}>
+        {icon}
+      </div>
+      <div>
+        <p style={{ 
+          color: "#8e9196", 
+          margin: "0 0 4px 0", 
+          fontSize: "11px", 
+          fontWeight: "700", 
+          textTransform: "uppercase",
+          letterSpacing: "0.5px"
+        }}>
+          {title}
+        </p>
+        <h2 style={{ 
+          margin: 0, 
+          color: color, 
+          fontSize: "16px", 
+          fontWeight: "800",
+          letterSpacing: "-0.2px"
+        }}>
+          {value}
+        </h2>
+      </div>
     </div>
   );
 }

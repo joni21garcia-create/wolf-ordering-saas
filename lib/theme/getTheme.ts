@@ -1,40 +1,66 @@
-export function getTheme(
-  restaurant: any
-) {
+export function getTheme(restaurant: any) {
+  const settings = restaurant?.themeSettings || {};
+
   return {
+    // Colores principales
     primary:
-      restaurant?.themeSettings
-        ?.primary_color ||
-      restaurant.primary_color,
+      settings.primary_color ??
+      restaurant?.primary_color ??
+      "#f97316",
 
     secondary:
-      restaurant?.themeSettings
-        ?.secondary_color ||
+      settings.secondary_color ??
+      restaurant?.secondary_color ??
       "#fb923c",
 
     background:
-      restaurant?.themeSettings
-        ?.background_color ||
+      settings.background_color ??
+      restaurant?.background_color ??
       "#050505",
 
     text:
-      restaurant?.themeSettings
-        ?.text_color ||
+      settings.text_color ??
+      restaurant?.text_color ??
       "#ffffff",
 
+    // Estilos
     buttonStyle:
-      restaurant?.themeSettings
-        ?.button_style ||
+      settings.button_style ??
+      restaurant?.button_style ??
       "rounded",
 
     cardStyle:
-      restaurant?.themeSettings
-        ?.card_style ||
+      settings.card_style ??
+      restaurant?.card_style ??
       "glass",
 
+    fontFamily:
+      settings.font_family ??
+      restaurant?.font_family ??
+      "Inter",
+
+    // Overlay del Hero
+    heroOverlay:
+      settings.hero_overlay ??
+      restaurant?.hero_overlay ??
+      "dark",
+
+    // Glow Premium
     glow:
-      restaurant?.themeSettings
-        ?.glow_effect ??
+      settings.glow_effect ??
+      restaurant?.glow_effect ??
       true,
+
+    // Animaciones
+    animationStyle:
+      settings.animation_style ??
+      restaurant?.animation_style ??
+      "smooth",
+
+    // Intensidad de sombras
+    shadowIntensity:
+      settings.shadow_intensity ??
+      restaurant?.shadow_intensity ??
+      "medium",
   };
 }

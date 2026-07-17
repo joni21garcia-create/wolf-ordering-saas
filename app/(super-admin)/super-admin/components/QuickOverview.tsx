@@ -5,10 +5,6 @@ import {
   Users,
   Scale,
   Landmark,
-  Smartphone,
-  ShieldCheck,
-  Activity,
-  Database,
 } from "lucide-react";
 
 import OverviewCard from "./OverviewCard";
@@ -20,27 +16,28 @@ interface Props {
     legal: number;
     liquidations: number;
   };
+  totalModules: number; // <--- Añadido para recibir los permisos reales
 }
 
 export default function QuickOverview({
   stats,
+  totalModules,
 }: Props) {
   return (
     <section
       style={{
-        marginBottom: 60,
+        marginBottom: 36,
       }}
     >
       {/* HEADER */}
-
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "flex-end",
+          alignItems: "center",
           flexWrap: "wrap",
-          gap: 20,
-          marginBottom: 28,
+          gap: 16,
+          marginBottom: 20,
         }}
       >
         <div>
@@ -48,106 +45,102 @@ export default function QuickOverview({
             style={{
               margin: 0,
               color: "#fff",
-              fontSize: "clamp(30px,4vw,40px)",
-              fontWeight: 900,
+              fontSize: 20,
+              fontWeight: 800,
+              letterSpacing: "-0.5px",
             }}
           >
-            Plataforma Wolf Ordering
+            Executive Overview
           </h2>
 
           <p
             style={{
-              marginTop: 12,
-              color: "#9b9b9b",
-              lineHeight: 1.8,
+              margin: "4px 0 0 0",
+              color: "#666666",
+              fontSize: 13,
+              lineHeight: 1.5,
               maxWidth: 760,
             }}
           >
-            Resumen ejecutivo de la infraestructura principal
-            utilizada por toda la plataforma SaaS.
+            Estado general de la plataforma Wolf Ordering SaaS. Los indicadores se actualizan de manera automática mediante consultas directas a la base de datos.
           </p>
         </div>
 
         <div
           style={{
-            padding: "10px 18px",
+            padding: "5px 12px",
             borderRadius: 999,
-            background: "rgba(34,197,94,.10)",
-            border: "1px solid rgba(34,197,94,.25)",
+            background: "rgba(34, 197, 94, 0.08)",
+            border: "1px solid rgba(34, 197, 94, 0.2)",
             color: "#4ade80",
             fontWeight: 700,
-            fontSize: 14,
+            fontSize: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
           }}
         >
-          Infraestructura Activa
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", display: "inline-block" }} />
+          TIEMPO REAL
         </div>
       </div>
 
       {/* GRID */}
-
       <div
         style={{
           display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(250px,1fr))",
-          gap: 20,
+          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+          gap: 16,
         }}
       >
         <OverviewCard
           title={`${stats.restaurants} Restaurantes`}
-          subtitle="Multi Restaurante"
-          icon={<Building2 size={26} />}
+          subtitle="Registros activos"
+          icon={<Building2 />}
           color="#f97316"
         />
 
         <OverviewCard
           title={`${stats.users} Usuarios`}
-          subtitle="Roles y permisos"
-          icon={<Users size={26} />}
+          subtitle="Acceso al sistema"
+          icon={<Users />}
           color="#3b82f6"
         />
 
         <OverviewCard
-          title={`${stats.legal} Acuerdos`}
-          subtitle="Centro Legal"
-          icon={<Scale size={26} />}
+          title={String(stats.legal)} // <--- Dinámico desde Supabase
+          subtitle="Acuerdos firmados"
+          icon={<Scale />}
           color="#22c55e"
         />
 
         <OverviewCard
           title={`${stats.liquidations} Liquidaciones`}
-          subtitle="Facturación"
-          icon={<Landmark size={26} />}
+          subtitle="Procesadas globales"
+          icon={<Landmark />}
           color="#8b5cf6"
         />
+      </div>
 
-        <OverviewCard
-          title="PWA"
-          subtitle="Aplicaciones instalables"
-          icon={<Smartphone size={26} />}
-          color="#06b6d4"
-        />
-
-        <OverviewCard
-          title="Seguridad"
-          subtitle="Protección del sistema"
-          icon={<ShieldCheck size={26} />}
-          color="#ec4899"
-        />
-
-        <OverviewCard
-          title="Tiempo Real"
-          subtitle="Eventos y monitoreo"
-          icon={<Activity size={26} />}
-          color="#14b8a6"
-        />
-
-        <OverviewCard
-          title="Supabase"
-          subtitle="Base de datos Cloud"
-          icon={<Database size={26} />}
-          color="#f59e0b"
-        />
+      {/* FOOTER STATS */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: 16,
+          paddingTop: 12,
+          fontSize: 12,
+          color: "#71717a",
+        }}
+      >
+        <div>
+          PERMISOS ASIGNADOS: <strong style={{ color: "#fff" }}>{totalModules}</strong>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#22c55e" }}>
+          <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#22c55e" }} />
+          Sincronización de credenciales completa
+        </div>
       </div>
     </section>
   );

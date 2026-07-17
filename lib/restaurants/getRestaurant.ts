@@ -18,6 +18,7 @@ export async function getRestaurant(
     .from("restaurants")
     .select("*")
     .eq("slug", slug)
+    .eq("active", true)
     .single();
 
   console.log(

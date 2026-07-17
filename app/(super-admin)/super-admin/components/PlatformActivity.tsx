@@ -17,43 +17,39 @@ const activities = [
       "Un restaurante fue creado y quedó listo para iniciar su proceso de configuración.",
     time: "Hace unos minutos",
     color: "#f97316",
-    icon: <Building2 size={24} />,
+    icon: <Building2 />,
   },
-
   {
     title: "Nuevo usuario del sistema",
     description:
       "Se registró un nuevo usuario administrativo dentro de la plataforma.",
     time: "Hoy",
     color: "#3b82f6",
-    icon: <Users size={24} />,
+    icon: <Users />,
   },
-
   {
     title: "Documento legal actualizado",
     description:
       "Se publicó una nueva versión de un documento del Centro Legal.",
     time: "Hoy",
     color: "#22c55e",
-    icon: <Scale size={24} />,
+    icon: <Scale />,
   },
-
   {
     title: "Nueva versión desplegada",
     description:
       "Wolf Ordering SaaS fue actualizado correctamente sin afectar la operación.",
     time: "Producción",
     color: "#8b5cf6",
-    icon: <Rocket size={24} />,
+    icon: <Rocket />,
   },
-
   {
     title: "Auditoría completada",
     description:
       "La validación de seguridad y permisos finalizó correctamente.",
     time: "Completado",
     color: "#ef4444",
-    icon: <ShieldCheck size={24} />,
+    icon: <ShieldCheck />,
   },
 ];
 
@@ -67,35 +63,30 @@ interface Props {
 }
 
 export default function PlatformActivity({
-  stats,
+  stats, // Preservado para consistencia de Props con el componente padre
 }: Props) {
   return (
-    <section
-      style={{
-        marginBottom: 70,
-      }}
-    >
+    <section style={{ marginBottom: 36 }}>
       {/* HEADER */}
-
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-end",
           flexWrap: "wrap",
-          gap: 24,
-          marginBottom: 30,
+          gap: 16,
+          marginBottom: 20,
         }}
       >
         <div>
           <div
             style={{
               color: "#8b5cf6",
-              fontWeight: 800,
-              letterSpacing: 2,
+              fontWeight: 700,
+              letterSpacing: "1px",
               textTransform: "uppercase",
-              fontSize: 13,
-              marginBottom: 12,
+              fontSize: 11,
+              marginBottom: 6,
             }}
           >
             Activity Timeline
@@ -105,8 +96,9 @@ export default function PlatformActivity({
             style={{
               margin: 0,
               color: "#fff",
-              fontSize: "clamp(32px,4vw,42px)",
-              fontWeight: 900,
+              fontSize: 20,
+              fontWeight: 800,
+              letterSpacing: "-0.5px",
             }}
           >
             Actividad de la Plataforma
@@ -114,27 +106,30 @@ export default function PlatformActivity({
 
           <p
             style={{
-              marginTop: 16,
-              color: "#9b9b9b",
-              lineHeight: 1.9,
+              margin: "6px 0 0 0",
+              color: "#666666",
+              fontSize: 13,
+              lineHeight: 1.5,
               maxWidth: 760,
             }}
           >
-            Historial ejecutivo de los principales eventos de
-            Wolf Ordering SaaS. Próximamente esta información
-            será obtenida automáticamente desde la base de datos.
+            Historial ejecutivo de los principales eventos de Wolf Ordering SaaS. 
+            Próximamente esta información será obtenida automáticamente desde la base de datos.
           </p>
         </div>
 
+        {/* BADGE COMPACTO */}
         <div
           style={{
-            padding: "12px 20px",
+            padding: "6px 12px",
             borderRadius: 999,
-            background: "rgba(139,92,246,.12)",
-            border: "1px solid rgba(139,92,246,.22)",
+            background: "rgba(139, 92, 246, 0.08)",
+            border: "1px solid rgba(139, 92, 246, 0.15)",
             color: "#c4b5fd",
             fontWeight: 700,
-            fontSize: 14,
+            fontSize: 11,
+            letterSpacing: "0.5px",
+            textTransform: "uppercase",
           }}
         >
           {activities.length} eventos registrados
@@ -142,11 +137,10 @@ export default function PlatformActivity({
       </div>
 
       {/* TIMELINE */}
-
       <div
         style={{
           display: "grid",
-          gap: 20,
+          gap: 12, // Gap más estrecho para máxima densidad visual
         }}
       >
         {activities.map((activity) => (

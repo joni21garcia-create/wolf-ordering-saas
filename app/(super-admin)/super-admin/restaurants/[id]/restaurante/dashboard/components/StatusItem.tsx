@@ -16,12 +16,10 @@ export default function StatusItem({
       color: "#22c55e",
       label: "Online",
     },
-
     warning: {
       color: "#f59e0b",
       label: "Verificando",
     },
-
     offline: {
       color: "#ef4444",
       label: "Offline",
@@ -29,182 +27,78 @@ export default function StatusItem({
   }[status];
 
   return (
-    <article
+    <div
       style={{
-        position: "relative",
-
-        overflow: "hidden",
-
-        borderRadius: 22,
-
-        padding: 22,
-
-        background:
-          "linear-gradient(180deg,#181818,#141414)",
-
-        border:
-          "1px solid rgba(255,255,255,.06)",
-
-        transition: ".25s",
-
-        boxShadow:
-          "0 18px 45px rgba(0,0,0,.18)",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform =
-          "translateY(-4px)";
-
-        e.currentTarget.style.boxShadow =
-          "0 26px 60px rgba(0,0,0,.28)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform =
-          "translateY(0px)";
-
-        e.currentTarget.style.boxShadow =
-          "0 18px 45px rgba(0,0,0,.18)";
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 16,
+        padding: "10px 16px",
+        borderRadius: 10,
+        background: "rgba(255, 255, 255, 0.02)",
+        border: "1px solid rgba(255, 255, 255, 0.04)",
+        transition: "all 0.2s ease",
       }}
     >
-      {/* Glow */}
-
-      <div
-        style={{
-          position: "absolute",
-
-          top: -35,
-
-          right: -35,
-
-          width: 90,
-
-          height: 90,
-
-          borderRadius: "50%",
-
-          background: `${config.color}20`,
-
-          filter: "blur(22px)",
-        }}
-      />
-
-      <div
-        style={{
-          position: "relative",
-
-          zIndex: 2,
-
-          display: "flex",
-
-          justifyContent: "space-between",
-
-          alignItems: "flex-start",
-
-          gap: 20,
-        }}
-      >
-        <div>
-          <div
-            style={{
-              color: "#fff",
-
-              fontWeight: 700,
-
-              fontSize: 18,
-
-              marginBottom: 8,
-            }}
-          >
-            {title}
-          </div>
-
-          <div
-            style={{
-              color: "#969696",
-
-              fontSize: 14,
-
-              lineHeight: 1.7,
-            }}
-          >
-            {subtitle}
-          </div>
-        </div>
-
-        <div
+      {/* Lado izquierdo: Título y descripción discretos en línea */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+        <span
           style={{
-            display: "flex",
-
-            alignItems: "center",
-
-            gap: 8,
-
-            padding: "8px 12px",
-
-            borderRadius: 999,
-
-            background: `${config.color}18`,
-
-            border: `1px solid ${config.color}40`,
-
+            color: "#fff",
+            fontWeight: 600,
+            fontSize: 13,
             whiteSpace: "nowrap",
           }}
         >
-          <span
-            style={{
-              width: 10,
-
-              height: 10,
-
-              borderRadius: "50%",
-
-              background: config.color,
-
-              boxShadow: `0 0 14px ${config.color}`,
-            }}
-          />
-
-          <span
-            style={{
-              color: config.color,
-
-              fontWeight: 700,
-
-              fontSize: 13,
-            }}
-          >
-            {config.label}
-          </span>
-        </div>
+          {title}
+        </span>
+        <span
+          style={{
+            color: "#666",
+            fontSize: 12,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          | {subtitle}
+        </span>
       </div>
 
-      {/* Barra inferior */}
-
+      {/* Lado derecho: El indicador luminoso compacto */}
       <div
         style={{
-          marginTop: 22,
-
-          height: 4,
-
-          borderRadius: 999,
-
-          background:
-            "rgba(255,255,255,.05)",
-
-          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "4px 8px",
+          borderRadius: 6,
+          background: `${config.color}08`,
+          border: `1px solid ${config.color}20`,
+          flexShrink: 0,
         }}
       >
-        <div
+        <span
           style={{
-            width: "100%",
-
-            height: "100%",
-
-            borderRadius: 999,
-
-            background: `linear-gradient(90deg,${config.color},transparent)`,
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: config.color,
+            boxShadow: `0 0 8px ${config.color}`,
           }}
         />
+        <span
+          style={{
+            color: config.color,
+            fontWeight: 700,
+            fontSize: 11,
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
+          }}
+        >
+          {config.label}
+        </span>
       </div>
-    </article>
+    </div>
   );
 }

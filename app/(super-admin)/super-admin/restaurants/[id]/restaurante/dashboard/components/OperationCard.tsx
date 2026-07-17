@@ -31,88 +31,55 @@ export default function OperationCard({
       <article
         style={{
           position: "relative",
-
           overflow: "hidden",
-
           height: "100%",
-
-          minHeight: "clamp(240px,28vw,290px)",
-
-          borderRadius: 30,
-
-          padding: 30,
-
-          background:
-            "linear-gradient(180deg,#1b1b1b,#141414)",
-
-          border:
-            "1px solid rgba(255,255,255,.06)",
-
+          // Reducido: De 240px-290px a un rango mucho más compacto y refinado
+          minHeight: "clamp(160px, 20vw, 190px)",
+          // Reducido: Bordes más sutiles de 18px en lugar de 30px
+          borderRadius: 18,
+          // Reducido: Padding interno optimizado para no desperdiciar espacio
+          padding: 20,
+          background: "linear-gradient(180deg,#1b1b1b,#141414)",
+          border: "1px solid rgba(255,255,255,.06)",
           transition: ".28s ease",
-
-          boxShadow:
-            "0 20px 60px rgba(0,0,0,.22)",
+          boxShadow: "0 12px 35px rgba(0,0,0,.18)",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform =
-            "translateY(-8px)";
-
-          e.currentTarget.style.boxShadow =
-            "0 35px 80px rgba(0,0,0,.30)";
+          e.currentTarget.style.transform = "translateY(-5px)"; // Animación más suave
+          e.currentTarget.style.boxShadow = "0 22px 50px rgba(0,0,0,.28)";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.transform =
-            "translateY(0px)";
-
-          e.currentTarget.style.boxShadow =
-            "0 20px 60px rgba(0,0,0,.22)";
+          e.currentTarget.style.transform = "translateY(0px)";
+          e.currentTarget.style.boxShadow = "0 12px 35px rgba(0,0,0,.18)";
         }}
       >
-        {/* Glow */}
-
+        {/* Glow (Escalado en proporción para no desbordar visualmente) */}
         <div
           style={{
             position: "absolute",
-
-            top: -70,
-
-            right: -70,
-
-            width: 180,
-
-            height: 180,
-
+            top: -50,
+            right: -50,
+            width: 130,
+            height: 130,
             borderRadius: "50%",
-
             background: `${color}20`,
-
-            filter: "blur(38px)",
+            filter: "blur(28px)",
           }}
         />
 
-        {/* Badge */}
-
+        {/* Badge (Paddings y fuentes más limpias y discretas) */}
         {badge && (
           <div
             style={{
               position: "absolute",
-
-              top: 24,
-
-              right: 24,
-
-              padding: "8px 14px",
-
+              top: 16,
+              right: 16,
+              padding: "5px 10px",
               borderRadius: 999,
-
               background: `${color}18`,
-
               border: `1px solid ${color}40`,
-
               color,
-
-              fontSize: 13,
-
+              fontSize: 11,
               fontWeight: 700,
             }}
           >
@@ -120,60 +87,42 @@ export default function OperationCard({
           </div>
         )}
 
-        {/* Icono */}
-
+        {/* Icono (Reducido de 74px a un tamaño estándar de 48px súper estético) */}
         <div
           style={{
             position: "relative",
-
             zIndex: 2,
-
-            width: 74,
-
-            height: 74,
-
-            borderRadius: 22,
-
+            width: 48,
+            height: 48,
+            borderRadius: 14,
             display: "flex",
-
             justifyContent: "center",
-
             alignItems: "center",
-
-            background:
-              "rgba(255,255,255,.05)",
-
-            border:
-              "1px solid rgba(255,255,255,.08)",
-
+            background: "rgba(255,255,255,.05)",
+            border: "1px solid rgba(255,255,255,.08)",
             color,
-
-            fontSize: 34,
+            fontSize: 22,
           }}
         >
           {icon}
         </div>
 
+        {/* Bloque de Textos */}
         <div
           style={{
             position: "relative",
-
             zIndex: 2,
-
-            marginTop: 28,
+            marginTop: 16, // Reducido de 28px para compactar el diseño
           }}
         >
           <h2
             style={{
               margin: 0,
-
               color: "#fff",
-
-              fontSize: "clamp(28px,3vw,36px)",
-
+              // Reducido: Tipografía de títulos mucho más moderna y menos invasiva
+              fontSize: "clamp(18px, 2.2vw, 22px)",
               fontWeight: 800,
-
-              lineHeight: 1.15,
+              lineHeight: 1.2,
             }}
           >
             {title}
@@ -181,63 +130,47 @@ export default function OperationCard({
 
           <p
             style={{
-              marginTop: 16,
-
-              color: "#9a9a9a",
-
-              fontSize: 15,
-
-              lineHeight: 1.9,
-
+              marginTop: 8, // Reducido de 16px para mantener la cohesión
+              color: "#8e8e8e",
+              fontSize: 13, // Reducido de 15px para mejorar legibilidad en bloques pequeños
+              lineHeight: 1.6,
               maxWidth: 520,
             }}
           >
             {description}
           </p>
-                    {/* Footer */}
 
+          {/* Footer (Optimizado con tamaños proporcionales) */}
           <div
             style={{
-              marginTop: 32,
-
+              marginTop: 20, // Reducido de 32px
               display: "flex",
-
               justifyContent: "space-between",
-
               alignItems: "center",
-
-              gap: 16,
+              gap: 12,
             }}
           >
             <div
               style={{
                 display: "flex",
-
                 alignItems: "center",
-
-                gap: 10,
+                gap: 8,
               }}
             >
               <span
                 style={{
-                  width: 10,
-
-                  height: 10,
-
+                  width: 7, // Reducido de 10px
+                  height: 7, // Reducido de 10px
                   borderRadius: "50%",
-
                   background: color,
-
-                  boxShadow: `0 0 14px ${color}`,
+                  boxShadow: `0 0 10px ${color}`,
                 }}
               />
 
               <span
                 style={{
-                  color: "#a0a0a0",
-
-                  fontSize: 14,
-
+                  color: "#8a8a8a",
+                  fontSize: 12, // Reducido de 14px
                   fontWeight: 600,
                 }}
               >
@@ -247,28 +180,17 @@ export default function OperationCard({
 
             <div
               style={{
-                width: 48,
-
-                height: 48,
-
+                width: 32, // Reducido de 48px
+                height: 32, // Reducido de 48px
                 borderRadius: "50%",
-
                 display: "flex",
-
                 justifyContent: "center",
-
                 alignItems: "center",
-
                 background: `${color}18`,
-
                 border: `1px solid ${color}40`,
-
                 color,
-
-                fontSize: 22,
-
+                fontSize: 15, // Reducido de 22px
                 fontWeight: 700,
-
                 transition: ".25s",
               }}
             >
@@ -278,19 +200,13 @@ export default function OperationCard({
         </div>
 
         {/* Barra inferior */}
-
         <div
           style={{
             position: "absolute",
-
             left: 0,
-
             right: 0,
-
             bottom: 0,
-
-            height: 5,
-
+            height: 4, // Reducido de 5px para un look más "frameless"
             background: `linear-gradient(90deg, ${color}, transparent)`,
           }}
         />

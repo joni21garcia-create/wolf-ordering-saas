@@ -5,15 +5,12 @@ import RestaurantCard from "./RestaurantCard";
 
 type Props = {
   restaurants: any[];
-
-  onDuplicate?: (restaurant: any) => void;
   onToggleStatus?: (restaurant: any) => void;
   onDelete?: (restaurant: any) => void;
 };
 
 export default function RestaurantGrid({
   restaurants,
-  onDuplicate,
   onToggleStatus,
   onDelete,
 }: Props) {
@@ -23,38 +20,13 @@ export default function RestaurantGrid({
 
   return (
     <>
-      <section
-        className="restaurants-grid"
-        style={{
-          display: "grid",
-
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(400px,1fr))",
-
-          gap: 28,
-
-          alignItems: "start",
-
-          overflow: "visible",
-
-          position: "relative",
-
-          zIndex: 1,
-        }}
-      >
+      <section className="restaurants-grid">
         {restaurants.map((restaurant) => (
           <RestaurantCard
             key={restaurant.id}
             restaurant={restaurant}
-            onDuplicate={() =>
-              onDuplicate?.(restaurant)
-            }
-            onToggleStatus={() =>
-              onToggleStatus?.(restaurant)
-            }
-            onDelete={() =>
-              onDelete?.(restaurant)
-            }
+            onToggleStatus={() => onToggleStatus?.(restaurant)}
+            onDelete={() => onDelete?.(restaurant)}
           />
         ))}
       </section>
@@ -62,58 +34,55 @@ export default function RestaurantGrid({
       <style jsx>{`
         .restaurants-grid {
           width: 100%;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+          gap: 28px;
+          align-items: start;
+          position: relative;
+          zIndex: 1;
         }
 
         @media (max-width: 900px) {
           .restaurants-grid {
             display: flex !important;
-
-            overflow-x: auto;
-
-            overflow-y: visible;
-
-            gap: 18px;
-
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            gap: 16px;
             padding: 6px 4px 18px;
-
+            width: 100%;
+            max-width: 100vw;
             scroll-snap-type: x mandatory;
-
             -webkit-overflow-scrolling: touch;
-
             scrollbar-width: thin;
           }
 
           .restaurants-grid::-webkit-scrollbar {
-            height: 8px;
+            height: 6px;
           }
 
           .restaurants-grid::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.18);
-
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 999px;
           }
 
-          .restaurants-grid
-            :global(article) {
-            min-width: 340px;
-
-            max-width: 340px;
-
+          .restaurants-grid :global(article) {
+            min-width: 320px;
+            max-width: 320px;
             flex-shrink: 0;
-
             scroll-snap-align: start;
           }
         }
-                  @media (max-width: 640px) {
+
+        @media (max-width: 640px) {
           .restaurants-grid {
-            padding-left: 8px;
-            padding-right: 8px;
+            padding-left: 4px;
+            padding-right: 4px;
           }
 
-          .restaurants-grid
-            :global(article) {
-            min-width: calc(100vw - 48px);
-            max-width: calc(100vw - 48px);
+          .restaurants-grid :global(article) {
+            min-width: calc(100vw - 32px);
+            max-width: calc(100vw - 32px);
           }
         }
       `}</style>

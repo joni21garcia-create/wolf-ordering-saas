@@ -12,64 +12,77 @@ export default function SystemStatus({
   return (
     <section
       style={{
-        marginBottom: 50,
+        marginTop: 40,
+        marginBottom: 24,
+        paddingTop: 24,
+        borderTop: "1px solid rgba(255, 255, 255, 0.05)", // Una sutil línea divisoria
       }}
     >
+      {/* Cabecera ultra-discreta */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          flexWrap: "wrap",
-          gap: 20,
-          marginBottom: 24,
+          marginBottom: 16,
         }}
       >
         <div>
-          <h2
+          <h4
             style={{
               margin: 0,
               color: "#fff",
-              fontSize: "clamp(28px,4vw,36px)",
-              fontWeight: 800,
+              fontSize: 13,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.8px",
             }}
           >
-            Estado del sistema
-          </h2>
-
+            Estado de los Servicios
+          </h4>
           <p
             style={{
-              marginTop: 10,
-              color: "#909090",
-              lineHeight: 1.8,
-              maxWidth: 700,
+              margin: "2px 0 0 0",
+              color: "#606060",
+              fontSize: 11,
             }}
           >
-            Estado operativo de los servicios principales del restaurante.
+            Monitoreo en tiempo real de la plataforma
           </p>
         </div>
 
+        {/* Badge de estado general reducido a su mínima y más elegante expresión */}
         <div
           style={{
-            padding: "10px 18px",
-            borderRadius: 999,
-            background: "rgba(34,197,94,.12)",
-            border: "1px solid rgba(34,197,94,.20)",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: 11,
             color: "#22c55e",
-            fontWeight: 700,
-            fontSize: 14,
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
           }}
         >
-          Todo operativo
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              background: "#22c55e",
+              boxShadow: "0 0 8px #22c55e",
+            }}
+          />
+          Sistemas estables
         </div>
       </div>
 
+      {/* Grid de estados en formato ultra-compacto */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(250px,1fr))",
-          gap: 18,
+          gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
+          gap: 10, // Separación apretada y limpia
         }}
       >
         <StatusItem
@@ -94,7 +107,7 @@ export default function SystemStatus({
 
         <StatusItem
           title="Sesión"
-          subtitle="Usuario autenticado"
+          subtitle="Usuario activo"
           status="online"
         />
 

@@ -21,102 +21,68 @@ export default function PlatformActivityItem({
     <article
       style={{
         position: "relative",
-
         overflow: "hidden",
-
         display: "flex",
-
         alignItems: "flex-start",
-
-        gap: 18,
-
-        padding: 22,
-
-        borderRadius: 22,
-
-        background:
-          "linear-gradient(180deg,#1a1a1a,#141414)",
-
-        border:
-          "1px solid rgba(255,255,255,.06)",
+        gap: 14,
+        padding: "14px 16px",
+        borderRadius: 12, // Consistencia absoluta con OverviewCard
+        background: "linear-gradient(180deg, #141414, #0d0d0d)",
+        border: "1px solid rgba(255, 255, 255, 0.04)",
       }}
     >
       {/* Glow */}
-
       <div
         style={{
           position: "absolute",
-
-          top: -40,
-
-          right: -40,
-
-          width: 110,
-
-          height: 110,
-
+          top: -30,
+          right: -30,
+          width: 90,
+          height: 90,
           borderRadius: "50%",
-
-          background: `${color}18`,
-
-          filter: "blur(28px)",
+          background: `${color}08`,
+          filter: "blur(22px)",
+          pointerEvents: "none",
         }}
       />
 
-      {/* Icono */}
-
+      {/* Contenedor de Icono Premium */}
       <div
         style={{
           position: "relative",
-
           zIndex: 2,
-
-          width: 54,
-
-          height: 54,
-
-          borderRadius: 18,
-
+          width: 36,
+          height: 36,
+          borderRadius: 8,
           display: "flex",
-
           justifyContent: "center",
-
           alignItems: "center",
-
-          background:
-            "rgba(255,255,255,.05)",
-
-          border:
-            "1px solid rgba(255,255,255,.08)",
-
+          background: "rgba(255, 255, 255, 0.02)",
+          border: "1px solid rgba(255, 255, 255, 0.04)",
           color,
-
           flexShrink: 0,
         }}
       >
-        {icon}
+        <div style={{ display: "flex", transform: "scale(0.55)" }}>
+          {icon}
+        </div>
       </div>
 
       {/* Información */}
-
       <div
         style={{
           position: "relative",
-
           zIndex: 2,
-
           flex: 1,
         }}
       >
         <h3
           style={{
             margin: 0,
-
             color: "#fff",
-
-            fontSize: 17,
-
-            fontWeight: 700,
+            fontSize: 14,
+            fontWeight: 600,
+            letterSpacing: "-0.2px",
           }}
         >
           {title}
@@ -124,49 +90,38 @@ export default function PlatformActivityItem({
 
         <p
           style={{
-            marginTop: 10,
-
-            marginBottom: 12,
-
-            color: "#9b9b9b",
-
-            fontSize: 14,
-
-            lineHeight: 1.7,
+            marginTop: 4,
+            marginBottom: 8,
+            color: "#666666",
+            fontSize: 12,
+            lineHeight: 1.4,
           }}
         >
           {description}
         </p>
 
+        {/* Timestamp */}
         <div
           style={{
             display: "flex",
-
             alignItems: "center",
-
-            gap: 10,
+            gap: 6,
           }}
         >
           <span
             style={{
-              width: 8,
-
-              height: 8,
-
+              width: 5,
+              height: 5,
               borderRadius: "50%",
-
               background: color,
-
-              boxShadow: `0 0 10px ${color}`,
+              boxShadow: `0 0 6px ${color}`,
             }}
           />
 
           <span
             style={{
-              color: "#8f8f8f",
-
-              fontSize: 13,
-
+              color: "#444444",
+              fontSize: 11,
               fontWeight: 600,
             }}
           >
@@ -175,20 +130,14 @@ export default function PlatformActivityItem({
         </div>
       </div>
 
-      {/* Barra inferior */}
-
+      {/* Sutil barra de color inferior */}
       <div
         style={{
           position: "absolute",
-
           left: 0,
-
           right: 0,
-
           bottom: 0,
-
-          height: 4,
-
+          height: 1.5,
           background: `linear-gradient(90deg, ${color}, transparent)`,
         }}
       />

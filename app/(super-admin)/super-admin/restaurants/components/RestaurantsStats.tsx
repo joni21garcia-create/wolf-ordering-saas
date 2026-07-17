@@ -1,3 +1,5 @@
+"use client";
+
 type Props = {
   total: number;
   active: number;
@@ -46,12 +48,9 @@ export default function RestaurantsStats({
     <section
       style={{
         display: "grid",
-        gridTemplateColumns:
-          "repeat(auto-fit,minmax(260px,1fr))",
-
-        gap: 24,
-
-        marginBottom: 34,
+        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+        gap: 16,
+        marginBottom: 24,
       }}
     >
       {cards.map((card) => (
@@ -59,195 +58,80 @@ export default function RestaurantsStats({
           key={card.title}
           style={{
             position: "relative",
-
             overflow: "hidden",
-
-            borderRadius: 24,
-
-            border:
-              "1px solid rgba(255,255,255,.06)",
-
-            background:
-              "linear-gradient(180deg,#181818,#131313)",
-
-            padding: 24,
-
+            borderRadius: 16,
+            border: "1px solid rgba(255,255,255,.06)",
+            background: "#141414",
+            padding: "18px 20px",
             display: "flex",
-
-            flexDirection: "column",
-
-            gap: 20,
-
-            transition:
-              ".25s ease",
-
-            boxShadow:
-              "0 15px 40px rgba(0,0,0,.18)",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            transition: ".2s ease",
+            boxShadow: "0 10px 30px rgba(0,0,0,.15)",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform =
-              "translateY(-5px)";
+            e.currentTarget.style.transform = "translateY(-3px)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,.12)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform =
-              "translateY(0px)";
+            e.currentTarget.style.transform = "translateY(0px)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,.06)";
           }}
         >
-          {/* Glow */}
-
-          <div
-            style={{
-              position: "absolute",
-
-              top: -45,
-
-              right: -45,
-
-              width: 120,
-
-              height: 120,
-
-              borderRadius: "50%",
-
-              background: `${card.color}20`,
-
-              filter: "blur(20px)",
-            }}
-          />
-
-          {/* Icono */}
-
-          <div
-            style={{
-              width: 58,
-
-              height: 58,
-
-              borderRadius: 18,
-
-              display: "flex",
-
-              alignItems: "center",
-
-              justifyContent: "center",
-
-              fontSize: 28,
-
-              background:
-                "rgba(255,255,255,.05)",
-
-              border:
-                "1px solid rgba(255,255,255,.06)",
-            }}
-          >
-            {card.icon}
-          </div>
-
-          {/* Contenido */}
-
-          <div>
-            <div
+          {/* Contenido principal */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span
               style={{
-                color: "#9a9a9a",
-
-                fontSize: 13,
-
-                marginBottom: 8,
-
+                color: "#888",
+                fontSize: 12,
                 fontWeight: 600,
-
-                textTransform:
-                  "uppercase",
-
+                textTransform: "uppercase",
                 letterSpacing: ".5px",
               }}
             >
               {card.title}
-            </div>
+            </span>
 
             <div
               style={{
-                fontSize: 42,
-
-                fontWeight: 800,
-
+                fontSize: 32,
+                fontWeight: 700,
                 color: card.color,
-
-                lineHeight: 1,
+                lineHeight: 1.1,
               }}
             >
               {card.value}
             </div>
-                        <div
+
+            <span
               style={{
-                marginTop: 10,
-
-                display: "flex",
-
-                justifyContent:
-                  "space-between",
-
-                alignItems: "center",
+                color: "#666",
+                fontSize: 12,
+                fontWeight: 500,
               }}
             >
-              <span
-                style={{
-                  color: "#7d7d7d",
-
-                  fontSize: 13,
-
-                  fontWeight: 500,
-                }}
-              >
-                {card.subtitle}
-              </span>
-
-              <div
-                style={{
-                  width: 46,
-
-                  height: 6,
-
-                  borderRadius: 999,
-
-                  background:
-                    "rgba(255,255,255,.06)",
-
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    width: "100%",
-
-                    height: "100%",
-
-                    borderRadius: 999,
-
-                    background:
-                      card.color,
-                  }}
-                />
-              </div>
-            </div>
+              {card.subtitle}
+            </span>
           </div>
 
-          {/* Línea inferior */}
-
+          {/* Icono compacto */}
           <div
             style={{
-              marginTop: "auto",
-
-              height: 4,
-
-              borderRadius: 999,
-
-              background:
-                "linear-gradient(90deg," +
-                card.color +
-                ",transparent)",
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 20,
+              background: "rgba(255,255,255,.03)",
+              border: "1px solid rgba(255,255,255,.06)",
+              flexShrink: 0,
             }}
-          />
+          >
+            {card.icon}
+          </div>
         </article>
       ))}
     </section>

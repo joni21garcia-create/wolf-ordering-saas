@@ -1,147 +1,118 @@
 "use client";
 
 import { useParams } from "next/navigation";
-
 import ProductForm from "@/components/super-admin/products/ProductForm";
 
 export default function EditProductPage() {
   const params = useParams();
-
-  const restaurantId =
-    params.id as string;
-
-  const productId =
-    params.productId as string;
+  const restaurantId = params.id as string;
+  const productId = params.productId as string;
 
   return (
     <main
       style={{
         minHeight: "100vh",
-        background:
-          "radial-gradient(circle at top right,#331300 0%,#050505 45%)",
-        padding: "40px",
+        background: "radial-gradient(circle at top right, #240b00 0%, #050505 60%)",
+        padding: "clamp(16px, 4vw, 40px) clamp(12px, 3vw, 24px)",
+        color: "#ffffff",
+        fontFamily: "system-ui, -apple-system, sans-serif"
       }}
     >
-      <div
-        style={{
-          maxWidth: "1600px",
-          margin: "0 auto",
-        }}
-      >
-        {/* Header */}
+      {/* 🛠️ Estilos globales inyectados para inputs y selects más premium */}
+      <style jsx global>{`
+        select, option, input, textarea {
+          background-color: #0d0d0d !important;
+          color: #ffffff !important;
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+          border-radius: 12px !important;
+          padding: 12px 16px !important;
+          transition: all 0.2s ease !important;
+        }
+        select:focus, input:focus, textarea:focus {
+          outline: none !important;
+          border-color: #f97316 !important;
+          box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15) !important;
+        }
+        select option {
+          background: #0d0d0d !important;
+          color: #fff !important;
+        }
+      `}</style>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent:
-              "space-between",
-            alignItems:
-              "center",
-            marginBottom: "40px",
-            flexWrap: "wrap",
-            gap: "20px",
-          }}
-        >
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        
+        {/* HEADER RESPONSIVO Y PREMIUM */}
+        <div style={{ 
+          display: "flex", 
+          justifyContent: "space-between", 
+          alignItems: "center", 
+          flexWrap: "wrap", 
+          gap: "20px",
+          marginBottom: "35px",
+          paddingBottom: "24px",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.06)"
+        }}>
           <div>
-            <h1
-              style={{
-                margin: 0,
-                color: "#fff",
-                fontSize: "52px",
-                fontWeight: "900",
-              }}
-            >
-              ✏️ Editar Producto
+            <h1 style={{ 
+              margin: "0 0 8px 0", 
+              color: "#fff", 
+              fontSize: "clamp(28px, 6vw, 46px)", 
+              fontWeight: "950",
+              letterSpacing: "-0.5px",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px"
+            }}>
+              <span style={{ filter: "drop-shadow(0 0 10px rgba(249,115,22,0.3))" }}>✏️</span> Editar Producto
             </h1>
-
-            <p
-              style={{
-                color: "#9ca3af",
-                marginTop: "10px",
-                fontSize: "18px",
-              }}
-            >
-              Modifica información,
-              imágenes, precios y
-              configuración del producto.
+            <p style={{ color: "#9ca3af", margin: 0, fontSize: "clamp(14px, 2vw, 16px)", fontWeight: "400" }}>
+              Modifica información, imágenes, precios y configuración del producto en tiempo real.
             </p>
           </div>
 
-          <div
-            style={{
-              background:
-                "rgba(249,115,22,.15)",
-              color:
-                "#f97316",
-              padding:
-                "12px 20px",
-              borderRadius:
-                "999px",
-              border:
-                "1px solid rgba(249,115,22,.25)",
-              fontWeight:
-                "700",
-            }}
-          >
+          <div style={{ 
+            background: "linear-gradient(135deg, rgba(249,115,22,0.15) 0%, rgba(249,115,22,0.03) 100%)", 
+            color: "#f97316", 
+            padding: "10px 22px", 
+            borderRadius: "100px", 
+            fontSize: "12px", 
+            fontWeight: "800",
+            letterSpacing: "1.5px",
+            border: "1px solid rgba(249,115,22,0.2)",
+            textTransform: "uppercase"
+          }}>
             Wolf Ordering
           </div>
         </div>
 
-        {/* Dashboard Cards */}
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "repeat(auto-fit,minmax(260px,1fr))",
-            gap: "20px",
-            marginBottom: "30px",
-          }}
-        >
-          <InfoCard
-            title="✏️ Acción"
-            value="Editar"
-          />
-
-          <InfoCard
-            title="📦 Producto"
-            value="Activo"
-          />
-
-          <InfoCard
-            title="🖼 Imagen"
-            value="Disponible"
-          />
-
-          <InfoCard
-            title="⚡ Estado"
-            value="Online"
-          />
+        {/* CONTENEDOR DE TARJETAS DE INFORMACIÓN (RESPONSIVO EN GRID) */}
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", 
+          gap: "18px", 
+          marginBottom: "35px" 
+        }}>
+          <InfoCard icon="✏️" title="Acción" value="Editar" color="#f59e0b" />
+          <InfoCard icon="📦" title="Producto" value="Activo" color="#10b981" />
+          <InfoCard icon="🖼️" title="Imagen" value="Disponible" color="#3b82f6" />
+          <InfoCard icon="⚡" title="Estado" value="Online" color="#10b981" />
         </div>
 
-        {/* Form Container */}
-
-        <div
-          style={{
-            background:
-              "rgba(17,17,17,.95)",
-            border:
-              "1px solid rgba(255,255,255,.08)",
-            borderRadius:
-              "30px",
-            padding: "30px",
-            boxShadow:
-              "0 20px 60px rgba(0,0,0,.45)",
-          }}
-        >
+        {/* CONTENEDOR DEL FORMULARIO CON GLASSMORPHISM PREMIUM */}
+        <div style={{ 
+          background: "linear-gradient(135deg, rgba(15, 15, 15, 0.7) 0%, rgba(5, 5, 5, 0.85) 100%)", 
+          border: "1px solid rgba(255, 255, 255, 0.05)", 
+          borderRadius: "28px", 
+          padding: "clamp(16px, 4vw, 35px)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.03)"
+        }}>
+          {/* Conservamos la lógica e IDs originales intactos */}
           <ProductForm
             mode="edit"
-            restaurantId={
-              restaurantId
-            }
-            productId={
-              productId
-            }
+            restaurantId={restaurantId}
+            productId={productId}
           />
         </div>
       </div>
@@ -149,63 +120,74 @@ export default function EditProductPage() {
   );
 }
 
-function InfoCard({
-  title,
-  value,
-}: any) {
+interface InfoCardProps {
+  icon: string;
+  title: string;
+  value: string;
+  color?: string;
+}
+
+function InfoCard({ icon, title, value, color = "#fff" }: InfoCardProps) {
   return (
-    <div
-      style={{
-        background:
-          "linear-gradient(180deg,#141414,#090909)",
-        border:
-          "1px solid rgba(255,255,255,.08)",
-        borderRadius:
-          "24px",
-        padding: "24px",
-        boxShadow:
-          "0 15px 40px rgba(0,0,0,.35)",
-        position:
-          "relative",
-        overflow:
-          "hidden",
-      }}
-    >
-      <div
-        style={{
-          position:
-            "absolute",
-          right: "-30px",
-          top: "-30px",
-          width: "120px",
-          height: "120px",
-          borderRadius:
-            "50%",
-          background:
-            "rgba(249,115,22,.08)",
-        }}
-      />
+    <div style={{ 
+      background: "linear-gradient(135deg, rgba(255, 255, 255, 0.01) 0%, rgba(255, 255, 255, 0.03) 100%)", 
+      border: "1px solid rgba(255, 255, 255, 0.04)", 
+      borderRadius: "20px", 
+      padding: "20px",
+      display: "flex",
+      alignItems: "center",
+      gap: "16px",
+      boxShadow: "0 15px 40px rgba(0,0,0,0.2)",
+      position: "relative",
+      overflow: "hidden"
+    }}>
+      {/* Sutil halo de luz en la esquina */}
+      <div style={{
+        position: "absolute",
+        right: "-20px",
+        top: "-20px",
+        width: "80px",
+        height: "80px",
+        borderRadius: "50%",
+        background: `${color}05`,
+        filter: "blur(15px)"
+      }} />
 
-      <p
-        style={{
-          color: "#9ca3af",
-          marginBottom: "12px",
-          fontSize: "14px",
-        }}
-      >
-        {title}
-      </p>
-
-      <h2
-        style={{
-          margin: 0,
-          color: "#fff",
-          fontSize: "30px",
+      <div style={{
+        fontSize: "22px",
+        background: "rgba(255,255,255,0.03)",
+        width: "48px",
+        height: "48px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "14px",
+        border: "1px solid rgba(255,255,255,0.03)",
+        zIndex: 1
+      }}>
+        {icon}
+      </div>
+      <div style={{ zIndex: 1 }}>
+        <p style={{ 
+          color: "#8e9196", 
+          margin: "0 0 4px 0", 
+          fontSize: "11px", 
+          fontWeight: "700", 
+          textTransform: "uppercase",
+          letterSpacing: "0.5px"
+        }}>
+          {title}
+        </p>
+        <h2 style={{ 
+          margin: 0, 
+          color: color, 
+          fontSize: "16px", 
           fontWeight: "800",
-        }}
-      >
-        {value}
-      </h2>
+          letterSpacing: "-0.2px"
+        }}>
+          {value}
+        </h2>
+      </div>
     </div>
   );
 }

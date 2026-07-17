@@ -15,196 +15,107 @@ export default function ActivityItem({
     <article
       style={{
         position: "relative",
-
         overflow: "hidden",
-
         display: "flex",
-
         alignItems: "flex-start",
-
-        gap: 20,
-
-        padding: 24,
-
-        borderRadius: 24,
-
-        background:
-          "linear-gradient(180deg,#181818,#141414)",
-
-        border:
-          "1px solid rgba(255,255,255,.06)",
-
-        transition: ".25s",
-
-        boxShadow:
-          "0 18px 45px rgba(0,0,0,.18)",
+        gap: 14,
+        padding: "12px 16px", // Compacto y optimizado para listas
+        borderRadius: 10,
+        background: "rgba(255, 255, 255, 0.01)",
+        border: "1px solid rgba(255, 255, 255, 0.03)",
+        transition: "all 0.2s ease",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform =
-          "translateY(-4px)";
-
-        e.currentTarget.style.boxShadow =
-          "0 28px 60px rgba(0,0,0,.28)";
+        e.currentTarget.style.background = "rgba(255, 255, 255, 0.02)";
+        e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.06)";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform =
-          "translateY(0px)";
-
-        e.currentTarget.style.boxShadow =
-          "0 18px 45px rgba(0,0,0,.18)";
+        e.currentTarget.style.background = "rgba(255, 255, 255, 0.01)";
+        e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.03)";
       }}
     >
-      {/* Timeline */}
-
+      {/* Indicador de Timeline Miniaturizado */}
       <div
         style={{
           display: "flex",
-
           flexDirection: "column",
-
           alignItems: "center",
-
+          alignSelf: "stretch", // Hace que la línea vertical ocupe todo el alto real
           flexShrink: 0,
+          paddingTop: 5,
         }}
       >
         <div
           style={{
-            width: 14,
-
-            height: 14,
-
+            width: 6, // Burbuja diminuta y elegante
+            height: 6,
             borderRadius: "50%",
-
             background: "#f97316",
-
-            boxShadow:
-              "0 0 16px rgba(249,115,22,.9)",
+            boxShadow: "0 0 6px rgba(249, 115, 22, 0.6)",
           }}
         />
-
         <div
           style={{
-            width: 2,
-
+            width: 1,
             flex: 1,
-
-            minHeight: 70,
-
-            marginTop: 10,
-
-            background:
-              "linear-gradient(#f97316,transparent)",
+            marginTop: 6,
+            background: "linear-gradient(rgba(249, 115, 22, 0.15), transparent)",
           }}
         />
       </div>
 
-      {/* Información */}
-
+      {/* Información principal */}
       <div
         style={{
           flex: 1,
-
           minWidth: 0,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 16,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-
-            justifyContent: "space-between",
-
-            alignItems: "flex-start",
-
-            gap: 20,
-
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <h3
-              style={{
-                margin: 0,
-
-                color: "#fff",
-
-                fontSize: 20,
-
-                fontWeight: 700,
-              }}
-            >
-              {title}
-            </h3>
-
-            <p
-              style={{
-                marginTop: 10,
-
-                marginBottom: 0,
-
-                color: "#9b9b9b",
-
-                lineHeight: 1.8,
-
-                fontSize: 15,
-              }}
-            >
-              {description}
-            </p>
-          </div>
-
-          <div
+        <div style={{ minWidth: 0 }}>
+          <h5
             style={{
-              padding: "8px 14px",
-
-              borderRadius: 999,
-
-              background:
-                "rgba(249,115,22,.12)",
-
-              border:
-                "1px solid rgba(249,115,22,.22)",
-
-              color: "#f97316",
-
-              fontWeight: 700,
-
+              margin: 0,
+              color: "#fff",
               fontSize: 13,
-
-              whiteSpace: "nowrap",
+              fontWeight: 600,
+              lineHeight: 1.3,
             }}
           >
-            {time}
-          </div>
+            {title}
+          </h5>
+
+          <p
+            style={{
+              marginTop: 2,
+              marginBottom: 0,
+              color: "#808080",
+              lineHeight: 1.4,
+              fontSize: 12,
+            }}
+          >
+            {description}
+          </p>
         </div>
 
-        {/* Barra */}
-
+        {/* Timestamp sutil tipo badge */}
         <div
           style={{
-            marginTop: 22,
-
-            height: 4,
-
-            borderRadius: 999,
-
-            overflow: "hidden",
-
-            background:
-              "rgba(255,255,255,.05)",
+            padding: "2px 6px",
+            borderRadius: 4,
+            background: "rgba(249, 115, 22, 0.05)",
+            border: "1px solid rgba(249, 115, 22, 0.12)",
+            color: "#f97316",
+            fontWeight: 600,
+            fontSize: 10,
+            whiteSpace: "nowrap",
+            flexShrink: 0,
           }}
         >
-          <div
-            style={{
-              width: "100%",
-
-              height: "100%",
-
-              borderRadius: 999,
-
-              background:
-                "linear-gradient(90deg,#f97316,transparent)",
-            }}
-          />
+          {time}
         </div>
       </div>
     </article>

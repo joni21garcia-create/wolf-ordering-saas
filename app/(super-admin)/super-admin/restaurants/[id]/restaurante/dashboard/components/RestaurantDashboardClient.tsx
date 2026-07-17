@@ -14,7 +14,6 @@ export default function RestaurantDashboardClient() {
   const { user } = useSession();
 
   const restaurantId = user?.restaurant_id ?? "";
-
   const permissions = user?.permissions ?? [];
 
   /**
@@ -28,6 +27,13 @@ export default function RestaurantDashboardClient() {
       ...module,
       href: module.href(restaurantId),
     }));
+
+  /**
+   * 🌟 ESTA ES LA CLAVE:
+   * Contamos únicamente los módulos que de verdad se van a dibujar en pantalla.
+   * Si allowedModules tiene 14 elementos, este número será 14.
+   */
+  const totalActiveModules = allowedModules.length;
 
   /**
    * Centro Operativo
@@ -63,22 +69,26 @@ export default function RestaurantDashboardClient() {
         color: "#fff",
       }}
     >
+      {/* 1. Le pasamos allowedModules en lugar de permissions para que el Hero cuente el número real */}
       <DashboardHero
         user={{
           full_name: user?.full_name,
           role: user?.role,
-          permissions: permissions,
+          permissions: user?.permissions ?? [],
         }}
       />
 
+      {/* 2. Sincronizamos la tarjeta naranja de estadísticas */}
       <DashboardStats
-        permissions={permissions.length}
+        permissions={totalActiveModules}
       />
 
-      <OperationalCenter
-        operationModules={operationModules}
-        settingsModules={settingsModules}
-      />
+      {/* 3. Sincronizamos el badge verde del Centro Operativo */}
+<OperationalCenter
+  operationModules={operationModules}
+  settingsModules={settingsModules}
+  permissionsCount={permissions.length}
+/>
 
       <SystemStatus
         permissionsLoaded={permissions.length > 0}

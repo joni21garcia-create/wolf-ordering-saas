@@ -23,11 +23,9 @@ interface DashboardStats {
 
 export default function SuperAdminDashboardClient() {
   const { user } = useSession();
-
   const permissions = user?.permissions ?? [];
 
   const [loading, setLoading] = useState(true);
-
   const [stats, setStats] = useState<DashboardStats>({
     restaurants: 0,
     users: 0,
@@ -62,7 +60,7 @@ export default function SuperAdminDashboardClient() {
           }),
 
         supabase
-          .from("legal_agreements")
+          .from("restaurant_legal_acceptance")
           .select("id", {
             count: "exact",
             head: true,
@@ -77,28 +75,19 @@ export default function SuperAdminDashboardClient() {
       ]);
 
       setStats({
-        restaurants:
-          restaurants.count ?? 0,
-
-        users:
-          users.count ?? 0,
-
-        legal:
-          legal.count ?? 0,
-
-        liquidations:
-          liquidations.count ?? 0,
+        restaurants: restaurants.count ?? 0,
+        users: users.count ?? 0,
+        legal: legal.count ?? 0,
+        liquidations: liquidations.count ?? 0,
       });
     } catch (error) {
-      console.error(
-        "Dashboard Error",
-        error
-      );
+      console.error("Dashboard Error", error);
     } finally {
       setLoading(false);
     }
   }
 
+  // Filtrado optimizado de módulos
   const allowedModules = useMemo(
     () =>
       dashboardModules.filter((module) =>
@@ -110,9 +99,7 @@ export default function SuperAdminDashboardClient() {
   const operationModules = useMemo(
     () =>
       allowedModules.filter(
-        (module) =>
-          module.category ===
-          "operation"
+        (module) => module.category === "operation"
       ),
     [allowedModules]
   );
@@ -120,9 +107,7 @@ export default function SuperAdminDashboardClient() {
   const settingsModules = useMemo(
     () =>
       allowedModules.filter(
-        (module) =>
-          module.category ===
-          "settings"
+        (module) => module.category === "settings"
       ),
     [allowedModules]
   );
@@ -130,61 +115,50 @@ export default function SuperAdminDashboardClient() {
   return (
     <main
       style={{
-        maxWidth: 1700,
+        maxWidth: 1400,
         margin: "0 auto",
         minHeight: "100vh",
-        padding:
-          "clamp(20px,4vw,42px)",
+        padding: "24px 20px",
         color: "#fff",
+        display: "flex",
+        flexDirection: "column",
+        gap: 32,
       }}
     >
-<SuperHero
-  user={{
-    full_name: user?.full_name,
-    role: user?.role,
-  }}
-  stats={{
-    restaurants: stats.restaurants,
-    users: stats.users,
-    legal: stats.legal,
-  }}
-/>
+      <SuperHero
+        user={{
+          full_name: user?.full_name,
+          role: user?.role,
+        }}
+        stats={{
+          restaurants: stats.restaurants,
+          users: stats.users,
+          legal: stats.legal,
+        }}
+      />
 
       <ExecutiveStats
-        permissions={
-          permissions.length
-        }
-        restaurants={
-          stats.restaurants
-        }
+        permissions={allowedModules.length}
+        restaurants={stats.restaurants}
         users={stats.users}
         legal={stats.legal}
-        liquidations={
-          stats.liquidations
-        }
+        liquidations={stats.liquidations}
         loading={loading}
       />
 
       <ExecutiveCenter
-        operationModules={
-          operationModules
-        }
-        settingsModules={
-          settingsModules
-        }
+        operationModules={operationModules}
+        settingsModules={settingsModules}
       />
 
       <QuickOverview
-        stats={stats}
-      />
+       stats={stats}
+       totalModules={permissions.length}
+       />
 
-<PlatformStatus
-  stats={stats}
-/>
+      <PlatformStatus stats={stats} />
 
-<PlatformActivity
-  stats={stats}
-/>
+      <PlatformActivity stats={stats} />
     </main>
   );
 }

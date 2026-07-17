@@ -1,16 +1,11 @@
 "use client";
 
 import SettingsModuleCard from "./SettingsModuleCard";
-
-import type {
-  SettingsModule,
-} from "./types";
+import type { SettingsModule } from "./types";
 
 interface Props {
   modules: SettingsModule[];
-
   search: string;
-
   category: string;
 }
 
@@ -19,47 +14,30 @@ export default function SettingsGrid({
   search,
   category,
 }: Props) {
-  const term =
-    search.trim().toLowerCase();
+  const term = search.trim().toLowerCase();
 
-  const filtered =
-    modules.filter((module) => {
-      const matchesCategory =
-        category === "Todos" ||
-        module.category === category;
+  const filtered = modules.filter((module) => {
+    const matchesCategory =
+      category === "Todos" ||
+      module.category === category;
 
-      const matchesSearch =
-        term.length === 0 ||
-        module.title
-          .toLowerCase()
-          .includes(term) ||
-        module.description
-          .toLowerCase()
-          .includes(term) ||
-        module.category
-          .toLowerCase()
-          .includes(term);
+    const matchesSearch =
+      term.length === 0 ||
+      module.title.toLowerCase().includes(term) ||
+      module.description.toLowerCase().includes(term) ||
+      module.category.toLowerCase().includes(term);
 
-      return (
-        matchesCategory &&
-        matchesSearch
-      );
-    });
+    return matchesCategory && matchesSearch;
+  });
 
   if (filtered.length === 0) {
     return (
       <section
         style={{
-          background:
-            "linear-gradient(180deg,#151515,#0b0b0b)",
-
-          border:
-            "1px solid rgba(255,255,255,.07)",
-
+          background: "linear-gradient(180deg,#151515,#0b0b0b)",
+          border: "1px solid rgba(255,255,255,.07)",
           borderRadius: 28,
-
           padding: "70px 30px",
-
           textAlign: "center",
         }}
       >
@@ -93,9 +71,7 @@ export default function SettingsGrid({
             marginInline: "auto",
           }}
         >
-          Prueba con otro término de
-          búsqueda o selecciona una
-          categoría diferente.
+          Prueba con otro término de búsqueda o selecciona una categoría diferente.
         </p>
       </section>
     );
@@ -104,12 +80,9 @@ export default function SettingsGrid({
   return (
     <section
       style={{
-        display: "grid",
-
-        gridTemplateColumns:
-          "repeat(auto-fit,minmax(330px,1fr))",
-
-        gap: 24,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10, // Lista en filas compactas y ordenadas
       }}
     >
       {filtered.map((module) => (

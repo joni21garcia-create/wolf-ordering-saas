@@ -19,115 +19,90 @@ export default function RecentActivity({
   return (
     <section
       style={{
-        marginBottom: 50,
+        marginTop: 32,
+        marginBottom: 24,
+        paddingTop: 24,
+        borderTop: "1px solid rgba(255, 255, 255, 0.05)", // Línea divisoria elegante
       }}
     >
-      {/* Header */}
-
+      {/* Cabecera ultra-discreta en una sola línea */}
       <div
         style={{
           display: "flex",
-
           justifyContent: "space-between",
-
           alignItems: "center",
-
-          flexWrap: "wrap",
-
-          gap: 20,
-
-          marginBottom: 24,
+          marginBottom: 16,
         }}
       >
         <div>
-          <h2
+          <h4
             style={{
               margin: 0,
-
               color: "#fff",
-
-              fontSize: "clamp(28px,4vw,36px)",
-
-              fontWeight: 800,
+              fontSize: 13,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.8px",
             }}
           >
-            Actividad reciente
-          </h2>
-
+            Actividad Reciente
+          </h4>
           <p
             style={{
-              marginTop: 10,
-
-              color: "#8f8f8f",
-
-              lineHeight: 1.8,
-
-              maxWidth: 700,
+              margin: "2px 0 0 0",
+              color: "#606060",
+              fontSize: 11,
             }}
           >
-            Últimos cambios realizados dentro del
-            restaurante.
+            Últimos eventos registrados en el restaurante
           </p>
         </div>
 
+        {/* Contador premium y minimalista */}
         <div
           style={{
-            padding: "10px 18px",
-
-            borderRadius: 999,
-
-            background:
-              "rgba(255,255,255,.04)",
-
-            border:
-              "1px solid rgba(255,255,255,.08)",
-
-            color: "#bdbdbd",
-
-            fontWeight: 700,
-
-            fontSize: 14,
+            fontSize: 11,
+            color: "#808080",
+            fontWeight: 600,
+            background: "rgba(255, 255, 255, 0.02)",
+            border: "1px solid rgba(255, 255, 255, 0.05)",
+            padding: "4px 10px",
+            borderRadius: 6,
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
           }}
         >
-          {activities.length} registros
+          {activities.length} {activities.length === 1 ? "registro" : "registros"}
         </div>
       </div>
 
+      {/* Contenido principal */}
       {activities.length === 0 ? (
         <div
           style={{
-            padding: 50,
-
+            padding: "24px",
             textAlign: "center",
-
-            borderRadius: 26,
-
-            background:
-              "linear-gradient(180deg,#181818,#141414)",
-
-            border:
-              "1px solid rgba(255,255,255,.06)",
-
-            color: "#909090",
+            borderRadius: 10,
+            background: "rgba(255, 255, 255, 0.01)",
+            border: "1px solid rgba(255, 255, 255, 0.03)",
+            color: "#606060",
+            fontSize: 12,
           }}
         >
-          Todavía no existen actividades para mostrar.
+          Sin actividades recientes para mostrar.
         </div>
       ) : (
         <div
           style={{
             display: "grid",
-
-            gap: 18,
+            gap: 10, // Separación apretada y limpia a juego con el resto del panel
           }}
         >
           {activities.map((activity) => (
             <ActivityItem
               key={activity.id}
               title={activity.title}
-              description={
-                activity.description
-              }
+              description={activity.description}
               time={activity.time}
             />
           ))}

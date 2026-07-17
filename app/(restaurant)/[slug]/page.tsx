@@ -19,7 +19,6 @@ interface Props {
   }>;
 }
 
-
 /*
 |--------------------------------------------------------------------------
 | Página del restaurante
@@ -31,8 +30,9 @@ export default async function RestaurantPage({
 }: Props) {
   const { slug } = await params;
 
-  const restaurant =
-    await getRestaurant(slug);
+  // Asegúrate de que getRestaurant incluya el filtro .eq("active", true) 
+  // para que retorne null si el restaurante ha sido desactivado.
+  const restaurant = await getRestaurant(slug);
 
   if (!restaurant) {
     return (
@@ -43,17 +43,26 @@ export default async function RestaurantPage({
           justifyContent: "center",
           alignItems: "center",
           color: "#fff",
+          background: "#121212",
+          fontFamily: "system-ui, sans-serif",
+          textAlign: "center",
+          padding: "0 20px",
         }}
       >
-        <h1>
-          Restaurante no encontrado
-        </h1>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
+            Restaurante no disponible
+          </h1>
+          <p style={{ color: "#8f8f8f", fontSize: 14 }}>
+            Este establecimiento se encuentra inactivo temporalmente o no existe.
+          </p>
+        </div>
       </main>
     );
   }
 
-return (
-  <>
+  return (
+    <>
       <ClientPushLoader
         restaurantId={restaurant.id}
       />
@@ -97,7 +106,6 @@ return (
       <Footer
         restaurant={restaurant}
       />
-
     </>
   );
 }

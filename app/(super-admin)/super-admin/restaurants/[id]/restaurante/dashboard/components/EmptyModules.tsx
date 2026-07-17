@@ -7,193 +7,122 @@ export default function EmptyModules() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-
-        minHeight: 500,
-
+        minHeight: "60vh", // Más adaptable en lugar de un minHeight fijo tan alto
         padding: "40px 20px",
       }}
     >
       <div
         style={{
           width: "100%",
-          maxWidth: 650,
-
+          maxWidth: 500, // Reducido de 650 para un enfoque más elegante
           textAlign: "center",
-
-          borderRadius: 30,
-
-          padding: "60px 40px",
-
-          background:
-            "linear-gradient(180deg,#181818,#131313)",
-
-          border:
-            "1px solid rgba(255,255,255,.06)",
-
-          boxShadow:
-            "0 25px 60px rgba(0,0,0,.22)",
-
+          borderRadius: 20, // Bordes más modernos y menos exagerados
+          padding: "40px 32px", // Espaciado interno más balanceado
+          background: "linear-gradient(180deg, #141414, #0d0d0d)",
+          border: "1px solid rgba(255, 255, 255, 0.05)",
+          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.3)",
           position: "relative",
-
           overflow: "hidden",
         }}
       >
-        {/* Glow */}
-
+        {/* Glow naranja de advertencia muy sutil */}
         <div
           style={{
             position: "absolute",
-
-            top: -120,
-
-            right: -120,
-
-            width: 260,
-
-            height: 260,
-
+            top: -60,
+            right: -60,
+            width: 160,
+            height: 160,
             borderRadius: "50%",
-
-            background:
-              "radial-gradient(circle,rgba(249,115,22,.18),transparent 70%)",
-
+            background: "radial-gradient(circle, rgba(249, 115, 22, 0.08), transparent 70%)",
             pointerEvents: "none",
           }}
         />
 
-        {/* Icono */}
-
+        {/* Icono de candado compacto */}
         <div
           style={{
-            width: 120,
-
-            height: 120,
-
-            margin: "0 auto 30px",
-
+            width: 72,
+            height: 72,
+            margin: "0 auto 20px",
             borderRadius: "50%",
-
             display: "flex",
-
             justifyContent: "center",
-
             alignItems: "center",
-
-            fontSize: 52,
-
-            background:
-              "linear-gradient(135deg,#ff8a1f20,#ff620020)",
-
-            border:
-              "1px solid rgba(249,115,22,.20)",
-
+            fontSize: 28,
+            background: "rgba(249, 115, 22, 0.05)",
+            border: "1px solid rgba(249, 115, 22, 0.15)",
             position: "relative",
-
             zIndex: 2,
           }}
         >
           🔒
         </div>
 
-        {/* Título */}
-
+        {/* Título en tamaño refinado */}
         <h2
           style={{
             margin: 0,
-
             color: "#fff",
-
-            fontWeight: 800,
-
-            fontSize: "clamp(30px,4vw,42px)",
-
+            fontWeight: 700,
+            fontSize: 20, // Antes era hasta 42px. Ahora es súper limpio.
+            letterSpacing: "-0.3px",
             position: "relative",
-
             zIndex: 2,
           }}
         >
-          No tienes módulos disponibles
+          Módulos no disponibles
         </h2>
 
-        {/* Descripción */}
-
+        {/* Descripción compacta */}
         <p
           style={{
-            marginTop: 18,
-
-            marginBottom: 36,
-
-            color: "#9b9b9b",
-
-            lineHeight: 1.9,
-
-            fontSize: 16,
-
-            maxWidth: 520,
-
+            marginTop: 12,
+            marginBottom: 24,
+            color: "#808080",
+            lineHeight: 1.6,
+            fontSize: 13,
+            maxWidth: 400,
             marginInline: "auto",
-
             position: "relative",
-
             zIndex: 2,
           }}
         >
-          Tu cuenta todavía no tiene permisos
-          asignados para acceder a los módulos del
-          sistema.
-
-          <br />
-
-          Solicita al administrador del restaurante
-          que habilite los accesos correspondientes
-          para continuar.
+          Tu cuenta aún no cuenta con permisos asignados para acceder a las herramientas del sistema. 
+          <span style={{ display: "block", marginTop: 8, color: "#606060" }}>
+            Por favor, solicita al administrador del restaurante que habilite tus accesos para poder ingresar.
+          </span>
         </p>
 
-        {/* Estado */}
-
+        {/* Badge de estado en formato micro */}
         <div
           style={{
             display: "inline-flex",
-
             alignItems: "center",
-
-            gap: 12,
-
-            padding: "12px 22px",
-
+            gap: 8,
+            padding: "6px 14px",
             borderRadius: 999,
-
-            background:
-              "rgba(239,68,68,.10)",
-
-            border:
-              "1px solid rgba(239,68,68,.18)",
-
+            background: "rgba(239, 68, 68, 0.05)",
+            border: "1px solid rgba(239, 68, 68, 0.15)",
             color: "#ef4444",
-
-            fontWeight: 700,
-
+            fontWeight: 600,
+            fontSize: 11,
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
             position: "relative",
-
             zIndex: 2,
           }}
         >
           <span
             style={{
-              width: 10,
-
-              height: 10,
-
+              width: 5,
+              height: 5,
               borderRadius: "50%",
-
               background: "#ef4444",
-
-              boxShadow:
-                "0 0 12px #ef4444",
+              boxShadow: "0 0 6px #ef4444",
             }}
           />
-
-          Sin permisos asignados
+          Acceso Restringido
         </div>
       </div>
     </section>

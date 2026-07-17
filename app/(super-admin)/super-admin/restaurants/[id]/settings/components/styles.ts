@@ -11,74 +11,56 @@ export const containerStyle: React.CSSProperties = {
   maxWidth: 1700,
   margin: "0 auto",
   padding: "42px 30px 60px",
+  boxSizing: "border-box",
 };
 
 export const cardStyle: React.CSSProperties = {
   background:
-    "linear-gradient(180deg,#141414,#0b0b0b)",
-
+    "linear-gradient(180deg,#171717,#0b0b0b)",
   border:
-    "1px solid rgba(255,255,255,.07)",
-
-  borderRadius: 28,
-
+    "1px solid rgba(255,255,255,.06)",
+  borderRadius: 24,
   boxShadow:
-    "0 20px 60px rgba(0,0,0,.35)",
+    "0 15px 35px rgba(0,0,0,.15)",
+  boxSizing: "border-box",
 };
 
 export const sectionTitle: React.CSSProperties = {
   color: "#fff",
-
-  fontSize: 34,
-
-  fontWeight: 800,
-
+  fontSize: "clamp(26px, 4vw, 34px)",
+  fontWeight: 900,
+  letterSpacing: "-0.5px",
   margin: 0,
 };
 
 export const sectionSubtitle: React.CSSProperties = {
-  color: "#8f8f95",
-
+  color: "#8b8b95",
   marginTop: 8,
-
-  fontSize: 15,
-
+  fontSize: 14,
   lineHeight: 1.6,
 };
 
 export const orangeButton: React.CSSProperties = {
   background: "#f97316",
-
   color: "#fff",
-
   border: "none",
-
-  borderRadius: 14,
-
+  borderRadius: 16,
   padding: "14px 22px",
-
   cursor: "pointer",
-
   fontWeight: 700,
-
-  transition: ".25s",
+  fontSize: 14,
+  transition: "transform 0.2s ease, background-color 0.2s ease",
 };
 
 export const darkButton: React.CSSProperties = {
-  background: "#121212",
-
+  background: "#171717",
   color: "#fff",
-
   border:
-    "1px solid rgba(255,255,255,.08)",
-
-  borderRadius: 14,
-
+    "1px solid rgba(255,255,255,.06)",
+  borderRadius: 16,
   padding: "14px 22px",
-
   cursor: "pointer",
-
   fontWeight: 700,
-
-  transition: ".25s",
+  fontSize: 14,
+  transition: "transform 0.2s ease, border-color 0.2s ease",
 };

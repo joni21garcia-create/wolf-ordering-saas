@@ -2,7 +2,7 @@
 
 type Props = {
   title: string;
-  value: string;
+  value: string | number;
   subtitle: string;
   icon: string;
   color: string;
@@ -19,241 +19,98 @@ export default function DashboardStatCard({
     <article
       style={{
         position: "relative",
-
         overflow: "hidden",
-
-        borderRadius: 26,
-
-        background:
-          "linear-gradient(180deg,#181818,#131313)",
-
-        border:
-          "1px solid rgba(255,255,255,.06)",
-
-        padding: 26,
-
-        transition: ".25s ease",
-
-        boxShadow:
-          "0 18px 45px rgba(0,0,0,.18)",
+        borderRadius: 12,
+        background: "linear-gradient(180deg, #161616, #0f0f0f)",
+        border: "1px solid rgba(255, 255, 255, .04)",
+        padding: "12px 16px", // Mucho más compacto
+        transition: "all .2s ease",
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform =
-          "translateY(-6px)";
-
-        e.currentTarget.style.boxShadow =
-          "0 30px 70px rgba(0,0,0,.28)";
+        e.currentTarget.style.borderColor = "rgba(255, 255, 255, .08)";
+        e.currentTarget.style.transform = "translateY(-2px)";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform =
-          "translateY(0px)";
-
-        e.currentTarget.style.boxShadow =
-          "0 18px 45px rgba(0,0,0,.18)";
+        e.currentTarget.style.borderColor = "rgba(255, 255, 255, .04)";
+        e.currentTarget.style.transform = "translateY(0px)";
       }}
     >
-      {/* Glow */}
-
+      {/* Sutil brillo de fondo */}
       <div
         style={{
           position: "absolute",
-
-          top: -45,
-
-          right: -45,
-
-          width: 120,
-
-          height: 120,
-
+          top: -20,
+          right: -20,
+          width: 60,
+          height: 60,
           borderRadius: "50%",
-
-          background: `${color}20`,
-
-          filter: "blur(24px)",
+          background: `${color}10`,
+          filter: "blur(15px)",
+          pointerEvents: "none",
         }}
       />
 
-      {/* Icono */}
-
+      {/* Icono compacto */}
       <div
         style={{
-          width: 60,
-
-          height: 60,
-
-          borderRadius: 18,
-
+          width: 36,
+          height: 36,
+          borderRadius: 8,
           display: "flex",
-
           justifyContent: "center",
-
           alignItems: "center",
-
-          fontSize: 28,
-
-          background:
-            "rgba(255,255,255,.05)",
-
-          border:
-            "1px solid rgba(255,255,255,.08)",
-
-          marginBottom: 22,
+          fontSize: 16,
+          background: "rgba(255, 255, 255, .03)",
+          border: "1px solid rgba(255, 255, 255, .05)",
+          color,
+          flexShrink: 0,
         }}
       >
         {icon}
       </div>
 
-      {/* Contenido */}
-
-      <div
-        style={{
-          position: "relative",
-
-          zIndex: 2,
-        }}
-      >
-        <div
+      {/* Textos ordenados para no ocupar espacio vertical */}
+      <div style={{ flexGrow: 1, minWidth: 0 }}>
+        <span
           style={{
-            color: "#909090",
-
-            fontSize: 13,
-
+            color: "#606060",
+            fontSize: 9,
             textTransform: "uppercase",
-
-            letterSpacing: ".5px",
-
-            marginBottom: 8,
-
-            fontWeight: 600,
+            letterSpacing: "0.5px",
+            fontWeight: 800,
+            display: "block",
+            marginBottom: 2,
           }}
         >
           {title}
-        </div>
-
-        <div
-          style={{
-            color,
-
-            fontWeight: 800,
-
-            fontSize: "clamp(28px,4vw,42px)",
-
-            lineHeight: 1,
-          }}
-        >
-          {value}
-        </div>
-                  <div
-            style={{
-              marginTop: 14,
-
-              color: "#9b9b9b",
-
-              fontSize: 14,
-
-              lineHeight: 1.7,
-
-              minHeight: 48,
-            }}
-          >
-            {subtitle}
-          </div>
-        </div>
-
-        {/* Barra inferior */}
-
-        <div
-          style={{
-            marginTop: 26,
-
-            width: "100%",
-
-            height: 5,
-
-            borderRadius: 999,
-
-            overflow: "hidden",
-
-            background:
-              "rgba(255,255,255,.05)",
-          }}
-        >
-          <div
-            style={{
-              width: "100%",
-
-              height: "100%",
-
-              background: `linear-gradient(90deg,${color},transparent)`,
-
-              borderRadius: 999,
-            }}
-          />
-        </div>
-
-        {/* Indicador */}
-
-        <div
-          style={{
-            marginTop: 18,
-
-            display: "flex",
-
-            justifyContent:
-              "space-between",
-
-            alignItems: "center",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-
-              alignItems: "center",
-
-              gap: 8,
-            }}
-          >
-            <span
-              style={{
-                width: 9,
-
-                height: 9,
-
-                borderRadius: "50%",
-
-                background: color,
-
-                boxShadow: `0 0 12px ${color}`,
-              }}
-            />
-
-            <span
-              style={{
-                color: "#7f7f7f",
-
-                fontSize: 13,
-
-                fontWeight: 600,
-              }}
-            >
-              Actualizado ahora
-            </span>
-          </div>
-
+        </span>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
           <span
             style={{
-              color,
-
-              fontSize: 18,
-
+              color: "#fff", // Blanco para un look más integrado y menos "chillón"
               fontWeight: 700,
+              fontSize: 18, // Mucho más discreto
+              lineHeight: 1,
             }}
           >
-            →
+            {value}
+          </span>
+          <span
+            style={{
+              color: "#808080",
+              fontSize: 11,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            • {subtitle}
           </span>
         </div>
+      </div>
     </article>
   );
 }

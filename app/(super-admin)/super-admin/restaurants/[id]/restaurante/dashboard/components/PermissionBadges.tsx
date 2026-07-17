@@ -2,7 +2,7 @@
 
 type Props = {
   role?: string;
-  permissions?: number;
+  permissions?: number; // Sigue siendo un número limpio
 };
 
 export default function PermissionBadges({
@@ -14,7 +14,7 @@ export default function PermissionBadges({
       style={{
         display: "flex",
         flexWrap: "wrap",
-        gap: 14,
+        gap: 8, // Separación más unificada y elegante
       }}
     >
       <Badge
@@ -46,49 +46,34 @@ function Badge({
     <div
       style={{
         display: "inline-flex",
-
         alignItems: "center",
-
         justifyContent: "center",
-
-        gap: 10,
-
-        padding: "10px 18px",
-
+        gap: 6, // Gap ajustado
+        padding: "4px 10px", // Reducción premium de tamaño (antes era 10px 18px)
         borderRadius: 999,
-
-        background: `${color}18`,
-
-        border: `1px solid ${color}35`,
-
-        backdropFilter: "blur(12px)",
-
+        background: `${color}08`, // Menos opacidad de fondo para mayor elegancia
+        border: `1px solid ${color}20`, // Borde ultra sutil
+        backdropFilter: "blur(8px)",
         whiteSpace: "nowrap",
-
-        transition: ".25s",
+        transition: "all 0.2s ease",
       }}
     >
       <span
         style={{
-          width: 10,
-
-          height: 10,
-
+          width: 6, // Burbuja más pequeña y delicada (antes 10)
+          height: 6,
           borderRadius: "50%",
-
           background: color,
-
-          boxShadow: `0 0 12px ${color}`,
+          boxShadow: `0 0 6px ${color}`,
         }}
       />
 
       <span
         style={{
           color,
-
-          fontWeight: 700,
-
-          fontSize: 14,
+          fontWeight: 600,
+          fontSize: 11, // Fuente reducida de 14 a 11 para un look "pro"
+          letterSpacing: "0.3px",
         }}
       >
         {text}
