@@ -93,7 +93,7 @@ export default function Hero({
     return `${formattedHours}:${minutesStr} ${ampm}`;
   };
 
-  // Cálculo del estado en tiempo real (Abierto, Cerrado, Abre Mañana, Cierra Pronto)
+  // Cálculo del estado en tiempo real (Abierto, Cerrado, Abre Hoy, Abre Mañana, Cierra Pronto)
   useEffect(() => {
     const checkScheduleAndStatus = () => {
       const now = new Date();
@@ -110,9 +110,9 @@ export default function Hero({
 
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-      // Verificar si hoy abre y si la hora actual está dentro del rango
       let openToday = false;
       let closingSoon = false;
+      let opensLaterToday = false;
 
       if (todayOpen && todayClose) {
         const openMin = timeToMinutes(todayOpen);
@@ -128,6 +128,9 @@ export default function Hero({
           if (minutesToClose <= TIEMPO_AVISO_MINUTOS) {
             closingSoon = true;
           }
+        } else if (currentMinutes < openMin) {
+          // El restaurante aún no abre hoy, pero abrirá más tarde
+          opensLaterToday = true;
         }
       }
 
@@ -151,7 +154,17 @@ export default function Hero({
           );
         }
       } 
-      // 2. Caso: El restaurante está cerrado hoy. Mostramos cuándo abre mañana.
+      // 2. Caso: Está cerrado, pero abre más tarde hoy
+      else if (opensLaterToday && todayOpen) {
+        setIsOpenNow(false);
+        setIsClosingSoon(false);
+        setStatusText(
+          <>
+            Abre hoy a las <span style={{ fontWeight: "700", color: "#ffffff" }}>{format12h(todayOpen)}</span>
+          </>
+        );
+      }
+      // 3. Caso: Ya cerró hoy o no abre hoy. Mostramos cuándo abre mañana.
       else {
         setIsOpenNow(false);
         setIsClosingSoon(false);
@@ -288,14 +301,14 @@ export default function Hero({
               borderRadius: "100px",
               background: isOpenNow 
                 ? isClosingSoon
-                  ? "linear-gradient(135deg, rgba(250,204,21,0.12) 0%, rgba(250,204,21,0.04) 100%)" // Fondo Amarillo para advertencia de cierre
-                  : "linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.04) 100%)" // Fondo Verde
-                : "linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(239,68,68,0.04) 100%)", // Fondo Rojo
+                  ? "linear-gradient(135deg, rgba(250,204,21,0.12) 0%, rgba(250,204,21,0.04) 100%)" 
+                  : "linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.04) 100%)" 
+                : "linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(239,68,68,0.04) 100%)", 
               border: isOpenNow 
                 ? isClosingSoon
-                  ? "1px solid rgba(250,204,21,0.4)" // Borde Amarillo
-                  : "1px solid rgba(34,197,94,0.3)" // Borde Verde
-                : "1px solid rgba(239,68,68,0.3)", // Borde Rojo
+                  ? "1px solid rgba(250,204,21,0.4)" 
+                  : "1px solid rgba(34,197,94,0.3)" 
+                : "1px solid rgba(239,68,68,0.3)", 
               boxShadow: isOpenNow
                 ? isClosingSoon
                   ? "0 8px 32px 0 rgba(250,204,21, 0.08), inset 0 1px 1px rgba(255,255,255,0.05)"
@@ -361,6 +374,7 @@ export default function Hero({
             <span style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "13px", fontWeight: "500" }}>
               {statusText}
             </span>
+
           </div>
 
           <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
