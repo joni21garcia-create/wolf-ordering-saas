@@ -40,13 +40,13 @@ export default function Menu({ restaurant }: Props) {
 
   const scrollLeft = () => {
     if (sliderRef.current) {
-      sliderRef.current.scrollBy({ left: -380, behavior: "smooth" });
+      sliderRef.current.scrollBy({ left: -230, behavior: "smooth" });
     }
   };
 
   const scrollRight = () => {
     if (sliderRef.current) {
-      sliderRef.current.scrollBy({ left: 380, behavior: "smooth" });
+      sliderRef.current.scrollBy({ left: 230, behavior: "smooth" });
     }
   };
 
@@ -56,7 +56,7 @@ export default function Menu({ restaurant }: Props) {
       style={{
         position: "relative",
         overflow: "hidden",
-        padding: "100px 24px",
+        padding: "60px 16px",
         background: "radial-gradient(circle at 50% 0%, #141414 0%, #080808 60%, #030303 100%)",
       }}
     >
@@ -64,11 +64,11 @@ export default function Menu({ restaurant }: Props) {
       <div
         style={{
           position: "absolute",
-          width: "600px",
-          height: "600px",
+          width: "450px",
+          height: "450px",
           background: theme.primary,
-          filter: "blur(220px)",
-          opacity: 0.1,
+          filter: "blur(180px)",
+          opacity: 0.07,
           top: "-100px",
           left: "-150px",
           pointerEvents: "none",
@@ -77,11 +77,11 @@ export default function Menu({ restaurant }: Props) {
       <div
         style={{
           position: "absolute",
-          width: "550px",
-          height: "550px",
+          width: "400px",
+          height: "400px",
           background: theme.secondary || theme.primary,
-          filter: "blur(200px)",
-          opacity: 0.06,
+          filter: "blur(160px)",
+          opacity: 0.04,
           bottom: "-100px",
           right: "-150px",
           pointerEvents: "none",
@@ -90,19 +90,19 @@ export default function Menu({ restaurant }: Props) {
 
       <div
         style={{
-          maxWidth: "1350px",
+          maxWidth: "1200px",
           margin: "0 auto",
           position: "relative",
           zIndex: 2,
         }}
       >
-        <div style={{ marginBottom: "40px", textAlign: "left" }}>
-          <span style={{ color: theme.primary, textTransform: "uppercase", letterSpacing: "3px", fontSize: "13px", fontWeight: "800", display: "block", marginBottom: "10px" }}>
+        <div style={{ marginBottom: "25px", textAlign: "left" }}>
+          <span style={{ color: theme.primary, textTransform: "uppercase", letterSpacing: "2.5px", fontSize: "11px", fontWeight: "800", display: "block", marginBottom: "6px" }}>
             Nuestra Selección
           </span>
           <h2
             style={{
-              fontSize: "clamp(2.5rem, 4vw, 4rem)",
+              fontSize: "clamp(1.8rem, 3vw, 2.8rem)",
               fontWeight: "800",
               color: "#ffffff",
               letterSpacing: "-1px",
@@ -122,13 +122,13 @@ export default function Menu({ restaurant }: Props) {
             background: "rgba(10, 10, 10, 0.85)", 
             backdropFilter: "blur(16px)", 
             WebkitBackdropFilter: "blur(16px)",
-            padding: "16px 4px", 
-            marginBottom: "50px", 
+            padding: "10px 4px", 
+            marginBottom: "30px", 
             borderBottom: "1px solid rgba(255,255,255,0.06)",
             boxShadow: "0 10px 30px rgba(0,0,0,0.5)"
           }}
         >
-          <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "4px", scrollbarWidth: "none" }}>
+          <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px", scrollbarWidth: "none" }}>
             {availableCategories.map((cat: any) => {
               const activeId = selectedCategory || availableCategories[0]?.id;
               const isSelected = activeId === cat.id;
@@ -139,16 +139,16 @@ export default function Menu({ restaurant }: Props) {
                   onClick={() => setSelectedCategory(cat.id)}
                   style={{
                     flexShrink: 0,
-                    padding: "14px 28px",
-                    borderRadius: "14px",
+                    padding: "8px 16px",
+                    borderRadius: "10px",
                     border: isSelected ? `1px solid ${theme.primary}` : "1px solid rgba(255,255,255,0.08)",
                     background: isSelected ? `${theme.primary}25` : "rgba(255,255,255,0.03)",
                     color: isSelected ? theme.primary : "#fff",
                     fontWeight: "700",
                     cursor: "pointer",
-                    fontSize: "15px",
+                    fontSize: "13px",
                     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                    boxShadow: isSelected ? `0 0 20px ${theme.primary}33` : "none"
+                    boxShadow: isSelected ? `0 0 12px ${theme.primary}33` : "none"
                   }}
                 >
                   {cat.name}
@@ -174,7 +174,7 @@ export default function Menu({ restaurant }: Props) {
 
           if (categoryProducts.length === 0) {
             return (
-              <div key={category.id} style={{ textAlign: "center", padding: "60px 0", color: "rgba(255,255,255,0.5)" }}>
+              <div key={category.id} style={{ textAlign: "center", padding: "40px 0", color: "rgba(255,255,255,0.5)", fontSize: "13px" }}>
                 No hay productos disponibles en esta categoría por el momento.
               </div>
             );
@@ -183,17 +183,17 @@ export default function Menu({ restaurant }: Props) {
           return (
             <motion.div
               key={category.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              style={{ marginBottom: "70px" }}
+              style={{ marginBottom: "40px" }}
             >
-              {/* Cabecera de Categoría y Flechas de Navegación (PC y Móvil) */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "35px", gap: "20px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "15px", flex: 1 }}>
+              {/* Cabecera de Categoría y Flechas de Navegación */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", gap: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
                   <h3
                     style={{
-                      fontSize: "32px",
+                      fontSize: "20px",
                       fontWeight: "800",
                       color: "#ffffff",
                       letterSpacing: "-0.5px",
@@ -207,17 +207,17 @@ export default function Menu({ restaurant }: Props) {
                 </div>
 
                 {/* Botones de Flecha Izquierda / Derecha */}
-                <div style={{ display: "flex", gap: "10px" }}>
+                <div style={{ display: "flex", gap: "6px" }}>
                   <button
                     onClick={scrollLeft}
                     style={{
-                      width: "45px",
-                      height: "45px",
+                      width: "34px",
+                      height: "34px",
                       borderRadius: "50%",
                       background: "rgba(255,255,255,0.05)",
                       border: "1px solid rgba(255,255,255,0.1)",
                       color: "#fff",
-                      fontSize: "18px",
+                      fontSize: "13px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -240,13 +240,13 @@ export default function Menu({ restaurant }: Props) {
                   <button
                     onClick={scrollRight}
                     style={{
-                      width: "45px",
-                      height: "45px",
+                      width: "34px",
+                      height: "34px",
                       borderRadius: "50%",
                       background: "rgba(255,255,255,0.05)",
                       border: "1px solid rgba(255,255,255,0.1)",
                       color: "#fff",
-                      fontSize: "18px",
+                      fontSize: "13px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -268,14 +268,14 @@ export default function Menu({ restaurant }: Props) {
                 </div>
               </div>
 
-              {/* FILA DE SCROLL HORIZONTAL CON REFERENCIA */}
+              {/* FILA DE SCROLL HORIZONTAL COMPACTA */}
               <div
                 ref={sliderRef}
                 style={{
                   display: "flex",
-                  gap: "32px",
+                  gap: "14px",
                   overflowX: "auto",
-                  paddingBottom: "20px",
+                  paddingBottom: "10px",
                   scrollbarWidth: "none",
                   WebkitOverflowScrolling: "touch",
                   scrollBehavior: "smooth",
@@ -288,17 +288,17 @@ export default function Menu({ restaurant }: Props) {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.4 }}
                     whileHover={{
-                      y: -8,
+                      y: -4,
                       borderColor: `${theme.primary}66`,
-                      boxShadow: `0 25px 50px rgba(0,0,0,0.7), 0 0 30px ${theme.primary}25`,
+                      boxShadow: `0 15px 30px rgba(0,0,0,0.6), 0 0 15px ${theme.primary}20`,
                     }}
                     style={{
-                      flex: "0 0 340px",
+                      flex: "0 0 210px", // Ancho mucho más compacto y estético
                       background: theme.cardStyle === "glass" ? "rgba(20,20,20,0.6)" : "#111111",
                       backdropFilter: "blur(20px)",
                       WebkitBackdropFilter: "blur(20px)",
                       border: "1px solid rgba(255,255,255,0.07)",
-                      borderRadius: "28px",
+                      borderRadius: "16px",
                       overflow: "hidden",
                       cursor: "pointer",
                       display: "flex",
@@ -307,8 +307,8 @@ export default function Menu({ restaurant }: Props) {
                       transition: "border-color 0.3s ease",
                     }}
                   >
-                    {/* IMAGEN GRANDE DESTACADA */}
-                    <div style={{ position: "relative", overflow: "hidden", height: "290px", background: "#000" }}>
+                    {/* IMAGEN COMPACTA */}
+                    <div style={{ position: "relative", overflow: "hidden", height: "130px", background: "#000" }}>
                       <motion.img
                         src={product.image_url}
                         alt={product.name}
@@ -321,19 +321,22 @@ export default function Menu({ restaurant }: Props) {
                           opacity: 0.95,
                         }}
                       />
-                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 65%, rgba(0,0,0,0.5))" }} />
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.5))" }} />
                     </div>
 
-                    {/* Contenido de la Tarjeta */}
-                    <div style={{ padding: "26px", display: "flex", flexDirection: "column", flex: 1, justifyContent: "space-between" }}>
+                    {/* CONTENIDO INTERNO */}
+                    <div style={{ padding: "12px", display: "flex", flexDirection: "column", flex: 1, justifyContent: "space-between" }}>
                       <div>
                         <h4
                           style={{
                             color: "#fff",
-                            fontSize: "22px",
+                            fontSize: "14px",
                             fontWeight: "700",
-                            marginBottom: "10px",
-                            letterSpacing: "-0.3px",
+                            marginBottom: "4px",
+                            letterSpacing: "-0.2px",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
                           }}
                         >
                           {product.name}
@@ -341,10 +344,10 @@ export default function Menu({ restaurant }: Props) {
 
                         <p
                           style={{
-                            color: "rgba(255,255,255,0.65)",
-                            fontSize: "14px",
-                            lineHeight: 1.6,
-                            marginBottom: "24px",
+                            color: "rgba(255,255,255,0.6)",
+                            fontSize: "11px",
+                            lineHeight: 1.4,
+                            marginBottom: "12px",
                             display: "-webkit-box",
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: "vertical",
@@ -355,11 +358,11 @@ export default function Menu({ restaurant }: Props) {
                         </p>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                        <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", fontWeight: "600", textTransform: "uppercase" }}>Precio</span>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "8px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                        <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)", fontWeight: "600", textTransform: "uppercase" }}>Precio</span>
                         <strong
                           style={{
-                            fontSize: "26px",
+                            fontSize: "16px",
                             fontWeight: "800",
                             color: theme.primary,
                             letterSpacing: "-0.5px",
