@@ -36,7 +36,6 @@ export default function SchedulePage() {
     .then(res => res.json())
     .then(data => {
       if (data.success && data.schedule) {
-        // Aseguramos que los valores nulos de la base de datos se manejen como strings vacíos en el estado
         const formattedSchedule = { ...schedule };
         Object.keys(schedule).forEach((key) => {
           formattedSchedule[key as keyof typeof schedule] = data.schedule[key] || "";
@@ -66,17 +65,14 @@ export default function SchedulePage() {
     }
   };
 
-  // Función para alternar entre Cerrado y Abierto (con valor por defecto)
   const toggleDayClosed = (key: string, isCurrentlyClosed: boolean) => {
     if (isCurrentlyClosed) {
-      // Si estaba cerrado y lo abren, ponemos un horario por defecto para que editen
       setSchedule({
         ...schedule,
         [`${key}_open`]: "08:30",
         [`${key}_close`]: "16:00"
       });
     } else {
-      // Si lo cierran, vaciamos los campos de la base de datos
       setSchedule({
         ...schedule,
         [`${key}_open`]: "",
@@ -87,15 +83,15 @@ export default function SchedulePage() {
 
   return (
     <PermissionGuard permission="schedule">
-      <main style={{ minHeight: "100vh", padding: "clamp(24px, 5vw, 50px)", background: "#060606", color: "#fff", fontFamily: "system-ui, sans-serif" }}>
+      <main style={{ minHeight: "100vh", padding: "clamp(16px, 4vw, 50px)", background: "#060606", color: "#fff", fontFamily: "system-ui, sans-serif", boxSizing: "border-box" }}>
         <div style={{ maxWidth: "750px", margin: "0 auto" }}>
           
-          <header style={{ marginBottom: "40px" }}>
+          <header style={{ marginBottom: "30px" }}>
             <BackToSettings restaurantId={restaurantId} />
-            <h1 style={{ fontSize: "clamp(32px, 5vw, 42px)", fontWeight: "900", margin: "16px 0 8px", letterSpacing: "-1px" }}>
+            <h1 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: "900", margin: "16px 0 8px", letterSpacing: "-1px" }}>
               Horarios de Atención
             </h1>
-            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", margin: 0 }}>
+            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "14px", margin: 0 }}>
               Define los bloques de apertura y cierre para los pedidos digitales de tu local.
             </p>
           </header>
@@ -110,13 +106,13 @@ export default function SchedulePage() {
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
               border: "1px solid rgba(255,255,255,0.06)", 
-              borderRadius: "28px", 
-              padding: "clamp(16px, 4vw, 32px)",
+              borderRadius: "24px", 
+              padding: "clamp(12px, 3vw, 28px)",
               boxShadow: "0 20px 40px rgba(0,0,0,0.3)"
             }}>
               
-              {/* Encabezado de Columnas adaptado */}
-              <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr", gap: "16px", marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid rgba(255,255,255,0.06)", opacity: 0.4, fontSize: "12px", fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase" }} className="hide-on-mobile">
+              {/* Encabezado de Columnas (Solo visible en pantallas medianas hacia arriba) */}
+              <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr 1fr 1fr", gap: "12px", marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid rgba(255,255,255,0.06)", opacity: 0.4, fontSize: "11px", fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase" }} className="desktop-header">
                 <span>Día</span>
                 <span>Apertura</span>
                 <span>Cierre</span>
@@ -127,23 +123,22 @@ export default function SchedulePage() {
                 const key = dayKeys[index];
                 const openVal = schedule[`${key}_open` as keyof typeof schedule];
                 const closeVal = schedule[`${key}_close` as keyof typeof schedule];
-                
-                // Si ambos valores están vacíos, consideramos el día como "Cerrado"
                 const isClosed = !openVal && !closeVal;
 
                 return (
                   <div 
                     key={day} 
+                    className="schedule-row"
                     style={{ 
                       display: "grid", 
-                      gridTemplateColumns: "1.2fr 1fr 1fr 1fr", 
-                      gap: "16px", 
+                      gridTemplateColumns: "1.1fr 1fr 1fr 1fr", 
+                      gap: "12px", 
                       alignItems: "center", 
-                      padding: "16px 0", 
+                      padding: "14px 0", 
                       borderBottom: index !== days.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
                     }}
                   >
-                    <strong style={{ fontSize: "15px", fontWeight: "600", color: isClosed ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.95)" }}>
+                    <strong style={{ fontSize: "14px", fontWeight: "600", color: isClosed ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.95)" }}>
                       {day}
                     </strong>
                     
@@ -169,7 +164,7 @@ export default function SchedulePage() {
                       />
                     </div>
 
-                    {/* Switch/Botón de Cerrado Premium */}
+                    {/* Botón de Cerrado / Abierto */}
                     <div style={{ display: "flex", justifyContent: "flex-end" }}>
                       <button
                         type="button"
@@ -178,15 +173,16 @@ export default function SchedulePage() {
                           background: isClosed ? "rgba(239, 68, 68, 0.15)" : "rgba(255,255,255,0.05)",
                           border: isClosed ? "1px solid rgba(239, 68, 68, 0.3)" : "1px solid rgba(255,255,255,0.08)",
                           color: isClosed ? "#f87171" : "rgba(255,255,255,0.6)",
-                          padding: "8px 14px",
-                          borderRadius: "12px",
-                          fontSize: "12px",
+                          padding: "8px 12px",
+                          borderRadius: "10px",
+                          fontSize: "11px",
                           fontWeight: "700",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
                           display: "flex",
                           alignItems: "center",
-                          gap: "6px"
+                          gap: "4px",
+                          whiteSpace: "nowrap"
                         }}
                       >
                         {isClosed ? "🔒 Cerrado" : "🔓 Abierto"}
@@ -211,6 +207,41 @@ export default function SchedulePage() {
             {saving ? "Actualizando base de datos..." : "Guardar Horarios de Operación"}
           </button>
         </div>
+
+        {/* Estilos CSS responsivos para asegurar que en móviles se adapte sin desbordarse */}
+        <style jsx global>{`
+          @media (max-width: 768px) {
+            .desktop-header {
+              display: none !important;
+            }
+            .schedule-row {
+              grid-template-columns: 1fr 1fr !important;
+              gap: 10px !important;
+              padding: 16px 0 !important;
+              background: rgba(255, 255, 255, 0.015);
+              border-radius: 12px;
+              margin-bottom: 8px;
+              padding: 12px !important;
+              border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+            }
+            .schedule-row > strong {
+              grid-column: span 2;
+              font-size: 15px !important;
+              border-bottom: 1px solid rgba(255,255,255,0.04);
+              padding-bottom: 6px;
+              margin-bottom: 2px;
+            }
+            .schedule-row > div:last-child {
+              grid-column: span 2;
+              justify-content: flex-start !important;
+            }
+            .schedule-row button {
+              width: 100%;
+              justify-content: center;
+              padding: 10px !important;
+            }
+          }
+        `}</style>
       </main>
     </PermissionGuard>
   );
@@ -220,10 +251,10 @@ const inputStyle = {
   background: "#0b0b0b", 
   color: "#fff", 
   border: "1px solid rgba(255,255,255,0.08)", 
-  borderRadius: "14px", 
-  padding: "12px 16px", 
+  borderRadius: "12px", 
+  padding: "10px 12px", 
   width: "100%", 
-  fontSize: "14px",
+  fontSize: "13px",
   fontWeight: "500",
   outline: "none",
   transition: "all 0.2s ease",
@@ -233,12 +264,12 @@ const inputStyle = {
 
 const saveBtn = { 
   width: "100%", 
-  marginTop: "30px", 
+  marginTop: "24px", 
   border: "none", 
-  padding: "18px", 
-  borderRadius: "20px", 
+  padding: "16px", 
+  borderRadius: "16px", 
   fontWeight: "700" as const, 
-  fontSize: "16px", 
+  fontSize: "15px", 
   cursor: "pointer",
   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
   letterSpacing: "0.3px"

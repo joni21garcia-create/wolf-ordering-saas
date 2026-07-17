@@ -77,22 +77,34 @@ export default function NavbarSettingsPage() {
 
   return (
     <PermissionGuard permission="navbar">
-      <main style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 20px", color: "#fff" }}>
+      <main style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 20px", color: "#fff", boxSizing: "border-box" }}>
         <div style={{ marginBottom: "30px" }}>
           <BackToSettings restaurantId={restaurantId} />
           <h1 style={{ fontSize: "36px", fontWeight: "800", marginTop: "10px" }}>🧭 Navbar</h1>
           <p style={{ color: "#999" }}>Configura la identidad del restaurante en el menú superior.</p>
         </div>
 
-        <div style={{ background: "rgba(17,17,17,.95)", border: "1px solid rgba(255,255,255,.08)", borderRadius: "24px", padding: "30px" }}>
+        <div style={{ background: "rgba(17,17,17,.95)", border: "1px solid rgba(255,255,255,.08)", borderRadius: "24px", padding: "30px", boxSizing: "border-box" }}>
+          
           {/* LOGO UPLOAD */}
-          <div style={{ marginBottom: "30px" }}>
+          <div style={{ marginBottom: "30px", overflow: "hidden" }}>
             <label style={{ display: "block", marginBottom: "12px", color: "#aaa", fontWeight: "600" }}>Logo Restaurante</label>
             <div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
               {form.logo_url && (
-                <img src={form.logo_url} alt="logo" style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", border: "2px solid #f97316" }} />
+                <img src={form.logo_url} alt="logo" style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", border: "2px solid #f97316", flexShrink: 0 }} />
               )}
-              <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadLogo(e.target.files[0])} />
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={(e) => e.target.files?.[0] && uploadLogo(e.target.files[0])} 
+                style={{ 
+                  color: "#aaa", 
+                  fontSize: "14px",
+                  maxWidth: "100%",
+                  textOverflow: "ellipsis",
+                  cursor: "pointer"
+                }} 
+              />
             </div>
             {uploading && <p style={{ color: "#f97316", fontSize: "14px", marginTop: "8px" }}>Subiendo... {progress}%</p>}
           </div>
@@ -101,7 +113,7 @@ export default function NavbarSettingsPage() {
           <InputField label="Texto Botón" value={form.navbar_button_text} onChange={(v: string) => setForm({ ...form, navbar_button_text: v })} />
 
           <button onClick={saveData} disabled={saving} 
-            style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", padding: "16px", borderRadius: "14px", fontWeight: "700", cursor: "pointer" }}>
+            style={{ width: "100%", background: "#f97316", color: "#fff", border: "none", padding: "16px", borderRadius: "14px", fontWeight: "700", cursor: "pointer", boxSizing: "border-box" }}>
             {saving ? "Guardando..." : "💾 Guardar Navbar"}
           </button>
         </div>
@@ -115,7 +127,7 @@ function InputField({ label, value, onChange }: any) {
     <div style={{ marginBottom: "20px" }}>
       <label style={{ display: "block", marginBottom: "8px", color: "#aaa", fontSize: "14px", fontWeight: "600" }}>{label}</label>
       <input value={value || ""} onChange={(e) => onChange(e.target.value)} 
-        style={{ width: "100%", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", color: "#fff", padding: "14px", borderRadius: "12px", outline: "none" }} />
+        style={{ width: "100%", background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)", color: "#fff", padding: "14px", borderRadius: "12px", outline: "none", boxSizing: "border-box" }} />
     </div>
   );
 }

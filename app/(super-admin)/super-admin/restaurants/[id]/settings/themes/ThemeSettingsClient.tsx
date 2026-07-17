@@ -69,8 +69,6 @@ type ThemeForm = {
   card_border: boolean;
 };
 
-
-
  const [form, setForm] = useState<ThemeForm>(
   initialData || {
     theme_style: THEMES[0].id,
@@ -106,7 +104,6 @@ const saveTheme = async () => {
 
     setSaving(true);
     try {
-      // Filtramos únicamente los campos que la tabla de Supabase acepta
       const payload = {
         theme_style: form.theme_style,
         primary_color: form.primary_color,
@@ -151,8 +148,9 @@ const saveTheme = async () => {
       background: "rgba(255, 255, 255, 0.02)",
       border: "1px solid rgba(255, 255, 255, 0.06)",
       borderRadius: "24px",
-      padding: "24px",
+      padding: "20px",
       backdropFilter: "blur(12px)",
+      boxSizing: "border-box" as const,
     },
     h2: {
       fontSize: "1.1rem",
@@ -171,16 +169,18 @@ const saveTheme = async () => {
       fontSize: "0.9rem",
       outline: "none",
       transition: "border-color 0.2s",
+      boxSizing: "border-box" as const,
     },
   };
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "40px auto", padding: "0 24px", fontFamily: `var(--font-${form.font_family.toLowerCase()}, 'Inter'), sans-serif`, color: "#fff" }}>
+    <div style={{ maxWidth: "1200px", margin: "20px auto", padding: "0 16px", fontFamily: `var(--font-${form.font_family.toLowerCase()}, 'Inter'), sans-serif`, color: "#fff", boxSizing: "border-box" }}>
       
-      <div style={{ marginBottom: "40px", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", paddingBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+      {/* HEADER */}
+      <div className="header-container" style={{ marginBottom: "30px", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", paddingBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
         <div>
           <span style={{ fontSize: "0.85rem", fontWeight: "600", color: form.primary_color, textTransform: "uppercase", letterSpacing: "0.08em" }}>Configuración del Sistema</span>
-          <h1 style={{ fontSize: "2.5rem", fontWeight: "800", marginTop: "8px", letterSpacing: "-0.03em" }}>
+          <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.5rem)", fontWeight: "800", marginTop: "8px", letterSpacing: "-0.03em" }}>
             Ajustes de <span style={{ color: form.primary_color }}>Marca & UI</span>
           </h1>
           <p style={{ color: "#9ca3af", marginTop: "6px", fontSize: "0.95rem" }}>Personaliza la identidad visual y los efectos avanzados de la plataforma.</p>
@@ -199,20 +199,25 @@ const saveTheme = async () => {
             fontWeight: "700", 
             cursor: "pointer",
             transition: "all 0.3s ease",
-            boxShadow: form.glow_effect ? `0 0 25px ${form.primary_color}50` : "none"
+            boxShadow: form.glow_effect ? `0 0 25px ${form.primary_color}50` : "none",
+            width: "100%",
+            maxWidth: "200px"
           }}
         >
           {saving ? "Guardando..." : "Guardar cambios"}
         </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: "32px", alignItems: "start" }}>
+      {/* GRID PRINCIPAL */}
+      <div className="main-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: "24px", alignItems: "start" }}>
         
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        {/* COLUMNA IZQUIERDA (OPCIONES) */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px", minWidth: 0 }}>
           
+          {/* PALETA DE COLORES */}
           <div style={S.section}>
             <h2 style={S.h2}>Paleta de Colores Predefinida ({THEMES.length} opciones)</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "14px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px" }}>
               {THEMES.map((theme) => (
                 <div 
                   key={theme.id} 
@@ -228,35 +233,37 @@ const saveTheme = async () => {
                   onMouseOver={(e) => e.currentTarget.style.transform = "translateY(-2px)"}
                   onMouseOut={(e) => e.currentTarget.style.transform = "translateY(0)"}
                 >
-                  <div style={{ height: "42px", borderRadius: "10px", background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`, marginBottom: "8px" }} />
-                  <span style={{ fontSize: "0.78rem", fontWeight: "600", display: "block", textAlign: "center", color: "#d1d5db" }}>{theme.name}</span>
+                  <div style={{ height: "38px", borderRadius: "10px", background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`, marginBottom: "8px" }} />
+                  <span style={{ fontSize: "0.78rem", fontWeight: "600", display: "block", textAlign: "center", color: "#d1d5db", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{theme.name}</span>
                 </div>
               ))}
             </div>
           </div>
 
+          {/* PERSONALIZACIÓN HEX */}
           <div style={S.section}>
             <h2 style={S.h2}>Personalización Hex</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
+            <div className="hex-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px" }}>
               {[
-  { l: "Principal", k: "primary_color" as keyof ThemeForm },
-  { l: "Secundario", k: "secondary_color" as keyof ThemeForm },
-  { l: "Fondo", k: "background_color" as keyof ThemeForm },
-].map((item) => (
+                { l: "Principal", k: "primary_color" as keyof ThemeForm },
+                { l: "Secundario", k: "secondary_color" as keyof ThemeForm },
+                { l: "Fondo", k: "background_color" as keyof ThemeForm },
+              ].map((item) => (
                 <div key={item.k} style={{ background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "14px", border: "1px solid rgba(255,255,255,0.04)" }}>
                   <label style={{ fontSize: "0.8rem", color: "#9ca3af", display: "block", marginBottom: "8px" }}>{item.l}</label>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <input type="color" value={String(form[item.k] || "#000000")} onChange={(e) => setForm({ ...form, [item.k]: e.target.value })} style={{ border: "none", width: "32px", height: "32px", background: "transparent", cursor: "pointer", borderRadius: "6px" }} />
-                    <span style={{ fontSize: "0.8rem", fontFamily: "monospace", color: "#e5e7eb" }}>{form[item.k]}</span>
+                    <input type="color" value={String(form[item.k] || "#000000")} onChange={(e) => setForm({ ...form, [item.k]: e.target.value })} style={{ border: "none", width: "32px", height: "32px", background: "transparent", cursor: "pointer", borderRadius: "6px", flexShrink: 0 }} />
+                    <span style={{ fontSize: "0.8rem", fontFamily: "monospace", color: "#e5e7eb", overflow: "hidden", textOverflow: "ellipsis" }}>{form[item.k]}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
+          {/* DISEÑO DE COMPONENTES */}
           <div style={S.section}>
             <h2 style={S.h2}>Diseño de Componentes & Botones</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div className="components-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
               <div>
                 <label style={{ fontSize: "0.75rem", color: "#9ca3af", marginBottom: "6px", display: "block" }}>Estilo de Botones Avanzado</label>
                 <select value={form.button_style} onChange={(e) => setForm({...form, button_style: e.target.value})} style={S.input}>
@@ -273,9 +280,10 @@ const saveTheme = async () => {
             </div>
           </div>
 
+          {/* EFECTOS VISUALES */}
           <div style={S.section}>
             <h2 style={S.h2}>Efectos Visuales & Animaciones</h2>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+            <div className="effects-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
@@ -286,7 +294,7 @@ const saveTheme = async () => {
                     type="checkbox" 
                     checked={form.glow_effect} 
                     onChange={(e) => setForm({...form, glow_effect: e.target.checked})} 
-                    style={{ width: "18px", height: "18px", accentColor: form.primary_color, cursor: "pointer" }}
+                    style={{ width: "20px", height: "20px", accentColor: form.primary_color, cursor: "pointer" }}
                   />
                 </div>
 
@@ -299,7 +307,7 @@ const saveTheme = async () => {
                     type="checkbox" 
                     checked={form.card_border} 
                     onChange={(e) => setForm({...form, card_border: e.target.checked})} 
-                    style={{ width: "18px", height: "18px", accentColor: form.primary_color, cursor: "pointer" }}
+                    style={{ width: "20px", height: "20px", accentColor: form.primary_color, cursor: "pointer" }}
                   />
                 </div>
               </div>
@@ -332,14 +340,17 @@ const saveTheme = async () => {
 
         </div>
 
-        <div style={{ position: "sticky", top: "24px" }}>
+        {/* COLUMNA DERECHA (VISTA PREVIA - STICKY EN DESKTOP) */}
+        <div className="preview-container" style={{ width: "100%" }}>
           <div style={{
             ...S.section,
             background: form.background_color,
             border: `1px solid ${form.primary_color}30`,
             boxShadow: form.glow_effect ? `0 0 50px ${form.primary_color}15` : "none",
             borderRadius: "28px",
-            padding: "28px"
+            padding: "24px",
+            width: "100%",
+            boxSizing: "border-box"
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.1em", color: form.primary_color, fontWeight: "700" }}>Vista Previa en Vivo</span>
@@ -350,8 +361,9 @@ const saveTheme = async () => {
               background: "rgba(255,255,255,0.03)", 
               border: form.card_border ? "1px solid rgba(255,255,255,0.08)" : "none", 
               borderRadius: form.radius, 
-              padding: "20px",
+              padding: "16px",
               marginBottom: "20px",
+              boxSizing: "border-box"
             }}>
               <div style={{ height: "90px", borderRadius: `calc(${form.radius} - 4px)`, background: `linear-gradient(135deg, ${form.primary_color}, ${form.secondary_color})`, marginBottom: "16px", opacity: 0.9 }} />
               <h3 style={{ fontSize: "1.1rem", fontWeight: "700", marginBottom: "6px" }}>Panel de Control</h3>
@@ -367,13 +379,14 @@ const saveTheme = async () => {
                 fontWeight: "700",
                 fontSize: "0.85rem",
                 cursor: "pointer",
-                boxShadow: form.glow_effect ? `0 0 20px ${form.primary_color}40` : "none"
+                boxShadow: form.glow_effect ? `0 0 20px ${form.primary_color}40` : "none",
+                boxSizing: "border-box"
               }}>
                 Configurar módulo
               </button>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", color: "#6b7280", fontSize: "0.75rem" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", color: "#6b7280", fontSize: "0.75rem", flexWrap: "wrap", gap: "6px" }}>
               <span>Tipografía: <strong style={{ color: "#fff" }}>{form.font_family}</strong></span>
               <span>Botón: <strong style={{ color: "#fff" }}>{form.button_style}</strong></span>
             </div>
@@ -381,6 +394,19 @@ const saveTheme = async () => {
         </div>
 
       </div>
+
+      {/* CSS RESPONSIVE PARA EL GRID DE ESCRITORIO */}
+      <style jsx global>{`
+        @media (min-width: 992px) {
+          .main-grid {
+            grid-template-columns: 1.2fr 0.8fr !important;
+          }
+          .preview-container {
+            position: sticky;
+            top: 24px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
