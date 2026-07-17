@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
@@ -14,6 +14,19 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  // Referencia para controlar el contenedor del scroll de categorías
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollCategories = (direction: "left" | "right") => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 200;
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
 
   useEffect(() => {
     if (restaurantId) {
@@ -171,10 +184,37 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* BARRA DE CATEGORÍAS CON SCROLL HORIZONTAL */}
-        <div style={{ position: "sticky", top: 0, zIndex: 40, background: "rgba(5, 5, 5, 0.95)", backdropFilter: "blur(10px)", padding: "10px 0", marginBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <div className="hide-scrollbar" style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "5px" }}>
-            
+        {/* BARRA DE CATEGORÍAS CON FLECHAS Y SCROLL HORIZONTAL */}
+        <div style={{ position: "sticky", top: 0, zIndex: 40, background: "rgba(5, 5, 5, 0.95)", backdropFilter: "blur(10px)", padding: "10px 0", marginBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", gap: "8px" }}>
+          
+          {/* Botón Izquierda */}
+          <button 
+            onClick={() => scrollCategories("left")}
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              color: "#fff",
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              fontSize: "14px"
+            }}
+            title="Desplazar izquierda"
+          >
+            ◀
+          </button>
+
+          {/* Contenedor con Scroll */}
+          <div 
+            ref={scrollContainerRef}
+            className="hide-scrollbar" 
+            style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "5px", flex: 1, scrollBehavior: "smooth" }}
+          >
             <button
               onClick={() => setSelectedCategory("all")}
               style={{
@@ -216,6 +256,28 @@ export default function ProductsPage() {
               );
             })}
           </div>
+
+          {/* Botón Derecha */}
+          <button 
+            onClick={() => scrollCategories("right")}
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              color: "#fff",
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              fontSize: "14px"
+            }}
+            title="Desplazar derecha"
+          >
+            ▶
+          </button>
         </div>
 
         {loading && <p style={{ color: "#aaa", textAlign: "center", padding: "20px" }}>Cargando productos...</p>}
