@@ -14,13 +14,6 @@ import {
   BANNER_PRESET,
 } from "@/lib/image/presets";
 
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: "10mb",
-    },
-  },
-};
 
 const PRESETS = {
   logo: LOGO_PRESET,

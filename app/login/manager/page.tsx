@@ -1,16 +1,16 @@
-import type { Metadata } from "next";
+import type {
+  Metadata,
+  Viewport,
+} from "next";
 
-// 1. Definimos los metadatos específicos para esta ruta
-// Esto sobrescribe cualquier configuración de metadatos del layout raíz
+// Metadatos
 export const metadata: Metadata = {
-  // Apunta a tu API que genera el JSON del manifiesto para Manager
-  manifest: "/api/pwa/manifest-manager", 
-  
+  manifest: "/api/pwa/manifest-manager",
+
   title: "Wolf Manager | Administración",
-  description: "Panel de control administrativo de Wolf Ordering",
-  
-  // Color del tema cuando la PWA se abre en standalone
-  themeColor: "#000000", 
+
+  description:
+    "Panel de control administrativo de Wolf Ordering",
 
   appleWebApp: {
     capable: true,
@@ -19,15 +19,17 @@ export const metadata: Metadata = {
   },
 };
 
-// 2. Exportamos el layout que envolverá tu página de login
+// Viewport (Next.js 16)
+export const viewport: Viewport = {
+  themeColor: "#000000",
+};
+
+// Layout
 export default function ManagerLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Nota: No necesitamos envolver con SessionProvider ni otros providers aquí
-  // porque ya están en el RootLayout.tsx principal. 
-  // Este layout solo se encarga de inyectar los metadatos PWA correctos.
   return (
     <div className="manager-layout-wrapper">
       {children}

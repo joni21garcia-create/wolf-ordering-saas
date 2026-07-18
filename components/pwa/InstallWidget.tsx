@@ -1,32 +1,69 @@
 "use client";
+
+import { motion } from "framer-motion";
+import { Smartphone } from "lucide-react";
 import { useInstall } from "./InstallProvider";
 
 export default function InstallWidget() {
   const deferredPrompt = useInstall();
 
-  // FORZAMOS LA VISIBILIDAD PARA PROBAR:
-  // Si quitas el 'if (!deferredPrompt)', el botón debería salir siempre.
-  // Vamos a quitar el if temporalmente para ver si el botón aparece.
-  
+  if (!deferredPrompt) return null;
+
   return (
-    <button
-      onClick={() => deferredPrompt?.prompt()}
+    <motion.button
+      whileHover={{
+        scale: 1.05,
+        y: -2,
+      }}
+      whileTap={{
+        scale: 0.96,
+      }}
+      onClick={() => deferredPrompt.prompt()}
       style={{
         position: "fixed",
-        bottom: "20px",
-        right: "20px",
-        zIndex: 99999, // Aumenté el Z-Index por si acaso
-        padding: "15px 25px",
-        background: "#f97316",
-        color: "white",
-        borderRadius: "50px",
-        border: "none",
+        left: 24,
+        bottom: 24,
+        zIndex: 9999,
+
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+
+        height: 52,
+        padding: "0 18px",
+
+        borderRadius: 999,
+        border: "1px solid rgba(255,255,255,.08)",
+
+        background:
+          "rgba(20,20,20,.82)",
+
+        backdropFilter: "blur(18px)",
+
+        color: "#fff",
+
         cursor: "pointer",
-        fontWeight: "bold",
-        boxShadow: "0 10px 25px rgba(0,0,0,0.3)"
+
+        boxShadow:
+          "0 10px 30px rgba(0,0,0,.35)",
+
+        transition: ".25s ease",
       }}
     >
-      {deferredPrompt ? "Instalar App" : "Esperando PWA..."}
-    </button>
+      <Smartphone
+        size={20}
+        strokeWidth={2.2}
+      />
+
+      <span
+        style={{
+          fontSize: 14,
+          fontWeight: 700,
+          letterSpacing: ".2px",
+        }}
+      >
+        App
+      </span>
+    </motion.button>
   );
 }

@@ -1,352 +1,90 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import {
+  useMemo,
+  useState,
+} from "react";
 
 import OrderType from "@/components/restaurant/order/OrderType";
 import CustomerForm from "@/components/restaurant/order/CustomerForm";
 import RestaurantMap from "@/components/restaurant/order/RestaurantMap";
 import DigitalMenu from "@/components/restaurant/order/DigitalMenu";
 import Cart from "@/components/restaurant/order/Cart";
-import {
-  getFinalPrice,
-  getCommissionConfig,
-} from "@/lib/configuration/pricing";
+
+import { getCommissionConfig } from "@/lib/configuration/pricing";
+
+import { Restaurant } from "./types";
+import { useOrder } from "./hooks/useOrder";
+import { useCart } from "./hooks/useCart";
 
 interface Props {
-  restaurant: any;
-}
-
-interface CartItem {
-  id: string;
-
-  restaurant_id: string;
-
-  name: string;
-
-  price: number;
-
-  display_price: number;
-
-  quantity: number;
-
-  image_url?: string | null;
+  restaurant: Restaurant;
 }
 
 export default function OrderClient({
   restaurant,
 }: Props) {
-
-console.log("RESTAURANT:", restaurant);
-
-  const [orderType, setOrderType] = useState<
-    "delivery" | "pickup" | null
-  >(null);
-
-  const [customerData, setCustomerData] =
-    useState<any>({});
-
-  const [cartItems, setCartItems] =
-    useState<CartItem[]>([]);
-
-  /* ===========================
-      CARGAR LOCAL STORAGE
-  =========================== */
-
-  useEffect(() => {
-    const savedCart =
-      localStorage.getItem(
-        "wolf_cart"
-      );
-
-    if (savedCart) {
-      setCartItems(
-        JSON.parse(savedCart)
-      );
-    }
-
-    const savedCustomer =
-      localStorage.getItem(
-        "wolf_customer"
-      );
-
-    if (savedCustomer) {
-      setCustomerData(
-        JSON.parse(savedCustomer)
-      );
-    }
-
-    const savedOrderType =
-      localStorage.getItem(
-        "wolf_order_type"
-      );
-
-    if (
-      savedOrderType ===
-        "delivery" ||
-      savedOrderType === "pickup"
-    ) {
-      setOrderType(
-        savedOrderType
-      );
-    }
-  }, []);
-
-  /* ===========================
-      GUARDAR LOCAL STORAGE
-  =========================== */
-
-  useEffect(() => {
-  localStorage.setItem(
-    "wolf_cart",
-    JSON.stringify(cartItems)
+  const commissionConfig = useMemo(
+    () => getCommissionConfig(restaurant),
+    [restaurant]
   );
-}, [cartItems]);
 
-useEffect(() => {
-  localStorage.setItem(
-    "wolf_customer",
-    JSON.stringify(customerData)
+  const {
+    orderType,
+    setOrderType,
+    customerData,
+    setCustomerData,
+  } = useOrder(
+    restaurant.deliverySettings
   );
-}, [customerData]);
 
-useEffect(() => {
-  if (orderType) {
-    localStorage.setItem(
-      "wolf_order_type",
-      orderType
-    );
-  }
-}, [orderType]);
-
-useEffect(() => {
-  console.log(
-    "CUSTOMER STATE:",
-    customerData
-  );
-}, [customerData]);
-
-  useEffect(() => {
-  const deliveryEnabled =
-    restaurant?.deliverySettings
-      ?.delivery_enabled;
-
-  const pickupEnabled =
-    restaurant?.deliverySettings
-      ?.pickup_enabled;
-
-  if (
-    deliveryEnabled === true &&
-    pickupEnabled === false
-  ) {
-    setOrderType(
-      "delivery"
-    );
-  }
-
-  if (
-    deliveryEnabled === false &&
-    pickupEnabled === true
-  ) {
-    setOrderType(
-      "pickup"
-    );
-  }
-}, [
-  restaurant?.deliverySettings,
-]);
-
-  /* ===========================
-      AGREGAR PRODUCTO
-  =========================== */
-
-
-
-  const addToCart = (
-    product: any
-  ) => {
-    setCartItems((prev) => {
-      const existing =
-        prev.find(
-          (item) =>
-            item.id ===
-            product.id
-        );
-
-      if (existing) {
-        return prev.map(
-          (item) =>
-            item.id ===
-            product.id
-              ? {
-                  ...item,
-                  quantity:
-                    item.quantity + 1,
-                }
-              : item
-        );
-      }
-
-return [
-  ...prev,
-  {
-    id: product.id,
-
-    restaurant_id:
-      product.restaurant_id,
-
-    name: product.name,
-
-    price:
-      Number(
-        product.price
-      ) || 0,
-
-display_price:
-  getFinalPrice(
-    Number(product.price),
+  const {
+    cartItems,
+    subtotal,
+    addToCart,
+    increaseQuantity,
+    decreaseQuantity,
+    removeItem,
+  } = useCart(
     commissionConfig
-  ),
+  );
 
-    image_url:
-      product.image_url,
+  const [showCart, setShowCart] =
+    useState(false);
 
-    quantity: 1,
-  },
-];
-    });
-  };
-
-  /* ===========================
-      AUMENTAR
-  =========================== */
-
-  const increaseQuantity = (
-    id: string
-  ) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              quantity:
-                item.quantity + 1,
-            }
-          : item
-      )
-    );
-  };
-
-  /* ===========================
-      DISMINUIR
-  =========================== */
-
-  const decreaseQuantity = (
-    id: string
-  ) => {
-    setCartItems((prev) =>
-      prev
-        .map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                quantity:
-                  item.quantity - 1,
-              }
-            : item
-        )
-        .filter(
-          (item) =>
-            item.quantity > 0
-        )
-    );
-  };
-
-
-
-
-  /* ===========================
-      ELIMINAR
-  =========================== */
-
-  const removeItem = (
-    id: string
-  ) => {
-    setCartItems((prev) =>
-      prev.filter(
-        (item) =>
-          item.id !== id
-      )
-    );
-  };
-
-const commissionConfig =
-  getCommissionConfig(restaurant);
-
-  const subtotal = cartItems.reduce(
-  (total, item) =>
-    total + item.price * item.quantity,
-  0
-);
-
-  return (
+return (
+  <>
     <main
       className="wolf-order-background"
       style={{
         minHeight: "100vh",
         padding: "40px 16px 120px",
-        boxSizing: "border-box"
+        boxSizing: "border-box",
       }}
     >
-      {/* ESTILOS INYECTADOS RESPONSIVOS */}
       <style>{`
-        .wolf-grid-container {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-          max-width: 1700px;
-          margin: 0 auto;
+        .wolf-grid-container{
+          display:flex;
+          flex-direction:column;
+          gap:24px;
+          max-width:1700px;
+          margin:0 auto;
         }
-        .wolf-map-wrapper {
-          width: 100%;
-          position: relative;
-          top: 0;
+
+        .wolf-map-wrapper{
+          width:100%;
         }
-        .wolf-menu-wrapper {
-          width: 100%;
-        }
-        .wolf-cart-wrapper {
-          width: 100%;
-          position: relative;
-          top: 0;
-        }
-        @media (min-width: 1024px) {
-          .wolf-grid-container {
-            display: grid;
-            grid-template-columns: 320px minmax(0, 1fr) 380px;
-            gap: 40px;
-            align-items: start;
-          }
-          .wolf-map-wrapper {
-            position: sticky;
-            top: 120px;
-          }
-          .wolf-cart-wrapper {
-            position: sticky;
-            top: 120px;
-          }
+
+        .wolf-menu-wrapper{
+          width:100%;
         }
       `}</style>
 
       <div className="wolf-grid-container">
-
-        {/* MAPA */}
         <div className="wolf-map-wrapper">
-          <RestaurantMap
-            restaurant={restaurant}
-          />
+       
         </div>
 
-        {/* MENU */}
         <div className="wolf-menu-wrapper">
           <h1
             className="wolf-title"
@@ -361,21 +99,14 @@ const commissionConfig =
 
           <OrderType
             selected={orderType}
-            onSelect={(value) =>
-              setOrderType(value)
-            }
+            onSelect={setOrderType}
             deliveryEnabled={
-              restaurant.deliverySettings
-                ?.delivery_enabled
+              restaurant.deliverySettings?.delivery_enabled
             }
             pickupEnabled={
-              restaurant.deliverySettings
-                ?.pickup_enabled
+              restaurant.deliverySettings?.pickup_enabled
             }
-            deliverySettings={
-              restaurant.deliverySettings
-            }
-
+            deliverySettings={restaurant.deliverySettings}
             subtotal={subtotal}
           />
 
@@ -390,23 +121,51 @@ const commissionConfig =
           <DigitalMenu
             restaurant={restaurant}
             addToCart={addToCart}
+            cartCount={cartItems.length}
+            onCart={() => setShowCart(true)}
           />
         </div>
+      </div>
+    </main>
 
-        {/* CARRITO */}
-        <div className="wolf-cart-wrapper">
+    {showCart && (
+      <div
+        onClick={() => setShowCart(false)}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,.70)",
+          zIndex: 9999,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "flex-start",
+          overflowY: "auto",
+          padding: "40px 20px",
+        }}
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            width: "100%",
+            maxWidth: 420,
+            background: "#141414",
+            border: "1px solid rgb(4, 1, 0)",
+            borderRadius: 30,
+            padding: 10,
+            boxShadow: "0 30px 80px rgba(0,0,0,.60)",
+          }}
+        >
           <Cart
             items={cartItems}
             orderType={orderType}
             increaseQuantity={increaseQuantity}
             decreaseQuantity={decreaseQuantity}
             removeItem={removeItem}
-            deliverySettings={
-              restaurant.deliverySettings
-            }
+            deliverySettings={restaurant.deliverySettings}
           />
         </div>
       </div>
-    </main>
-  );
+    )}
+  </>
+);
 }
