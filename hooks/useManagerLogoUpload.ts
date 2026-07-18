@@ -1,18 +1,12 @@
 "use client";
-
-import { UploadResult } from "@/types/upload";
+import { UploadResult } from "@/types/pwa";
 import { useState } from "react";
-import { useManagerPWASettings } from "./useManagerPWASettings"; // Importamos el hook de settings
-
-// ... (Interface UploadResult igual)
+// Eliminamos la importación de useManagerPWASettings ya que no debe forzar el refresco aquí
 
 export function useManagerLogoUpload() {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   
-  // 🛠️ Conectamos con el hook de settings para forzar un refresco
-  const { refreshSettings } = useManagerPWASettings();
-
   async function uploadLogo(file: File): Promise<UploadResult> {
     try {
       setUploading(true);
@@ -41,10 +35,9 @@ export function useManagerLogoUpload() {
       const json: UploadResult = await response.json();
 
       if (json.success && json.logo?.url) {
-        // 🛠️ ¡LA CLAVE ESTÁ AQUÍ!
-        // Al terminar con éxito, forzamos al sistema a recargar 
-        // los nuevos iconos desde la BD inmediatamente.
-        refreshSettings();
+        // ✅ CORRECCIÓN: Eliminamos refreshSettings() para evitar el bucle infinito.
+        // La UI debería reaccionar al cambio de estado localmente o mediante 
+        // el evento que disparó la subida.
         
         setProgress(100);
         return json;

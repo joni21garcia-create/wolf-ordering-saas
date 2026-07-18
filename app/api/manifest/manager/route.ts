@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getManagerPWASettings } from "@/lib/pwa/getManagerPWASettings";
 import { buildManagerManifest } from "@/lib/pwa/manifest/buildManagerManifest";
 
-// Esto le dice a Next.js que NO guarde en caché esta ruta bajo ningún concepto
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -21,11 +20,11 @@ export async function GET() {
       short_name: p.short_name || "Wolf",
       start_url: "/login",
       scope: "/",
-      // 🚨 FORZADO: Eliminamos p.display para asegurar standalone y cumplir con Chrome
       display: "standalone", 
       orientation: p.orientation || "portrait",
       background_color: p.background_color || "#000000",
       theme_color: p.theme_color || "#f97316",
+      // Eliminamos el .filter para no alterar tus rutas de base de datos
       icons: [
         { src: p.icon_72_url, sizes: "72x72", type: "image/png" },
         { src: p.icon_96_url, sizes: "96x96", type: "image/png" },
@@ -36,15 +35,14 @@ export async function GET() {
         { src: p.icon_384_url, sizes: "384x384", type: "image/png" },
         { src: p.icon_512_url, sizes: "512x512", type: "image/png" },
         { src: p.maskable_icon_url, sizes: "512x512", type: "image/png", purpose: "maskable" }
-      ].filter(i => i.src && i.src.startsWith('http')) 
+      ]
     };
 
     return new NextResponse(JSON.stringify(finalManifest), {
       status: 200,
       headers: {
         "Content-Type": "application/manifest+json",
-        // Cabeceras ultra-estrictas para que el navegador y Next.js no cacheen el JSON viejo
-        "Cache-Control": "no-store, no-cache, must-revalidate, force-revalidate, max-age=0",
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
         "Pragma": "no-cache",
         "Expires": "0"
       },
