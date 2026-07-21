@@ -2,18 +2,10 @@
 
 type Props = {
   total: number;
-
   search: string;
-
   status: string;
-
-  onSearchChange: (
-    value: string
-  ) => void;
-
-  onStatusChange: (
-    value: string
-  ) => void;
+  onSearchChange: (value: string) => void;
+  onStatusChange: (value: string) => void;
 };
 
 export default function LegalToolbar({
@@ -46,11 +38,7 @@ export default function LegalToolbar({
           type="text"
           value={search}
           placeholder="Buscar restaurante, propietario o correo..."
-          onChange={(e) =>
-            onSearchChange(
-              e.target.value
-            )
-          }
+          onChange={(e) => onSearchChange(e.target.value)}
           style={{
             width: 340,
             maxWidth: "100%",
@@ -66,11 +54,7 @@ export default function LegalToolbar({
 
         <select
           value={status}
-          onChange={(e) =>
-            onStatusChange(
-              e.target.value
-            )
-          }
+          onChange={(e) => onStatusChange(e.target.value)}
           style={{
             padding: "12px 16px",
             background: "#171717",
@@ -81,17 +65,9 @@ export default function LegalToolbar({
             cursor: "pointer",
           }}
         >
-          <option value="Todos">
-            Todos
-          </option>
-
-          <option value="Firmados">
-            Firmados
-          </option>
-
-          <option value="Pendientes">
-            Pendientes
-          </option>
+          <option value="Todos">Todos</option>
+          <option value="Firmados">Firmados</option>
+          <option value="Pendientes">Pendientes</option>
         </select>
       </div>
 
@@ -109,8 +85,7 @@ export default function LegalToolbar({
             whiteSpace: "nowrap",
           }}
         >
-          {total} resultado
-          {total !== 1 ? "s" : ""}
+          {total} resultado{total !== 1 ? "s" : ""}
         </span>
 
         <button
@@ -131,5 +106,3 @@ export default function LegalToolbar({
     </div>
   );
 }
-
-

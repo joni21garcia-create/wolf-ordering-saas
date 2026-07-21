@@ -4,9 +4,7 @@ type Props = {
   agreements: any[];
 };
 
-export default function LegalTable({
-  agreements,
-}: Props) {
+export default function LegalTable({ agreements }: Props) {
   return (
     <table
       style={{
@@ -113,31 +111,24 @@ export default function LegalTable({
             Ver
           </th>
 
-<th
-  style={{
-    padding: 16,
-    textAlign: "left",
-    color: "#cfcfcf",
-    borderBottom: "1px solid #303030",
-  }}
->
-  WhatsApp
-</th>
-
-
+          <th
+            style={{
+              padding: 16,
+              textAlign: "left",
+              color: "#cfcfcf",
+              borderBottom: "1px solid #303030",
+            }}
+          >
+            WhatsApp
+          </th>
         </tr>
       </thead>
 
       <tbody>
         {agreements.map((item) => (
-          <LegalRow
-            key={item.id}
-            item={item}
-          />
+          <LegalRow key={item.id} item={item} />
         ))}
       </tbody>
     </table>
   );
 }
-
-

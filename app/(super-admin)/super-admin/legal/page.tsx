@@ -1,7 +1,5 @@
 ﻿import { supabaseAdmin } from "@/lib/supabase/admin";
 
-
-
 import LegalPageClient from "./components/LegalPageClient";
 
 export default async function LegalPage() {
@@ -25,25 +23,27 @@ export default async function LegalPage() {
     throw error;
   }
 
-  console.log("LEGAL AGREEMENTS:", agreements?.length, agreements?.map(x => x.owner_name));
-const total = agreements?.length ?? 0;
+  console.log(
+    "LEGAL AGREEMENTS:",
+    agreements?.length,
+    agreements?.map((x) => x.owner_name)
+  );
+
+  const total = agreements?.length ?? 0;
 
   const accepted =
     agreements?.filter(
-      (agreement) =>
-        agreement.status === "accepted"
+      (agreement) => agreement.status === "accepted"
     ).length ?? 0;
 
   const pending =
     agreements?.filter(
-      (agreement) =>
-        agreement.status === "pending"
+      (agreement) => agreement.status === "pending"
     ).length ?? 0;
 
   const documents = new Set(
     agreements?.map(
-      (agreement) =>
-        agreement.legal_document_id
+      (agreement) => agreement.legal_document_id
     )
   ).size;
 
@@ -71,15 +71,10 @@ const total = agreements?.length ?? 0;
           marginBottom: 30,
         }}
       >
-        AdministraciÃ³n de acuerdos comerciales, firmas electrÃ³nicas y expedientes legales.
+        Administración de acuerdos comerciales, firmas electrónicas y expedientes legales.
       </p>
 
-<LegalPageClient
-  agreements={agreements ?? []}
-/>
+      <LegalPageClient agreements={agreements ?? []} />
     </main>
   );
 }
-
-
-

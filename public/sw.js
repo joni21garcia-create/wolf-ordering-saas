@@ -5,7 +5,7 @@
    CORS/Opacos desde el bucket de Supabase para instalabilidad.
 ============================================================ */
 
-const VERSION = "1784631136216";
+const VERSION = "1784656849551";
 
 const CACHE = {
     STATIC: `wolf-static-${VERSION}`,

@@ -1,25 +1,33 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 type Props = {
   item: any;
 };
 
-export default function LegalRow({
-  item,
-}: Props) {
+function formatDate(date: string) {
+  const d = new Date(date);
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_APP_URL ??
-  "http://localhost:3000";
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
 
-const agreementUrl =
-  `${baseUrl}/legal/accept/${item.token}`;
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mi = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
 
-const phone =
-  (item.owner_phone ?? "")
-    .replace(/\D/g, "");
+  return `${dd}/${mm}/${yyyy} ${hh}:${mi}:${ss}`;
+}
 
-const message = `Hola ${item.owner_name} 👋
+export default function LegalRow({ item }: Props) {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    "http://localhost:3000";
+
+  const agreementUrl = `${baseUrl}/legal/accept/${item.token}`;
+
+  const phone = (item.owner_phone ?? "").replace(/\D/g, "");
+
+  const message = `Hola ${item.owner_name}
 
 Bienvenido a Wolf Ordering.
 
@@ -29,9 +37,9 @@ ${agreementUrl}
 
 Gracias.`;
 
-const whatsappUrl =
-  `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-
+  const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(
+    message
+  )}`;
 
   return (
     <tr
@@ -115,7 +123,7 @@ const whatsappUrl =
         }}
       >
         {item.accepted_at
-          ? new Date(item.accepted_at).toLocaleString()
+          ? formatDate(item.accepted_at)
           : "-"}
       </td>
 
@@ -129,6 +137,7 @@ const whatsappUrl =
           <a
             href={item.pdf_url}
             target="_blank"
+            rel="noopener noreferrer"
             style={{
               display: "inline-block",
               padding: "8px 14px",
@@ -139,16 +148,10 @@ const whatsappUrl =
               fontWeight: 600,
             }}
           >
-            📄 PDF
+            PDF
           </a>
         ) : (
-          <span
-            style={{
-              color: "#777",
-            }}
-          >
-            —
-          </span>
+          <span style={{ color: "#777" }}>—</span>
         )}
       </td>
 
@@ -171,39 +174,38 @@ const whatsappUrl =
             fontWeight: 600,
           }}
         >
-          👁 Ver
+          Ver
         </Link>
       </td>
-<td
-  style={{
-    padding: 16,
-    borderBottom: "1px solid #262626",
-  }}
->
-  <a
-    href={whatsappUrl}
-    target="_blank"
-    rel="noopener noreferrer"
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-      padding: "8px 14px",
-      minWidth: 130,
-      borderRadius: 10,
-      background: "#16a34a",
-      color: "#fff",
-      textDecoration: "none",
-      fontWeight: 600,
-      whiteSpace: "nowrap",
-    }}
-  >
-    📲 WhatsApp
-  </a>
-</td>
+
+      <td
+        style={{
+          padding: 16,
+          borderBottom: "1px solid #262626",
+        }}
+      >
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            padding: "8px 14px",
+            minWidth: 130,
+            borderRadius: 10,
+            background: "#16a34a",
+            color: "#fff",
+            textDecoration: "none",
+            fontWeight: 600,
+            whiteSpace: "nowrap",
+          }}
+        >
+          WhatsApp
+        </a>
+      </td>
     </tr>
   );
 }
-
-

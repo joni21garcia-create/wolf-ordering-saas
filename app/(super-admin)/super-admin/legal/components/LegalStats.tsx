@@ -78,5 +78,3 @@ export default function LegalStats({
     </div>
   );
 }
-
-
