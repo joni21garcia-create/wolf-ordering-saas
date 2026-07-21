@@ -1,0 +1,10 @@
+[33me3b5ca3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix legal page
+[33m18b3bf8[m feat: implement category reordering configuration and persist sort order in menu
+[33mde5c282[m chore: trigger vercel deployment
+[33mfa94b6b[m feat: mejora PWA manager, corrige manifest e iconos y agrega carrito flotante
+[33mef35b99[m Mejoras menú digital, carrito flotante, PWA y refactor de comisiones
+[33m14984b4[m fix: corrige desbordamiento de texto en input de archivo de la navbar
+[33ma81b384[m chore: rebulit and verified local build successfully
+[33m0648610[m feat(featured-menu): apply compact horizontal scroll card layout matching the main menu
+[33m5911c50[m fix(menu): reduce product card size and make menu layout more compact
+[33mb5ea2e2[m fix(products): make new and edit product pages fully responsive and mobile-friendly

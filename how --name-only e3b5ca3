@@ -1,0 +1,10 @@
+[33mcommit e3b5ca34fdc9fa167684c5f90abfcbc8b15405c3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: TuNombre <tuemail@gmail.com>
+Date:   Tue Jul 21 05:07:10 2026 -0500
+
+    Fix legal page
+
+ .../super-admin/legal/components/LegalRow.tsx            | 16 [32m+++++++++[m[31m-------[m
+ app/(super-admin)/super-admin/legal/page.tsx             |  8 [32m+++++[m[31m---[m
+ public/sw.js                                             |  8 [32m++++[m[31m----[m
+ 3 files changed, 18 insertions(+), 14 deletions(-)
