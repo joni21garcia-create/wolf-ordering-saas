@@ -1,4 +1,4 @@
-import { supabaseAdmin } from "@/lib/supabase/admin";
+﻿import { supabaseAdmin } from "@/lib/supabase/admin";
 
 
 
@@ -25,7 +25,8 @@ export default async function LegalPage() {
     throw error;
   }
 
-  const total = agreements?.length ?? 0;
+  console.log("LEGAL AGREEMENTS:", agreements?.length, agreements?.map(x => x.owner_name));
+const total = agreements?.length ?? 0;
 
   const accepted =
     agreements?.filter(
@@ -70,7 +71,7 @@ export default async function LegalPage() {
           marginBottom: 30,
         }}
       >
-        Administración de acuerdos comerciales, firmas electrónicas y expedientes legales.
+        AdministraciÃ³n de acuerdos comerciales, firmas electrÃ³nicas y expedientes legales.
       </p>
 
 <LegalPageClient
@@ -79,5 +80,6 @@ export default async function LegalPage() {
     </main>
   );
 }
+
 
 

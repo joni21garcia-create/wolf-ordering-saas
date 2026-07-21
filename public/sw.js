@@ -45,6 +45,7 @@ function isStatic(request) {
 function shouldIgnore(request, url) {
     if (request.method !== "GET") return true;
     if (url.pathname.startsWith("/api")) return true;
+    if (url.pathname.startsWith("/super-admin")) return true;
     if (url.pathname.startsWith("/_next/webpack-hmr")) return true;
     if (NEVER_CACHE.includes(url.pathname)) return true;
 
@@ -138,10 +139,9 @@ self.addEventListener("fetch", (event) => {
     if (shouldIgnore(request, url)) return;
 
     // Estrategia HTML
-    if (isHTML(request)) {
-        event.respondWith(networkFirst(request));
-        return;
-    }
+  if (isHTML(request)) {
+    return;
+}
 
     // Estrategia JS/CSS/Fonts
     if (isStatic(request)) {

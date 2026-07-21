@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 type Props = {
   item: any;
@@ -19,7 +19,7 @@ const phone =
   (item.owner_phone ?? "")
     .replace(/\D/g, "");
 
-const message = `Hola ${item.owner_name} 👋
+const message = `Hola ${item.owner_name} ðŸ‘‹
 
 Bienvenido a Wolf Ordering.
 
@@ -33,7 +33,8 @@ const whatsappUrl =
   `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
 
-  return (
+  console.log("RENDER ROW:", item.owner_name);
+return (
     <tr
       style={{
         borderBottom: "1px solid #2a2a2a",
@@ -139,7 +140,7 @@ const whatsappUrl =
               fontWeight: 600,
             }}
           >
-            📄 PDF
+            ðŸ“„ PDF
           </a>
         ) : (
           <span
@@ -147,7 +148,7 @@ const whatsappUrl =
               color: "#777",
             }}
           >
-            —
+            â€”
           </span>
         )}
       </td>
@@ -171,7 +172,7 @@ const whatsappUrl =
             fontWeight: 600,
           }}
         >
-          👁 Ver
+          ðŸ‘ Ver
         </Link>
       </td>
 <td
@@ -199,11 +200,12 @@ const whatsappUrl =
       whiteSpace: "nowrap",
     }}
   >
-    📲 WhatsApp
+    ðŸ“² WhatsApp
   </a>
 </td>
     </tr>
   );
 }
+
 
 
