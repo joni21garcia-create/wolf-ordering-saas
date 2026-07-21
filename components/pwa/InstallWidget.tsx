@@ -67,3 +67,5 @@ export default function InstallWidget() {
     </motion.button>
   );
 }
+
+

@@ -35,9 +35,11 @@ export default function Menu({ restaurant }: Props) {
     availableCategories[0]?.id || ""
   );
 
-  // Referencias para el scroll horizontal de productos
+  // Referencias para los desplazamientos horizontales
   const sliderRef = useRef<HTMLDivElement>(null);
+  const categoriesBarRef = useRef<HTMLDivElement>(null);
 
+  // Funciones de scroll para los productos
   const scrollLeft = () => {
     if (sliderRef.current) {
       sliderRef.current.scrollBy({ left: -230, behavior: "smooth" });
@@ -47,6 +49,19 @@ export default function Menu({ restaurant }: Props) {
   const scrollRight = () => {
     if (sliderRef.current) {
       sliderRef.current.scrollBy({ left: 230, behavior: "smooth" });
+    }
+  };
+
+  // Funciones de scroll para la BARRA DE CATEGORÍAS
+  const scrollCategoriesLeft = () => {
+    if (categoriesBarRef.current) {
+      categoriesBarRef.current.scrollBy({ left: -250, behavior: "smooth" });
+    }
+  };
+
+  const scrollCategoriesRight = () => {
+    if (categoriesBarRef.current) {
+      categoriesBarRef.current.scrollBy({ left: 250, behavior: "smooth" });
     }
   };
 
@@ -113,7 +128,7 @@ export default function Menu({ restaurant }: Props) {
           </h2>
         </div>
 
-        {/* BARRA DE CATEGORÍAS (SCROLL HORIZONTAL) */}
+        {/* BARRA DE CATEGORÍAS CON FLECHAS EN LOS EXTREMOS */}
         <div 
           style={{ 
             position: "sticky", 
@@ -125,10 +140,51 @@ export default function Menu({ restaurant }: Props) {
             padding: "10px 4px", 
             marginBottom: "30px", 
             borderBottom: "1px solid rgba(255,255,255,0.06)",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.5)"
+            boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+            borderRadius: "14px",
+            display: "flex",
+            alignItems: "center"
           }}
         >
-          <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px", scrollbarWidth: "none" }}>
+          {/* Flecha Izquierda Categorías */}
+          <button
+            onClick={scrollCategoriesLeft}
+            aria-label="Anterior categoría"
+            style={{
+              position: "absolute",
+              left: "6px",
+              zIndex: 50,
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              background: "rgba(20, 20, 20, 0.9)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              color: "#ffffff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+              backdropFilter: "blur(8px)",
+              fontSize: "12px"
+            }}
+          >
+            &#10094;
+          </button>
+
+          {/* Lista scrolleable de categorías */}
+          <div 
+            ref={categoriesBarRef}
+            style={{ 
+              display: "flex", 
+              gap: "8px", 
+              overflowX: "auto", 
+              padding: "0 42px 4px 42px",
+              scrollbarWidth: "none",
+              scrollBehavior: "smooth",
+              width: "100%"
+            }}
+          >
             {availableCategories.map((cat: any) => {
               const activeId = selectedCategory || availableCategories[0]?.id;
               const isSelected = activeId === cat.id;
@@ -156,9 +212,35 @@ export default function Menu({ restaurant }: Props) {
               );
             })}
           </div>
+
+          {/* Flecha Derecha Categorías */}
+          <button
+            onClick={scrollCategoriesRight}
+            aria-label="Siguiente categoría"
+            style={{
+              position: "absolute",
+              right: "6px",
+              zIndex: 50,
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              background: "rgba(20, 20, 20, 0.9)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              color: "#ffffff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
+              backdropFilter: "blur(8px)",
+              fontSize: "12px"
+            }}
+          >
+            &#10095;
+          </button>
         </div>
 
-        {/* CONTENIDO CON SCROLL HORIZONTAL INFINITO Y FLECHAS DE NAVEGACIÓN */}
+        {/* CONTENIDO CON SCROLL HORIZONTAL Y FLECHAS DE NAVEGACIÓN */}
         {categories.map((category: any) => {
           const activeId = selectedCategory || availableCategories[0]?.id;
           
@@ -188,7 +270,7 @@ export default function Menu({ restaurant }: Props) {
               transition={{ duration: 0.4 }}
               style={{ marginBottom: "40px" }}
             >
-              {/* Cabecera de Categoría y Flechas de Navegación */}
+              {/* Cabecera de Categoría y Flechas de Navegación de Productos */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", gap: "12px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
                   <h3
@@ -206,7 +288,7 @@ export default function Menu({ restaurant }: Props) {
                   <div style={{ flex: 1, height: "1px", background: "linear-gradient(90deg, rgba(255,255,255,0.1), transparent)" }} />
                 </div>
 
-                {/* Botones de Flecha Izquierda / Derecha */}
+                {/* Botones de Flecha para los productos */}
                 <div style={{ display: "flex", gap: "6px" }}>
                   <button
                     onClick={scrollLeft}
@@ -268,7 +350,7 @@ export default function Menu({ restaurant }: Props) {
                 </div>
               </div>
 
-              {/* FILA DE SCROLL HORIZONTAL COMPACTA */}
+              {/* FILA DE SCROLL HORIZONTAL DE PRODUCTOS */}
               <div
                 ref={sliderRef}
                 style={{
@@ -293,7 +375,7 @@ export default function Menu({ restaurant }: Props) {
                       boxShadow: `0 15px 30px rgba(0,0,0,0.6), 0 0 15px ${theme.primary}20`,
                     }}
                     style={{
-                      flex: "0 0 210px", // Ancho mucho más compacto y estético
+                      flex: "0 0 210px",
                       background: theme.cardStyle === "glass" ? "rgba(20,20,20,0.6)" : "#111111",
                       backdropFilter: "blur(20px)",
                       WebkitBackdropFilter: "blur(20px)",
@@ -382,3 +464,4 @@ export default function Menu({ restaurant }: Props) {
     </section>
   );
 }
+

@@ -33,3 +33,5 @@ export interface RestaurantSettings {
 
   accepts_transfer: boolean;
 }
+
+

@@ -64,3 +64,5 @@ export function getTheme(restaurant: any) {
       "medium",
   };
 }
+
+

@@ -13,3 +13,5 @@ export const defaultRestaurantSettings = {
 
   delivery_enabled: true,
 };
+
+

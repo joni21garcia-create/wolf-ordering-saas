@@ -19,3 +19,5 @@ export function canCheckout(
 ) {
   return subtotal >= minimumOrder;
 }
+
+

@@ -50,3 +50,5 @@ export default function RestaurantStatus({ active }: Props) {
     </div>
   );
 }
+
+

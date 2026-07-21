@@ -83,3 +83,5 @@ export function useManagerPWASettings() {
     refreshSettings, // Exponemos esta función
   };
 }
+
+

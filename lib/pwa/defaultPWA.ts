@@ -19,3 +19,5 @@ export const defaultPWASettings: RestaurantPWASettings = {
 
   app_logo: null,
 };
+
+

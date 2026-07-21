@@ -46,3 +46,4 @@ export interface RestaurantGallery {
   restaurant_id: string;
   image_url: string;
 }
+

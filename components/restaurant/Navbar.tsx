@@ -121,3 +121,5 @@ export default function Navbar({ restaurant }: Props) {
     </motion.nav>
   );
 }
+
+

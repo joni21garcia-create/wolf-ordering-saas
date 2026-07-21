@@ -103,3 +103,5 @@ export const BANNER_PRESET: OptimizeImageOptions = {
   format: "webp",
   quality: 85,
 };
+
+

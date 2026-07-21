@@ -98,3 +98,5 @@ export async function updatePWAAssets({
   console.log("DEBUG: Operación en base de datos finalizada correctamente.");
   return resultData;
 }
+
+

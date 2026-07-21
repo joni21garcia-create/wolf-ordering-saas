@@ -39,3 +39,5 @@ export interface CommissionConfig {
   commission_type: "fixed" | "percentage";
   commission_value: number;
 }
+
+

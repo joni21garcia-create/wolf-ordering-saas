@@ -106,3 +106,5 @@ export default function OrderTypeCard({
     </motion.div>
   );
 }
+
+

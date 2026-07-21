@@ -79,3 +79,5 @@ export async function saveHeroSlide({
   console.log("DEBUG: Guardado exitoso en restaurant_hero_slides.");
   return resultData;
 }
+
+

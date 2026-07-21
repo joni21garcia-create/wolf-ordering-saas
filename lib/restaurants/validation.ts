@@ -184,3 +184,5 @@ VERSIÓN ACTUAL
 export function getAgreementVersion() {
   return CURRENT_AGREEMENT_VERSION;
 }
+
+

@@ -995,3 +995,5 @@ console.log("Manager:", managerSettings.app_logo);
   );
 
 }
+
+

@@ -26,3 +26,5 @@ export const PWA_ICON_SIZES: PWAIconDefinition[] = [
   // Favicon
   { name: "favicon", size: 64, filename: "favicon.png", type: "image/png", favicon: true },
 ];
+
+

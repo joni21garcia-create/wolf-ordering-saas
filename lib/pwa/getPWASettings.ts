@@ -29,3 +29,5 @@ export async function getPWASettings(
 
   return data;
 }
+
+

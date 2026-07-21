@@ -35,3 +35,5 @@ export async function getCurrentUser(token: string) {
     email: user.email,
   };
 }
+
+

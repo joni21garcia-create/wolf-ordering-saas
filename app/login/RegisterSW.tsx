@@ -18,3 +18,5 @@ export default function RegisterSW() {
 
   return null; // Este componente no renderiza nada visual, solo ejecuta el registro
 }
+
+

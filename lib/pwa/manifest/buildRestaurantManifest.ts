@@ -59,3 +59,5 @@ export function buildRestaurantManifest(
     icons,
   };
 }
+
+

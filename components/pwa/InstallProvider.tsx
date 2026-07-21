@@ -40,3 +40,5 @@ export default function InstallProvider({ children }: { children: ReactNode }) {
 export const useInstall = () => {
   return useContext(InstallContext);
 };
+
+

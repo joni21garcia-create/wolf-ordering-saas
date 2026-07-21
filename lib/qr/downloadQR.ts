@@ -20,3 +20,5 @@ export function downloadPNG(
   document.body.removeChild(link);
 
 }
+
+

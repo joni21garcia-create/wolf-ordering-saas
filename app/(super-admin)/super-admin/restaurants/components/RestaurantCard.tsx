@@ -260,3 +260,5 @@ function InfoRow({ icon, value }: { icon: string; value: string }) {
     </div>
   );
 }
+
+

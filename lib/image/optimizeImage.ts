@@ -60,3 +60,5 @@ export async function optimizeImage(
   return pipeline.toBuffer().then((data) => Buffer.from(new Uint8Array(data)));
 
 }
+
+

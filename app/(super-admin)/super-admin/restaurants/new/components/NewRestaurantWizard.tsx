@@ -14,7 +14,6 @@ import NewRestaurantAgreementPreview from "./NewRestaurantAgreementPreview";
 import NewRestaurantSignature from "./NewRestaurantSignature";
 import NewRestaurantSummary from "./NewRestaurantSummary";
 import NewRestaurantFinish from "./NewRestaurantFinish";
-import { createLegalAcceptance } from "@/lib/restaurants/createLegalAcceptance";
 import { createRestaurant } from "@/lib/restaurants/createRestaurant";
 
 import {
@@ -326,19 +325,6 @@ if (!restaurant?.id) {
       id: restaurant.id,
     }));
 
-    await createLegalAcceptance({
-  restaurantId: restaurant.id,
-
-  ownerName:
-    restaurantData.owner_name,
-
-  ownerEmail:
-    restaurantData.owner_email,
-
-  ownerPhone:
-    restaurantData.whatsapp,
-});
-
 localStorage.removeItem(
   "wolf-new-restaurant-draft"
 );
@@ -600,3 +586,5 @@ return (
   </>
 );
 }
+
+

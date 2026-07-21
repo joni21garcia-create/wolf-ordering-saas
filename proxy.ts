@@ -40,3 +40,5 @@ export const config = {
     "/((?!_next/static|_next/image|icons|favicon.ico|manifest.json|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
+
+

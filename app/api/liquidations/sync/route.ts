@@ -163,3 +163,5 @@ const restaurantTotal = Number(
     );
   }
 }
+
+

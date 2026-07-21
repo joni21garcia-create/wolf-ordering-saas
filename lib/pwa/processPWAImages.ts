@@ -78,3 +78,5 @@ export async function processPWAImages({
     throw new Error(`Fallo en el pipeline de procesamiento PWA: ${error.message || error}`);
   }
 }
+
+
