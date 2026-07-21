@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { randomUUID } from "crypto";
+
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { generateAgreementPdf } from "@/lib/legal/generateAgreementPdf";
 import { sendAgreementEmail } from "@/lib/email/sendAgreementEmail";
-import { randomUUID } from "crypto";
-
 
 export async function POST(req: Request) {
   try {
@@ -22,7 +22,9 @@ export async function POST(req: Request) {
           success: false,
           error: "acceptanceId requerido",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
@@ -34,7 +36,8 @@ export async function POST(req: Request) {
       null;
 
     const userAgent =
-      headersList.get("user-agent") ?? null;
+      headersList.get("user-agent") ??
+      null;
 
     const {
       data: acceptance,
@@ -57,13 +60,15 @@ export async function POST(req: Request) {
       );
     }
 
+    const acceptedAt = new Date().toISOString();
+
     const {
       error: updateError,
     } = await supabaseAdmin
       .from("restaurant_legal_acceptance")
       .update({
         status: "accepted",
-        accepted_at: new Date().toISOString(),
+        accepted_at: acceptedAt,
         signature_name: signatureName,
         signature_hash: signatureHash,
         ip_address: ip,
@@ -71,110 +76,132 @@ export async function POST(req: Request) {
       })
       .eq("id", acceptanceId);
 
-      
-      if (updateError) {
-  throw updateError;
-}
-    
-const pdfBytes = await generateAgreementPdf({
-  title: "Acuerdo Comercial Wolf Ordering",
+    if (updateError) {
+      throw updateError;
+    }
 
-  version: acceptance.accepted_version ?? "1.0.0",
+    const {
+      data: restaurant,
+      error: restaurantError,
+    } = await supabaseAdmin
+      .from("restaurants")
+      .select("name")
+      .eq("id", acceptance.restaurant_id)
+      .single();
 
-  content:
-    acceptance.accepted_content_snapshot!,
+    if (restaurantError) {
+      throw restaurantError;
+    }
 
-  ownerName:
-    acceptance.owner_name ?? "",
+    const pdfBytes =
+      await generateAgreementPdf({
+        title: "Acuerdo Comercial Wolf Ordering",
 
-  ownerEmail:
-    acceptance.owner_email ?? "",
+        version:
+          acceptance.accepted_version ??
+          "1.0.0",
 
-  restaurantName:
-    acceptance.restaurant_id,
+        content:
+          acceptance.accepted_content_snapshot!,
 
-  acceptedAt:
-    new Date().toISOString(),
+        ownerName:
+          acceptance.owner_name ?? "",
 
-  ip,
+        ownerEmail:
+          acceptance.owner_email ?? "",
 
-  userAgent,
+        restaurantName:
+          restaurant?.name ??
+          "Restaurante",
 
-  token:
-    acceptance.token,
-});
+        acceptedAt,
 
-const fileName = `${randomUUID()}.pdf`;
-
-const { error: uploadError } =
-  await supabaseAdmin.storage
-    .from("legal-agreements")
-    .upload(fileName, pdfBytes, {
-      contentType: "application/pdf",
-      upsert: false,
-    });
-
-if (uploadError) {
-  throw uploadError;
-}
-
-const { data: publicUrl } =
-  supabaseAdmin.storage
-    .from("legal-agreements")
-    .getPublicUrl(fileName);
-
-await supabaseAdmin
-  .from("restaurant_legal_acceptance")
-  .update({
-    pdf_url: publicUrl.publicUrl,
-  })
-  .eq("id", acceptance.id);
-
-
-  await sendAgreementEmail({
-  ownerName:
-    acceptance.owner_name ?? "",
-
-  ownerEmail:
-    acceptance.owner_email ?? "",
-
-  restaurantName:
-    acceptance.restaurant_id,
-
-  agreementUrl:
-    `${process.env.NEXT_PUBLIC_APP_URL}/legal/accept/${acceptance.token}`,
-
-  pdfUrl:
-    publicUrl.publicUrl,
-});
-
-const { error: eventError } =
-  await supabaseAdmin
-    .from("legal_events")
-    .insert({
-      acceptance_id: acceptance.id,
-
-      event: "agreement_signed",
-
-      description:
-        "El propietario aceptó el acuerdo comercial.",
-
-      performed_by:
-        acceptance.owner_email,
-
-      metadata: {
         ip,
+
         userAgent,
-        owner: acceptance.owner_name,
-        restaurant_id:
-          acceptance.restaurant_id,
-      },
+
+        token:
+          acceptance.token,
+      });
+
+    const fileName =
+      `${randomUUID()}.pdf`;
+
+    const {
+      error: uploadError,
+    } = await supabaseAdmin.storage
+      .from("legal-agreements")
+      .upload(fileName, pdfBytes, {
+        contentType:
+          "application/pdf",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const {
+      data: publicUrl,
+    } = supabaseAdmin.storage
+      .from("legal-agreements")
+      .getPublicUrl(fileName);
+
+    await supabaseAdmin
+      .from("restaurant_legal_acceptance")
+      .update({
+        pdf_url:
+          publicUrl.publicUrl,
+      })
+      .eq("id", acceptance.id);
+
+    await sendAgreementEmail({
+      ownerName:
+        acceptance.owner_name ??
+        "",
+
+      ownerEmail:
+        acceptance.owner_email ??
+        "",
+
+      restaurantName:
+        restaurant?.name ??
+        "Restaurante",
+
+      agreementUrl:
+        `${process.env.NEXT_PUBLIC_APP_URL}/legal/accept/${acceptance.token}`,
+
+      pdfUrl:
+        publicUrl.publicUrl,
     });
 
-if (eventError) {
-  throw eventError;
-}
-  
+    const {
+      error: eventError,
+    } = await supabaseAdmin
+      .from("legal_events")
+      .insert({
+        acceptance_id:
+          acceptance.id,
+
+        event:
+          "agreement_signed",
+
+        description:
+          "El propietario aceptó el acuerdo comercial.",
+
+        performed_by:
+          acceptance.owner_email,
+
+        metadata: {
+          ip,
+          userAgent,
+          owner:
+            acceptance.owner_name,
+          restaurant_id:
+            acceptance.restaurant_id,
+        },
+      });
+
     if (eventError) {
       throw eventError;
     }
@@ -199,6 +226,14 @@ if (eventError) {
     );
   }
 }
+
+
+
+
+
+
+
+
 
 
 
