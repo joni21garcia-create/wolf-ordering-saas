@@ -42,34 +42,70 @@ export function calculateSchedule(
   schedule: RestaurantSchedule
 ): CalculationResult {
 
-  const today =
-    getCurrentDay();
+  const today = getCurrentDay();
 
-  const now =
-    timeToMinutes(
-      getCurrentTime()
-    );
+  const now = timeToMinutes(
+    getCurrentTime()
+  );
 
   const todaySchedule =
-    getDaySchedule(
-      schedule,
-      today
-    );
-
-
+    getDaySchedule(schedule, today);
 
   let isOpen = false;
 
-  let isClosingSoon =
-    false;
+  let isClosingSoon = false;
 
-  let currentOpen:
-    | string
-    | null = null;
+  let currentOpen: string | null = null;
 
-  let currentClose:
-    | string
-    | null = null;
+  let currentClose: string | null = null;
+
+  /**
+   * Revisar si seguimos abiertos por un horario
+   * que comenzó AYER y termina hoy.
+   */
+
+  const yesterday =
+    DAYS[
+      (DAYS.indexOf(today) + 6) % 7
+    ];
+
+  const yesterdaySchedule =
+    getDaySchedule(
+      schedule,
+      yesterday
+    );
+
+  if (
+    yesterdaySchedule.open &&
+    yesterdaySchedule.close &&
+    crossesMidnight(
+      yesterdaySchedule.open,
+      yesterdaySchedule.close
+    )
+  ) {
+
+    const close =
+      timeToMinutes(
+        yesterdaySchedule.close
+      );
+
+    if (now < close) {
+
+      isOpen = true;
+
+      currentOpen =
+        yesterdaySchedule.open;
+
+      currentClose =
+        yesterdaySchedule.close;
+
+      isClosingSoon =
+        close - now <=
+        CLOSING_SOON_MINUTES;
+
+    }
+
+  }
 
   /**
    * Revisar horario de hoy
@@ -114,13 +150,12 @@ export function calculateSchedule(
         isClosingSoon =
           close - now <=
           CLOSING_SOON_MINUTES;
+
       }
 
     } else {
 
-      if (
-        now >= open
-      ) {
+      if (now >= open) {
 
         isOpen = true;
 
@@ -130,16 +165,13 @@ export function calculateSchedule(
         currentClose =
           todaySchedule.close;
 
-        const minutesUntilMidnight =
-          1440 - now;
-
-        const totalRemaining =
-          minutesUntilMidnight +
-          close;
+        const remaining =
+          (1440 - now) + close;
 
         isClosingSoon =
-          totalRemaining <=
+          remaining <=
           CLOSING_SOON_MINUTES;
+
       }
 
     }
@@ -158,16 +190,13 @@ export function calculateSchedule(
     | string
     | null = null;
 
-  let opensToday =
-    false;
+  let opensToday = false;
 
-  let opensTomorrow =
-    false;
+  let opensTomorrow = false;
 
   if (!isOpen) {
 
-    let searchDay =
-      today;
+    let searchDay = today;
 
     for (
       let i = 0;
@@ -204,10 +233,10 @@ export function calculateSchedule(
           nextOpenTime =
             daySchedule.open;
 
-          opensToday =
-            true;
+          opensToday = true;
 
           break;
+
         }
 
         if (i > 0) {
@@ -219,18 +248,16 @@ export function calculateSchedule(
             daySchedule.open;
 
           if (i === 1)
-            opensTomorrow =
-              true;
+            opensTomorrow = true;
 
           break;
+
         }
 
       }
 
       searchDay =
-        getNextDay(
-          searchDay
-        );
+        getNextDay(searchDay);
 
     }
 
