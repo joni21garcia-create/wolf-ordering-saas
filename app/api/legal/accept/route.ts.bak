@@ -82,7 +82,7 @@ const pdfBytes = await generateAgreementPdf({
   version: acceptance.accepted_version ?? "1.0.0",
 
   content:
-    acceptance.accepted_content_snapshot,
+    acceptance.accepted_content_snapshot!,
 
   ownerName:
     acceptance.owner_name ?? "",
@@ -199,3 +199,6 @@ if (eventError) {
     );
   }
 }
+
+
+

@@ -1,4 +1,4 @@
-﻿import { supabaseAdmin } from "@/lib/supabase/supabase";
+import { supabaseAdmin } from "@/lib/supabase/supabase";
 
 import {
   ReservationStatus

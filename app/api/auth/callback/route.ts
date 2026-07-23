@@ -4,8 +4,6 @@ import { createServerClient } from "@supabase/ssr";
 
 export async function GET(request: NextRequest) {
 
-    console.log("🔥 CALLBACK EJECUTADO");
-console.log(request.url);
 
   const { searchParams, origin } =
     new URL(request.url);
@@ -15,9 +13,6 @@ const code = searchParams.get("code");
 
 const next = searchParams.get("next") ?? "";
 
-console.log("URL:", request.url);
-console.log("CODE:", code);
-console.log("NEXT:", next);
 
   if (!code) {
     return NextResponse.redirect(

@@ -32,7 +32,6 @@ export async function saveHeroSlide({
   active = true,
 }: SaveHeroSlideParams) {
   
-  console.log(`DEBUG: Procesando slide para el restaurante: ${restaurantId}`);
 
   const payload = {
     restaurant_id: restaurantId,
@@ -48,7 +47,6 @@ export async function saveHeroSlide({
   let resultData = null;
 
   if (id) {
-    console.log(`DEBUG: Ejecutando UPDATE para el slide con ID: ${id}`);
     const { data, error } = await supabase
       .from("restaurant_hero_slides")
       .update(payload)
@@ -62,7 +60,6 @@ export async function saveHeroSlide({
     }
     resultData = data;
   } else {
-    console.log("DEBUG: El slide no tiene ID. Ejecutando INSERT en la base de datos...");
     const { data, error } = await supabase
       .from("restaurant_hero_slides")
       .insert(payload)
@@ -76,7 +73,6 @@ export async function saveHeroSlide({
     resultData = data;
   }
 
-  console.log("DEBUG: Guardado exitoso en restaurant_hero_slides.");
   return resultData;
 }
 

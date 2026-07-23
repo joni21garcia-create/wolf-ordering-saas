@@ -27,7 +27,6 @@ export default function ResetPasswordPage() {
         data: { session },
       } = await supabase.auth.getSession();
 
-      console.log("SESSION:", session);
 
       if (!session) {
         alert("La sesión de recuperación expiró.");

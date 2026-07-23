@@ -43,8 +43,18 @@ export default function ReservationAgenda({
     "20:00",
   ];
 
-  return (
 
+  const normalizedReservations = reservations.map((reservation) => ({
+    id: reservation.id,
+    customer: reservation.customer,
+    table: reservation.table,
+    guests: reservation.guests,
+    time: reservation.time,
+    status: reservation.status ?? "pending",
+  }));
+
+
+  return (
     <section className="rounded-2xl border border-zinc-800 bg-zinc-950/70 overflow-hidden">
 
       <div className="border-b border-zinc-800 px-8 py-6">
@@ -59,6 +69,7 @@ export default function ReservationAgenda({
 
       </div>
 
+
       <div className="p-8">
 
         {hours.map((hour) => (
@@ -66,9 +77,11 @@ export default function ReservationAgenda({
           <ReservationAgendaHour
             key={hour}
             hour={hour}
-            reservations={reservations.filter(
-              (r) => r.time === hour
-            )}
+            reservations={
+              normalizedReservations.filter(
+                (reservation) => reservation.time === hour
+              )
+            }
           />
 
         ))}
@@ -76,7 +89,5 @@ export default function ReservationAgenda({
       </div>
 
     </section>
-
   );
-
 }

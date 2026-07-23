@@ -18,9 +18,6 @@ export default function RestaurantMap({
     ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
     : "#";
 
-  console.log("LAT:", latitude);
-  console.log("LNG:", longitude);
-  console.log("MAP URL:", googleMapsUrl);
 
   return (
     <motion.div

@@ -1,4 +1,4 @@
-﻿import { supabaseAdmin }
+import { supabaseAdmin }
 from "@/lib/supabase/supabase";
 
 
@@ -8,7 +8,7 @@ export class NotificationService {
 
 
   /*
-    Agregar una notificaciÃ³n
+    Agregar una notificación
     a la cola
   */
 
@@ -81,7 +81,7 @@ export class NotificationService {
 
 
   /*
-    ConfirmaciÃ³n de reserva
+    Confirmación de reserva
   */
 
   async reservationCreated(

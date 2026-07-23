@@ -29,7 +29,6 @@ export async function processPWAImages({
   updateAssets,
 }: ProcessPWAImagesParams): Promise<ProcessPWAImagesResult> {
 
-  console.log("[PWA Process] 1 - Iniciando processPWAImages...");
 
   // 1. Validación de seguridad del Buffer recibido
   if (!originalImage || !Buffer.isBuffer(originalImage) || originalImage.length === 0) {
@@ -39,16 +38,13 @@ export async function processPWAImages({
 
   try {
     // 2. Generación de las variantes de tamaño usando Sharp
-    console.log("[PWA Process] 2 - Generando iconos con Sharp...");
     const generated = await generatePWAIcons(originalImage);
     
     if (!generated?.icons || generated.icons.length === 0) {
       throw new Error("La generación con Sharp no devolvió ningún icono procesado.");
     }
-    console.log(`[PWA Process] -> Se generaron exitosamente ${generated.icons.length} iconos de tamaño diferente.`);
 
     // 3. Subida paralela y optimizada de las imágenes al Storage de Supabase
-    console.log("[PWA Process] 3 - Subiendo iconos generados al Storage...");
     const uploaded = await uploadGeneratedIcons({
       folder,
       icons: generated.icons,
@@ -57,15 +53,12 @@ export async function processPWAImages({
     if (!uploaded || uploaded.length === 0) {
       throw new Error("La subida de archivos al storage de Supabase no devolvió referencias válidas.");
     }
-    console.log("[PWA Process] -> Todos los iconos fueron subidos y refrescados contra caché.");
 
     // 4. Actualización de las referencias en la Base de Datos (Supabase DB)
-    console.log("[PWA Process] 4 - Actualizando registros en la base de datos...");
     const settings = await updateAssets(
       uploaded,
       appLogo
     );
-    console.log("[PWA Process] -> Base de datos actualizada con éxito.");
 
     return {
       icons: uploaded,

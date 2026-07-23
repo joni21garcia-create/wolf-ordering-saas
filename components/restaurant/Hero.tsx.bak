@@ -49,6 +49,7 @@ useEffect(() => {
     restaurant.schedule ??
     restaurant.schedules?.[0] ??
     restaurant;
+
   const status =
     getRestaurantStatus(schedule);
 

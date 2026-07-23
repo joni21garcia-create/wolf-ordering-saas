@@ -48,6 +48,10 @@ export function EditReservationForm({
           reservationId
         );
 
+      if (!reservation) {
+        throw new Error("Reservation not found");
+      }
+
       setForm({
         customer_name:
           reservation.customer_name ?? "",
@@ -276,4 +280,6 @@ export function EditReservationForm({
     </form>
   );
 }
+
+
 

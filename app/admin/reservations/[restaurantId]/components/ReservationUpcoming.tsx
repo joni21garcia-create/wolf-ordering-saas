@@ -52,7 +52,7 @@ export default function ReservationUpcoming({
             <div className="flex items-center justify-between">
 
               <span className="font-semibold text-white">
-                {reservation.customerName}
+                {reservation.guest.fullName}
               </span>
 
               <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-xs text-emerald-400">
@@ -65,7 +65,7 @@ export default function ReservationUpcoming({
 
               <Clock className="h-4 w-4" />
 
-              {reservation.time}
+              {new Date(reservation.datetime.startTime).toLocaleTimeString("es-EC", { hour: "2-digit", minute: "2-digit" })}
 
             </div>
 
@@ -73,7 +73,7 @@ export default function ReservationUpcoming({
 
               <Users className="h-4 w-4" />
 
-              {reservation.partySize} personas
+              {reservation.capacity.guests} personas
 
             </div>
 
@@ -86,3 +86,4 @@ export default function ReservationUpcoming({
     </aside>
   );
 }
+

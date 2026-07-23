@@ -10,13 +10,11 @@ export default function SaveButton({
   onClick,
 }: SaveButtonProps) {
 
-console.log("SaveButton loading:", loading);
 
   return (
     <button
       type="button"
       onClick={() => {
-    console.log("BOTÓN PRESIONADO");
     onClick();
   }}
   style={{

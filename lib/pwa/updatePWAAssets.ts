@@ -18,15 +18,12 @@ export async function updatePWAAssets({
   icons,
 }: UpdatePWAAssetsParams) {
   
-  console.log("DEBUG: Iniciando updatePWAAssets para restaurante:", restaurantId);
-  console.log("DEBUG: Iconos recibidos para procesar:", icons.length);
 
   // Limpiamos la URL para quitar posibles parámetros de query innecesarios
   const getUrl = (filename: string) => {
     const icon = icons.find((i) => i.filename === filename);
     const url = icon?.url ?? null;
     
-    console.log(`DEBUG: Obteniendo URL para ${filename} -> ${url ? "OK" : "NULL"}`);
     
     if (!url) return null;
     
@@ -49,7 +46,6 @@ export async function updatePWAAssets({
     updated_at: new Date().toISOString(),
   };
 
-  console.log("DEBUG: Payload enviado a Supabase:", payload);
 
   // 1. Verificamos si ya existe una configuración previa para este restaurante
   const { data: existing, error: checkError } = await supabase
@@ -67,7 +63,6 @@ export async function updatePWAAssets({
 
   if (existing) {
     // 2A. Si ya existe, ejecutamos el UPDATE original
-    console.log("DEBUG: El registro existe, ejecutando UPDATE...");
     const { data, error } = await supabase
       .from("restaurant_pwa_settings")
       .update(payload)
@@ -79,7 +74,6 @@ export async function updatePWAAssets({
     resultData = data;
   } else {
     // 2B. Si NO existe (Restaurante Nuevo), ejecutamos un INSERT incorporando los campos requeridos NOT NULL
-    console.log("DEBUG: El registro NO existe (Nuevo Restaurante), ejecutando INSERT...");
     const { data, error } = await supabase
       .from("restaurant_pwa_settings")
       .insert({
@@ -95,7 +89,6 @@ export async function updatePWAAssets({
     resultData = data;
   }
 
-  console.log("DEBUG: Operación en base de datos finalizada correctamente.");
   return resultData;
 }
 

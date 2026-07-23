@@ -21,8 +21,6 @@ export async function checkPermission(
     .eq("auth_user_id", authUserId)
     .maybeSingle();
 
-  console.log("CHECK USER:", user);
-  console.log("USER ERROR:", userError);
 
   if (!user) {
     return false;
@@ -39,8 +37,6 @@ export async function checkPermission(
     .select("*")
     .eq("role_id", user.role_id);
 
-  console.log("ALL MODULES:", modules);
-  console.log("MODULES ERROR:", modulesError);
 
   /*
   |--------------------------------------------------------------------------
@@ -54,8 +50,6 @@ export async function checkPermission(
       m.can_view === true
   );
 
-  console.log("SEARCHING:", permission);
-  console.log("FOUND:", permissionFound);
 
   return !!permissionFound;
 }

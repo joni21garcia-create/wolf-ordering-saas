@@ -74,8 +74,6 @@ export default function PWASettingsForm({
     appType === "restaurant"
       ? settings
       : managerSettings;
-console.log("Restaurant logo:", settings.app_logo);
-console.log("Manager logo:", managerSettings.app_logo);
   /*
   =====================================================
   ACTUALIZAR CAMPOS
@@ -194,9 +192,7 @@ console.log("Manager logo:", managerSettings.app_logo);
     managerLoading
   ) {
 
-    console.log("Restaurant:", settings.app_logo);
 
-console.log("Manager:", managerSettings.app_logo);
 
     return (
 

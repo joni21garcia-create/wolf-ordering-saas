@@ -27,7 +27,6 @@ export async function uploadGeneratedIcons({
   // Normalizamos el folder: quitamos espacios y barras redundantes al inicio/final
   const cleanFolder = folder.replace(/^\/+|\/+$/g, "").trim();
 
-  console.log(`[PWA Upload] Iniciando subida de ${icons.length} iconos a la carpeta: "${cleanFolder}"`);
 
   for (const icon of icons) {
     // Ruta limpia y estandarizada dentro del bucket
@@ -70,7 +69,6 @@ export async function uploadGeneratedIcons({
     });
   }
 
-  console.log("[PWA Upload] Subida de iconos PWA completada exitosamente.");
 
   return uploaded;
 }

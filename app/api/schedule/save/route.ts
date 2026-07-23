@@ -14,7 +14,6 @@ const supabase = createClient(
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    console.log("Saving schedule for:", body.restaurantId); // Diagnóstico en Vercel Logs
 
     const { restaurantId, schedule } = body;
 

@@ -24,7 +24,6 @@ export default function AuthCallbackPage() {
         data: { session },
       } = await supabase.auth.getSession();
 
-      console.log("SESSION:", session);
 
       if (!session) {
         router.replace("/login");
@@ -74,7 +73,6 @@ export default function AuthCallbackPage() {
         restaurantUser.restaurant_roles
           ?.code;
 
-      console.log("ROLE:", role);
 
       if (role === "super-user") {
         router.replace("/super-admin");

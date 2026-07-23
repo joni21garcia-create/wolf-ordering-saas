@@ -1,5 +1,3 @@
-"use client";
-
 import type {
   Reservation,
   ReservationCalendarEvent,
@@ -16,24 +14,21 @@ interface ReservationContentProps {
   events?: ReservationCalendarEvent[];
 }
 
-export default function ReservationContent({
+export default async function ReservationContent({
   reservations = [],
   events = [],
 }: ReservationContentProps) {
   return (
     <div className="space-y-8">
-
       <section className="grid gap-6 xl:grid-cols-[2fr_380px]">
-
         <ReservationCalendar
           events={events}
-          date="2026-07-22"
+          date={new Date().toISOString().slice(0, 10)}
         />
 
         <ReservationUpcoming
           reservations={reservations}
         />
-
       </section>
 
       <ReservationAgenda />
@@ -41,7 +36,6 @@ export default function ReservationContent({
       <ReservationTable
         reservations={reservations}
       />
-
     </div>
   );
 }
