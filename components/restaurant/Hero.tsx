@@ -16,7 +16,7 @@ export default function Hero({
   // 🛠️ FIX: Si restaurant viene vacío desde el server, evitamos el crash
   if (!restaurant || Object.keys(restaurant).length === 0) {
     return (
-      <section style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#111827" }}>
+      <section id="top" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#111827" }}>
         <div className="animate-pulse text-gray-400">Cargando restaurante...</div>
       </section>
     );
@@ -130,8 +130,7 @@ useEffect(() => {
       : (restaurant.banner_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1000");
 
   return (
-    <section
-      style={{
+    <section id="top" style={{
         position: "relative",
         minHeight: "100vh",
         overflow: "hidden",
@@ -370,5 +369,6 @@ useEffect(() => {
     </section>
   );
 }
+
 
 
