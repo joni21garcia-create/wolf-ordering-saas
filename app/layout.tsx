@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+
 import ParticlesBackground from "@/components/ParticlesBackground";
 import { SessionProvider } from "@/providers/SessionProvider";
 import ServiceWorkerProvider from "@/components/pwa/ServiceWorkerProvider";

@@ -1,4 +1,4 @@
-﻿import ReservationHeader from "./components/ReservationHeader";
+import ReservationHeader from "./components/ReservationHeader";
 import ReservationStats from "./components/ReservationStats";
 import ReservationContent from "./components/ReservationContent";
 
@@ -6,15 +6,13 @@ import { supabaseAdmin } from "@/lib/supabase/supabase";
 import { mapRestaurantReservation } from "@/modules/reservations/mappers/reservation.mapper";
 
 interface Props {
-  params: {
-    restaurantId: string;
-  };
+  params: Promise<{ restaurantId: string; }>;
 }
 
 export default async function ReservationsPage({
   params,
 }: Props) {
-  const restaurantId = params.restaurantId;
+  const { restaurantId } = await params;
 
   const [{ data }, { data: tables }] = await Promise.all([
     supabaseAdmin
@@ -55,3 +53,7 @@ export default async function ReservationsPage({
     </main>
   );
 }
+
+
+
+

@@ -2,15 +2,20 @@
 
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import timeGridPlugin from "@fullcalendar/timegrid";
 import esLocale from "@fullcalendar/core/locales/es";
 
-import type { ReservationCalendarEvent } from "@/types/reservations";
+import type {
+  ReservationCalendarEvent,
+} from "@/types/reservations";
 
 interface ReservationCalendarGridProps {
   events: ReservationCalendarEvent[];
-  onSelectReservation?: (reservationId: string) => void;
+
+  onSelectReservation?: (
+    reservationId: string
+  ) => void;
 }
 
 export function ReservationCalendarGrid({
@@ -21,40 +26,43 @@ export function ReservationCalendarGrid({
     <div className="p-4 bg-white">
       <FullCalendar
         plugins={[
-          dayGridPlugin,
-          timeGridPlugin,
-          interactionPlugin,
+          dayGridPlugin,          interactionPlugin,
         ]}
         initialView="timeGridWeek"
         height="auto"
         locale={esLocale}
+
         headerToolbar={{
           left: "prev,next today",
           center: "title",
           right: "dayGridMonth,timeGridWeek,timeGridDay",
-        }}
+        }
+
         slotMinTime="09:00:00"
         slotMaxTime="23:00:00"
+        allDaySlot={false}
         nowIndicator={true}
         slotDuration="00:30:00"
-        events={events.map((event) => {
-          const colors: Record<string, string> = {
-            confirmed: "#22c55e",
-            pending: "#f59e0b",
-            checked_in: "#3b82f6",
-            completed: "#6b7280",
-            cancelled: "#ef4444",
-          };
 
-          return {
-            id: event.reservationId,
-            title: `${event.title} (${event.guests})`,
-            start: event.start,
-            end: event.end,
-            backgroundColor: colors[event.status] ?? "#6366f1",
-            borderColor: colors[event.status] ?? "#6366f1",
-          };
-        })}
+events={events.map((event) => {
+  const colors: Record<string, string> = {
+    confirmed: "#22c55e",
+    pending: "#f59e0b",
+    checked_in: "#3b82f6",
+    completed: "#6b7280",
+    cancelled: "#ef4444",
+  };
+
+  return {
+    id: event.reservationId,
+    title: `${event.title} (${event.guests})`,
+    start: event.start,
+    end: event.end,
+    backgroundColor: colors[event.status] ?? "#6366f1",
+    borderColor: colors[event.status] ?? "#6366f1",
+  };
+})}
+
         eventClick={(info) => {
           onSelectReservation?.(info.event.id);
         }}
@@ -62,3 +70,11 @@ export function ReservationCalendarGrid({
     </div>
   );
 }
+
+
+
+
+
+
+
+
