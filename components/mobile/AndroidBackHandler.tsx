@@ -7,19 +7,21 @@ export default function AndroidBackHandler() {
   useEffect(() => {
     console.log("✅ AndroidBackHandler montado");
 
-    const setup = async () => {
-      const listener = await App.addListener("backButton", (event) => {
-        console.log("🔙 Botón Atrás detectado", event);
-      });
+    let listener: { remove: () => Promise<void> } | undefined;
 
-      return listener;
+    const setup = async () => {
+      listener = await App.addListener("backButton", ({ canGoBack }) => {
+        console.log("🔙 Botón Atrás detectado", { canGoBack });
+
+        if (canGoBack) {
+          window.history.back();
+        } else {
+          App.exitApp();
+        }
+      });
     };
 
-    let listener: Awaited<ReturnType<typeof App.addListener>>;
-
-    setup().then((l) => {
-      listener = l;
-    });
+    setup();
 
     return () => {
       listener?.remove();
