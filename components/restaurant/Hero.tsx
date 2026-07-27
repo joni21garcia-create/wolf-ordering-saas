@@ -1,392 +1,367 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useMemo, useCallback, useSyncExternalStore } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
+import {
+  Clock,
+  ShoppingBag,
+  Utensils,
+  ChevronDown,
+  Sparkles,
+  Lock,
+} from "lucide-react";
 import { getTheme } from "@/lib/theme/getTheme";
 import { getRestaurantStatus } from "@/lib/schedule";
 
-interface HeroProps {
-  restaurant: any;
+// Extraemos directamente el tipo de parámetro que espera getRestaurantStatus
+type ScheduleParam = Parameters<typeof getRestaurantStatus>[0];
+
+// --- TIPOS ESTRICTOS ---
+export interface HeroSlide {
+  id?: string | number;
+  image_url?: string;
+  title?: string;
+  subtitle?: string;
+  button_text?: string;
+  button_url?: string;
 }
 
-export default function Hero({
-  restaurant,
-}: HeroProps) {
-  // ðŸ› ï¸ FIX: Si restaurant viene vacÃ­o desde el server, evitamos el crash
+export interface RestaurantData {
+  id?: string | number;
+  name?: string;
+  slug?: string;
+  description?: string;
+  banner_url?: string;
+  primary_color?: string;
+  secondary_color?: string;
+  text_color?: string;
+  schedule?: ScheduleParam;
+  schedules?: ScheduleParam[];
+  slides?: HeroSlide[];
+  heroSlides?: HeroSlide[];
+  [key: string]: unknown; // Permite propiedades de horario directo (monday_open, etc.)
+}
+
+export interface HeroProps {
+  restaurant: RestaurantData;
+}
+
+// --- SINCRONIZADOR DE TIEMPO SSR (Evita Mismatch) ---
+let timeListeners: Array<() => void> = [];
+let timeIntervalId: ReturnType<typeof setInterval> | null = null;
+
+function subscribeTime(callback: () => void) {
+  timeListeners.push(callback);
+  if (!timeIntervalId && typeof window !== "undefined") {
+    timeIntervalId = setInterval(() => {
+      timeListeners.forEach((listener) => listener());
+    }, 30000);
+  }
+  return () => {
+    timeListeners = timeListeners.filter((l) => l !== callback);
+    if (timeListeners.length === 0 && timeIntervalId) {
+      clearInterval(timeIntervalId);
+      timeIntervalId = null;
+    }
+  };
+}
+
+function getTimeSnapshot() {
+  return Math.floor(Date.now() / 30000);
+}
+
+function getServerTimeSnapshot() {
+  return 0;
+}
+
+const DEFAULT_BANNER =
+  "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1000";
+
+export default function Hero({ restaurant }: HeroProps) {
+  // Manejo de carga/estado vacío
   if (!restaurant || Object.keys(restaurant).length === 0) {
     return (
-      <section id="top" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#111827" }}>
-        <div className="animate-pulse text-gray-400">Cargando restaurante...</div>
+      <section
+        id="top"
+        className="min-h-screen flex items-center justify-center bg-[#111827]"
+      >
+        <div className="animate-pulse text-gray-400 font-medium">
+          Cargando restaurante...
+        </div>
       </section>
     );
   }
 
-  const theme = getTheme(restaurant);
-  const slides = restaurant.heroSlides || [];
+  // Extraer Slides
+  const slides = useMemo(() => {
+    if (Array.isArray(restaurant?.heroSlides) && restaurant.heroSlides.length > 0) {
+      return restaurant.heroSlides;
+    }
+    if (Array.isArray(restaurant?.slides) && restaurant.slides.length > 0) {
+      return restaurant.slides;
+    }
+    return [];
+  }, [restaurant?.heroSlides, restaurant?.slides]);
+
   const [currentSlide, setCurrentSlide] = useState(0);
 
-const [mounted, setMounted] = useState(false);
+  // Sincronizador para que el cambio de minutos en cliente sea seguro
+  useSyncExternalStore(subscribeTime, getTimeSnapshot, getServerTimeSnapshot);
 
-useEffect(() => {
-  setMounted(true);
-}, []);
-
-
-  // Estados dinÃ¡micos basados en la hora real
-  const [isOpenNow, setIsOpenNow] = useState<boolean>(false);
-  const [isClosingSoon, setIsClosingSoon] = useState<boolean>(false);
-  const [statusText, setStatusText] = useState<React.ReactNode>("Cargando horarios...");
+  // Rotación de Slides
+  const nextSlide = useCallback(() => {
+    if (slides.length <= 1) return;
+    setCurrentSlide((prev) => (prev >= slides.length - 1 ? 0 : prev + 1));
+  }, [slides.length]);
 
   useEffect(() => {
     if (slides.length <= 1) return;
-
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) =>
-        prev === slides.length - 1 ? 0 : prev + 1
-      );
-    }, 5000);
-
+    const interval = setInterval(nextSlide, 5000);
     return () => clearInterval(interval);
-  }, [slides.length]);
+  }, [slides.length, nextSlide]);
 
-  // --- LÃ“GICA DE HORARIOS ---
-useEffect(() => {
-  if (!mounted) return;
+  // Cálculo de Horarios
+  const status = useMemo(() => {
+    const scheduleData = (restaurant.schedule ??
+      restaurant.schedules?.[0] ??
+      restaurant) as ScheduleParam;
 
-  const schedule =
-    restaurant.schedule ??
-    restaurant.schedules?.[0] ??
-    restaurant;
-  const status =
-    getRestaurantStatus(schedule);
+    const rawStatus = getRestaurantStatus(scheduleData);
 
-  setIsOpenNow(status.isOpen);
+    return {
+      isOpen: Boolean(rawStatus?.isOpen),
+      isClosingSoon: Boolean(rawStatus?.isClosingSoon),
+      message: rawStatus?.message || (rawStatus?.isOpen ? "Abierto" : "Cerrado"),
+      schedule: rawStatus?.schedule || undefined,
+    };
+  }, [restaurant]);
 
-  setIsClosingSoon(
-    status.isClosingSoon
-  );
+  // Tema dinámico
+  const theme = getTheme(restaurant) || { primary: "#f97316", text: "#ffffff" };
 
-  setStatusText(
-    <>
-      {status.message}
+  const currentSlideData = slides.length > 0 ? slides[currentSlide] : null;
 
-      {status.schedule && (
-        <>
-          {" "}
-          â€¢{" "}
-          <span
-            style={{
-              fontWeight: 700,
-              color: "#fff",
-            }}
-          >
-            {status.schedule}
-          </span>
-        </>
-      )}
-    </>
-  );
-
-  const interval =
-    setInterval(() => {
-
-      const status =
-        getRestaurantStatus(
-          schedule
-        );
-
-      setIsOpenNow(
-        status.isOpen
-      );
-
-      setIsClosingSoon(
-        status.isClosingSoon
-      );
-
-      setStatusText(
-        <>
-          {status.message}
-
-          {status.schedule && (
-            <>
-              {" "}
-              â€¢{" "}
-              <span
-                style={{
-                  fontWeight: 700,
-                  color: "#fff",
-                }}
-              >
-                {status.schedule}
-              </span>
-            </>
-          )}
-        </>
-      );
-
-    }, 30000);
-
-  return () =>
-    clearInterval(interval);
-
-}, [restaurant]);
-
-  // Fallback real de banner
   const backgroundImage =
-    slides.length > 0
-      ? slides[currentSlide]?.image_url
-      : (restaurant.banner_url || "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1000");
+    currentSlideData?.image_url ||
+    restaurant?.banner_url ||
+    DEFAULT_BANNER;
+
+  const titleHtml = currentSlideData?.title || restaurant.name || "Wolf Ordering";
+  const subtitleHtml =
+    currentSlideData?.subtitle ||
+    restaurant.description ||
+    "Las mejores hamburguesas artesanales.";
+  const buttonText = currentSlideData?.button_text || "Ordenar Ahora";
+  const orderUrl =
+    currentSlideData?.button_url ||
+    (restaurant.slug ? `/${restaurant.slug}/order` : "#order");
 
   return (
-    <section id="top" style={{
-        position: "relative",
-        minHeight: "100vh",
-        overflow: "hidden",
-      }}
+    <section
+      id="top"
+      aria-label={`Sección principal de ${restaurant.name || "Restaurante"}`}
+      className="relative min-h-[90vh] lg:min-h-screen flex items-center justify-center overflow-hidden bg-[#0F172A] pt-20 pb-16 lg:py-0"
     >
-      {/* Imagen fondo */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: `url(${backgroundImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          transition: "background-image .8s ease",
-          transform: "scale(1.05)",
-        }}
-      />
-
-      {/* Overlay oscuro */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "linear-gradient(90deg, rgba(0,0,0,.95) 0%, rgba(0,0,0,.75) 45%, rgba(0,0,0,.40) 100%)",
-        }}
-      />
-
-      {/* Glow premium */}
-      <div
-        style={{
-          position: "absolute",
-          width: "500px",
-          height: "500px",
-          borderRadius: "50%",
-          background: theme?.primary || "#f97316",
-          filter: "blur(180px)",
-          opacity: 0.15,
-          top: "-120px",
-          right: "-120px",
-        }}
-      />
-
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        style={{
-          position: "relative",
-          zIndex: 10,
-          maxWidth: "1400px",
-          margin: "0 auto",
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 40px",
-        }}
-      >
-        <div style={{ maxWidth: "750px" }}>
-          
-          {/* TÃTULO ENRIQUECIDO */}
-          <h1
-            style={{
-              fontSize: "clamp(2.5rem, 6vw, 5.5rem)",
-              lineHeight: 1.2,
-              fontWeight: "900",
-              color: "#ffffff",
-              marginBottom: "24px",
-            }}
-            dangerouslySetInnerHTML={{
-              __html: slides.length > 0
-                ? (slides[currentSlide]?.title || "")
-                : (restaurant.name || "Wolf Ordering")
-            }}
+      {/* --- FONDO CON TRANSICIÓN DE IMAGEN --- */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={backgroundImage}
+          initial={{ opacity: 0, scale: 1.08 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1 }}
+          className="absolute inset-0 z-0 select-none"
+        >
+          <Image
+            src={backgroundImage}
+            alt="Hero Background"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center transform-gpu"
           />
+          {/* Gradiantes de superposición para legibilidad */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-[#0F172A]/70 to-[#0F172A]/40" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0F172A]/90 via-[#0F172A]/50 to-transparent" />
+        </motion.div>
+      </AnimatePresence>
 
-          {/* SUBTÃTULO ENRIQUECIDO */}
-          <p
-            style={{
-              fontSize: "1.2rem",
-              lineHeight: 1.8,
-              color: "rgba(255, 255, 255, 0.8)",
-              maxWidth: "650px",
-              marginBottom: "40px",
-            }}
-            dangerouslySetInnerHTML={{
-              __html: slides.length > 0
-                ? (slides[currentSlide]?.subtitle || "")
-                : (restaurant.description || "Las mejores hamburguesas artesanales.")
-            }}
-          />
+      {/* --- GLOW AMBIENTAL DINÁMICO --- */}
+      <div
+        className="absolute w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] rounded-full filter blur-[120px] sm:blur-[180px] opacity-25 -top-20 -left-20 pointer-events-none transform-gpu transition-colors duration-700 z-0"
+        style={{ backgroundColor: theme.primary }}
+      />
+
+      {/* --- CONTENIDO PRINCIPAL --- */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="max-w-3xl">
           
-          {/* CONTROL DE ESTADO SUPER PREMIUM CON GLASSMORPHISM */}
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "14px",
-              marginBottom: "35px",
-              padding: "10px 20px",
-              borderRadius: "100px",
-              background: isOpenNow 
-                ? isClosingSoon
-                  ? "linear-gradient(135deg, rgba(250,204,21,0.12) 0%, rgba(250,204,21,0.04) 100%)" 
-                  : "linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.04) 100%)" 
-                : "linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(239,68,68,0.04) 100%)", 
-              border: isOpenNow 
-                ? isClosingSoon
-                  ? "1px solid rgba(250,204,21,0.4)" 
-                  : "1px solid rgba(34,197,94,0.3)" 
-                : "1px solid rgba(239,68,68,0.3)", 
-              boxShadow: isOpenNow
-                ? isClosingSoon
-                  ? "0 8px 32px 0 rgba(250,204,21, 0.08), inset 0 1px 1px rgba(255,255,255,0.05)"
-                  : "0 8px 32px 0 rgba(34,197,94, 0.08), inset 0 1px 1px rgba(255,255,255,0.05)"
-                : "0 8px 32px 0 rgba(239,68,68, 0.08), inset 0 1px 1px rgba(255,255,255,0.05)",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-            }}
+          {/* BADGE DE ESTADO */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full backdrop-blur-md bg-white/10 border border-white/15 shadow-xl mb-6 sm:mb-8"
           >
-            {/* Punto de Pulso de Luz */}
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <span style={{ position: "relative", display: "flex", width: "10px", height: "10px" }}>
-                <span 
-                  className="animate-ping"
-                  style={{
-                    position: "absolute",
-                    display: "inline-flex",
-                    height: "100%",
-                    width: "100%",
-                    borderRadius: "50%",
-                    backgroundColor: isOpenNow ? (isClosingSoon ? "#facc15" : "#22c55e") : "#ef4444",
-                    opacity: 0.6,
-                  }}
-                />
-                <span 
-                  style={{
-                    position: "relative",
-                    display: "inline-flex",
-                    borderRadius: "50%",
-                    height: "10px",
-                    width: "10px",
-                    backgroundColor: isOpenNow ? (isClosingSoon ? "#facc15" : "#22c55e") : "#ef4444",
-                    boxShadow: isOpenNow 
-                      ? (isClosingSoon ? "0 0 10px #facc15" : "0 0 10px #22c55e") 
-                      : "0 0 10px #ef4444",
-                  }}
-                />
-              </span>
-              
+            <span className="relative flex h-3 w-3">
               <span
-                style={{
-                  color: isOpenNow ? (isClosingSoon ? "#facc15" : "#4ade80") : "#f87171",
-                  fontWeight: "800",
-                  fontSize: "12px",
-                  textTransform: "uppercase",
-                  letterSpacing: "1.5px",
-                }}
-              >
-                {mounted ? (isOpenNow ? "Abierto" : "Cerrado") : "..."}
-              </span>
-            </div>
-
-            {/* Separador */}
-            <div 
-              style={{ 
-                width: "1px", 
-                height: "14px", 
-                backgroundColor: "rgba(255, 255, 255, 0.15)" 
-              }} 
-            />
-
-            {/* Horario DinÃ¡mico e Inteligente */}
-            <span style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "13px", fontWeight: "500" }}>
-              {mounted ? statusText : "Cargando horarios..."}
+                className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                  status.isOpen
+                    ? status.isClosingSoon
+                      ? "bg-amber-400"
+                      : "bg-emerald-400"
+                    : "bg-rose-500"
+                }`}
+              />
+              <span
+                className={`relative inline-flex rounded-full h-3 w-3 ${
+                  status.isOpen
+                    ? status.isClosingSoon
+                      ? "bg-amber-500"
+                      : "bg-emerald-500"
+                    : "bg-rose-500"
+                }`}
+              />
             </span>
 
-          </div>
+            <span className="text-xs sm:text-sm font-semibold tracking-wide uppercase text-white/90 flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 opacity-80" />
+              <span>
+                {status.isOpen
+                  ? status.isClosingSoon
+                    ? "Cierra pronto"
+                    : "Abierto ahora"
+                  : "Cerrado"}
+              </span>
+            </span>
 
-          <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-            {mounted && isOpenNow ? (
-              <Link href={slides.length > 0 && slides[currentSlide]?.button_url ? slides[currentSlide].button_url : `/${restaurant.slug}/order`}>
+            {status.schedule && (
+              <>
+                <span className="text-white/40">•</span>
+                <span className="text-xs sm:text-sm text-white/70 font-medium">
+                  {status.schedule}
+                </span>
+              </>
+            )}
+          </motion.div>
+
+          {/* TÍTULO Y SUBTÍTULO CON ANIMACIÓN POR SLIDE */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentSlide}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1
+                className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.1] mb-4 sm:mb-6 drop-shadow-md"
+                dangerouslySetInnerHTML={{ __html: titleHtml }}
+              />
+
+              <p
+                className="text-lg sm:text-xl text-white/80 font-normal leading-relaxed max-w-2xl mb-8 sm:mb-10 drop-shadow-sm"
+                dangerouslySetInnerHTML={{ __html: subtitleHtml }}
+              />
+            </motion.div>
+          </AnimatePresence>
+
+          {/* BOTONES DE ACCIÓN */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4"
+          >
+            {status.isOpen ? (
+              <Link
+                href={orderUrl}
+                className="w-full sm:w-auto outline-none focus-visible:ring-2 focus-visible:ring-white rounded-2xl"
+              >
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  type="button"
+                  className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 shadow-2xl transition-all duration-300"
                   style={{
-                    background: theme?.primary || "#f97316",
-                    color: theme?.text || "#ffffff",
-                    border: "none",
-                    padding: "18px 38px",
-                    borderRadius: "18px",
-                    cursor: "pointer",
-                    fontWeight: "700",
-                    fontSize: "18px",
-                    boxShadow: `0 20px 50px ${(theme?.primary || "#f97316")}55`,
+                    backgroundColor: theme.primary,
+                    color: theme.text,
+                    boxShadow: `0 12px 35px -10px ${theme.primary}80`,
                   }}
                 >
-                  {slides.length > 0 ? slides[currentSlide]?.button_text : "Ordenar Ahora"}
+                  <ShoppingBag className="w-5 h-5" />
+                  <span>{buttonText}</span>
+                  <Sparkles className="w-4 h-4 opacity-75" />
                 </motion.button>
               </Link>
             ) : (
               <button
                 disabled
-                style={{
-                  background: "rgba(239,68,68,.15)",
-                  color: "#ef4444",
-                  border: "1px solid rgba(239,68,68,.25)",
-                  padding: "18px 38px",
-                  borderRadius: "18px",
-                  fontWeight: "700",
-                  fontSize: "18px",
-                  cursor: "not-allowed",
-                }}
+                type="button"
+                aria-disabled="true"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 bg-rose-500/15 text-rose-400 border border-rose-500/30 cursor-not-allowed backdrop-blur-md"
               >
-                ðŸ”’ Restaurante Cerrado
+                <Lock className="w-5 h-5" />
+                <span>Restaurante Cerrado</span>
               </button>
             )}
-            <a href="#menu" style={{ textDecoration: "none" }}>
+
+            <a
+              href="#menu"
+              className="w-full sm:w-auto outline-none focus-visible:ring-2 focus-visible:ring-white rounded-2xl"
+            >
               <button
-                style={{
-                  background: "rgba(255,255,255,.08)",
-                  border: "1px solid rgba(255,255,255,.15)",
-                  color: "#ffffff",
-                  padding: "18px 38px",
-                  borderRadius: "18px",
-                  backdropFilter: "blur(12px)",
-                  cursor: "pointer",
-                  fontWeight: "600",
-                }}
+                type="button"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-lg flex items-center justify-center gap-3 backdrop-blur-md transition-all duration-200 active:scale-95"
               >
-                Ver MenÃº
+                <Utensils className="w-5 h-5" />
+                <span>Ver Menú</span>
               </button>
             </a>
-          </div>
+          </motion.div>
+
+          {/* INDICADORES / SLIDER BULLETS */}
+          {slides.length > 1 && (
+            <div className="flex items-center gap-3 mt-10 sm:mt-12">
+              {slides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSlide(index)}
+                  aria-label={`Ir al slide ${index + 1}`}
+                  className={`h-2 rounded-full transition-all duration-500 ${
+                    currentSlide === index
+                      ? "w-10 bg-white"
+                      : "w-2 bg-white/30 hover:bg-white/50"
+                  }`}
+                  style={{
+                    backgroundColor:
+                      currentSlide === index ? theme.primary : undefined,
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
         </div>
-      </motion.div>
+      </div>
+
+      {/* BOTÓN FLOTANTE SCROLL */}
+      <motion.a
+        href="#menu"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          repeat: Infinity,
+          repeatType: "reverse",
+          duration: 1.2,
+        }}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 text-white/60 hover:text-white transition-colors hidden lg:flex flex-col items-center gap-1 text-xs font-medium uppercase tracking-widest"
+      >
+        <span>Explorar</span>
+        <ChevronDown className="w-4 h-4" />
+      </motion.a>
     </section>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
