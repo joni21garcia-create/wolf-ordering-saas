@@ -52,6 +52,8 @@ useEffect(() => {
 
   // --- LÃ“GICA DE HORARIOS ---
 useEffect(() => {
+  if (!mounted) return;
+
   const schedule =
     restaurant.schedule ??
     restaurant.schedules?.[0] ??
@@ -317,7 +319,7 @@ useEffect(() => {
           </div>
 
           <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-            {isOpenNow ? (
+            {mounted && isOpenNow ? (
               <Link href={slides.length > 0 && slides[currentSlide]?.button_url ? slides[currentSlide].button_url : `/${restaurant.slug}/order`}>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -376,6 +378,10 @@ useEffect(() => {
     </section>
   );
 }
+
+
+
+
 
 
 
