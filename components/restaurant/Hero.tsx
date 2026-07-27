@@ -275,13 +275,19 @@ const Hero = React.memo(function Hero({ restaurant }: HeroProps) {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.1] mb-4 sm:mb-6 drop-shadow-md">
-                {titleHtml}
-              </h1>
+<h1
+  className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.1] mb-4 sm:mb-6 drop-shadow-md"
+dangerouslySetInnerHTML={{
+  __html: titleHtml || "",
+}}
+/>
 
-              <p className="text-lg sm:text-xl text-white/80 font-normal leading-relaxed max-w-2xl mb-8 sm:mb-10 drop-shadow-sm">
-                {subtitleHtml}
-              </p>
+<p
+  className="text-lg sm:text-xl text-white/80 font-normal leading-relaxed max-w-2xl mb-8 sm:mb-10 drop-shadow-sm"
+dangerouslySetInnerHTML={{
+  __html: subtitleHtml || "",
+}}
+/>
             </motion.div>
           </AnimatePresence>
 
