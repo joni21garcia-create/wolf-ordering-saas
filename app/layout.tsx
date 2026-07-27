@@ -9,6 +9,7 @@ import InstallProvider from "@/components/pwa/InstallProvider";
 import AndroidBackHandler from "@/components/mobile/AndroidBackHandler";
 
 
+
 export const viewport: Viewport = {
   themeColor: "#050505",
   width: "device-width",
