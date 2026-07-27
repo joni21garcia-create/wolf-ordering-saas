@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -13,7 +13,7 @@ interface HeroProps {
 export default function Hero({
   restaurant,
 }: HeroProps) {
-  // 🛠️ FIX: Si restaurant viene vacío desde el server, evitamos el crash
+  // ðŸ› ï¸ FIX: Si restaurant viene vacÃ­o desde el server, evitamos el crash
   if (!restaurant || Object.keys(restaurant).length === 0) {
     return (
       <section id="top" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#111827" }}>
@@ -26,7 +26,14 @@ export default function Hero({
   const slides = restaurant.heroSlides || [];
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Estados dinámicos basados en la hora real
+const [mounted, setMounted] = useState(false);
+
+useEffect(() => {
+  setMounted(true);
+}, []);
+
+
+  // Estados dinÃ¡micos basados en la hora real
   const [isOpenNow, setIsOpenNow] = useState<boolean>(false);
   const [isClosingSoon, setIsClosingSoon] = useState<boolean>(false);
   const [statusText, setStatusText] = useState<React.ReactNode>("Cargando horarios...");
@@ -43,7 +50,7 @@ export default function Hero({
     return () => clearInterval(interval);
   }, [slides.length]);
 
-  // --- LÓGICA DE HORARIOS ---
+  // --- LÃ“GICA DE HORARIOS ---
 useEffect(() => {
   const schedule =
     restaurant.schedule ??
@@ -65,7 +72,7 @@ useEffect(() => {
       {status.schedule && (
         <>
           {" "}
-          •{" "}
+          â€¢{" "}
           <span
             style={{
               fontWeight: 700,
@@ -102,7 +109,7 @@ useEffect(() => {
           {status.schedule && (
             <>
               {" "}
-              •{" "}
+              â€¢{" "}
               <span
                 style={{
                   fontWeight: 700,
@@ -190,7 +197,7 @@ useEffect(() => {
       >
         <div style={{ maxWidth: "750px" }}>
           
-          {/* TÍTULO ENRIQUECIDO */}
+          {/* TÃTULO ENRIQUECIDO */}
           <h1
             style={{
               fontSize: "clamp(2.5rem, 6vw, 5.5rem)",
@@ -206,7 +213,7 @@ useEffect(() => {
             }}
           />
 
-          {/* SUBTÍTULO ENRIQUECIDO */}
+          {/* SUBTÃTULO ENRIQUECIDO */}
           <p
             style={{
               fontSize: "1.2rem",
@@ -289,7 +296,7 @@ useEffect(() => {
                   letterSpacing: "1.5px",
                 }}
               >
-                {isOpenNow ? "Abierto" : "Cerrado"}
+                {mounted ? (isOpenNow ? "Abierto" : "Cerrado") : "..."}
               </span>
             </div>
 
@@ -302,9 +309,9 @@ useEffect(() => {
               }} 
             />
 
-            {/* Horario Dinámico e Inteligente */}
+            {/* Horario DinÃ¡mico e Inteligente */}
             <span style={{ color: "rgba(255, 255, 255, 0.85)", fontSize: "13px", fontWeight: "500" }}>
-              {statusText}
+              {mounted ? statusText : "Cargando horarios..."}
             </span>
 
           </div>
@@ -344,7 +351,7 @@ useEffect(() => {
                   cursor: "not-allowed",
                 }}
               >
-                🔒 Restaurante Cerrado
+                ðŸ”’ Restaurante Cerrado
               </button>
             )}
             <a href="#menu" style={{ textDecoration: "none" }}>
@@ -360,7 +367,7 @@ useEffect(() => {
                   fontWeight: "600",
                 }}
               >
-                Ver Menú
+                Ver MenÃº
               </button>
             </a>
           </div>
@@ -369,6 +376,11 @@ useEffect(() => {
     </section>
   );
 }
+
+
+
+
+
 
 
 
