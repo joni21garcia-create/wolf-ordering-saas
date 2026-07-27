@@ -1,32 +1,74 @@
 @import "tailwindcss";
 
-/* =========================================
-   VARIABLES
-========================================= */
+/* ==========================================================
+   WOLF ORDERING SAAS
+   GLOBAL STYLES
+   Parte 1/4
+   Base del sistema
+========================================================== */
+
+/* ==========================================================
+   VARIABLES GLOBALES
+========================================================== */
 
 :root {
   --wolf-orange: #f97316;
   --wolf-orange-light: #fb923c;
   --wolf-orange-dark: #ea580c;
   --wolf-dark: #050505;
+
+  --wolf-text: #ffffff;
+
+  --wolf-radius: 24px;
+
+  --wolf-transition: .30s ease;
 }
 
-/* =========================================
-   BASE
-========================================= */
+/* ==========================================================
+   HTML
+========================================================== */
 
 html {
+  height: 100%;
+
   scroll-behavior: smooth;
+
+  overflow-x: hidden;
+
+  overscroll-behavior-y: none;
+
+  scrollbar-width: none;
+
+  -ms-overflow-style: none;
+
+  color-scheme: dark;
 }
 
-body {
-  min-height: 100vh;
+/* ==========================================================
+   BODY
+========================================================== */
 
-  color: white;
+body {
+
+  min-height: 100dvh;
+
+  height: 100%;
+
+  margin: 0;
+
+  padding-top: env(safe-area-inset-top);
+
+  padding-bottom: env(safe-area-inset-bottom);
+
+  color: var(--wolf-text);
 
   font-family: Arial, Helvetica, sans-serif;
 
   overflow-x: hidden;
+
+  overscroll-behavior-y: none;
+
+  -webkit-overflow-scrolling: touch;
 
   position: relative;
 
@@ -36,24 +78,126 @@ body {
       rgba(249,115,22,.20),
       transparent 25%
     ),
+
     radial-gradient(
       circle at bottom left,
       rgba(249,115,22,.15),
       transparent 20%
     ),
+
     radial-gradient(
       circle at center,
       rgba(249,115,22,.05),
       transparent 45%
     ),
-    #050505;
+
+    var(--wolf-dark);
 }
 
-/* =========================================
+/* ==========================================================
+   SAFE AREA
+========================================================== */
+
+main {
+
+  padding-top: env(safe-area-inset-top);
+
+  padding-bottom: env(safe-area-inset-bottom);
+
+  padding-left: env(safe-area-inset-left);
+
+  padding-right: env(safe-area-inset-right);
+}
+
+/* ==========================================================
+   SCROLLBAR
+   (Oculta la barra en Web, PWA y Android)
+========================================================== */
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+::-webkit-scrollbar {
+
+  width: 0;
+
+  height: 0;
+
+  display: none;
+}
+
+/* ==========================================================
+   TOUCH
+========================================================== */
+
+* {
+
+  -webkit-tap-highlight-color: transparent;
+
+  box-sizing: border-box;
+}
+
+button,
+[role="button"] {
+
+  user-select: none;
+
+  -webkit-user-select: none;
+
+  touch-action: manipulation;
+}
+
+/* ==========================================================
+   IMÁGENES
+========================================================== */
+
+img {
+
+  display: block;
+
+  max-width: 100%;
+
+  height: auto;
+}
+
+/* ==========================================================
+   ENLACES
+========================================================== */
+
+a {
+
+  color: inherit;
+
+  text-decoration: none;
+}
+
+/* ==========================================================
+   SELECCIÓN DE TEXTO
+========================================================== */
+
+::selection {
+
+  background: rgba(249,115,22,.35);
+
+  color: white;
+}
+
+/* ==========================================================
+   FIN PARTE 1
+   La Parte 2 comienza con:
    GRID PREMIUM
-========================================= */
+========================================================== */
+/* ==========================================================
+   PARTE 2/4
+   SISTEMA VISUAL
+========================================================== */
+
+
+/* ==========================================================
+   GRID PREMIUM
+========================================================== */
 
 body::before {
+
   content: "";
 
   position: fixed;
@@ -62,11 +206,15 @@ body::before {
 
   pointer-events: none;
 
+  z-index: -5;
+
   background-image:
+
     linear-gradient(
       rgba(255,255,255,.02) 1px,
       transparent 1px
     ),
+
     linear-gradient(
       90deg,
       rgba(255,255,255,.02) 1px,
@@ -74,69 +222,76 @@ body::before {
     );
 
   background-size: 80px 80px;
+}
+
+
+/* ==========================================================
+   ORBES DECORATIVOS
+========================================================== */
+
+.wolf-orb-top,
+.wolf-orb-bottom{
+
+  position: fixed;
+
+  width: 600px;
+
+  height: 600px;
+
+  border-radius: 50%;
+
+  filter: blur(70px);
+
+  pointer-events: none;
 
   z-index: -4;
 }
 
-/* =========================================
-   ORBES PREMIUM
-========================================= */
-
-.wolf-orb-top {
-  position: fixed;
+.wolf-orb-top{
 
   top: -250px;
+
   right: -250px;
 
-  width: 600px;
-  height: 600px;
-
-  border-radius: 50%;
-
   background:
+
     radial-gradient(
+
       circle,
+
       rgba(249,115,22,.22),
+
       transparent 70%
+
     );
-
-  filter: blur(70px);
-
-  pointer-events: none;
-
-  z-index: -3;
 }
 
-.wolf-orb-bottom {
-  position: fixed;
+.wolf-orb-bottom{
 
   left: -250px;
+
   bottom: -250px;
 
-  width: 600px;
-  height: 600px;
-
-  border-radius: 50%;
-
   background:
+
     radial-gradient(
+
       circle,
+
       rgba(249,115,22,.18),
+
       transparent 70%
+
     );
-
-  filter: blur(70px);
-
-  pointer-events: none;
-
-  z-index: -3;
 }
 
-/* =========================================
-   LINEAS STRIPE
-========================================= */
 
-.stripe-lines {
+/* ==========================================================
+   LÍNEAS PREMIUM
+========================================================== */
+
+.stripe-lines{
+
   position: fixed;
 
   inset: 0;
@@ -145,331 +300,695 @@ body::before {
 
   pointer-events: none;
 
-  z-index: -2;
+  z-index: -3;
 }
 
-.stripe-lines::before {
+.stripe-lines::before{
+
   content: "";
 
   position: absolute;
 
   width: 220%;
+
   height: 220%;
 
   top: -60%;
+
   left: -60%;
 
   background:
+
     repeating-linear-gradient(
+
       -45deg,
+
       transparent,
+
       transparent 90px,
+
       rgba(249,115,22,.025) 92px,
+
       rgba(249,115,22,.025) 94px
+
     );
 
   animation: stripeMove 60s linear infinite;
 }
 
-@keyframes stripeMove {
-  from {
-    transform: rotate(0deg);
-  }
 
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* ==========================================================
+   PARTÍCULAS
+========================================================== */
 
-/* =========================================
-   PARTICULAS PREMIUM
-========================================= */
+.wolf-particle{
 
-.wolf-particle {
   position: fixed;
 
   width: 3px;
+
   height: 3px;
 
   border-radius: 999px;
 
-  background: rgba(
-    249,
-    115,
-    22,
-    .45
-  );
+  pointer-events: none;
+
+  z-index: -2;
+
+  background:
+
+    rgba(249,115,22,.45);
 
   filter: blur(1px);
 
   box-shadow:
+
     0 0 8px rgba(249,115,22,.25),
+
     0 0 18px rgba(249,115,22,.15);
 
-  pointer-events: none;
-
-  z-index: -1;
-
   animation:
+
     wolfFloat linear infinite;
 }
 
-@keyframes wolfFloat {
-  from {
-    transform:
-      translateY(0px)
-      translateX(0px);
-  }
 
-  to {
-    transform:
-      translateY(-800px)
-      translateX(120px);
-  }
-}
+/* ==========================================================
+   FONDO DE ORDER PAGE
+========================================================== */
 
-/* =========================================
-   GLASS CARD
-========================================= */
+.wolf-order-background{
 
-.glass-card {
-  background: rgba(255,255,255,.03);
-
-  border: 1px solid rgba(255,255,255,.08);
-
-  backdrop-filter: blur(20px);
-
-  -webkit-backdrop-filter: blur(20px);
-
-  border-radius: 24px;
-
-  transition: all .3s ease;
-}
-
-.glass-card:hover {
-  transform: translateY(-5px);
-
-  border-color:
-    rgba(249,115,22,.35);
-
-  box-shadow:
-    0 0 30px rgba(249,115,22,.10);
-}
-
-/* =========================================
-   SHADOW PREMIUM
-========================================= */
-
-.wolf-shadow {
-  box-shadow:
-    0 0 20px rgba(249,115,22,.10),
-    0 0 60px rgba(249,115,22,.08),
-    0 0 120px rgba(249,115,22,.04);
-}
-
-/* =========================================
-   BOTONES PREMIUM
-========================================= */
-
-.wolf-button {
-  background:
-    linear-gradient(
-      135deg,
-      var(--wolf-orange),
-      var(--wolf-orange-dark)
-    );
-
-  color: white;
-
-  transition: all .25s ease;
-
-  box-shadow:
-    0 0 25px rgba(249,115,22,.25);
-}
-
-.wolf-button:hover {
-  transform:
-    translateY(-3px)
-    scale(1.02);
-
-  box-shadow:
-    0 0 35px rgba(249,115,22,.45);
-}
-
-/* =========================================
-   HOVER PREMIUM
-========================================= */
-
-.hover-lift {
-  transition: all .3s ease;
-}
-
-.hover-lift:hover {
-  transform:
-    translateY(-8px)
-    scale(1.01);
-}
-
-/* =========================================
-   TITULOS PREMIUM
-========================================= */
-
-.wolf-title {
-  background:
-    linear-gradient(
-      90deg,
-      #ffffff,
-      #f97316
-    );
-
-  background-clip: text;
-  -webkit-background-clip: text;
-
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-}
-
-/* =========================================
-   SCROLLBAR
-========================================= */
-
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #0b0b0b;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #f97316;
-
-  border-radius: 999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #fb923c;
-}
-/* =========================================
-   ORDER PAGE BACKGROUND
-========================================= */
-
-.wolf-order-background {
   position: relative;
+
   isolation: isolate;
 }
 
-.wolf-order-background::before {
+.wolf-order-background::before{
+
   content: "";
 
   position: fixed;
 
   inset: 0;
-
-  background:
-    radial-gradient(
-      circle at top right,
-      rgba(249,115,22,.08),
-      transparent 25%
-    ),
-    radial-gradient(
-      circle at bottom left,
-      rgba(249,115,22,.05),
-      transparent 20%
-    );
 
   pointer-events: none;
 
   z-index: -1;
+
+  background:
+
+    radial-gradient(
+
+      circle at top right,
+
+      rgba(249,115,22,.08),
+
+      transparent 25%
+
+    ),
+
+    radial-gradient(
+
+      circle at bottom left,
+
+      rgba(249,115,22,.05),
+
+      transparent 20%
+
+    );
 }
 
-.wolf-order-background::after {
+.wolf-order-background::after{
+
   content: "";
 
   position: fixed;
 
   inset: 0;
 
+  pointer-events: none;
+
+  z-index: -1;
+
+  opacity: .15;
+
   background-image:
+
     radial-gradient(
+
       rgba(249,115,22,.25) 1px,
+
       transparent 1px
+
     );
 
   background-size: 250px 250px;
 
   animation:
+
     wolfParticles 35s linear infinite;
-
-  opacity: .15;
-
-  pointer-events: none;
-
-  z-index: -1;
-}
-/* 1. Evita que la página "rebote" al hacer scroll */
-body {
-  overscroll-behavior-y: none; 
 }
 
-/* 2. Evita la selección de texto no deseada en botones */
-button, [role="button"] {
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
-}
 
-/* 3. Asegura que el contenido respete el área segura del notch (iPhone) */
-main {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-}
-/* --- Ajustes finales para comportamiento de App Nativa --- */
+/* ==========================================================
+   ANIMACIONES
+========================================================== */
 
-/* 1. Elimina el rebote elástico (scroll bounce) para que la app se sienta sólida */
-html, body {
-  overscroll-behavior-y: none;
-  overflow-x: hidden;
-  height: 100%;
-}
+@keyframes stripeMove{
 
-/* 2. Elimina el destello gris/azul al tocar botones */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
+  from{
 
-/* 3. Asegura que el diseño respete el notch y la barra inferior de iPhone/Android */
-body {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-}
-/* Cart.tsx / CustomerForm.tsx styles */
-.container-responsive {
-  padding: 40px;
-  border-radius: 30px;
-}
+    transform: rotate(0deg);
 
-@media (max-width: 768px) {
-  .container-responsive {
-    padding: 20px;
-    border-radius: 20px;
+  }
+
+  to{
+
+    transform: rotate(360deg);
+
   }
 }
 
-/* Para el Grid de productos (DigitalMenu.tsx) */
-.grid-responsive {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-}
+@keyframes wolfFloat{
 
-@media (max-width: 768px) {
-  .grid-responsive {
-    grid-template-columns: 1fr; /* Una sola columna en móvil */
+  from{
+
+    transform:
+
+      translateY(0)
+
+      translateX(0);
+
+  }
+
+  to{
+
+    transform:
+
+      translateY(-800px)
+
+      translateX(120px);
+
   }
 }
-html, body {
-  color-scheme: dark !important;
+
+@keyframes wolfParticles{
+
+  from{
+
+    background-position:
+
+      0 0;
+
+  }
+
+  to{
+
+    background-position:
+
+      250px -250px;
+
+  }
 }
+
+
+/* ==========================================================
+   FIN PARTE 2
+   La Parte 3 comienza con:
+
+   GLASS CARD
+========================================================== */
+/* ==========================================================
+   PARTE 3/4
+   COMPONENTES REUTILIZABLES
+========================================================== */
+
+
+/* ==========================================================
+   GLASS CARD
+========================================================== */
+
+.glass-card{
+
+  background:
+    rgba(255,255,255,.03);
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  border-radius:
+    var(--wolf-radius);
+
+  backdrop-filter:
+    blur(20px);
+
+  -webkit-backdrop-filter:
+    blur(20px);
+
+  transition:
+    transform var(--wolf-transition),
+    box-shadow var(--wolf-transition),
+    border-color var(--wolf-transition);
+}
+
+.glass-card:hover{
+
+  transform:
+    translateY(-5px);
+
+  border-color:
+    rgba(249,115,22,.35);
+
+  box-shadow:
+
+    0 0 30px rgba(249,115,22,.10);
+}
+
+
+/* ==========================================================
+   SOMBRAS
+========================================================== */
+
+.wolf-shadow{
+
+  box-shadow:
+
+    0 0 20px rgba(249,115,22,.10),
+
+    0 0 60px rgba(249,115,22,.08),
+
+    0 0 120px rgba(249,115,22,.04);
+}
+
+
+/* ==========================================================
+   BOTÓN PRINCIPAL
+========================================================== */
+
+.wolf-button{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:.6rem;
+
+  cursor:pointer;
+
+  border:none;
+
+  outline:none;
+
+  color:white;
+
+  font-weight:600;
+
+  transition:
+
+    transform .25s ease,
+
+    box-shadow .25s ease,
+
+    opacity .25s ease;
+
+  background:
+
+    linear-gradient(
+
+      135deg,
+
+      var(--wolf-orange),
+
+      var(--wolf-orange-dark)
+
+    );
+
+  box-shadow:
+
+    0 0 25px rgba(249,115,22,.25);
+}
+
+.wolf-button:hover{
+
+  transform:
+
+    translateY(-3px)
+
+    scale(1.02);
+
+  box-shadow:
+
+    0 0 35px rgba(249,115,22,.45);
+}
+
+.wolf-button:active{
+
+  transform:
+
+    scale(.98);
+}
+
+.wolf-button:disabled{
+
+  opacity:.55;
+
+  cursor:not-allowed;
+}
+
+
+/* ==========================================================
+   EFECTO HOVER
+========================================================== */
+
+.hover-lift{
+
+  transition:
+
+    transform .30s ease,
+
+    box-shadow .30s ease;
+}
+
+.hover-lift:hover{
+
+  transform:
+
+    translateY(-8px)
+
+    scale(1.01);
+}
+
+
+/* ==========================================================
+   TÍTULOS
+========================================================== */
+
+.wolf-title{
+
+  background:
+
+    linear-gradient(
+
+      90deg,
+
+      #ffffff,
+
+      var(--wolf-orange)
+
+    );
+
+  background-clip:text;
+
+  -webkit-background-clip:text;
+
+  color:transparent;
+
+  -webkit-text-fill-color:transparent;
+}
+
+
+/* ==========================================================
+   CONTENEDORES RESPONSIVE
+========================================================== */
+
+.container-responsive{
+
+  width:100%;
+
+  padding:40px;
+
+  border-radius:30px;
+}
+
+
+/* ==========================================================
+   GRID RESPONSIVE
+========================================================== */
+
+.grid-responsive{
+
+  display:grid;
+
+  grid-template-columns:
+
+    repeat(
+
+      auto-fit,
+
+      minmax(300px,1fr)
+
+    );
+
+  gap:20px;
+}
+
+
+/* ==========================================================
+   UTILIDADES
+========================================================== */
+
+.full-center{
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+}
+
+.flex-between{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+}
+
+.flex-column{
+
+  display:flex;
+
+  flex-direction:column;
+}
+
+.text-orange{
+
+  color:
+
+    var(--wolf-orange);
+}
+
+.bg-orange{
+
+  background:
+
+    var(--wolf-orange);
+}
+
+.rounded-premium{
+
+  border-radius:
+
+    var(--wolf-radius);
+}
+
+
+/* ==========================================================
+   TRANSICIÓN GLOBAL
+========================================================== */
+
+button,
+a,
+input,
+textarea,
+select{
+
+  transition:
+
+    all .25s ease;
+}
+
+
+/* ==========================================================
+   FIN PARTE 3
+   La Parte 4 comienza con:
+
+   RESPONSIVE
+========================================================== */
+/* ==========================================================
+   PARTE 4/4
+   RESPONSIVE + MOBILE + PERFORMANCE
+========================================================== */
+
+
+/* ==========================================================
+   TABLETS
+========================================================== */
+
+@media (max-width:1024px){
+
+  .container-responsive{
+
+    padding:30px;
+
+    border-radius:24px;
+  }
+
+}
+
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
+@media (max-width:768px){
+
+  .container-responsive{
+
+    padding:20px;
+
+    border-radius:20px;
+  }
+
+  .grid-responsive{
+
+    grid-template-columns:1fr;
+  }
+
+}
+
+
+/* ==========================================================
+   SMALL DEVICES
+========================================================== */
+
+@media (max-width:480px){
+
+  .container-responsive{
+
+    padding:16px;
+
+    border-radius:18px;
+  }
+
+}
+
+
+/* ==========================================================
+   OPTIMIZACIÓN DE IMÁGENES
+========================================================== */
+
+img{
+
+  image-rendering:auto;
+
+  object-fit:cover;
+}
+
+
+/* ==========================================================
+   INPUTS
+========================================================== */
+
+input,
+textarea,
+select{
+
+  font:inherit;
+
+  color:inherit;
+
+  background:transparent;
+
+  outline:none;
+}
+
+
+/* ==========================================================
+   SCROLL SUAVE EN IOS
+========================================================== */
+
+*{
+
+  -webkit-overflow-scrolling:touch;
+}
+
+
+/* ==========================================================
+   PERFORMANCE
+========================================================== */
+
+.wolf-orb-top,
+.wolf-orb-bottom,
+.stripe-lines,
+.wolf-particle{
+
+  will-change:transform;
+}
+
+
+/* ==========================================================
+   REDUCE MOTION
+========================================================== */
+
+@media (prefers-reduced-motion:reduce){
+
+  *{
+
+    animation:none !important;
+
+    transition:none !important;
+
+    scroll-behavior:auto !important;
+
+  }
+
+}
+
+
+/* ==========================================================
+   DARK MODE
+========================================================== */
+
+html{
+
+  color-scheme:dark;
+}
+
+
+/* ==========================================================
+   SELECCIÓN
+========================================================== */
+
+::selection{
+
+  background:rgba(249,115,22,.30);
+
+  color:white;
+}
+
+
+/* ==========================================================
+   FOCUS ACCESIBLE
+========================================================== */
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible{
+
+  outline:2px solid rgba(249,115,22,.65);
+
+  outline-offset:2px;
+
+}
+
+
+/* ==========================================================
+   FIN DEL ARCHIVO
+========================================================== */

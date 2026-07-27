@@ -6,6 +6,7 @@ import { SessionProvider } from "@/providers/SessionProvider";
 import ServiceWorkerProvider from "@/components/pwa/ServiceWorkerProvider";
 import UpdateBanner from "@/components/pwa/UpdateBanner";
 import InstallProvider from "@/components/pwa/InstallProvider";
+import AndroidBackHandler from "@/components/mobile/AndroidBackHandler";
 
 
 export const viewport: Viewport = {
@@ -36,11 +37,33 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" data-scroll-behavior="smooth">
-      <body className="text-white bg-[#050505] antialiased overflow-x-hidden">
+    <html
+  lang="es"
+  suppressHydrationWarning
+  data-scroll-behavior="smooth"
+>
+      <body
+  className="
+    bg-[#050505]
+    text-white
+    antialiased
+    overflow-x-hidden
+    overscroll-none
+    min-h-dvh
+    selection:bg-orange-500/30
+  "
+>
         
         {/* Capas decorativas fijas con pointer-events-none */}
-        <div className="fixed inset-0 pointer-events-none -z-10">
+        <div
+  className="
+    fixed
+    inset-0
+    pointer-events-none
+    overflow-hidden
+    -z-10
+  "
+>
           <div className="wolf-orb-top" />
           <div className="wolf-orb-bottom" />
           <div className="stripe-lines" />
@@ -48,11 +71,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <SessionProvider>
+          <AndroidBackHandler />
           <ServiceWorkerProvider />
           <InstallProvider>
             <UpdateBanner />
             {/* main envuelto para asegurar que ocupe todo el espacio */}
-            <main className="relative min-h-screen">
+            <main
+  className="
+    relative
+    min-h-dvh
+    w-full
+    overflow-x-hidden
+  "
+>
               {children}
             </main>
           </InstallProvider>
@@ -61,8 +92,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-
-
-
-
-
