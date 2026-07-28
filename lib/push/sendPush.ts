@@ -77,15 +77,22 @@ export async function sendPush({
       try {
         const id = await messaging.send({
           token: device.fcm_token,
+
           notification: {
             title,
             body,
           },
+
           data: {
             url,
           },
+
           android: {
             priority: "high",
+            notification: {
+              channelId: "orders",
+              sound: "default",
+            },
           },
         });
 

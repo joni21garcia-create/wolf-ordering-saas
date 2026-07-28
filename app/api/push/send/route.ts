@@ -64,15 +64,22 @@ export async function POST(req: NextRequest) {
 
           const response = await messaging.send({
             token: device.fcm_token,
+
             notification: {
               title,
               body,
             },
+
             data: {
               url: url ?? "",
             },
+
             android: {
               priority: "high",
+              notification: {
+                channelId: "orders",
+                sound: "default",
+              },
             },
           });
 
