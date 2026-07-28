@@ -41,25 +41,15 @@ export async function registerSW(path: string) {
           return;
         }
 
-        /*
-         Primera instalación
-        */
-
+        // Primera instalación
         if (!navigator.serviceWorker.controller) {
           console.log(
             "[SW] Instalación inicial completada."
           );
-
           return;
         }
 
-        /*
-         Nueva versión disponible
-        */
-
-        console.log(
-          "[SW] Nueva versión detectada."
-        );
+        console.log("[SW] Nueva versión detectada.");
 
         registration.waiting?.postMessage({
           type: "SKIP_WAITING",
@@ -90,7 +80,7 @@ export async function registerSW(path: string) {
     }
 
     /* ======================================================
-       NUEVO SW TOMO EL CONTROL
+       NUEVO SW TOMÓ EL CONTROL
     ====================================================== */
 
     let refreshing = false;
@@ -121,30 +111,24 @@ export async function registerSW(path: string) {
 
         switch (event.data.type) {
           case "SW_READY":
-
             console.log(
               "[SW] Ready",
               event.data.version
             );
-
             break;
 
           case "SW_ACTIVATED":
-
             console.log(
               "[SW] Activado",
               event.data.version
             );
-
             break;
 
           case "VERSION":
-
             console.log(
               "[SW] Version:",
               event.data.version
             );
-
             break;
         }
       }
@@ -154,16 +138,29 @@ export async function registerSW(path: string) {
        BUSCAR ACTUALIZACIONES
     ====================================================== */
 
-    try {
-      registration.update();
-    } catch {}
+    // Espera unos segundos antes de la primera comprobación
+    setTimeout(async () => {
+      try {
+        await registration.update();
+        console.log("[SW] Update check OK");
+      } catch (error) {
+        console.warn(
+          "[SW] No fue posible comprobar actualizaciones:",
+          error
+        );
+      }
+    }, 5000);
 
-    /*
-      Buscar nuevas versiones cada minuto
-    */
-
-    setInterval(() => {
-      registration.update();
+    // Revisar actualizaciones cada minuto
+    setInterval(async () => {
+      try {
+        await registration.update();
+      } catch (error) {
+        console.warn(
+          "[SW] Error actualizando Service Worker:",
+          error
+        );
+      }
     }, 60000);
 
   } catch (error) {
@@ -173,5 +170,3 @@ export async function registerSW(path: string) {
     );
   }
 }
-
-

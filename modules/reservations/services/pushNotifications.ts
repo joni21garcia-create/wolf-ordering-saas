@@ -1,12 +1,25 @@
 import { PushNotifications } from "@capacitor/push-notifications";
+import { App } from "@capacitor/app";
 
-export async function initializePushNotifications() {
+let initialized = false;
+
+export async function initializePushNotifications(
+  onNotificationClick?: (url: string) => void
+) {
+  if (initialized) {
+    console.log("[PUSH] Ya inicializado.");
+    return;
+  }
+
+  initialized = true;
+
   console.log("🔥 Entró a initializePushNotifications()");
 
   try {
     console.log("[PUSH] Inicializando...");
 
     let permission = await PushNotifications.checkPermissions();
+
     console.log(
       "[PUSH] Permisos actuales:",
       JSON.stringify(permission)
@@ -26,6 +39,9 @@ export async function initializePushNotifications() {
       return;
     }
 
+    // Elimina listeners anteriores por seguridad
+    await PushNotifications.removeAllListeners();
+
     PushNotifications.addListener("registration", async (token) => {
       console.log("[PUSH] ✅ Token FCM:", token.value);
 
@@ -42,26 +58,27 @@ export async function initializePushNotifications() {
           }),
         });
 
-        const data = await response.json();
-
-        console.log("[PUSH] Registro del dispositivo:", data);
-      } catch (error) {
-        console.error(
-          "[PUSH] Error registrando dispositivo:",
-          error
+        console.log(
+          "[PUSH] Registro:",
+          await response.json()
         );
+      } catch (error) {
+        console.error(error);
       }
     });
 
-    PushNotifications.addListener("registrationError", (error) => {
-      console.error("[PUSH] ❌ registrationError:", error);
-    });
+    PushNotifications.addListener(
+      "registrationError",
+      (error) => {
+        console.error("[PUSH]", error);
+      }
+    );
 
     PushNotifications.addListener(
       "pushNotificationReceived",
       (notification) => {
         console.log(
-          "[PUSH] Notificación recibida:",
+          "[PUSH] Recibida:",
           notification
         );
       }
@@ -69,20 +86,44 @@ export async function initializePushNotifications() {
 
     PushNotifications.addListener(
       "pushNotificationActionPerformed",
-      (notification) => {
+      (event) => {
         console.log(
-          "[PUSH] Acción sobre notificación:",
-          notification
+          "[PUSH] Click:",
+          event
         );
+
+const url = event.notification.data?.url;
+
+if (!url) return;
+
+console.log("[PUSH] Navegar:", url);
+
+// Guardar la URL para recuperarla después del login
+localStorage.setItem("pendingPushUrl", url);
+
+// Espera un instante para asegurar que Next.js esté listo
+requestAnimationFrame(() => {
+  setTimeout(() => {
+    onNotificationClick?.(url);
+  }, 100);
+});
       }
     );
 
-    console.log("[PUSH] Llamando a register()...");
+    // Saber cuándo la app vuelve al foreground
+    App.addListener("appStateChange", ({ isActive }) => {
+      console.log(
+        "[APP] Estado:",
+        isActive ? "Foreground" : "Background"
+      );
+    });
+
+    console.log("[PUSH] register()");
 
     await PushNotifications.register();
 
-    console.log("[PUSH] register() terminó.");
+    console.log("[PUSH] register() OK");
   } catch (err) {
-    console.error("[PUSH] Error inicializando:", err);
+    console.error("[PUSH]", err);
   }
 }

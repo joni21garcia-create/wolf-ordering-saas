@@ -5,7 +5,7 @@
    CORS/Opacos desde el bucket de Supabase para instalabilidad.
 ============================================================ */
 
-const VERSION = "1785224625417";
+const VERSION = "1785231348478";
 
 const CACHE = {
     STATIC: `wolf-static-${VERSION}`,
@@ -138,8 +138,9 @@ self.addEventListener("fetch", (event) => {
 
     if (shouldIgnore(request, url)) return;
 
-    // Estrategia HTML
-  if (isHTML(request)) {
+// Estrategia HTML
+if (isHTML(request)) {
+    event.respondWith(networkFirst(request));
     return;
 }
 

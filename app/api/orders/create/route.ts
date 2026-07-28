@@ -562,7 +562,7 @@ try {
 
     body: `${customer_name} realizó un pedido por $${final_total.toFixed(2)}`,
 
-    url: `/admin/orders/${order.id}`,
+    url: `/admin/orders/${restaurant_id}/orders/${order.id}`,
   });
 } catch (err) {
   console.error(

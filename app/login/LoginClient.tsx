@@ -148,25 +148,35 @@ export default function LoginClient() {
         localStorage.removeItem("wolf_email");
       }
 
-      await new Promise((resolve) =>
-        setTimeout(resolve, 800)
-      );
+await new Promise((resolve) =>
+  setTimeout(resolve, 800)
+);
 
-      const role =
-        restaurantUser.restaurant_roles?.code;
+// Si el usuario abrió la app desde una notificación,
+// continuar hacia el pedido en lugar del dashboard.
+const pendingUrl = localStorage.getItem("pendingPushUrl");
 
-      if (
-        role === "super-user" ||
-        role === "owner"
-      ) {
-        window.location.replace(
-          "/login/super-admin"
-        );
-      } else {
-        window.location.replace(
-          `/super-admin/restaurants/${restaurantUser.restaurant_id}/restaurante/dashboard`
-        );
-      }
+if (pendingUrl) {
+  localStorage.removeItem("pendingPushUrl");
+  window.location.replace(pendingUrl);
+  return;
+}
+
+const role =
+  restaurantUser.restaurant_roles?.code;
+
+if (
+  role === "super-user" ||
+  role === "owner"
+) {
+  window.location.replace(
+    "/login/super-admin"
+  );
+} else {
+  window.location.replace(
+    `/super-admin/restaurants/${restaurantUser.restaurant_id}/restaurante/dashboard`
+  );
+}
     } catch (err) {
       console.error(err);
       alert("Error al iniciar sesión.");
