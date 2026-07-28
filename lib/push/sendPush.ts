@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import { createClient } from "@supabase/supabase-js";
+import { messaging } from "@/lib/firebase-admin";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,57 +26,73 @@ export async function sendPush({
   body,
   url = "/admin/orders",
 }: SendPushParams) {
-  const { data: subscriptions, error } = await supabase
+  //
+  // WEB PUSH
+  //
+
+  const { data: subscriptions } = await supabase
     .from("push_subscriptions")
     .select("*")
     .eq("restaurant_id", restaurant_id)
     .eq("active", true);
 
-  if (error) {
-    console.error("Error obteniendo suscripciones:", error);
-    return;
-  }
-
-  if (!subscriptions?.length) {
-    console.log("No existen dispositivos registrados.");
-    return;
-  }
-
-  let enviados = 0;
-
-  for (const device of subscriptions) {
-    try {
-      await webpush.sendNotification(
-        device.subscription,
-        JSON.stringify({
-          title,
-          body,
-          url,
-        })
-      );
-
-      enviados++;
-    } catch (err: any) {
-      console.error(
-        "Error enviando Push:",
-        err?.statusCode,
-        err?.message
-      );
-
-      if (err?.statusCode === 404 || err?.statusCode === 410) {
-        await supabase
-          .from("push_subscriptions")
-          .update({
-            active: false,
+  if (subscriptions?.length) {
+    for (const device of subscriptions) {
+      try {
+        await webpush.sendNotification(
+          device.subscription,
+          JSON.stringify({
+            title,
+            body,
+            url,
           })
-          .eq("id", device.id);
+        );
+      } catch (err: any) {
+        console.error("[WEB PUSH]", err);
+
+        if (err?.statusCode === 404 || err?.statusCode === 410) {
+          await supabase
+            .from("push_subscriptions")
+            .update({ active: false })
+            .eq("id", device.id);
+        }
       }
     }
   }
 
-  console.log(
-    `Push enviadas correctamente: ${enviados}`
-  );
+  //
+  // ANDROID FCM
+  //
+
+  const { data: devices } = await supabase
+    .from("device_tokens")
+    .select("fcm_token")
+    .eq("restaurant_id", restaurant_id)
+    .eq("active", true);
+
+  console.log("[FCM] Dispositivos:", devices?.length ?? 0);
+
+  if (devices?.length) {
+    for (const device of devices) {
+      try {
+        const id = await messaging.send({
+          token: device.fcm_token,
+          notification: {
+            title,
+            body,
+          },
+          data: {
+            url,
+          },
+          android: {
+            priority: "high",
+          },
+        });
+
+        console.log("[FCM] Enviado:", id);
+      } catch (err) {
+        console.error("[FCM] Error:", err);
+      }
+    }
+  }
 }
-
-
