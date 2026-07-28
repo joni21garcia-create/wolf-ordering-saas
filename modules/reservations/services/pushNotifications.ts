@@ -7,11 +7,18 @@ export async function initializePushNotifications() {
     console.log("[PUSH] Inicializando...");
 
     let permission = await PushNotifications.checkPermissions();
-    console.log("[PUSH] Permisos actuales:", permission);
+    console.log(
+      "[PUSH] Permisos actuales:",
+      JSON.stringify(permission)
+    );
 
     if (permission.receive === "prompt") {
       permission = await PushNotifications.requestPermissions();
-      console.log("[PUSH] Permisos después de solicitar:", permission);
+
+      console.log(
+        "[PUSH] Permisos después de solicitar:",
+        JSON.stringify(permission)
+      );
     }
 
     if (permission.receive !== "granted") {
@@ -21,20 +28,52 @@ export async function initializePushNotifications() {
 
     PushNotifications.addListener("registration", async (token) => {
       console.log("[PUSH] ✅ Token FCM:", token.value);
+
+      try {
+        const response = await fetch("/api/push/register-device", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            token: token.value,
+            platform: "android",
+          }),
+        });
+
+        const data = await response.json();
+
+        console.log("[PUSH] Registro del dispositivo:", data);
+      } catch (error) {
+        console.error(
+          "[PUSH] Error registrando dispositivo:",
+          error
+        );
+      }
     });
 
     PushNotifications.addListener("registrationError", (error) => {
       console.error("[PUSH] ❌ registrationError:", error);
     });
 
-    PushNotifications.addListener("pushNotificationReceived", (notification) => {
-      console.log("[PUSH] Notificación recibida:", notification);
-    });
+    PushNotifications.addListener(
+      "pushNotificationReceived",
+      (notification) => {
+        console.log(
+          "[PUSH] Notificación recibida:",
+          notification
+        );
+      }
+    );
 
     PushNotifications.addListener(
       "pushNotificationActionPerformed",
       (notification) => {
-        console.log("[PUSH] Acción sobre notificación:", notification);
+        console.log(
+          "[PUSH] Acción sobre notificación:",
+          notification
+        );
       }
     );
 

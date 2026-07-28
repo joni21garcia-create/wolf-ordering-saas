@@ -1,24 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export async function POST(request: NextRequest) {
+  const response = NextResponse.next();
 
-export async function POST(req: NextRequest) {
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
+
   try {
-    const {
-      restaurant_id,
-      user_id,
-      fcm_token,
-      platform = "android",
-    } = await req.json();
+    const { token, platform = "android" } = await request.json();
 
-    if (!restaurant_id || !fcm_token) {
+    if (!token) {
       return NextResponse.json(
-        { error: "restaurant_id y fcm_token son obligatorios" },
+        { error: "Token FCM obligatorio" },
         { status: 400 }
+      );
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Usuario no autenticado" },
+        { status: 401 }
+      );
+    }
+
+    const { data: restaurantUser, error: restaurantError } =
+      await supabase
+        .from("restaurant_users")
+        .select("restaurant_id")
+        .eq("auth_user_id", user.id)
+        .single();
+
+    if (restaurantError || !restaurantUser) {
+      return NextResponse.json(
+        { error: "No se encontró el restaurante del usuario" },
+        { status: 404 }
       );
     }
 
@@ -26,9 +60,9 @@ export async function POST(req: NextRequest) {
       .from("device_tokens")
       .upsert(
         {
-          restaurant_id,
-          user_id,
-          fcm_token,
+          restaurant_id: restaurantUser.restaurant_id,
+          user_id: user.id,
+          fcm_token: token,
           platform,
           active: true,
         },
