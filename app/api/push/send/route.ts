@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import webpush from "web-push";
 import { createClient } from "@supabase/supabase-js";
+import { messaging } from "@/lib/firebase-admin";
 
 webpush.setVapidDetails(
   "mailto:admin@wolfordering.com",
@@ -22,39 +23,66 @@ export async function POST(req: NextRequest) {
       url,
     } = await req.json();
 
-    const { data, error } = await supabase
+    //
+    // WEB PUSH
+    //
+
+    const { data: subscriptions } = await supabase
       .from("push_subscriptions")
       .select("*")
       .eq("restaurant_id", restaurant_id);
 
-    if (error) throw error;
-
-    if (!data?.length) {
-      return NextResponse.json({
-        success: true,
-        message: "No existen suscripciones",
+    if (subscriptions?.length) {
+      const payload = JSON.stringify({
+        title,
+        body,
+        url,
       });
+
+      await Promise.allSettled(
+        subscriptions.map((item) =>
+          webpush.sendNotification(
+            item.subscription,
+            payload
+          )
+        )
+      );
     }
 
-    const payload = JSON.stringify({
-      title,
-      body,
-      url,
-    });
+    //
+    // ANDROID FCM
+    //
 
-    const results = await Promise.allSettled(
-      data.map((item) =>
-        webpush.sendNotification(
-          item.subscription,
-          payload
+    const { data: devices } = await supabase
+      .from("device_tokens")
+      .select("fcm_token")
+      .eq("restaurant_id", restaurant_id)
+      .eq("active", true);
+
+    if (devices?.length) {
+      await Promise.allSettled(
+        devices.map((device) =>
+          messaging.send({
+            token: device.fcm_token,
+            notification: {
+              title,
+              body,
+            },
+            data: {
+              url: url ?? "",
+            },
+            android: {
+              priority: "high",
+            },
+          })
         )
-      )
-    );
-
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      sent: results.length,
+      web: subscriptions?.length ?? 0,
+      android: devices?.length ?? 0,
     });
   } catch (error) {
     console.error(error);
@@ -69,5 +97,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
-
