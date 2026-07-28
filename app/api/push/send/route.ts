@@ -16,12 +16,7 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const {
-      restaurant_id,
-      title,
-      body,
-      url,
-    } = await req.json();
+    const { restaurant_id, title, body, url } = await req.json();
 
     //
     // WEB PUSH
@@ -39,14 +34,13 @@ export async function POST(req: NextRequest) {
         url,
       });
 
-      await Promise.allSettled(
+      const webResults = await Promise.allSettled(
         subscriptions.map((item) =>
-          webpush.sendNotification(
-            item.subscription,
-            payload
-          )
+          webpush.sendNotification(item.subscription, payload)
         )
       );
+
+      console.log("[WEB PUSH] Resultados:", webResults);
     }
 
     //
@@ -59,10 +53,16 @@ export async function POST(req: NextRequest) {
       .eq("restaurant_id", restaurant_id)
       .eq("active", true);
 
+    console.log("[FCM] Dispositivos encontrados:", devices?.length ?? 0);
+
+    let androidSent = 0;
+
     if (devices?.length) {
-      await Promise.allSettled(
-        devices.map((device) =>
-          messaging.send({
+      for (const device of devices) {
+        try {
+          console.log("[FCM] Enviando a:", device.fcm_token);
+
+          const response = await messaging.send({
             token: device.fcm_token,
             notification: {
               title,
@@ -74,22 +74,30 @@ export async function POST(req: NextRequest) {
             android: {
               priority: "high",
             },
-          })
-        )
-      );
+          });
+
+          androidSent++;
+
+          console.log("[FCM] ✅ Enviado correctamente:", response);
+        } catch (error) {
+          console.error("[FCM] ❌ Error enviando:", error);
+        }
+      }
     }
 
     return NextResponse.json({
       success: true,
       web: subscriptions?.length ?? 0,
       android: devices?.length ?? 0,
+      androidSent,
     });
   } catch (error) {
-    console.error(error);
+    console.error("[PUSH] Error general:", error);
 
     return NextResponse.json(
       {
         success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       {
         status: 500,
