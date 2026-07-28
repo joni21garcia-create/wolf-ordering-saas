@@ -7,6 +7,7 @@ import ServiceWorkerProvider from "@/components/pwa/ServiceWorkerProvider";
 import UpdateBanner from "@/components/pwa/UpdateBanner";
 import InstallProvider from "@/components/pwa/InstallProvider";
 import AndroidBackHandler from "@/components/mobile/AndroidBackHandler";
+import PushNotificationInitializer from "@/components/mobile/PushNotificationInitializer";
 
 
 
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <SessionProvider>
+          <PushNotificationInitializer />
           <AndroidBackHandler />
           <ServiceWorkerProvider />
           <InstallProvider>

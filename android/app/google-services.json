@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "919753652853",
+    "project_id": "wolf-ordering-be83f",
+    "storage_bucket": "wolf-ordering-be83f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919753652853:android:31412c74793e8dcc7e163c",
+        "android_client_info": {
+          "package_name": "com.wolfordering.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8k8rD59k4pe6aACHu1DXfpicoMWzhadU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
