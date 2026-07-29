@@ -12,7 +12,7 @@ export function filterRestaurants(
 
   return restaurants.filter((restaurant) => {
     const name = restaurant.name.toLowerCase();
-    const category = restaurant.category.toLowerCase();
+const category = (restaurant.category ?? "").toLowerCase();
 
     return (
       name.includes(query) ||
