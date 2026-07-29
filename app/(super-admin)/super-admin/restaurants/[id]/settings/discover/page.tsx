@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Eye } from "lucide-react";
 
 import { supabase } from "@/lib/supabase/client";
+import { DISCOVER_CATEGORIES } from "@/lib/discover/categories";
 
 import BackToSettings from "@/components/admin/BackToSettings";
 import PermissionGuard from "@/components/auth/PermissionGuard";
@@ -16,7 +17,14 @@ export default function DiscoverSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [discoverVisible, setDiscoverVisible] = useState(false);
+  const [discoverVisible, setDiscoverVisible] =
+    useState(false);
+
+  const [category, setCategory] =
+    useState("restaurant");
+
+  const [customCategory, setCustomCategory] =
+    useState("");
 
   useEffect(() => {
     loadData();
@@ -24,15 +32,40 @@ export default function DiscoverSettingsPage() {
 
   async function loadData() {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("restaurants")
-        .select("discover_visible")
+        .select(`
+          discover_visible,
+          category
+        `)
         .eq("id", restaurantId)
         .maybeSingle();
 
+      if (error) throw error;
+
       if (data) {
-        setDiscoverVisible(data.discover_visible ?? false);
+        setDiscoverVisible(
+          data.discover_visible ?? false
+        );
+
+        const currentCategory =
+          data.category ?? "restaurant";
+
+        const exists =
+          DISCOVER_CATEGORIES.some(
+            (item) =>
+              item.id === currentCategory
+          );
+
+        if (exists) {
+          setCategory(currentCategory);
+        } else {
+          setCategory("custom");
+          setCustomCategory(currentCategory);
+        }
       }
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -42,22 +75,43 @@ export default function DiscoverSettingsPage() {
     try {
       setSaving(true);
 
-      await supabase
+      const finalCategory =
+        category === "custom"
+          ? customCategory.trim()
+          : category;
+
+      const { error } = await supabase
         .from("restaurants")
         .update({
-          discover_visible: discoverVisible,
+          discover_visible:
+            discoverVisible,
+          category: finalCategory,
         })
         .eq("id", restaurantId);
 
-      alert("Configuración de Discover actualizada.");
+      if (error) throw error;
+
+      alert(
+        "Configuración de Discover actualizada."
+      );
+    } catch (error) {
+      console.error(error);
+
+      alert(
+        "No fue posible guardar la configuración."
+      );
     } finally {
       setSaving(false);
     }
   }
-
-  if (loading) {
+    if (loading) {
     return (
-      <main style={{ padding: "40px", color: "#fff" }}>
+      <main
+        style={{
+          padding: "40px",
+          color: "#fff",
+        }}
+      >
         Cargando...
       </main>
     );
@@ -96,8 +150,7 @@ export default function DiscoverSettingsPage() {
               marginTop: "8px",
             }}
           >
-            Controla si este restaurante aparecerá en la página principal de
-            Discover.
+            Configura cómo aparecerá este restaurante dentro de Discover.
           </p>
         </div>
 
@@ -116,7 +169,7 @@ export default function DiscoverSettingsPage() {
               fontWeight: 700,
             }}
           >
-            Visibilidad
+            Configuración
           </h2>
 
           <SwitchField
@@ -125,18 +178,72 @@ export default function DiscoverSettingsPage() {
             onChange={setDiscoverVisible}
           />
 
+          <div style={{ height: 24 }} />
+
+          <SelectField
+            label="Categoría principal"
+            value={category}
+            onChange={setCategory}
+            options={[
+              ...DISCOVER_CATEGORIES.map((item) => ({
+                value: item.id,
+                label: item.label,
+              })),
+              {
+                value: "custom",
+                label: "Otra categoría...",
+              },
+            ]}
+          />
+
+          {category === "custom" && (
+            <div style={{ marginTop: "18px" }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "8px",
+                  color: "#ddd",
+                  fontWeight: 600,
+                }}
+              >
+                Categoría personalizada
+              </label>
+
+              <input
+                type="text"
+                value={customCategory}
+                placeholder="Ej: Lasañas, Arepas, Desayunos..."
+                onChange={(e) =>
+                  setCustomCategory(e.target.value)
+                }
+                style={{
+                  width: "100%",
+                  padding: "14px",
+                  borderRadius: "12px",
+                  border:
+                    "1px solid rgba(255,255,255,.12)",
+                  background: "#111",
+                  color: "#fff",
+                  fontSize: "15px",
+                  outline: "none",
+                }}
+              />
+            </div>
+          )}
+
           <div
             style={{
               marginTop: "25px",
               padding: "18px",
               borderRadius: "16px",
               background: "rgba(249,115,22,.08)",
-              border: "1px solid rgba(249,115,22,.18)",
+              border:
+                "1px solid rgba(249,115,22,.18)",
               lineHeight: 1.7,
             }}
           >
             <strong style={{ color: "#fff" }}>
-              ¿Qué sucede si desactivas esta opción?
+              ¿Cómo funciona?
             </strong>
 
             <ul
@@ -146,11 +253,25 @@ export default function DiscoverSettingsPage() {
                 color: "#bbb",
               }}
             >
-              <li>El restaurante dejará de aparecer en Discover.</li>
-              <li>No aparecerá en las búsquedas públicas.</li>
-              <li>El enlace directo seguirá funcionando.</li>
-              <li>Los clientes podrán seguir haciendo pedidos mediante el enlace.</li>
-              <li>Puedes volver a publicarlo cuando quieras.</li>
+              <li>
+                El restaurante aparecerá en Discover si está
+                habilitado.
+              </li>
+
+              <li>
+                La categoría ayudará a organizar los
+                restaurantes.
+              </li>
+
+              <li>
+                El buscador utilizará esta categoría y sus
+                palabras relacionadas.
+              </li>
+
+              <li>
+                Más adelante servirá para recomendaciones
+                inteligentes.
+              </li>
             </ul>
           </div>
 
@@ -177,7 +298,7 @@ export default function DiscoverSettingsPage() {
       </main>
     </PermissionGuard>
   );
-}
+  }
 
 function SwitchField({
   label,
@@ -216,6 +337,61 @@ function SwitchField({
       >
         {label}
       </span>
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: {
+    value: string;
+    label: string;
+  }[];
+}) {
+  return (
+    <div>
+      <label
+        style={{
+          display: "block",
+          marginBottom: "8px",
+          color: "#ddd",
+          fontWeight: 600,
+        }}
+      >
+        {label}
+      </label>
+
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          width: "100%",
+          padding: "14px",
+          borderRadius: "12px",
+          border: "1px solid rgba(255,255,255,.12)",
+          background: "#111",
+          color: "#fff",
+          fontSize: "15px",
+          outline: "none",
+          cursor: "pointer",
+        }}
+      >
+        {options.map((option) => (
+          <option
+            key={option.value}
+            value={option.value}
+          >
+            {option.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

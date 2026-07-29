@@ -16,6 +16,11 @@ export interface Restaurant {
   longitude: number | null;
 
   /**
+   * Controla si el restaurante aparece en Discover.
+   */
+  discover_visible: boolean;
+
+  /**
    * Estado manual del restaurante.
    * Puede seguir utilizándose para deshabilitar pedidos
    * aunque el horario indique que está abierto.
@@ -30,7 +35,9 @@ export interface Restaurant {
   estimated_min_time: number | null;
   estimated_max_time: number | null;
 
-  // Preparado para futuras funcionalidades
+  /**
+   * Funcionalidades opcionales.
+   */
   rating?: number | null;
   reviews_count?: number | null;
   featured?: boolean;

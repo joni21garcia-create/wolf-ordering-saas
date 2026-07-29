@@ -10,6 +10,8 @@ import RestaurantStatus from "./RestaurantStatus";
 
 import { favoriteService } from "@/services/favorite.service";
 
+import { DISCOVER_CATEGORIES } from "@/lib/discover/categories";
+
 interface RestaurantCardProps {
   restaurant: Restaurant;
 }
@@ -71,6 +73,13 @@ export default function RestaurantCard({
       setLoadingFavorite(false);
     }
   };
+
+const categoryLabel =
+  DISCOVER_CATEGORIES.find(
+    (item) => item.id === restaurant.category
+  )?.label ??
+  restaurant.category ??
+  "Restaurante";
 
   return (
     <Link
@@ -190,9 +199,9 @@ export default function RestaurantCard({
 
         {/* Categoría */}
 
-        <div className="mt-2 inline-flex items-center rounded-full bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-400">
-          🍽️ {restaurant.category ?? "Restaurante"}
-        </div>
+<div className="mt-2 inline-flex items-center rounded-full bg-orange-500/10 px-2.5 py-1 text-xs font-medium text-orange-400">
+  🍽️ {categoryLabel}
+</div>
                {/* ================= Estado + Tiempo ================= */}
 
 <div className="mt-4 flex items-start justify-between gap-4">

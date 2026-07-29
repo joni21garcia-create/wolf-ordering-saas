@@ -987,7 +987,87 @@ a:focus-visible{
   outline-offset:2px;
 
 }
+@keyframes logoBreath {
 
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.025);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+}
+
+.animate-logo-breath {
+    animation: logoBreath 4.2s ease-in-out infinite;
+}
+
+/* ===========================
+   Loading Dots
+=========================== */
+
+.wolf-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 9999px;
+
+    background: radial-gradient(circle,
+            #ffe4b5 0%,
+            #fb923c 40%,
+            #f97316 100%);
+
+    opacity: .25;
+
+    box-shadow:
+        0 0 6px rgba(249, 115, 22, .35);
+
+    transform: scale(.85);
+}
+
+@keyframes loadingDot {
+
+    0%,
+    100% {
+        opacity: .25;
+        transform: scale(.85);
+        box-shadow:
+            0 0 6px rgba(249,115,22,.25);
+    }
+
+    40% {
+        opacity: .55;
+        transform: scale(1);
+        box-shadow:
+            0 0 12px rgba(249,115,22,.45);
+    }
+
+    60% {
+        opacity: 1;
+        transform: scale(1.45);
+        box-shadow:
+            0 0 16px rgba(249,115,22,.65),
+            0 0 32px rgba(249,115,22,.35);
+    }
+}
+
+.animate-loading-dot-1 {
+    animation: loadingDot 1.4s infinite ease-in-out;
+}
+
+.animate-loading-dot-2 {
+    animation: loadingDot 1.4s infinite ease-in-out;
+    animation-delay: .2s;
+}
+
+.animate-loading-dot-3 {
+    animation: loadingDot 1.4s infinite ease-in-out;
+    animation-delay: .4s;
+}
 
 /* ==========================================================
    FIN DEL ARCHIVO

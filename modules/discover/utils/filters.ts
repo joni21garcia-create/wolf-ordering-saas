@@ -1,3 +1,5 @@
+import { DISCOVER_CATEGORIES } from "@/lib/discover/categories";
+
 import { Restaurant } from "../types/restaurant";
 
 export function filterRestaurants(
@@ -20,6 +22,24 @@ export function filterRestaurants(
       .join(" ")
       .toLowerCase();
 
-    return searchableText.includes(query);
+    if (searchableText.includes(query)) {
+      return true;
+    }
+
+    if (!restaurant.category) {
+      return false;
+    }
+
+    const category = DISCOVER_CATEGORIES.find(
+      (item) => item.id === restaurant.category
+    );
+
+    if (!category) {
+      return false;
+    }
+
+    return category.keywords.some((keyword) =>
+      keyword.toLowerCase().includes(query)
+    );
   });
 }

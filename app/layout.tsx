@@ -8,6 +8,7 @@ import UpdateBanner from "@/components/pwa/UpdateBanner";
 import InstallProvider from "@/components/pwa/InstallProvider";
 import AndroidBackHandler from "@/components/mobile/AndroidBackHandler";
 import PushNotificationInitializer from "@/components/mobile/PushNotificationInitializer";
+import AppSplash from "@/components/splash/AppSplash";
 
 
 
@@ -72,25 +73,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ParticlesBackground />
         </div>
 
-        <SessionProvider>
-          <PushNotificationInitializer />
-          <AndroidBackHandler />
-          <ServiceWorkerProvider />
-          <InstallProvider>
-            <UpdateBanner />
-            {/* main envuelto para asegurar que ocupe todo el espacio */}
-            <main
-  className="
-    relative
-    min-h-dvh
-    w-full
-    overflow-x-hidden
-  "
->
-              {children}
-            </main>
-          </InstallProvider>
-        </SessionProvider>
+ <SessionProvider>
+  <AppSplash>
+    <PushNotificationInitializer />
+    <AndroidBackHandler />
+    <ServiceWorkerProvider />
+
+    <InstallProvider>
+      <UpdateBanner />
+
+      <main
+        className="
+          relative
+          min-h-dvh
+          w-full
+          overflow-x-hidden
+        "
+      >
+        {children}
+      </main>
+
+    </InstallProvider>
+  </AppSplash>
+</SessionProvider>
       </body>
     </html>
   );

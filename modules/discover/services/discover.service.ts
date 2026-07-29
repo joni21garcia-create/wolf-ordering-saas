@@ -6,34 +6,35 @@ export async function getRestaurants(): Promise<Restaurant[]> {
   const { data, error } = await supabase
     .from("restaurants")
     .select(`
-  id,
-  slug,
-  name,
-  logo_url,
-  banner_url,
-  address,
-  accepting_orders,
-  discover_visible,
-  estimated_min_time,
-  estimated_max_time,
+      id,
+      slug,
+      name,
+      logo_url,
+      banner_url,
+      address,
+      accepting_orders,
+      discover_visible,
+      category,
+      estimated_min_time,
+      estimated_max_time,
 
-  schedule_settings:schedule_settings!schedule_settings_restaurant_id_fkey (
-    sunday_open,
-    sunday_close,
-    monday_open,
-    monday_close,
-    tuesday_open,
-    tuesday_close,
-    wednesday_open,
-    wednesday_close,
-    thursday_open,
-    thursday_close,
-    friday_open,
-    friday_close,
-    saturday_open,
-    saturday_close
-  )
-`)
+      schedule_settings:schedule_settings!schedule_settings_restaurant_id_fkey (
+        sunday_open,
+        sunday_close,
+        monday_open,
+        monday_close,
+        tuesday_open,
+        tuesday_close,
+        wednesday_open,
+        wednesday_close,
+        thursday_open,
+        thursday_close,
+        friday_open,
+        friday_close,
+        saturday_open,
+        saturday_close
+      )
+    `)
     .eq("active", true)
     .eq("suspended", false)
     .eq("discover_visible", true)
@@ -61,6 +62,12 @@ export async function getRestaurants(): Promise<Restaurant[]> {
     accepting_orders:
       restaurant.accepting_orders,
 
+    discover_visible:
+      restaurant.discover_visible,
+
+    category:
+      restaurant.category,
+
     schedule_settings:
       restaurant.schedule_settings?.[0] ?? null,
 
@@ -70,8 +77,6 @@ export async function getRestaurants(): Promise<Restaurant[]> {
     estimated_max_time:
       restaurant.estimated_max_time,
 
-    // Temporales hasta implementar estas funcionalidades
-    category: null,
     latitude: null,
     longitude: null,
   }));
