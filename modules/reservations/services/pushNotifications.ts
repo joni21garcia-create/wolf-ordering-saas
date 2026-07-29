@@ -46,22 +46,33 @@ export async function initializePushNotifications(
       console.log("[PUSH] ✅ Token FCM:", token.value);
 
       try {
-        const response = await fetch("/api/push/register-device", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            token: token.value,
-            platform: "android",
-          }),
-        });
+const response = await fetch("/api/push/register-customer-device", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  credentials: "include",
+  body: JSON.stringify({
+    token: token.value,
+    platform: "android",
+  }),
+});
 
-        console.log(
-          "[PUSH] Registro:",
-          await response.json()
-        );
+const data = await response.json();
+
+console.log("[PUSH] Registro:", data);
+
+if (data.success && data.push_subscription_id) {
+  localStorage.setItem(
+    "wolf_push_subscription_id",
+    data.push_subscription_id
+  );
+
+  console.log(
+    "[PUSH] push_subscription_id guardado:",
+    data.push_subscription_id
+  );
+}
       } catch (error) {
         console.error(error);
       }

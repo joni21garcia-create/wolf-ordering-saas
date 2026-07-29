@@ -42,12 +42,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: restaurantUser, error: restaurantError } =
-      await supabase
-        .from("restaurant_users")
-        .select("restaurant_id")
-        .eq("auth_user_id", user.id)
-        .single();
+    const {
+      data: restaurantUser,
+      error: restaurantError,
+    } = await supabase
+      .from("restaurant_users")
+      .select("restaurant_id")
+      .eq("auth_user_id", user.id)
+      .single();
 
     if (restaurantError || !restaurantUser) {
       return NextResponse.json(
@@ -55,6 +57,12 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
+
+    /*
+    ==========================================================
+    DEVICE TOKENS (RESTAURANTE)
+    ==========================================================
+    */
 
     const { error } = await supabase
       .from("device_tokens")
@@ -80,15 +88,56 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    /*
+    ==========================================================
+    PUSH SUBSCRIPTIONS (CLIENTE ANDROID)
+    ==========================================================
+    */
+
+    const { data: existingSubscription } =
+      await supabase
+        .from("push_subscriptions")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("platform", "android")
+        .maybeSingle();
+
+    if (existingSubscription) {
+      await supabase
+        .from("push_subscriptions")
+        .update({
+          restaurant_id: restaurantUser.restaurant_id,
+          fcm_token: token,
+          active: true,
+        })
+        .eq("id", existingSubscription.id);
+    } else {
+      await supabase
+        .from("push_subscriptions")
+        .insert({
+          restaurant_id: restaurantUser.restaurant_id,
+          user_id: user.id,
+          fcm_token: token,
+          platform: "android",
+          active: true,
+        });
+    }
+
     return NextResponse.json({
       success: true,
     });
+
   } catch (err) {
+
     console.error(err);
 
     return NextResponse.json(
-      { error: "Error interno" },
-      { status: 500 }
+      {
+        error: "Error interno",
+      },
+      {
+        status: 500,
+      }
     );
   }
 }

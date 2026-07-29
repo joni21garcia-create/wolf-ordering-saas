@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import { createClient } from "@supabase/supabase-js";
+import { messaging } from "@/lib/firebase-admin";
 
 webpush.setVapidDetails(
   "mailto:admin@wolfordering.com",
@@ -26,14 +27,20 @@ export async function sendCustomerPush({
   url,
 }: CustomerPushParams) {
   try {
+    /*
+    ==========================================================
+    PEDIDO
+    ==========================================================
+    */
 
-    // Buscar el pedido
-    const { data: order, error: orderError } =
-      await supabase
-        .from("orders")
-        .select("push_subscription_id")
-        .eq("id", orderId)
-        .maybeSingle();
+    const {
+      data: order,
+      error: orderError,
+    } = await supabase
+      .from("orders")
+      .select("push_subscription_id")
+      .eq("id", orderId)
+      .maybeSingle();
 
     if (orderError) throw orderError;
 
@@ -44,38 +51,102 @@ export async function sendCustomerPush({
       return;
     }
 
-    // Buscar la suscripción
+    /*
+    ==========================================================
+    DISPOSITIVO
+    ==========================================================
+    */
+
     const {
       data: subscription,
       error: subscriptionError,
     } = await supabase
       .from("push_subscriptions")
-      .select("subscription")
+      .select(`
+        subscription,
+        fcm_token,
+        platform
+      `)
       .eq("id", order.push_subscription_id)
       .maybeSingle();
 
-    if (subscriptionError)
-      throw subscriptionError;
+    if (subscriptionError) throw subscriptionError;
 
     if (!subscription) {
       console.log(
-        "[CUSTOMER PUSH] Suscripción no encontrada."
+        "[CUSTOMER PUSH] Dispositivo no encontrado."
       );
       return;
     }
 
-    await webpush.sendNotification(
-      subscription.subscription,
-      JSON.stringify({
-        title,
-        body,
-        url,
-      })
-    );
+    /*
+    ==========================================================
+    WEB PUSH (PWA)
+    ==========================================================
+    */
 
-    console.log(
-      "[CUSTOMER PUSH] Enviado correctamente."
-    );
+    if (subscription.subscription) {
+      try {
+        await webpush.sendNotification(
+          subscription.subscription,
+          JSON.stringify({
+            title,
+            body,
+            url,
+          })
+        );
+
+        console.log(
+          "[CUSTOMER PUSH] Web Push enviado."
+        );
+      } catch (err) {
+        console.error(
+          "[CUSTOMER PUSH][WEB]",
+          err
+        );
+      }
+    }
+
+    /*
+    ==========================================================
+    FIREBASE (ANDROID)
+    ==========================================================
+    */
+
+    if (subscription.fcm_token) {
+      try {
+        const id = await messaging.send({
+          token: subscription.fcm_token,
+
+          notification: {
+            title,
+            body,
+          },
+
+          data: {
+            url: url ?? "/",
+          },
+
+          android: {
+            priority: "high",
+            notification: {
+              channelId: "orders",
+              sound: "default",
+            },
+          },
+        });
+
+        console.log(
+          "[CUSTOMER PUSH] FCM enviado:",
+          id
+        );
+      } catch (err) {
+        console.error(
+          "[CUSTOMER PUSH][FCM]",
+          err
+        );
+      }
+    }
 
   } catch (error) {
 
@@ -86,5 +157,3 @@ export async function sendCustomerPush({
 
   }
 }
-
-
