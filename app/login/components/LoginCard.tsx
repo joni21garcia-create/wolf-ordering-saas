@@ -13,16 +13,20 @@ export default function LoginCard({
         .login-card {
           position: relative;
           width: 100%;
-          max-width: 1180px;
+          max-width: 1280px;
           border-radius: 34px;
           overflow: hidden;
+
           background: linear-gradient(
             180deg,
-            rgba(12, 12, 12, 0.96),
-            rgba(8, 8, 8, 0.98)
+            rgba(12,12,12,.96),
+            rgba(8,8,8,.98)
           );
-          border: 1px solid rgba(255, 255, 255, 0.06);
+
+          border: 1px solid rgba(255,255,255,.06);
+
           backdrop-filter: blur(30px);
+
           box-shadow:
             0 40px 90px rgba(0,0,0,.65),
             inset 0 1px 0 rgba(255,255,255,.05);
@@ -33,17 +37,25 @@ export default function LoginCard({
           z-index: 2;
 
           display: grid;
-          grid-template-columns: minmax(0, 1fr) 470px;
-          min-height: 760px;
+
+          /* Más espacio para el formulario */
+          grid-template-columns: minmax(0,1fr) 620px;
+
+          align-items: center;
+
+          gap: 20px;
+
+          min-height: 700px;
         }
 
-        @media (max-width: 1100px) {
+        @media (max-width:1100px) {
           .login-content {
             grid-template-columns: 1fr;
+            min-height: auto;
           }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width:768px) {
           .login-card {
             border-radius: 22px;
             margin: 12px;
@@ -51,12 +63,14 @@ export default function LoginCard({
 
           .login-content {
             min-height: auto;
+            gap: 0;
           }
         }
       `}</style>
 
       <section className="login-card">
         {/* Glow */}
+
         <div
           style={{
             position: "absolute",
@@ -74,13 +88,14 @@ export default function LoginCard({
         />
 
         {/* Línea superior */}
+
         <div
           style={{
             position: "absolute",
             inset: "0 0 auto 0",
             height: 2,
             background:
-              "linear-gradient(90deg,transparent,#f97316,transparent)",
+              "linear-gradient(90deg, transparent, #f97316, transparent)",
           }}
         />
 
@@ -89,5 +104,3 @@ export default function LoginCard({
     </>
   );
 }
-
-

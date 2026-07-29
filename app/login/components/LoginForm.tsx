@@ -36,18 +36,20 @@ export default function LoginForm({
     <aside
       style={{
         width: "100%",
-        maxWidth: 520,
+        maxWidth: 620,
         margin: "0 auto",
-        padding: "60px 50px",
+        padding: "56px 64px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
         boxSizing: "border-box",
       }}
     >
+      {/* Header */}
+
       <div
         style={{
-          marginBottom: 40,
+          marginBottom: 42,
         }}
       >
         <span
@@ -56,6 +58,7 @@ export default function LoginForm({
             fontWeight: 800,
             letterSpacing: 4,
             fontSize: 12,
+            textTransform: "uppercase",
           }}
         >
           WOLF ORDERING OS
@@ -64,9 +67,11 @@ export default function LoginForm({
         <h2
           style={{
             color: "#fff",
-            fontSize: 38,
+            fontSize: 42,
+            fontWeight: 700,
             marginTop: 16,
-            marginBottom: 12,
+            marginBottom: 10,
+            lineHeight: 1.15,
           }}
         >
           Bienvenido
@@ -75,23 +80,24 @@ export default function LoginForm({
         <p
           style={{
             color: "#9ca3af",
-            lineHeight: 1.7,
-            fontSize: 15,
+            fontSize: 16,
+            margin: 0,
           }}
         >
-          Inicia sesión para acceder a tu restaurante.
+          Inicia sesión para acceder.
         </p>
       </div>
 
       {/* EMAIL */}
 
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 22 }}>
         <label
           style={{
             color: "#b5b5b5",
             display: "block",
-            marginBottom: 8,
+            marginBottom: 10,
             fontSize: 14,
+            fontWeight: 500,
           }}
         >
           Correo electrónico
@@ -104,8 +110,8 @@ export default function LoginForm({
           placeholder="correo@empresa.com"
           style={{
             width: "100%",
-            height: 58,
-            padding: "0 18px",
+            height: 62,
+            padding: "0 20px",
             borderRadius: 16,
             border: "1px solid rgba(255,255,255,.08)",
             background: "rgba(255,255,255,.03)",
@@ -119,13 +125,14 @@ export default function LoginForm({
 
       {/* PASSWORD */}
 
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 28 }}>
         <label
           style={{
             color: "#b5b5b5",
             display: "block",
-            marginBottom: 8,
+            marginBottom: 10,
             fontSize: 14,
+            fontWeight: 500,
           }}
         >
           Contraseña
@@ -138,8 +145,8 @@ export default function LoginForm({
           placeholder="••••••••"
           style={{
             width: "100%",
-            height: 58,
-            padding: "0 18px",
+            height: 62,
+            padding: "0 20px",
             borderRadius: 16,
             border: "1px solid rgba(255,255,255,.08)",
             background: "rgba(255,255,255,.03)",
@@ -151,12 +158,14 @@ export default function LoginForm({
         />
       </div>
 
+      {/* OPTIONS */}
+
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: 28,
+          marginBottom: 32,
           fontSize: 14,
         }}
       >
@@ -186,26 +195,30 @@ export default function LoginForm({
             color: "#f97316",
             cursor: "pointer",
             fontWeight: 600,
+            fontSize: 14,
           }}
         >
           ¿Olvidaste tu contraseña?
         </button>
       </div>
 
+      {/* LOGIN */}
+
       <button
         onClick={login}
         disabled={loading}
         style={{
           width: "100%",
-          height: 60,
+          height: 64,
           borderRadius: 18,
           border: "none",
           cursor: "pointer",
           color: "#fff",
-          fontSize: 16,
+          fontSize: 17,
           fontWeight: 700,
           background:
             "linear-gradient(90deg,#f97316,#ff8c2f)",
+          transition: "all .25s ease",
         }}
       >
         {loading ? "Ingresando..." : "Ingresar"}
@@ -217,5 +230,3 @@ export default function LoginForm({
     </aside>
   );
 }
-
-
