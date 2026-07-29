@@ -60,7 +60,10 @@ const response = await fetch("/api/push/register-customer-device", {
 
 const data = await response.json();
 
-console.log("[PUSH] Registro:", data);
+console.log(
+  "[PUSH] Registro:",
+  JSON.stringify(data, null, 2)
+);
 
 if (data.success && data.push_subscription_id) {
   localStorage.setItem(
