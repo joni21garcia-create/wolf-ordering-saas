@@ -11,12 +11,15 @@ export function filterRestaurants(
   }
 
   return restaurants.filter((restaurant) => {
-    const name = restaurant.name.toLowerCase();
-const category = (restaurant.category ?? "").toLowerCase();
+    const searchableText = [
+      restaurant.name,
+      restaurant.category,
+      restaurant.address,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
 
-    return (
-      name.includes(query) ||
-      category.includes(query)
-    );
+    return searchableText.includes(query);
   });
 }

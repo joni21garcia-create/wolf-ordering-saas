@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
 import { getRestaurants } from "../services/discover.service";
 import type { Restaurant } from "../types/restaurant";
 
@@ -9,26 +10,44 @@ export function useRestaurants() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const loadRestaurants = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await getRestaurants();
+      setRestaurants(data);
+    } catch (err) {
+      console.error(err);
+      setError("No se pudieron cargar los restaurantes.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    let mounted = true;
+    let active = true;
 
     async function load() {
-      try {
-        setLoading(true);
+      if (!active) return;
 
+      setLoading(true);
+      setError(null);
+
+      try {
         const data = await getRestaurants();
 
-        if (mounted) {
+        if (active) {
           setRestaurants(data);
         }
       } catch (err) {
         console.error(err);
 
-        if (mounted) {
+        if (active) {
           setError("No se pudieron cargar los restaurantes.");
         }
       } finally {
-        if (mounted) {
+        if (active) {
           setLoading(false);
         }
       }
@@ -37,7 +56,7 @@ export function useRestaurants() {
     load();
 
     return () => {
-      mounted = false;
+      active = false;
     };
   }, []);
 
@@ -45,5 +64,6 @@ export function useRestaurants() {
     restaurants,
     loading,
     error,
+    reload: loadRestaurants,
   };
 }

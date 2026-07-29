@@ -12,17 +12,51 @@ export default function SearchBar({
   onChange,
 }: SearchBarProps) {
   return (
-    <div className="relative w-full">
+    <div className="relative mb-6 w-full">
       <Search
-        className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
+        className="
+          pointer-events-none
+          absolute
+          left-5
+          top-1/2
+          h-5
+          w-5
+          -translate-y-1/2
+          text-zinc-500
+          transition-colors
+        "
       />
 
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Buscar restaurante..."
-        className="h-12 w-full rounded-xl border bg-background pl-12 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+        placeholder="¿Qué deseas comer hoy?"
+        className="
+          h-14
+          w-full
+          rounded-2xl
+          border
+          border-zinc-800
+          bg-zinc-900
+          pl-14
+          pr-5
+          text-[15px]
+          font-medium
+          text-white
+          placeholder:text-zinc-500
+          shadow-lg
+          outline-none
+          transition-all
+          duration-300
+
+          hover:border-zinc-700
+
+          focus:border-orange-500
+          focus:bg-zinc-950
+          focus:ring-4
+          focus:ring-orange-500/10
+        "
       />
     </div>
   );

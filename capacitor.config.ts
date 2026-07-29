@@ -1,10 +1,10 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: 'com.wolfordering.app',
-  appName: 'Wolf Ordering',
+  appId: "com.wolfordering.app",
+  appName: "Wolf Ordering",
   server: {
-    url: 'https://app.wolfordering.com/login',
+    url: "https://app.wolfordering.com/discover",
     cleartext: false,
   },
 };

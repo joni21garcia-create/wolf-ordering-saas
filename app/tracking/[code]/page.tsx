@@ -26,32 +26,7 @@ export default async function TrackingPage({
         "tracking_code",
         code
       )
-      .single();
-
-const { data: restaurant } =
-  await supabase
-    .from("restaurants")
-    .select(`
-      slug
-    `)
-    .eq(
-      "id",
-      order.restaurant_id
-    )
-    .single();
-
-const {
-  data: deliverySettings,
-} = await supabase
-  .from(
-    "restaurant_delivery_settings"
-  )
-  .select("*")
-  .eq(
-    "restaurant_id",
-    order.restaurant_id
-  )
-  .single();
+      .maybeSingle();
 
 
 
@@ -73,6 +48,32 @@ const {
       </main>
     );
   }
+
+const { data: restaurant } =
+  await supabase
+    .from("restaurants")
+    .select(`
+      slug
+    `)
+    .eq(
+      "id",
+      order.restaurant_id
+    )
+    .maybeSingle();
+
+const {
+  data: deliverySettings,
+} = await supabase
+  .from(
+    "restaurant_delivery_settings"
+  )
+  .select("*")
+  .eq(
+    "restaurant_id",
+    order.restaurant_id
+  )
+  .maybeSingle();
+
 
 const steps = [
   "pending",

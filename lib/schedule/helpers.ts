@@ -41,7 +41,7 @@ export function minutesToTime(
 }
 
 /**
- * 24h -> 12h
+ * Convierte 24h -> 12h
  * 14:30 -> 2:30 PM
  */
 export function formatTime12(
@@ -80,7 +80,6 @@ export function getCurrentTime() {
       hour12: false,
     }
   ).format(new Date());
-
 }
 
 /**
@@ -96,8 +95,7 @@ export function getCurrentDay(): DayKey {
       }
     ).format(new Date());
 
-
-return {
+  return {
     Sunday: "sunday",
     Monday: "monday",
     Tuesday: "tuesday",
@@ -150,23 +148,49 @@ export function crossesMidnight(
 }
 
 /**
- * Obtiene horario de un día
+ * Normaliza un valor de horario.
+ *
+ * Convierte:
+ * - null
+ * - ""
+ * - "EMPTY"
+ * - " empty "
+ *
+ * en null.
+ */
+function normalizeTime(
+  value: string | null
+): string | null {
+  if (!value) return null;
+
+  const normalized =
+    value.trim().toUpperCase();
+
+  if (
+    normalized === "" ||
+    normalized === "EMPTY"
+  ) {
+    return null;
+  }
+
+  return value.trim();
+}
+
+/**
+ * Obtiene el horario de un día
  */
 export function getDaySchedule(
   schedule: RestaurantSchedule,
   day: DayKey
 ) {
+  return {
+    open: normalizeTime(
+      schedule[`${day}_open`]
+    ),
 
-return {
-    open:
-      schedule[
-        `${day}_open`
-      ] ?? null,
-
-    close:
-      schedule[
-        `${day}_close`
-      ] ?? null,
+    close: normalizeTime(
+      schedule[`${day}_close`]
+    ),
   };
 }
 
@@ -197,4 +221,3 @@ export function getDayLabel(
 ) {
   return DAY_LABELS[day];
 }
-

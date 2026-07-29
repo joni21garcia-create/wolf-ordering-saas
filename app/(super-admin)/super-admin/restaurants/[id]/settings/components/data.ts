@@ -249,6 +249,18 @@ export function getSettingsModules(
       color: "#22c55e",
     },
 
+{
+  id: "discover",
+  title: "Discover",
+  description: "Controla la visibilidad del restaurante en Discover.",
+  icon: "🔎",
+  category: "Operación",
+  href: `/super-admin/restaurants/${restaurantId}/settings/discover`,
+  permission: "discover",
+  color: "#22c55e",
+  featured: true,
+},
+
     // =====================================================
     // NEGOCIO
     // =====================================================
