@@ -1,10 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
 import { sendCustomerPush } from "@/lib/push/sendCustomerPush";
 
-export async function POST(request: NextRequest) {
+import {
+  CustomerOrderStatus,
+} from "@/lib/push/customerMessages";
+
+/*
+|--------------------------------------------------------------------------
+| Estados permitidos
+|--------------------------------------------------------------------------
+*/
+
+const VALID_STATUSES: CustomerOrderStatus[] = [
+  "accepted",
+  "preparing",
+  "ready",
+  "on_the_way",
+  "completed",
+  "cancelled",
+];
+
+/*
+|--------------------------------------------------------------------------
+| POST
+|--------------------------------------------------------------------------
+*/
+
+export async function POST(
+  request: NextRequest
+) {
   try {
-    const supabase = await createSupabaseServerClient();
+
+    /*
+    ==========================================================
+    SUPABASE
+    ==========================================================
+    */
+
+    const supabase =
+      await createSupabaseServerClient();
 
     /*
     ==========================================================
@@ -15,9 +51,11 @@ export async function POST(request: NextRequest) {
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } =
+      await supabase.auth.getUser();
 
     if (authError || !user) {
+
       return NextResponse.json(
         {
           success: false,
@@ -27,11 +65,12 @@ export async function POST(request: NextRequest) {
           status: 401,
         }
       );
+
     }
 
     /*
     ==========================================================
-    RESTAURANTE
+    RESTAURANTE DEL USUARIO
     ==========================================================
     */
 
@@ -39,25 +78,38 @@ export async function POST(request: NextRequest) {
       data: restaurantUser,
       error: restaurantError,
     } = await supabase
+
       .from("restaurant_users")
+
       .select(`
         restaurant_id,
         auth_user_id,
         role_id
       `)
-      .eq("auth_user_id", user.id)
+
+      .eq(
+        "auth_user_id",
+        user.id
+      )
+
       .maybeSingle();
 
-    if (restaurantError || !restaurantUser) {
+    if (
+      restaurantError ||
+      !restaurantUser
+    ) {
+
       return NextResponse.json(
         {
           success: false,
-          error: "Restaurant not assigned",
+          error:
+            "Restaurant not assigned",
         },
         {
           status: 403,
         }
       );
+
     }
 
     /*
@@ -66,60 +118,47 @@ export async function POST(request: NextRequest) {
     ==========================================================
     */
 
-    const body = await request.json();
-
-    const { orderId, status } = body;
+    const {
+      orderId,
+      status,
+    }: {
+      orderId: string;
+      status: CustomerOrderStatus;
+    } =
+      await request.json();
 
     if (!orderId) {
+
       return NextResponse.json(
         {
           success: false,
-          error: "orderId requerido",
+          error:
+            "orderId requerido",
         },
         {
           status: 400,
         }
       );
+
     }
 
-    if (!status) {
+    if (
+      !VALID_STATUSES.includes(
+        status
+      )
+    ) {
+
       return NextResponse.json(
         {
           success: false,
-          error: "status requerido",
+          error:
+            "Estado inválido",
         },
         {
           status: 400,
         }
       );
-    }
 
-    /*
-    ==========================================================
-    VALIDAR ESTADO
-    ==========================================================
-    */
-
-    const validStatuses = [
-      "pending",
-      "accepted",
-      "preparing",
-      "ready",
-      "out_for_delivery",
-      "completed",
-      "cancelled",
-    ];
-
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Estado inválido",
-        },
-        {
-          status: 400,
-        }
-      );
     }
 
     /*
@@ -132,41 +171,51 @@ export async function POST(request: NextRequest) {
       data: order,
       error: orderError,
     } = await supabase
+
       .from("orders")
+
       .select(`
         id,
-        restaurant_id,
-        tracking_code
+        restaurant_id
       `)
+
       .eq("id", orderId)
+
       .eq(
         "restaurant_id",
         restaurantUser.restaurant_id
       )
+
       .maybeSingle();
 
     if (orderError) {
+
       return NextResponse.json(
         {
           success: false,
-          error: orderError.message,
+          error:
+            orderError.message,
         },
         {
           status: 500,
         }
       );
+
     }
 
     if (!order) {
+
       return NextResponse.json(
         {
           success: false,
-          error: "Pedido no encontrado",
+          error:
+            "Pedido no encontrado",
         },
         {
           status: 404,
         }
       );
+
     }
 
     /*
@@ -175,11 +224,16 @@ export async function POST(request: NextRequest) {
     ==========================================================
     */
 
-     const updateData: Record<string, unknown> = {
-  status,
-};
+    const updateData: Record<
+      string,
+      unknown
+    > = {
 
-    switch (status) {
+      status,
+
+    };
+        switch (status) {
+
       case "accepted":
         updateData.accepted_at =
           new Date().toISOString();
@@ -199,106 +253,76 @@ export async function POST(request: NextRequest) {
         updateData.completed_at =
           new Date().toISOString();
         break;
+
     }
 
     /*
     ==========================================================
-    UPDATE
+    ACTUALIZAR PEDIDO
     ==========================================================
     */
 
-const {
-  error: updateError,
-} = await supabase
-  .from("orders")
-  .update(updateData)
-  .eq("id", orderId)
-  .eq(
-    "restaurant_id",
-    restaurantUser.restaurant_id
-  );
+    const {
+      error: updateError,
+    } = await supabase
 
-if (updateError) {
+      .from("orders")
 
-  console.error(
-    "UPDATE STATUS ERROR:",
-    updateError
-  );
+      .update(updateData)
 
-  return NextResponse.json(
-    {
-      success: false,
-      error: updateError.message,
-      details: updateError,
-    },
-    {
-      status: 500,
+      .eq(
+        "id",
+        orderId
+      )
+
+      .eq(
+        "restaurant_id",
+        restaurantUser.restaurant_id
+      );
+
+    if (updateError) {
+
+      console.error(
+        "[ORDER STATUS]",
+        updateError
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            updateError.message,
+        },
+        {
+          status: 500,
+        }
+      );
+
     }
-  );
-}
 
     /*
     ==========================================================
-    PUSH
+    NOTIFICACIÓN AL CLIENTE
     ==========================================================
     */
 
-    let title = "";
-    let message = "";
+    try {
 
-    switch (status) {
-      case "accepted":
-        title = "🍽️ Pedido confirmado";
-        message =
-          "El restaurante aceptó tu pedido.";
-        break;
+      await sendCustomerPush({
 
-      case "preparing":
-        title =
-          "👨‍🍳 Preparando tu pedido";
-        message =
-          "Tu pedido ya está en preparación.";
-        break;
+        orderId,
 
-      case "ready":
-        title = "📦 Pedido listo";
-        message =
-          "Tu pedido está listo.";
-        break;
+        status,
 
-      case "out_for_delivery":
-        title = "🛵 En camino";
-        message =
-          "Tu pedido salió para entrega.";
-        break;
+      });
 
-      case "completed":
-        title = "❤️ Pedido entregado";
-        message =
-          "Gracias por comprar con nosotros.";
-        break;
+    } catch (pushError) {
 
-      case "cancelled":
-        title = "⚠ Pedido cancelado";
-        message =
-          "El restaurante canceló el pedido.";
-        break;
-    }
+      console.error(
+        "[CUSTOMER PUSH]",
+        pushError
+      );
 
-    if (title) {
-      try {
-        await sendCustomerPush({
-          orderId,
-          title,
-          body: message,
-          url: `/tracking/${order.tracking_code}`,
-        });
-      } catch (pushError) {
-        console.error(
-          "Error enviando push:",
-          pushError
-        );
-      }
     }
 
     /*
@@ -306,26 +330,45 @@ if (updateError) {
     RESPUESTA
     ==========================================================
     */
+       return NextResponse.json({
 
-    return NextResponse.json({
       success: true,
+
+      orderId,
+
       status,
+
+      message:
+        "Estado actualizado correctamente.",
+
     });
 
   } catch (error) {
 
-    console.error(error);
+    console.error(
+      "[UPDATE ORDER STATUS]",
+      error
+    );
 
     return NextResponse.json(
+
       {
+
         success: false,
-        error: "Error interno del servidor",
+
+        error:
+          "Error interno del servidor.",
+
       },
+
       {
+
         status: 500,
+
       }
+
     );
+
   }
+
 }
-
-

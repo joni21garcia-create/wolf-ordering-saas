@@ -22,21 +22,30 @@ export default function NewPaymentQRPage() {
   const uploadQR = async (file: File) => {
     try {
       setUploading(true);
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `payment-qrs/${fileName}`;
+ 
+const formData = new FormData();
 
-      const { error } = await supabase.storage
-        .from("landing-images")
-        .upload(filePath, file);
+formData.append("file", file);
 
-      if (error) throw error;
+const response = await fetch(
+  "/api/payment-qrs/upload",
+  {
+    method: "POST",
+    body: formData,
+  }
+);
 
-      const { data } = supabase.storage
-        .from("landing-images")
-        .getPublicUrl(filePath);
+const data = await response.json();
 
-      setForm((prev) => ({ ...prev, qr_image_url: data.publicUrl }));
+if (!response.ok || !data.success) {
+  throw new Error(data.error);
+}
+
+setForm((prev) => ({
+  ...prev,
+  qr_image_url: data.url,
+}));
+
     } catch (error) {
       console.error(error);
       alert("Error subiendo imagen");

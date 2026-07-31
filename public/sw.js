@@ -5,7 +5,7 @@
    CORS/Opacos desde el bucket de Supabase para instalabilidad.
 ============================================================ */
 
-const VERSION = "1785505486665";
+const VERSION = "1785516295482";
 >>>>>>> base-estable-push
 
 const CACHE = {

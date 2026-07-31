@@ -47,24 +47,32 @@ export default function HeroSettingsPage() {
       setUploading(true);
       
       // Creamos un nombre de archivo único utilizando el timestamp
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${restaurantId}/hero_${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
 
-      // Subimos el archivo al bucket público 'restaurant-gallery'
-      const { error: uploadError } = await supabase.storage
-        .from("restaurant-gallery")
-        .upload(filePath, file, { upsert: true });
+const formData = new FormData();
 
-      if (uploadError) throw uploadError;
+formData.append("file", file);
+formData.append("restaurantId", restaurantId);
+formData.append("preset", "hero");
 
-      // Obtenemos la URL pública de la imagen alojada
-      const { data: { publicUrl } } = supabase.storage
-        .from("restaurant-gallery")
-        .getPublicUrl(filePath);
+const response = await fetch(
+  "/api/images/upload",
+  {
+    method: "POST",
+    body: formData,
+  }
+);
 
-      // Actualizamos el estado en memoria del slide seleccionado con su nueva URL
-      setSelectedSlide({ ...selectedSlide, image_url: publicUrl });
+const data = await response.json();
+
+if (!response.ok || !data.success) {
+  throw new Error(data.error);
+}
+
+setSelectedSlide({
+  ...selectedSlide,
+  image_url: data.url,
+});
+
       alert("Imagen cargada con éxito 📸 (No olvides guardar los cambios)");
 
     } catch (error) {

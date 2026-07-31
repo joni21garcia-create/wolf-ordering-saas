@@ -13,12 +13,12 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
-type SendPushParams = {
+interface SendPushParams {
   restaurant_id: string;
   title: string;
   body: string;
   url?: string;
-};
+}
 
 export async function sendPush({
   restaurant_id,
@@ -26,80 +26,220 @@ export async function sendPush({
   body,
   url = "/admin/orders",
 }: SendPushParams) {
-  //
-  // WEB PUSH
-  //
 
-  const { data: subscriptions } = await supabase
+  /*
+  ==========================================================
+  WEB PUSH (PWA)
+  ==========================================================
+  */
+
+  const {
+    data: subscriptions,
+  } = await supabase
+
     .from("push_subscriptions")
+
     .select("*")
-    .eq("restaurant_id", restaurant_id)
-    .eq("active", true);
+
+    .eq(
+      "restaurant_id",
+      restaurant_id
+    )
+
+    .eq(
+      "active",
+      true
+    );
 
   if (subscriptions?.length) {
-    for (const device of subscriptions) {
-      try {
-        await webpush.sendNotification(
-          device.subscription,
-          JSON.stringify({
-            title,
-            body,
-            url,
-          })
-        );
-      } catch (err: any) {
-        console.error("[WEB PUSH]", err);
 
-        if (err?.statusCode === 404 || err?.statusCode === 410) {
+    for (const device of subscriptions) {
+
+      if (!device.subscription) continue;
+
+      try {
+
+        await webpush.sendNotification(
+
+          device.subscription,
+
+          JSON.stringify({
+
+            title,
+
+            body,
+
+            url,
+
+          })
+
+        );
+
+      } catch (err: any) {
+
+        console.error(
+          "[WEB PUSH]",
+          err
+        );
+
+        /*
+        El navegador eliminó la suscripción.
+        */
+
+        if (
+          err?.statusCode === 404 ||
+          err?.statusCode === 410
+        ) {
+
           await supabase
+
             .from("push_subscriptions")
-            .update({ active: false })
-            .eq("id", device.id);
+
+            .update({
+
+              active: false,
+
+            })
+
+            .eq(
+              "id",
+              device.id
+            );
+
         }
+
       }
+
     }
+
   }
 
-  //
-  // ANDROID FCM
-  //
+  /*
+  ==========================================================
+  FIREBASE (ANDROID)
+  ==========================================================
+  */
 
-  const { data: devices } = await supabase
-    .from("device_tokens")
-    .select("fcm_token")
-    .eq("restaurant_id", restaurant_id)
-    .eq("active", true);
+  const {
+    data: devices,
+  } = await supabase
 
-  console.log("[FCM] Dispositivos:", devices?.length ?? 0);
+    .from("push_subscriptions")
+
+    .select(`
+      id,
+      fcm_token,
+      active
+    `)
+
+    .eq(
+      "restaurant_id",
+      restaurant_id
+    )
+
+    .eq(
+      "active",
+      true
+    )
+
+    .not(
+      "fcm_token",
+      "is",
+      null
+    );
 
   if (devices?.length) {
+
     for (const device of devices) {
+
       try {
-        const id = await messaging.send({
-          token: device.fcm_token,
 
-          notification: {
-            title,
-            body,
-          },
+        const id =
+          await messaging.send({
 
-          data: {
-            url,
-          },
+            token:
+              device.fcm_token,
 
-          android: {
-            priority: "high",
             notification: {
-              channelId: "orders",
-              sound: "default",
-            },
-          },
-        });
 
-        console.log("[FCM] Enviado:", id);
-      } catch (err) {
-        console.error("[FCM] Error:", err);
+              title,
+
+              body,
+
+            },
+
+            data: {
+
+              url,
+
+            },
+
+            android: {
+
+              priority: "high",
+
+              notification: {
+
+                channelId: "orders",
+
+                sound: "default",
+
+              },
+
+            },
+
+          });
+
+        console.log(
+          "[FCM]",
+          id
+        );
+
+      } catch (err: any) {
+
+        console.error(
+          "[FCM]",
+          err
+        );
+
+        /*
+        Token inválido.
+        */
+
+        const code =
+          err?.errorInfo?.code;
+
+        if (
+
+          code ===
+            "messaging/registration-token-not-registered" ||
+
+          code ===
+            "messaging/invalid-registration-token"
+
+        ) {
+
+          await supabase
+
+            .from("push_subscriptions")
+
+            .update({
+
+              active: false,
+
+            })
+
+            .eq(
+              "id",
+              device.id
+            );
+
+        }
+
       }
+
     }
+
   }
+
 }

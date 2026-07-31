@@ -2,8 +2,16 @@ import webpush from "web-push";
 import { createClient } from "@supabase/supabase-js";
 import { messaging } from "@/lib/firebase-admin";
 
+import {
+  CustomerOrderStatus,
+} from "@/lib/push/customerMessages";
+
+import {
+  buildCustomerNotification,
+} from "@/lib/push/buildCustomerNotification";
+
 webpush.setVapidDetails(
-  "mailto:admin@wolfordering.com",
+  process.env.VAPID_SUBJECT!,
   process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
 );
@@ -15,64 +23,67 @@ const supabase = createClient(
 
 interface CustomerPushParams {
   orderId: string;
-  title: string;
-  body: string;
-  url?: string;
+  status: CustomerOrderStatus;
 }
 
 export async function sendCustomerPush({
   orderId,
-  title,
-  body,
-  url,
+  status,
 }: CustomerPushParams) {
+
   try {
+
     /*
     ==========================================================
-    PEDIDO
+    CONSTRUIR NOTIFICACIÓN
     ==========================================================
     */
 
-    const {
-      data: order,
-      error: orderError,
-    } = await supabase
-      .from("orders")
-      .select("push_subscription_id")
-      .eq("id", orderId)
-      .maybeSingle();
+    const notification =
+      await buildCustomerNotification({
+        orderId,
+        status,
+      });
 
-    if (orderError) throw orderError;
-
-    if (!order?.push_subscription_id) {
+    if (!notification) {
       console.log(
-        "[CUSTOMER PUSH] Pedido sin dispositivo."
+        "[CUSTOMER PUSH] No fue posible construir la notificación."
       );
       return;
     }
 
     /*
     ==========================================================
-    DISPOSITIVO
+    OBTENER DISPOSITIVO
     ==========================================================
     */
 
     const {
-      data: subscription,
-      error: subscriptionError,
+      data: device,
+      error,
     } = await supabase
+
       .from("push_subscriptions")
+
       .select(`
+        id,
         subscription,
         fcm_token,
-        platform
+        active
       `)
-      .eq("id", order.push_subscription_id)
+
+      .eq(
+        "id",
+        notification.pushSubscriptionId
+      )
+
       .maybeSingle();
 
-    if (subscriptionError) throw subscriptionError;
+    if (error) {
+      throw error;
+    }
 
-    if (!subscription) {
+    if (!device) {
       console.log(
         "[CUSTOMER PUSH] Dispositivo no encontrado."
       );
@@ -81,30 +92,75 @@ export async function sendCustomerPush({
 
     /*
     ==========================================================
-    WEB PUSH (PWA)
+    WEB PUSH
     ==========================================================
     */
 
-    if (subscription.subscription) {
+    if (device.subscription) {
+
       try {
+
         await webpush.sendNotification(
-          subscription.subscription,
+
+          device.subscription,
+
           JSON.stringify({
-            title,
-            body,
-            url,
+
+            title:
+              notification.title,
+
+            body:
+              notification.body,
+
+            icon:
+              notification.icon,
+
+            badge:
+              notification.icon,
+
+            image:
+              notification.image,
+
+            url:
+              notification.url,
+
           })
+
         );
 
         console.log(
           "[CUSTOMER PUSH] Web Push enviado."
         );
-      } catch (err) {
+
+      } catch (err: any) {
+
         console.error(
           "[CUSTOMER PUSH][WEB]",
           err
         );
+
+        if (
+          err?.statusCode === 404 ||
+          err?.statusCode === 410
+        ) {
+
+          await supabase
+
+            .from("push_subscriptions")
+
+            .update({
+              active: false,
+            })
+
+            .eq(
+              "id",
+              device.id
+            );
+
+        }
+
       }
+
     }
 
     /*
@@ -113,39 +169,69 @@ export async function sendCustomerPush({
     ==========================================================
     */
 
-    if (subscription.fcm_token) {
+    if (device.fcm_token) {
+
       try {
-        const id = await messaging.send({
-          token: subscription.fcm_token,
 
-          notification: {
-            title,
-            body,
-          },
+        const id =
+          await messaging.send({
 
-          data: {
-            url: url ?? "/",
-          },
+            token:
+              device.fcm_token,
 
-          android: {
-            priority: "high",
             notification: {
-              channelId: "orders",
-              sound: "default",
+
+              title:
+                notification.title,
+
+              body:
+                notification.body,
+
+              imageUrl:
+                notification.image,
+
             },
-          },
-        });
+
+            data: {
+
+              url:
+                notification.url,
+
+            },
+
+            android: {
+
+              priority: "high",
+
+              notification: {
+
+                channelId: "orders",
+
+                sound: "default",
+
+                imageUrl:
+                  notification.image,
+
+              },
+
+            },
+
+          });
 
         console.log(
           "[CUSTOMER PUSH] FCM enviado:",
           id
         );
+
       } catch (err) {
+
         console.error(
           "[CUSTOMER PUSH][FCM]",
           err
         );
+
       }
+
     }
 
   } catch (error) {
@@ -156,4 +242,5 @@ export async function sendCustomerPush({
     );
 
   }
+
 }
