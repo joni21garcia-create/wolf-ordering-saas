@@ -59,7 +59,6 @@ create table public.restaurant_reservation_logs (
         )
 
 );
-
 -- ============================================================================
 -- ÍNDICES
 -- ============================================================================
@@ -68,31 +67,25 @@ create index idx_reservation_logs_reservation
 on public.restaurant_reservation_logs (
     reservation_id
 );
-
 create index idx_reservation_logs_restaurant
 on public.restaurant_reservation_logs (
     restaurant_id
 );
-
 create index idx_reservation_logs_created_at
 on public.restaurant_reservation_logs (
     created_at desc
 );
-
 create index idx_reservation_logs_action
 on public.restaurant_reservation_logs (
     action
 );
-
 -- ============================================================================
 -- COMENTARIOS
 -- ============================================================================
 
 comment on table public.restaurant_reservation_logs
 is 'Historial completo de acciones realizadas sobre una reserva.';
-
 comment on column public.restaurant_reservation_logs.action
 is 'Acción registrada en el historial.';
-
 comment on column public.restaurant_reservation_logs.actor_type
 is 'Origen de la acción: sistema, cliente, personal o administrador.';

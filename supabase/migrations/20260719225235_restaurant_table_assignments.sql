@@ -40,7 +40,6 @@ create table public.restaurant_table_assignments (
         )
 
 );
-
 -- ============================================================================
 -- ÍNDICES
 -- ============================================================================
@@ -49,18 +48,15 @@ create index idx_table_assignments_reservation
 on public.restaurant_table_assignments (
     reservation_id
 );
-
 create index idx_table_assignments_table
 on public.restaurant_table_assignments (
     table_id
 );
-
 create index idx_table_assignments_primary
 on public.restaurant_table_assignments (
     reservation_id,
     is_primary
 );
-
 -- ============================================================================
 -- TRIGGER updated_at
 -- ============================================================================
@@ -70,19 +66,15 @@ before update
 on public.restaurant_table_assignments
 for each row
 execute function public.set_updated_at();
-
 -- ============================================================================
 -- COMENTARIOS
 -- ============================================================================
 
 comment on table public.restaurant_table_assignments
 is 'Relación entre reservas y mesas asignadas.';
-
 comment on column public.restaurant_table_assignments.is_primary
 is 'Indica cuál es la mesa principal cuando una reserva utiliza varias mesas.';
-
 comment on column public.restaurant_table_assignments.assigned_guests
 is 'Cantidad de personas asignadas a esa mesa.';
-
 comment on column public.restaurant_table_assignments.metadata
 is 'Información adicional de la asignación.';

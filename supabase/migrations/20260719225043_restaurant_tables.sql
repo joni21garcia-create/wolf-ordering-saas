@@ -73,26 +73,22 @@ create table public.restaurant_tables (
         unique (restaurant_id, code)
 
 );
-
 -- ============================================================================
 -- ÍNDICES
 -- ============================================================================
 
 create index idx_restaurant_tables_restaurant
 on public.restaurant_tables (restaurant_id);
-
 create index idx_restaurant_tables_active
 on public.restaurant_tables (
     restaurant_id,
     active
 );
-
 create index idx_restaurant_tables_capacity
 on public.restaurant_tables (
     restaurant_id,
     capacity
 );
-
 -- ============================================================================
 -- TRIGGER updated_at
 -- ============================================================================
@@ -102,25 +98,19 @@ before update
 on public.restaurant_tables
 for each row
 execute function public.set_updated_at();
-
 -- ============================================================================
 -- COMENTARIOS
 -- ============================================================================
 
 comment on table public.restaurant_tables
 is 'Mesas disponibles de cada restaurante.';
-
 comment on column public.restaurant_tables.code
 is 'Código interno de la mesa. Ej: M01, T12, VIP-1.';
-
 comment on column public.restaurant_tables.position_x
 is 'Posición X para plano del restaurante.';
-
 comment on column public.restaurant_tables.position_y
 is 'Posición Y para plano del restaurante.';
-
 comment on column public.restaurant_tables.joinable
 is 'Indica si la mesa puede unirse con otras.';
-
 comment on column public.restaurant_tables.metadata
 is 'Información adicional del plano o integraciones.';

@@ -3,7 +3,6 @@
 -- ============================================================================
 
 create extension if not exists pgcrypto;
-
 -- ============================================================================
 -- TABLA: restaurant_reservations
 -- ============================================================================
@@ -83,49 +82,39 @@ create table public.restaurant_reservations (
         check (start_time < end_time)
 
 );
-
 -- ============================================================================
 -- ÍNDICES
 -- ============================================================================
 
 create index idx_restaurant_reservations_restaurant
 on public.restaurant_reservations (restaurant_id);
-
 create index idx_restaurant_reservations_date
 on public.restaurant_reservations (reservation_date);
-
 create index idx_restaurant_reservations_status
 on public.restaurant_reservations (status);
-
 create index idx_restaurant_reservations_datetime
 on public.restaurant_reservations (
     reservation_date,
     start_time
 );
-
 create index idx_restaurant_reservations_customer_phone
 on public.restaurant_reservations (
     customer_phone
 );
-
 create index idx_restaurant_reservations_customer_email
 on public.restaurant_reservations (
     customer_email
 );
-
 -- ============================================================================
 -- COMENTARIOS
 -- ============================================================================
 
 comment on table public.restaurant_reservations
 is 'Reservas de los restaurantes.';
-
 comment on column public.restaurant_reservations.reservation_number
 is 'Número legible para humanos (RES-000001).';
-
 comment on column public.restaurant_reservations.confirmation_code
 is 'Código de confirmación enviado al cliente.';
-
 comment on column public.restaurant_reservations.metadata
 is 'Información adicional para futuras integraciones.';
 -- ============================================================================
@@ -141,7 +130,6 @@ begin
     return new;
 end;
 $$;
-
 -- ============================================================================
 -- TRIGGER
 -- ============================================================================
@@ -159,7 +147,6 @@ create sequence if not exists
 public.restaurant_reservation_number_seq
 start with 1
 increment by 1;
-
 -- ============================================================================
 -- FUNCIÓN: Generar número de reserva
 -- ============================================================================
@@ -187,7 +174,6 @@ begin
 
 end;
 $$;
-
 -- ============================================================================
 -- TRIGGER
 -- ============================================================================

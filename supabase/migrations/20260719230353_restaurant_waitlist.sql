@@ -59,7 +59,6 @@ create table public.restaurant_waitlist (
         )
 
 );
-
 -- ============================================================================
 -- ÍNDICES
 -- ============================================================================
@@ -68,24 +67,20 @@ create index idx_waitlist_restaurant
 on public.restaurant_waitlist (
     restaurant_id
 );
-
 create index idx_waitlist_date
 on public.restaurant_waitlist (
     requested_date,
     requested_time
 );
-
 create index idx_waitlist_status
 on public.restaurant_waitlist (
     status
 );
-
 create index idx_waitlist_priority
 on public.restaurant_waitlist (
     priority,
     created_at
 );
-
 -- ============================================================================
 -- TRIGGER updated_at
 -- ============================================================================
@@ -95,16 +90,13 @@ before update
 on public.restaurant_waitlist
 for each row
 execute function public.set_updated_at();
-
 -- ============================================================================
 -- COMENTARIOS
 -- ============================================================================
 
 comment on table public.restaurant_waitlist
 is 'Lista de espera para reservas sin disponibilidad.';
-
 comment on column public.restaurant_waitlist.priority
 is 'Prioridad en la lista de espera. Un valor mayor tiene prioridad sobre uno menor.';
-
 comment on column public.restaurant_waitlist.status
 is 'Estado actual de la solicitud en lista de espera.';

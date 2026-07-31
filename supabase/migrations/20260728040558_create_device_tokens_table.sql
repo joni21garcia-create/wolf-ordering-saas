@@ -13,14 +13,10 @@ create table public.device_tokens (
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
-
 create index idx_device_tokens_restaurant
     on public.device_tokens (restaurant_id);
-
 create index idx_device_tokens_user
     on public.device_tokens (user_id);
-
 create unique index idx_device_tokens_fcm
     on public.device_tokens (fcm_token);
-
 alter table public.device_tokens enable row level security;

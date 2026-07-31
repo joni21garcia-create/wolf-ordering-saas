@@ -1,7 +1,5 @@
 alter table public.restaurant_reservations
 drop constraint if exists restaurant_reservations_status_check;
-
-
 alter table public.restaurant_reservations
 add constraint restaurant_reservations_status_check
 check (
