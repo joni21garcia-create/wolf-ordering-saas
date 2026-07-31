@@ -84,7 +84,6 @@ create table public.restaurant_reservation_settings (
         )
 
 );
-
 -- ============================================================================
 -- ÍNDICES
 -- ============================================================================
@@ -93,7 +92,6 @@ create index idx_reservation_settings_restaurant
 on public.restaurant_reservation_settings (
     restaurant_id
 );
-
 -- ============================================================================
 -- TRIGGER updated_at
 -- ============================================================================
@@ -103,16 +101,13 @@ before update
 on public.restaurant_reservation_settings
 for each row
 execute function public.set_updated_at();
-
 -- ============================================================================
 -- COMENTARIOS
 -- ============================================================================
 
 comment on table public.restaurant_reservation_settings
 is 'Configuración general del módulo de reservas para cada restaurante.';
-
 comment on column public.restaurant_reservation_settings.weekly_schedule
 is 'Horario semanal del restaurante en formato JSON.';
-
 comment on column public.restaurant_reservation_settings.special_dates
 is 'Fechas especiales como feriados, cierres o eventos.';

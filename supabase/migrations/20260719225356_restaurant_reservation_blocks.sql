@@ -51,7 +51,6 @@ create table public.restaurant_reservation_blocks (
         )
 
 );
-
 -- ============================================================================
 -- ÍNDICES
 -- ============================================================================
@@ -60,23 +59,19 @@ create index idx_reservation_blocks_restaurant
 on public.restaurant_reservation_blocks (
     restaurant_id
 );
-
 create index idx_reservation_blocks_dates
 on public.restaurant_reservation_blocks (
     start_at,
     end_at
 );
-
 create index idx_reservation_blocks_table
 on public.restaurant_reservation_blocks (
     table_id
 );
-
 create index idx_reservation_blocks_active
 on public.restaurant_reservation_blocks (
     active
 );
-
 -- ============================================================================
 -- TRIGGER
 -- ============================================================================
@@ -86,19 +81,15 @@ before update
 on public.restaurant_reservation_blocks
 for each row
 execute function public.set_updated_at();
-
 -- ============================================================================
 -- COMENTARIOS
 -- ============================================================================
 
 comment on table public.restaurant_reservation_blocks
 is 'Bloqueos de horarios, mesas o fechas para reservas.';
-
 comment on column public.restaurant_reservation_blocks.affects_all_tables
 is 'Si es true bloquea todas las mesas del restaurante.';
-
 comment on column public.restaurant_reservation_blocks.block_type
 is 'Tipo de bloqueo aplicado.';
-
 comment on column public.restaurant_reservation_blocks.metadata
 is 'Información adicional del bloqueo.';

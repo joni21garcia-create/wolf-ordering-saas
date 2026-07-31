@@ -51,7 +51,6 @@ create table public.restaurant_reservation_reminders (
         )
 
 );
-
 -- ============================================================================
 -- ÍNDICES
 -- ============================================================================
@@ -60,17 +59,14 @@ create index idx_reservation_reminders_reservation
 on public.restaurant_reservation_reminders (
     reservation_id
 );
-
 create index idx_reservation_reminders_restaurant
 on public.restaurant_reservation_reminders (
     restaurant_id
 );
-
 create index idx_reservation_reminders_enabled
 on public.restaurant_reservation_reminders (
     enabled
 );
-
 -- ============================================================================
 -- TRIGGER updated_at
 -- ============================================================================
@@ -80,16 +76,13 @@ before update
 on public.restaurant_reservation_reminders
 for each row
 execute function public.set_updated_at();
-
 -- ============================================================================
 -- COMENTARIOS
 -- ============================================================================
 
 comment on table public.restaurant_reservation_reminders
 is 'Configuración y seguimiento de recordatorios asociados a reservas.';
-
 comment on column public.restaurant_reservation_reminders.send_before_minutes
 is 'Minutos antes de la reserva en que debe enviarse el recordatorio.';
-
 comment on column public.restaurant_reservation_reminders.reminder_type
 is 'Tipo de recordatorio programado.';

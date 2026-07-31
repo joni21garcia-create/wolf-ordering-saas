@@ -62,7 +62,6 @@ create table public.restaurant_notification_queue (
         )
 
 );
-
 -- ============================================================================
 -- ÍNDICES
 -- ============================================================================
@@ -72,26 +71,21 @@ on public.restaurant_notification_queue (
     status,
     scheduled_for
 );
-
 create index idx_notification_queue_restaurant
 on public.restaurant_notification_queue (
     restaurant_id
 );
-
 create index idx_notification_queue_reservation
 on public.restaurant_notification_queue (
     reservation_id
 );
-
 -- ============================================================================
 -- COMENTARIOS
 -- ============================================================================
 
 comment on table public.restaurant_notification_queue
 is 'Cola de envío de notificaciones del módulo de reservas.';
-
 comment on column public.restaurant_notification_queue.channel
 is 'Canal utilizado para enviar la notificación.';
-
 comment on column public.restaurant_notification_queue.notification_type
 is 'Tipo de notificación: confirmación, recordatorio, cancelación, etc.';
