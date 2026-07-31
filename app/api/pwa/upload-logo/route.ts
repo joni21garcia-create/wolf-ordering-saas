@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { uploadFile } from "@/lib/storage/upload";
+import { getPublicUrl } from "@/lib/storage/signed-url";
 import { optimizeImage } from "@/lib/image/optimizeImage";
 import { LOGO_PRESET } from "@/lib/image/presets";
 
 import { processPWAImages } from "@/lib/pwa/processPWAImages";
 import { updatePWAAssets } from "@/lib/pwa/updatePWAAssets";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+
 
 const ALLOWED_TYPES = [
   "image/png",
@@ -122,42 +120,15 @@ export async function POST(
       buffer.subarray(0, 8)
     );
 
-    const {
-      error: uploadError,
-    } =
-      await supabase.storage
-        .from("restaurant-pwa")
-        .upload(
-          filePath,
-          buffer,
-          {
-            contentType:
-              file.type,
-            upsert: true,
-          }
-        );
+ const key = `restaurant-pwa/${filePath}`;
 
-    if (uploadError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            uploadError.message,
-        },
-        {
-          status: 500,
-        }
-      );
-    }
+await uploadFile({
+  key,
+  body: buffer,
+  contentType: file.type,
+});
 
-    const {
-      data: publicUrl,
-    } =
-      supabase.storage
-        .from("restaurant-pwa")
-        .getPublicUrl(
-          filePath
-        );
+const logoUrl = getPublicUrl(key);
 
     const pwaResult =
       await processPWAImages({
@@ -166,7 +137,7 @@ export async function POST(
         // 🛠️ SOLUCIÓN TYPESCRIPT: Casteo 'as any' para mantener la compatibilidad
         originalImage: buffer as any,
 
-        appLogo: publicUrl.publicUrl,
+        appLogo: logoUrl,
 
         updateAssets: (
           icons,
@@ -187,7 +158,7 @@ export async function POST(
 
       logo: {
         path: filePath,
-        url: publicUrl.publicUrl,
+        url: logoUrl,
       },
 
       icons: pwaResult.icons,

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { uploadFile } from "@/lib/storage/upload";
+import { getPublicUrl } from "@/lib/storage/signed-url";
 
 import fs from "fs";
 import path from "path";
@@ -720,54 +722,15 @@ page.drawText(
     const fileName =
       `${invoice.id}.pdf`;
 
-    const {
-      error: uploadError,
-    } =
-      await supabase.storage
-        .from("invoices")
-        .upload(
-          fileName,
-          pdfBytes,
-          {
-            contentType:
-              "application/pdf",
-            upsert: true,
-          }
-        );
+const key = `invoices/${fileName}`;
 
-    if (uploadError) {
-      console.error(
-        uploadError
-      );
+await uploadFile({
+  key,
+  body: pdfBytes,
+  contentType: "application/pdf",
+});
 
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            uploadError.message,
-        },
-        {
-          status: 500,
-        }
-      );
-    }
-
-    /*
-     * 4. URL PUBLICA
-     */
-
-    const {
-      data:
-        publicUrlData,
-    } =
-      supabase.storage
-        .from("invoices")
-        .getPublicUrl(
-          fileName
-        );
-
-    const pdfUrl =
-      publicUrlData.publicUrl;
+const pdfUrl = getPublicUrl(key);
 
     /*
      * 5. ACTUALIZAR INVOICE

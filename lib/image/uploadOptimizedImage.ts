@@ -1,20 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
-
-
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
+import { uploadFile } from "@/lib/storage/upload";
 
 interface UploadImageParams {
   buffer: Buffer;
-
   bucket: string;
-
   path: string;
-
   contentType: string;
 }
 
@@ -24,46 +13,24 @@ export async function uploadOptimizedImage({
   path,
   contentType,
 }: UploadImageParams) {
-
-  
   //----------------------------------
   // Upload
   //----------------------------------
-console.log({
-  bucket,
-  path,
-  contentType,
-});
-  const { error } =
-    await supabase.storage
-      .from(bucket)
-      .upload(
-        path,
-        buffer,
-        {
-          upsert: true,
-      contentType,
-        }
-      );
+  console.log({
+    bucket,
+    path,
+    contentType,
+  });
 
-  if (error) {
-    throw error;
-  }
-
-  //----------------------------------
-  // URL pública
-  //----------------------------------
-
-  const { data } =
-    supabase.storage
-      .from(bucket)
-      .getPublicUrl(path);
+  const result = await uploadFile({
+    key: `${bucket}/${path}`,
+    body: buffer,
+    contentType,
+  });
 
   return {
     bucket,
     path,
-    url: data.publicUrl,
+    url: result.url,
   };
 }
-
-

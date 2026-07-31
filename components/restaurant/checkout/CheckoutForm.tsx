@@ -332,33 +332,28 @@ if (!paymentMethod) {
     setLoading(true);
 
 
-    let paymentProofUrl = null;
+let paymentProofUrl = null;
 
 if (paymentProof) {
-  const fileName =
-    `${Date.now()}-${paymentProof.name}`;
+  const formData = new FormData();
 
-  const { error: uploadError } =
-    await supabase.storage
-      .from("payment-proofs")
-      .upload(
-        fileName,
-        paymentProof
-      );
+  formData.append("file", paymentProof);
 
-  if (uploadError) {
-    throw uploadError;
+  const response = await fetch(
+    "/api/payment-proofs/upload",
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.error);
   }
 
-  const { data } =
-    supabase.storage
-      .from("payment-proofs")
-      .getPublicUrl(
-        fileName
-      );
-
-  paymentProofUrl =
-    data.publicUrl;
+  paymentProofUrl = data.url;
 }
 
 console.log(
