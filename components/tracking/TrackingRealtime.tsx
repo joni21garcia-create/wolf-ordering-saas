@@ -16,6 +16,8 @@ export default function TrackingRealtime({
   orderId,
 }: Props) {
   useEffect(() => {
+    console.log("Escuchando pedido:", orderId);
+
     const channel = supabase
       .channel(`order-${orderId}`)
       .on(
@@ -26,11 +28,14 @@ export default function TrackingRealtime({
           table: "orders",
           filter: `id=eq.${orderId}`,
         },
-        () => {
+        (payload) => {
+          console.log("UPDATE recibido", payload);
           window.location.reload();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Realtime status:", status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -39,5 +44,3 @@ export default function TrackingRealtime({
 
   return null;
 }
-
-
