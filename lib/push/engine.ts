@@ -9,6 +9,8 @@ Motor de envío
 */
 
 import webpush from "web-push";
+import { createClient } from "@supabase/supabase-js";
+
 import { messaging } from "@/lib/firebase-admin";
 
 import {
@@ -16,6 +18,11 @@ import {
   PushEngineResult,
   PushSubscriptionDevice,
 } from "./types";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT!,
@@ -33,7 +40,7 @@ export async function pushEngine(
 
   /*
   ==========================================================
-  WEB PUSH
+  WEB PUSH (PWA)
   ==========================================================
   */
 
@@ -52,7 +59,10 @@ export async function pushEngine(
 
     } catch (error: any) {
 
-      console.error("[ENGINE] WEB PUSH ERROR", error);
+      console.error(
+        "[ENGINE] WEB PUSH ERROR",
+        error
+      );
 
     }
 
@@ -75,37 +85,85 @@ export async function pushEngine(
         token: device.fcm_token,
 
         notification: {
+
           title: payload.title,
+
           body: payload.body,
+
         },
 
         data: {
+
           url: payload.url ?? "/",
+
         },
 
         android: {
+
           priority: "high",
+
           notification: {
+
             channelId: "orders",
+
             sound: "default",
+
           },
+
         },
 
       });
 
       android = true;
 
-    } catch (error) {
+    } catch (error: any) {
 
-      console.error("[ENGINE] FCM ERROR", error);
+      console.error(
+        "[ENGINE] FCM ERROR",
+        error
+      );
+
+      /*
+      ==========================================================
+      TOKEN FCM INVÁLIDO
+      ==========================================================
+      */
+
+      if (
+
+        error?.code ===
+          "messaging/registration-token-not-registered" ||
+
+        error?.code ===
+          "messaging/invalid-registration-token"
+
+      ) {
+
+        console.warn(
+          "[ENGINE] Desactivando token FCM inválido."
+        );
+
+        await supabase
+          .from("push_subscriptions")
+          .update({
+
+            active: false,
+
+          })
+          .eq("id", device.id);
+
+      }
 
     }
 
   }
 
   return {
+
     web,
+
     android,
+
   };
 
 }

@@ -16,46 +16,113 @@ const supabase = createClient(
 );
 
 interface RegisterAndroidServerInput {
+
   restaurantId: string;
+
   userId: string;
+
   token: string;
+
   platform?: "android";
+
 }
 
 export async function registerAndroidServer({
+
   restaurantId,
+
   userId,
+
   token,
+
   platform = "android",
+
 }: RegisterAndroidServerInput): Promise<boolean> {
 
-  if (!token) {
-    console.error("[ANDROID SERVER] Token vacío.");
-    return false;
-  }
+  if (!restaurantId) {
 
-  const { error } = await supabase
-    .from("push_subscriptions")
-    .upsert(
-      {
-        restaurant_id: restaurantId,
-        user_id: userId,
-        fcm_token: token,
-        platform,
-        active: true,
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "fcm_token",
-      }
+    console.error(
+      "[ANDROID SERVER] Restaurant ID vacío."
     );
 
-  if (error) {
-    console.error("[ANDROID SERVER]", error);
     return false;
+
   }
 
-  console.log("[ANDROID SERVER] Dispositivo registrado.");
+  if (!userId) {
 
-  return true;
+    console.error(
+      "[ANDROID SERVER] User ID vacío."
+    );
+
+    return false;
+
+  }
+
+  if (!token) {
+
+    console.error(
+      "[ANDROID SERVER] Token vacío."
+    );
+
+    return false;
+
+  }
+
+  try {
+
+    const { error } =
+      await supabase
+        .from("push_subscriptions")
+        .upsert(
+          {
+
+            restaurant_id: restaurantId,
+
+            user_id: userId,
+
+            fcm_token: token,
+
+            platform,
+
+            active: true,
+
+            updated_at: new Date().toISOString(),
+
+          },
+          {
+
+            onConflict: "fcm_token",
+
+          }
+        );
+
+    if (error) {
+
+      console.error(
+        "[ANDROID SERVER]",
+        error
+      );
+
+      return false;
+
+    }
+
+    console.log(
+      "[ANDROID SERVER] Dispositivo registrado."
+    );
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      "[ANDROID SERVER]",
+      error
+    );
+
+    return false;
+
+  }
+
 }

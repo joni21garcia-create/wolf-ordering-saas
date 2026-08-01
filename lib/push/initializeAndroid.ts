@@ -10,17 +10,11 @@ Inicialización Android
 
 import { PushNotifications } from "@capacitor/push-notifications";
 
-interface InitializeAndroidInput {
-  restaurantId: string;
-  userId?: string;
-}
+import { registerAndroid } from "./registerAndroid";
 
 let initialized = false;
 
-export async function initializeAndroid({
-  restaurantId,
-  userId,
-}: InitializeAndroidInput) {
+export async function initializeAndroid() {
 
   if (initialized) return;
 
@@ -28,8 +22,6 @@ export async function initializeAndroid({
 
   console.log("=================================");
   console.log("[ANDROID] Inicializando...");
-  console.log("Restaurant:", restaurantId);
-  console.log("User:", userId ?? "CLIENT");
   console.log("=================================");
 
   /*
@@ -74,9 +66,9 @@ export async function initializeAndroid({
   ==========================================================
   */
 
-  PushNotifications.removeAllListeners();
+  await PushNotifications.removeAllListeners();
 
-  PushNotifications.addListener(
+  await PushNotifications.addListener(
     "registration",
     async ({ value }) => {
 
@@ -101,10 +93,39 @@ export async function initializeAndroid({
         "[ANDROID] Token guardado localmente."
       );
 
+      /*
+      ==========================================================
+      REGISTRAR DISPOSITIVO EN EL SERVIDOR
+      ==========================================================
+      */
+
+      const registered =
+        await registerAndroid({
+
+          token: value,
+
+          platform: "android",
+
+        });
+
+      if (registered) {
+
+        console.log(
+          "[ANDROID] Dispositivo registrado."
+        );
+
+      } else {
+
+        console.error(
+          "[ANDROID] No se pudo registrar el dispositivo."
+        );
+
+      }
+
     }
   );
 
-  PushNotifications.addListener(
+  await PushNotifications.addListener(
     "registrationError",
     (error) => {
 
@@ -118,7 +139,7 @@ export async function initializeAndroid({
 
   /*
   ==========================================================
-  REGISTRAR EN FIREBASE
+  SOLICITAR TOKEN FCM
   ==========================================================
   */
 

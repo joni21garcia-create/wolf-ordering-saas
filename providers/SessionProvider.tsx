@@ -220,8 +220,7 @@ export function SessionProvider({
 
       {user && (
 <PushProvider
-  restaurantId={user.restaurant_id}
-  userId={user.id}
+
 />
       )}
     </SessionContext.Provider>

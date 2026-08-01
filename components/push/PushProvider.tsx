@@ -6,15 +6,7 @@ import { Capacitor } from "@capacitor/core";
 
 import { initializeAndroid } from "@/lib/push/initializeAndroid";
 
-interface PushProviderProps {
-  restaurantId: string;
-  userId?: string;
-}
-
-export default function PushProvider({
-  restaurantId,
-  userId,
-}: PushProviderProps) {
+export default function PushProvider() {
 
   const initialized = useRef(false);
 
@@ -30,25 +22,12 @@ export default function PushProvider({
 
       console.log("=================================");
       console.log("[PUSH PROVIDER]");
-      console.log("Restaurant:", restaurantId);
-      console.log("User:", userId ?? "CLIENT");
+      console.log("Inicializando Android...");
       console.log("=================================");
-
-      /*
-      ==========================================================
-      ANDROID
-      ==========================================================
-      */
 
       try {
 
-        await initializeAndroid({
-
-          restaurantId,
-
-          userId,
-
-        });
+        await initializeAndroid();
 
         console.log(
           "[PUSH] ANDROID INICIALIZADO"
@@ -67,7 +46,7 @@ export default function PushProvider({
 
     initialize();
 
-  }, [restaurantId, userId]);
+  }, []);
 
   return null;
 

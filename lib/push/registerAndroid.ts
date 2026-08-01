@@ -12,9 +12,7 @@ import { RegisterAndroidInput } from "./types";
 
 export async function registerAndroid({
   token,
-  restaurantId,
-  userId,
-  platform,
+  platform = "android",
 }: RegisterAndroidInput): Promise<boolean> {
 
   if (!token) {
@@ -28,6 +26,10 @@ export async function registerAndroid({
   }
 
   try {
+
+    console.log(
+      "[ANDROID PUSH] Registrando dispositivo..."
+    );
 
     const response =
       await fetch("/api/push/register-device", {
@@ -47,35 +49,31 @@ export async function registerAndroid({
 
           token,
 
-          restaurant_id:
-            restaurantId ?? null,
-
-          user_id:
-            userId ?? null,
-
           platform,
 
         }),
 
       });
 
+    const result =
+      await response.json();
+
     if (!response.ok) {
 
       console.error(
-        "[ANDROID PUSH] Error registrando dispositivo."
+        "[ANDROID PUSH]",
+        result
       );
 
       return false;
 
     }
 
-    const result =
-      await response.json();
-
     console.log(
-      "[ANDROID PUSH]",
-      result
+      "[ANDROID PUSH] Dispositivo registrado."
     );
+
+    console.log(result);
 
     return true;
 
