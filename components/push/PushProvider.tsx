@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 
 import { Capacitor } from "@capacitor/core";
 
-import { registerWeb } from "@/lib/push/registerWeb";
 import { initializeAndroid } from "@/lib/push/initializeAndroid";
 
 interface PushProviderProps {
@@ -23,7 +22,7 @@ export default function PushProvider({
 
     if (initialized.current) return;
 
-    if (!restaurantId) return;
+    if (!Capacitor.isNativePlatform()) return;
 
     initialized.current = true;
 
@@ -37,48 +36,9 @@ export default function PushProvider({
 
       /*
       ==========================================================
-      WEB / PWA
-      ==========================================================
-      */
-
-      if (!Capacitor.isNativePlatform()) {
-
-        console.log("[PUSH] WEB");
-
-        try {
-
-          await registerWeb({
-
-            restaurantId,
-
-            userId,
-
-          });
-
-          console.log(
-            "[PUSH] WEB REGISTRADO"
-          );
-
-        } catch (error) {
-
-          console.error(
-            "[PUSH] WEB ERROR",
-            error
-          );
-
-        }
-
-        return;
-
-      }
-
-      /*
-      ==========================================================
       ANDROID
       ==========================================================
       */
-
-      console.log("[PUSH] ANDROID");
 
       try {
 
