@@ -71,42 +71,67 @@ export async function registerAndroidServer({
 
   try {
 
-    const { error } =
-      await supabase
-        .from("push_subscriptions")
-        .upsert(
-          {
+    console.log("================================");
+    console.log("[ANDROID SERVER] Iniciando registro");
+    console.log("[ANDROID SERVER] Restaurant:", restaurantId);
+    console.log("[ANDROID SERVER] User:", userId);
+    console.log("[ANDROID SERVER] Platform:", platform);
+    console.log("[ANDROID SERVER] Token:", token);
+    console.log("================================");
 
-            restaurant_id: restaurantId,
+    const { data, error } = await supabase
+      .from("push_subscriptions")
+      .upsert(
+        {
 
-            user_id: userId,
+          restaurant_id: restaurantId,
 
-            fcm_token: token,
+          user_id: userId,
 
-            platform,
+          fcm_token: token,
 
-            active: true,
+          platform,
 
-            updated_at: new Date().toISOString(),
+          active: true,
 
-          },
-          {
+          updated_at: new Date().toISOString(),
 
-            onConflict: "fcm_token",
+        },
+        {
 
-          }
-        );
+          onConflict: "fcm_token",
+
+        }
+      )
+      .select();
+
+    console.log("[ANDROID SERVER] DATA:");
+    console.log(data);
+
+    console.log("[ANDROID SERVER] ERROR:");
+    console.log(error);
 
     if (error) {
 
       console.error(
-        "[ANDROID SERVER]",
+        "[ANDROID SERVER] Error al registrar:",
         error
       );
 
       return false;
 
     }
+
+    const { data: verify, error: verifyError } = await supabase
+      .from("push_subscriptions")
+      .select("id, platform, fcm_token, restaurant_id")
+      .eq("fcm_token", token);
+
+    console.log("[ANDROID SERVER] VERIFY:");
+    console.log(verify);
+
+    console.log("[ANDROID SERVER] VERIFY ERROR:");
+    console.log(verifyError);
 
     console.log(
       "[ANDROID SERVER] Dispositivo registrado."
@@ -117,7 +142,7 @@ export async function registerAndroidServer({
   } catch (error) {
 
     console.error(
-      "[ANDROID SERVER]",
+      "[ANDROID SERVER] EXCEPTION:",
       error
     );
 
