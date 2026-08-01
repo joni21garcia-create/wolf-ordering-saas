@@ -5,7 +5,7 @@
    CORS/Opacos desde el bucket de Supabase para instalabilidad.
 ============================================================ */
 
-const VERSION = "1785570733580";
+const VERSION = "1785575306838";
 
 const CACHE = {
     STATIC: `wolf-static-${VERSION}`,
@@ -240,55 +240,213 @@ async function trimImageCache() {
 /* ============================================================
    PUSH NOTIFICATIONS & INTERACTIONS
 ============================================================ */
+
 self.addEventListener("push", (event) => {
+
+    console.log("[SW] Push recibido");
+
     let payload = {
         title: "Wolf Ordering",
         body: "Nuevo pedido recibido",
-        url: "/manager",
-        icon: "/icons/icon-192.png",
-        badge: "/icons/badge.png",
-        image: null,
+        url: "/",
+        icon: "/wolfweb.png",
+        badge: "/wolfweb.png",
+        image: undefined,
         tag: "orders"
     };
 
     try {
+
         if (event.data) {
-            payload = { ...payload, ...event.data.json() };
+
+            const data = event.data.json();
+
+            console.log("[SW] Payload:", data);
+
+            payload = {
+
+                ...payload,
+
+                ...data,
+
+                title:
+                    typeof data.title === "string" &&
+                    data.title.trim() !== ""
+                        ? data.title
+                        : payload.title,
+
+                body:
+                    typeof data.body === "string"
+                        ? data.body
+                        : payload.body,
+
+                url:
+                    typeof data.url === "string" &&
+                    data.url.trim() !== ""
+                        ? data.url
+                        : "/",
+
+                icon:
+                    typeof data.icon === "string" &&
+                    data.icon.trim() !== ""
+                        ? data.icon
+                        : "/icons/icon-192.png",
+
+                badge:
+                    typeof data.badge === "string" &&
+                    data.badge.trim() !== ""
+                        ? data.badge
+                        : "/icons/badge.png",
+
+                image:
+                    typeof data.image === "string" &&
+                    data.image.trim() !== ""
+                        ? data.image
+                        : undefined,
+
+                tag:
+                    typeof data.tag === "string" &&
+                    data.tag.trim() !== ""
+                        ? data.tag
+                        : "orders",
+
+            };
+
         }
+
     } catch (error) {
-        console.error("[SW] Push inválido o malformado", error);
+
+        console.error(
+            "[SW] Payload inválido",
+            error
+        );
+
     }
 
-    event.waitUntil(
-        self.registration.showNotification(payload.title, {
-            body: payload.body,
-            icon: payload.icon,
-            badge: payload.badge,
-            image: payload.image,
-            tag: payload.tag,
-            renotify: true,
-            requireInteraction: true,
-            vibrate: [300, 100, 300],
-            data: { url: payload.url, timestamp: Date.now() }
-        })
+    console.log(
+        "[SW] Mostrando notificación:",
+        payload
     );
-});
-
-self.addEventListener("notificationclick", (event) => {
-    event.notification.close();
-    const targetUrl = event.notification.data?.url || "/";
 
     event.waitUntil(
-        (async () => {
-            const windowClients = await clients.matchAll({ type: "window", includeUncontrolled: true });
-            for (const client of windowClients) {
-                const current = new URL(client.url);
-                if (current.pathname === targetUrl || client.url.includes(targetUrl)) {
-                    await client.focus();
-                    return;
-                }
+
+        self.registration.showNotification(
+
+            payload.title,
+
+            {
+
+                body: payload.body,
+
+                icon: payload.icon,
+
+                badge: payload.badge,
+
+                image: payload.image,
+
+                tag: payload.tag,
+
+                renotify: true,
+
+                requireInteraction: true,
+
+                vibrate: [300, 100, 300],
+
+                data: {
+
+                    url: payload.url,
+
+                    timestamp: Date.now(),
+
+                },
+
             }
-            await clients.openWindow(targetUrl);
-        })()
+
+        )
+
     );
+
+});
+self.addEventListener("notificationclick", (event) => {
+
+    event.notification.close();
+
+    const targetUrl =
+        typeof event.notification.data?.url === "string" &&
+        event.notification.data.url.trim() !== ""
+            ? event.notification.data.url
+            : "/";
+
+    console.log(
+        "[SW] Click en notificación:",
+        targetUrl
+    );
+
+    event.waitUntil(
+
+        (async () => {
+
+            const windowClients =
+                await clients.matchAll({
+
+                    type: "window",
+
+                    includeUncontrolled: true,
+
+                });
+
+            for (const client of windowClients) {
+
+                try {
+
+                    const current =
+                        new URL(client.url);
+
+                    console.log(
+                        "[SW] Ventana abierta:",
+                        current.pathname
+                    );
+
+                    if (
+
+                        current.pathname === targetUrl ||
+
+                        current.pathname.startsWith(targetUrl) ||
+
+                        client.url.includes(targetUrl)
+
+                    ) {
+
+                        console.log(
+                            "[SW] Reutilizando ventana."
+                        );
+
+                        await client.focus();
+
+                        return;
+
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        "[SW]",
+                        error
+                    );
+
+                }
+
+            }
+
+            console.log(
+                "[SW] Abriendo nueva ventana:",
+                targetUrl
+            );
+
+            await clients.openWindow(targetUrl);
+
+        })()
+
+    );
+
 });

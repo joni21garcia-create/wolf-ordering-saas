@@ -21,11 +21,25 @@ export async function registerWeb({
   ==========================================================
   */
 
-  if (!("serviceWorker" in navigator))
+  if (!("serviceWorker" in navigator)) {
+
+    console.warn(
+      "[WEB PUSH] Service Worker no soportado."
+    );
+
     return null;
 
-  if (!("PushManager" in window))
+  }
+
+  if (!("PushManager" in window)) {
+
+    console.warn(
+      "[WEB PUSH] PushManager no soportado."
+    );
+
     return null;
+
+  }
 
   /*
   ==========================================================
@@ -33,13 +47,29 @@ export async function registerWeb({
   ==========================================================
   */
 
-  const permission =
-    await Notification.requestPermission();
+  let permission = Notification.permission;
+
+  console.log(
+    "[WEB PUSH] Permiso actual:",
+    permission
+  );
+
+  if (permission === "default") {
+
+    permission =
+      await Notification.requestPermission();
+
+    console.log(
+      "[WEB PUSH] Nuevo permiso:",
+      permission
+    );
+
+  }
 
   if (permission !== "granted") {
 
     console.warn(
-      "[WEB PUSH] Permiso denegado."
+      "[WEB PUSH] Permiso no concedido."
     );
 
     return null;
@@ -52,8 +82,16 @@ export async function registerWeb({
   ==========================================================
   */
 
+  console.log(
+    "[WEB PUSH] Esperando Service Worker..."
+  );
+
   const registration =
     await navigator.serviceWorker.ready;
+
+  console.log(
+    "[WEB PUSH] Service Worker listo."
+  );
 
   /*
   ==========================================================
@@ -64,7 +102,16 @@ export async function registerWeb({
   let subscription =
     await registration.pushManager.getSubscription();
 
+  console.log(
+    "[WEB PUSH] Suscripción existente:",
+    !!subscription
+  );
+
   if (!subscription) {
+
+    console.log(
+      "[WEB PUSH] Creando nueva suscripción..."
+    );
 
     subscription =
       await registration.pushManager.subscribe({
@@ -79,6 +126,10 @@ export async function registerWeb({
 
       });
 
+    console.log(
+      "[WEB PUSH] Nueva suscripción creada."
+    );
+
   }
 
   /*
@@ -86,6 +137,10 @@ export async function registerWeb({
   API
   ==========================================================
   */
+
+  console.log(
+    "[WEB PUSH] Registrando en servidor..."
+  );
 
   const response =
     await fetch("/api/push/subscribe", {
@@ -98,6 +153,8 @@ export async function registerWeb({
           "application/json",
 
       },
+
+      credentials: "include",
 
       body: JSON.stringify({
 
@@ -130,16 +187,29 @@ export async function registerWeb({
     await response.json();
 
   console.log(
-    "[WEB PUSH]",
+    "[WEB PUSH] Respuesta:",
     result
   );
 
   if (result.subscription_id) {
-  localStorage.setItem(
-    "wolf_push_subscription_id",
-    String(result.subscription_id)
-  );
-}
+
+    localStorage.setItem(
+
+      "wolf_push_subscription_id",
+
+      String(result.subscription_id)
+
+    );
+
+    console.log(
+
+      "[WEB PUSH] subscription_id:",
+
+      result.subscription_id
+
+    );
+
+  }
 
   return result.subscription_id ?? null;
 

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import LoginView from "./LoginView";
+import { registerWeb } from "@/lib/push/registerWeb";
+import { Capacitor } from "@capacitor/core";
 
 export default function LoginClient() {
   // ==========================
@@ -148,9 +150,53 @@ export default function LoginClient() {
         localStorage.removeItem("wolf_email");
       }
 
+
+if (!Capacitor.isNativePlatform()) {
+
+  try {
+
+    /*
+    ==========================================================
+    ESPERAR SERVICE WORKER
+    ==========================================================
+    */
+
+    if ("serviceWorker" in navigator) {
+
+      await navigator.serviceWorker.ready;
+
+    }
+console.log("[LOGIN] Registrando Push...");
+    console.log("[LOGIN] Restaurant:", restaurantUser.restaurant_id);
+    console.log("[LOGIN] User:", session.user.id);
+    await registerWeb({
+
+      restaurantId:
+        restaurantUser.restaurant_id,
+
+      userId:
+        session.user.id,
+
+    });
+
+  } catch (error) {
+
+    console.error(
+
+      "[LOGIN] Error registrando Push",
+
+      error
+
+    );
+
+  }
+
+}
+
 await new Promise((resolve) =>
   setTimeout(resolve, 800)
 );
+
 
 // Si el usuario abrió la app desde una notificación,
 // continuar hacia el pedido en lugar del dashboard.
@@ -205,5 +251,3 @@ if (
     />
   );
 }
-
-
