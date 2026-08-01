@@ -2,10 +2,12 @@
 
 import { useMemo, useState } from "react";
 
+
 import DiscoverHeader from "@/modules/discover/components/DiscoverHeader";
 import RestaurantGrid from "@/modules/discover/components/RestaurantGrid";
 import SearchBar from "@/modules/discover/components/SearchBar";
 import { useRestaurants } from "@/modules/discover/hooks/useRestaurants";
+import PushProvider from "@/components/push/PushProvider";
 
 export default function DiscoverPage() {
   const { restaurants, loading, error } = useRestaurants();
@@ -22,7 +24,12 @@ export default function DiscoverPage() {
     );
   }, [restaurants, search]);
 
-  return (
+return (
+  <>
+    <PushProvider
+      restaurantId="discover"
+    />
+
     <main className="container mx-auto space-y-8 px-4 py-8">
       <DiscoverHeader />
 
@@ -49,8 +56,11 @@ export default function DiscoverPage() {
       )}
 
       {!loading && !error && (
-        <RestaurantGrid restaurants={filteredRestaurants} />
+        <RestaurantGrid
+          restaurants={filteredRestaurants}
+        />
       )}
     </main>
-  );
+  </>
+);
 }

@@ -10,8 +10,6 @@ Inicialización Android
 
 import { PushNotifications } from "@capacitor/push-notifications";
 
-import { registerAndroid } from "./registerAndroid";
-
 interface InitializeAndroidInput {
   restaurantId: string;
   userId?: string;
@@ -28,15 +26,35 @@ export async function initializeAndroid({
 
   initialized = true;
 
+  console.log("=================================");
   console.log("[ANDROID] Inicializando...");
+  console.log("Restaurant:", restaurantId);
+  console.log("User:", userId ?? "CLIENT");
+  console.log("=================================");
+
+  /*
+  ==========================================================
+  PERMISOS
+  ==========================================================
+  */
 
   let permission =
     await PushNotifications.checkPermissions();
+
+  console.log(
+    "[ANDROID] Permiso:",
+    permission.receive
+  );
 
   if (permission.receive === "prompt") {
 
     permission =
       await PushNotifications.requestPermissions();
+
+    console.log(
+      "[ANDROID] Nuevo permiso:",
+      permission.receive
+    );
 
   }
 
@@ -50,6 +68,12 @@ export async function initializeAndroid({
 
   }
 
+  /*
+  ==========================================================
+  LISTENERS
+  ==========================================================
+  */
+
   PushNotifications.removeAllListeners();
 
   PushNotifications.addListener(
@@ -57,21 +81,25 @@ export async function initializeAndroid({
     async ({ value }) => {
 
       console.log(
-        "[ANDROID] Token:",
+        "[ANDROID] Token recibido:"
+      );
+
+      console.log(value);
+
+      /*
+      ==========================================================
+      GUARDAR TOKEN LOCALMENTE
+      ==========================================================
+      */
+
+      localStorage.setItem(
+        "wolf_android_token",
         value
       );
 
-      await registerAndroid({
-
-        token: value,
-
-        restaurantId,
-
-        userId,
-
-        platform: "android",
-
-      });
+      console.log(
+        "[ANDROID] Token guardado localmente."
+      );
 
     }
   );
@@ -81,13 +109,27 @@ export async function initializeAndroid({
     (error) => {
 
       console.error(
-        "[ANDROID]",
+        "[ANDROID] Error registrando:",
         error
       );
 
     }
   );
 
+  /*
+  ==========================================================
+  REGISTRAR EN FIREBASE
+  ==========================================================
+  */
+
+  console.log(
+    "[ANDROID] Solicitando token FCM..."
+  );
+
   await PushNotifications.register();
+
+  console.log(
+    "[ANDROID] Registro solicitado."
+  );
 
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import LoginView from "./LoginView";
 import { registerWeb } from "@/lib/push/registerWeb";
+import { registerAndroid } from "@/lib/push/registerAndroid";
 import { Capacitor } from "@capacitor/core";
 
 export default function LoginClient() {
@@ -151,24 +152,73 @@ export default function LoginClient() {
       }
 
 
-if (!Capacitor.isNativePlatform()) {
+/*
+==========================================================
+REGISTRO PUSH
+==========================================================
+*/
 
-  try {
+try {
 
-    /*
-    ==========================================================
-    ESPERAR SERVICE WORKER
-    ==========================================================
-    */
+  console.log(
+  "[LOGIN] Plataforma:",
+  Capacitor.getPlatform()
+);
+
+  if (Capacitor.isNativePlatform()) {
+
+    const token =
+      localStorage.getItem("wolf_android_token");
+
+      console.log(
+  "[LOGIN][ANDROID] Token:",
+  token
+);
+
+    if (!token) {
+
+      console.warn(
+        "[LOGIN][ANDROID] No existe token FCM."
+      );
+
+    } else {
+
+      console.log(
+        "[LOGIN][ANDROID] Registrando dispositivo..."
+      );
+
+      await registerAndroid({
+
+        token,
+
+        restaurantId:
+          restaurantUser.restaurant_id,
+
+        userId:
+          session.user.id,
+
+        platform: "android",
+
+      });
+
+      console.log(
+        "[LOGIN][ANDROID] Dispositivo registrado."
+      );
+
+    }
+
+  } else {
 
     if ("serviceWorker" in navigator) {
 
       await navigator.serviceWorker.ready;
 
     }
-console.log("[LOGIN] Registrando Push...");
-    console.log("[LOGIN] Restaurant:", restaurantUser.restaurant_id);
-    console.log("[LOGIN] User:", session.user.id);
+
+    console.log(
+      "[LOGIN][WEB] Registrando Push..."
+    );
+
     await registerWeb({
 
       restaurantId:
@@ -179,17 +229,18 @@ console.log("[LOGIN] Registrando Push...");
 
     });
 
-  } catch (error) {
-
-    console.error(
-
-      "[LOGIN] Error registrando Push",
-
-      error
-
+    console.log(
+      "[LOGIN][WEB] Push registrado."
     );
 
   }
+
+} catch (error) {
+
+  console.error(
+    "[LOGIN] Error registrando Push",
+    error
+  );
 
 }
 
