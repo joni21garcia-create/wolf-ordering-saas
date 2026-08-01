@@ -14,6 +14,7 @@ export async function registerWeb({
   restaurantId,
   userId,
 }: RegisterWebInput): Promise<number | null> {
+    console.log("🔥🔥🔥 REGISTER WEB V2 EJECUTÁNDOSE 🔥🔥🔥");
 
   /*
   ==========================================================
@@ -49,33 +50,37 @@ export async function registerWeb({
 
   let permission = Notification.permission;
 
+console.log(
+  "[WEB PUSH] Permiso antes de solicitar:",
+  permission
+);
+
+if (permission === "default") {
+
   console.log(
-    "[WEB PUSH] Permiso actual:",
+    "[WEB PUSH] Solicitando permiso..."
+  );
+
+  permission =
+    await Notification.requestPermission();
+
+}
+
+console.log(
+  "[WEB PUSH] Permiso después de solicitar:",
+  permission
+);
+
+if (permission !== "granted") {
+
+  console.warn(
+    "[WEB PUSH] Permiso no concedido:",
     permission
   );
 
-  if (permission === "default") {
+  return null;
 
-    permission =
-      await Notification.requestPermission();
-
-    console.log(
-      "[WEB PUSH] Nuevo permiso:",
-      permission
-    );
-
-  }
-
-  if (permission !== "granted") {
-
-    console.warn(
-      "[WEB PUSH] Permiso no concedido."
-    );
-
-    return null;
-
-  }
-
+}
   /*
   ==========================================================
   SERVICE WORKER
