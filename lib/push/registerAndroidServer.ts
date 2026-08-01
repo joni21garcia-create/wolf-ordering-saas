@@ -79,31 +79,19 @@ export async function registerAndroidServer({
     console.log("[ANDROID SERVER] Token:", token);
     console.log("================================");
 
-    const { data, error } = await supabase
-      .from("push_subscriptions")
-      .upsert(
-        {
+const { data, error } = await supabase
+  .from("push_subscriptions")
+  .insert({
+    restaurant_id: restaurantId,
+    user_id: userId,
+    fcm_token: token,
+    platform: "android",
+    active: true,
+  })
+  .select();
 
-          restaurant_id: restaurantId,
-
-          user_id: userId,
-
-          fcm_token: token,
-
-          platform,
-
-          active: true,
-
-          updated_at: new Date().toISOString(),
-
-        },
-        {
-
-          onConflict: "fcm_token",
-
-        }
-      )
-      .select();
+console.log("[ANDROID SERVER] DATA", data);
+console.log("[ANDROID SERVER] ERROR", error);
 
     console.log("[ANDROID SERVER] DATA:");
     console.log(data);
