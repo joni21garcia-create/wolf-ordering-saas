@@ -16,6 +16,9 @@ import { useRouter } from "next/navigation";
 import { supabase }
 from "@/lib/supabase/client";
 
+import { Capacitor } from "@capacitor/core";
+import { Preferences } from "@capacitor/preferences";
+
 export default function CheckoutForm() {
   const router = useRouter();
 
@@ -361,10 +364,29 @@ console.log(
   localStorage.getItem("restaurant_id")
 );
  
-  const pushSubscriptionId =
-  localStorage.getItem(
-    "wolf_push_subscription_id"
-  );
+let pushSubscriptionId: string | null = null;
+
+if (Capacitor.isNativePlatform()) {
+
+  const { value } = await Preferences.get({
+    key: "push_subscription_id",
+  });
+
+  pushSubscriptionId = value;
+
+} else {
+
+  pushSubscriptionId =
+    localStorage.getItem(
+      "wolf_push_subscription_id"
+    );
+
+}
+
+console.log(
+  "[CHECKOUT] PUSH SUBSCRIPTION:",
+  pushSubscriptionId
+);
 
 if (!products || products.length === 0) {
   alert("El carrito está vacío.");
