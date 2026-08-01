@@ -27,44 +27,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
- const { data, error } = await supabase
-  .from("push_subscriptions")
-  .upsert(
-    {
-      restaurant_id,
-      user_id,
+    const { data, error } = await supabase
+      .from("push_subscriptions")
+      .upsert(
+        {
+          restaurant_id,
+          user_id: user_id ?? null,
 
-      endpoint: subscription.endpoint,
+          endpoint: subscription.endpoint,
 
-      subscription,
+          subscription,
 
-      user_agent,
+          user_agent,
 
-      active: true,
+          active: true,
 
-      updated_at: new Date().toISOString(),
-    },
-    {
-      onConflict: "endpoint",
-    }
-  )
-  .select()
-  .single();
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "endpoint",
+        }
+      )
+      .select("id")
+      .single();
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
-return NextResponse.json({
-  success: true,
-  subscription_id: data.id,
-});
-
+    return NextResponse.json({
+      success: true,
+      subscription_id: data.id,
+    });
   } catch (error) {
-    console.error(
-      "Error registrando Push:",
-      error
-    );
+    console.error("[REGISTER WEB]", error);
 
     return NextResponse.json(
       {
@@ -77,5 +71,3 @@ return NextResponse.json({
     );
   }
 }
-
-

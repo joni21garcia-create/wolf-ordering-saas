@@ -8,7 +8,8 @@ import React, {
 } from "react";
 
 import { supabase } from "@/lib/supabase/client";
-import PushNotificationsProvider from "@/components/pwa/PushNotificationsProvider";
+import PushProvider from "@/components/push/PushProvider";
+
 
 type SessionUser = {
   id: string;
@@ -218,12 +219,10 @@ export function SessionProvider({
       {children}
 
       {user && (
-        <PushNotificationsProvider
-          restaurantId={
-            user.restaurant_id
-          }
-          userId={user.id}
-        />
+<PushProvider
+  restaurantId={user.restaurant_id}
+  userId={user.id}
+/>
       )}
     </SessionContext.Provider>
   );

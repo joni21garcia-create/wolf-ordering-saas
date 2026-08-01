@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+import { registerAndroidServer } from "@/lib/push/registerAndroidServer";
+
 export async function POST(request: NextRequest) {
+
   const response = NextResponse.next();
 
   const supabase = createServerClient(
@@ -22,11 +25,12 @@ export async function POST(request: NextRequest) {
   );
 
   try {
+
     const { token, platform = "android" } = await request.json();
 
     if (!token) {
       return NextResponse.json(
-        { error: "Token FCM obligatorio" },
+        { success: false, error: "Token requerido" },
         { status: 400 }
       );
     }
@@ -37,107 +41,49 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { error: "Usuario no autenticado" },
+        { success: false, error: "No autenticado" },
         { status: 401 }
       );
     }
 
-    const {
-      data: restaurantUser,
-      error: restaurantError,
-    } = await supabase
+    const { data: restaurantUser } = await supabase
       .from("restaurant_users")
       .select("restaurant_id")
       .eq("auth_user_id", user.id)
       .single();
 
-    if (restaurantError || !restaurantUser) {
+    if (!restaurantUser) {
       return NextResponse.json(
-        { error: "No se encontró el restaurante del usuario" },
+        { success: false, error: "Restaurante no encontrado" },
         { status: 404 }
       );
     }
 
-    /*
-    ==========================================================
-    DEVICE TOKENS (RESTAURANTE)
-    ==========================================================
-    */
-
-    const { error } = await supabase
-      .from("device_tokens")
-      .upsert(
-        {
-          restaurant_id: restaurantUser.restaurant_id,
-          user_id: user.id,
-          fcm_token: token,
-          platform,
-          active: true,
-        },
-        {
-          onConflict: "fcm_token",
-        }
-      );
-
-    if (error) {
-      console.error(error);
-
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
-    }
-
-    /*
-    ==========================================================
-    PUSH SUBSCRIPTIONS (CLIENTE ANDROID)
-    ==========================================================
-    */
-
-    const { data: existingSubscription } =
-      await supabase
-        .from("push_subscriptions")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("platform", "android")
-        .maybeSingle();
-
-    if (existingSubscription) {
-      await supabase
-        .from("push_subscriptions")
-        .update({
-          restaurant_id: restaurantUser.restaurant_id,
-          fcm_token: token,
-          active: true,
-        })
-        .eq("id", existingSubscription.id);
-    } else {
-      await supabase
-        .from("push_subscriptions")
-        .insert({
-          restaurant_id: restaurantUser.restaurant_id,
-          user_id: user.id,
-          fcm_token: token,
-          platform: "android",
-          active: true,
-        });
-    }
+await registerAndroidServer({
+  restaurantId: restaurantUser.restaurant_id,
+  userId: user.id,
+  token,
+  platform,
+});
 
     return NextResponse.json({
       success: true,
     });
 
-  } catch (err) {
+  } catch (error) {
 
-    console.error(err);
+    console.error("[REGISTER DEVICE]", error);
 
     return NextResponse.json(
       {
+        success: false,
         error: "Error interno",
       },
       {
         status: 500,
       }
     );
+
   }
+
 }

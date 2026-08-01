@@ -11,7 +11,7 @@ import Menu from "@/components/restaurant/Menu";
 import CTA from "@/components/restaurant/sections/CTA";
 import Navbar from "@/components/restaurant/Navbar";
 import Footer from "@/components/restaurant/Footer";
-import ClientPushLoader from "@/components/pwa/ClientPushLoader";
+import PushProvider from "@/components/push/PushProvider";
 
 interface Props {
   params: Promise<{
@@ -63,9 +63,9 @@ export default async function RestaurantPage({
 
   return (
     <>
-      <ClientPushLoader
-        restaurantId={restaurant.id}
-      />
+<PushProvider
+  restaurantId={restaurant.id}
+/>
 
       <ThemeProvider
         theme={restaurant.themeSettings}
