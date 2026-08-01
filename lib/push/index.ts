@@ -18,7 +18,13 @@ export * from "./registerAndroid";
 
 export * from "./registerAndroidServer";
 
+export * from "./registerCustomerAndroid";
+
+export * from "./registerCustomerAndroidServer";
+
 export * from "./initializeAndroid";
+
+export * from "./initializeCustomerAndroid";
 
 export * from "./sendRestaurant";
 

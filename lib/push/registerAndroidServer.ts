@@ -16,28 +16,23 @@ const supabase = createClient(
 );
 
 interface RegisterAndroidServerInput {
-
   restaurantId: string;
-
   userId: string;
-
   token: string;
-
   platform?: "android";
+}
 
+interface RegisterAndroidServerResult {
+  success: boolean;
+  subscriptionId?: number;
 }
 
 export async function registerAndroidServer({
-
   restaurantId,
-
   userId,
-
   token,
-
   platform = "android",
-
-}: RegisterAndroidServerInput): Promise<boolean> {
+}: RegisterAndroidServerInput): Promise<RegisterAndroidServerResult> {
 
   if (!restaurantId) {
 
@@ -45,7 +40,9 @@ export async function registerAndroidServer({
       "[ANDROID SERVER] Restaurant ID vacío."
     );
 
-    return false;
+    return {
+      success: false,
+    };
 
   }
 
@@ -55,7 +52,9 @@ export async function registerAndroidServer({
       "[ANDROID SERVER] User ID vacío."
     );
 
-    return false;
+    return {
+      success: false,
+    };
 
   }
 
@@ -65,7 +64,9 @@ export async function registerAndroidServer({
       "[ANDROID SERVER] Token vacío."
     );
 
-    return false;
+    return {
+      success: false,
+    };
 
   }
 
@@ -79,24 +80,28 @@ export async function registerAndroidServer({
     console.log("[ANDROID SERVER] Token:", token);
     console.log("================================");
 
-const { data, error } = await supabase
-  .from("push_subscriptions")
-  .insert({
-    restaurant_id: restaurantId,
-    user_id: userId,
-    fcm_token: token,
-    platform: "android",
-    active: true,
-  })
-  .select();
+    const { data, error } = await supabase
+      .from("push_subscriptions")
+      .upsert(
+        {
+          restaurant_id: restaurantId,
+          user_id: userId,
+          fcm_token: token,
+          platform,
+          active: true,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "fcm_token",
+        }
+      )
+      .select("id")
+      .single();
 
-console.log("[ANDROID SERVER] DATA", data);
-console.log("[ANDROID SERVER] ERROR", error);
-
-    console.log("[ANDROID SERVER] DATA:");
+    console.log("[ANDROID SERVER] DATA");
     console.log(data);
 
-    console.log("[ANDROID SERVER] ERROR:");
+    console.log("[ANDROID SERVER] ERROR");
     console.log(error);
 
     if (error) {
@@ -106,14 +111,17 @@ console.log("[ANDROID SERVER] ERROR", error);
         error
       );
 
-      return false;
+      return {
+        success: false,
+      };
 
     }
 
     const { data: verify, error: verifyError } = await supabase
       .from("push_subscriptions")
       .select("id, platform, fcm_token, restaurant_id")
-      .eq("fcm_token", token);
+      .eq("id", data.id)
+      .maybeSingle();
 
     console.log("[ANDROID SERVER] VERIFY:");
     console.log(verify);
@@ -125,7 +133,10 @@ console.log("[ANDROID SERVER] ERROR", error);
       "[ANDROID SERVER] Dispositivo registrado."
     );
 
-    return true;
+    return {
+      success: true,
+      subscriptionId: data.id,
+    };
 
   } catch (error) {
 
@@ -134,7 +145,9 @@ console.log("[ANDROID SERVER] ERROR", error);
       error
     );
 
-    return false;
+    return {
+      success: false,
+    };
 
   }
 

@@ -5,8 +5,15 @@ import { useEffect, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
 
 import { initializeAndroid } from "@/lib/push/initializeAndroid";
+import { initializeCustomerAndroid } from "@/lib/push/initializeCustomerAndroid";
 
-export default function PushProvider() {
+interface PushProviderProps {
+  restaurantId?: string;
+}
+
+export default function PushProvider({
+  restaurantId,
+}: PushProviderProps) {
 
   const initialized = useRef(false);
 
@@ -27,10 +34,46 @@ export default function PushProvider() {
 
       try {
 
+        /*
+        ==========================================================
+        CLIENTE
+        ==========================================================
+        */
+
+        if (restaurantId) {
+
+          console.log(
+            "[PUSH] MODO CLIENTE"
+          );
+
+          await initializeCustomerAndroid({
+
+            restaurantId,
+
+          });
+
+          console.log(
+            "[PUSH] CLIENTE ANDROID INICIALIZADO"
+          );
+
+          return;
+
+        }
+
+        /*
+        ==========================================================
+        ADMINISTRADOR
+        ==========================================================
+        */
+
+        console.log(
+          "[PUSH] MODO ADMINISTRADOR"
+        );
+
         await initializeAndroid();
 
         console.log(
-          "[PUSH] ANDROID INICIALIZADO"
+          "[PUSH] ADMINISTRADOR ANDROID INICIALIZADO"
         );
 
       } catch (error) {
@@ -46,7 +89,7 @@ export default function PushProvider() {
 
     initialize();
 
-  }, []);
+  }, [restaurantId]);
 
   return null;
 

@@ -69,6 +69,26 @@ export async function registerAndroid({
 
     }
 
+    /*
+    ==========================================================
+    GUARDAR ID DE SUSCRIPCIÓN
+    ==========================================================
+    */
+
+    if (result.subscription_id) {
+
+      localStorage.setItem(
+        "wolf_push_subscription_id",
+        String(result.subscription_id)
+      );
+
+      console.log(
+        "[ANDROID PUSH] Subscription ID:",
+        result.subscription_id
+      );
+
+    }
+
     console.log(
       "[ANDROID PUSH] Dispositivo registrado."
     );

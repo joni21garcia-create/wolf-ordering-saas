@@ -29,10 +29,17 @@ export async function POST(request: NextRequest) {
     const { token, platform = "android" } = await request.json();
 
     if (!token) {
+
       return NextResponse.json(
-        { success: false, error: "Token requerido" },
-        { status: 400 }
+        {
+          success: false,
+          error: "Token requerido",
+        },
+        {
+          status: 400,
+        }
       );
+
     }
 
     const {
@@ -40,10 +47,17 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
+
       return NextResponse.json(
-        { success: false, error: "No autenticado" },
-        { status: 401 }
+        {
+          success: false,
+          error: "No autenticado",
+        },
+        {
+          status: 401,
+        }
       );
+
     }
 
     const { data: restaurantUser } = await supabase
@@ -53,21 +67,43 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!restaurantUser) {
+
       return NextResponse.json(
-        { success: false, error: "Restaurante no encontrado" },
-        { status: 404 }
+        {
+          success: false,
+          error: "Restaurante no encontrado",
+        },
+        {
+          status: 404,
+        }
       );
+
     }
 
-await registerAndroidServer({
-  restaurantId: restaurantUser.restaurant_id,
-  userId: user.id,
-  token,
-  platform,
-});
+    const result = await registerAndroidServer({
+      restaurantId: restaurantUser.restaurant_id,
+      userId: user.id,
+      token,
+      platform,
+    });
+
+    if (!result.success) {
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: "No fue posible registrar el dispositivo",
+        },
+        {
+          status: 500,
+        }
+      );
+
+    }
 
     return NextResponse.json({
       success: true,
+      subscription_id: result.subscriptionId,
     });
 
   } catch (error) {
