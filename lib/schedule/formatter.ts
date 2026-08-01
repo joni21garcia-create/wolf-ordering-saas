@@ -24,21 +24,27 @@ export function formatStatus(
   result: CalculationResult
 ): FormattedStatus {
 
-  /**
-   * Restaurante abierto
-   */
+  /*
+  ==========================================================
+  RESTAURANTE ABIERTO
+  ==========================================================
+  */
 
   if (result.isOpen) {
 
     return {
 
-      badge: result.isClosingSoon
-        ? "Próximo a cerrar"
-        : "Abierto",
+      badge:
+        result.isClosingSoon
+          ? "Próximo a cerrar"
+          : "Abierto",
 
-      message: result.isClosingSoon
-        ? "⚠️ ¡CIERRA PRONTO!"
-        : "Abierto",
+      message:
+        result.currentClose
+          ? `Cierra a las ${formatTime12(
+              result.currentClose
+            )}`
+          : "Abierto",
 
       schedule:
         result.currentOpen &&
@@ -54,9 +60,11 @@ export function formatStatus(
 
   }
 
-  /**
-   * Abre hoy
-   */
+  /*
+  ==========================================================
+  ABRE HOY
+  ==========================================================
+  */
 
   if (
     result.opensToday &&
@@ -67,9 +75,10 @@ export function formatStatus(
 
       badge: "Cerrado",
 
-      message: `Abre hoy a las ${formatTime12(
-        result.nextOpenTime
-      )}`,
+      message:
+        `Abre hoy a las ${formatTime12(
+          result.nextOpenTime
+        )}`,
 
       schedule: "",
 
@@ -77,9 +86,11 @@ export function formatStatus(
 
   }
 
-  /**
-   * Abre mañana
-   */
+  /*
+  ==========================================================
+  ABRE MAÑANA
+  ==========================================================
+  */
 
   if (
     result.opensTomorrow &&
@@ -90,9 +101,10 @@ export function formatStatus(
 
       badge: "Cerrado",
 
-      message: `Abre mañana a las ${formatTime12(
-        result.nextOpenTime
-      )}`,
+      message:
+        `Abre mañana a las ${formatTime12(
+          result.nextOpenTime
+        )}`,
 
       schedule: "",
 
@@ -100,9 +112,11 @@ export function formatStatus(
 
   }
 
-  /**
-   * Otro día
-   */
+  /*
+  ==========================================================
+  ABRE OTRO DÍA
+  ==========================================================
+  */
 
   if (
     result.nextOpenDay &&
@@ -113,11 +127,12 @@ export function formatStatus(
 
       badge: "Cerrado",
 
-      message: `Abre ${DAY_LABELS[
-        result.nextOpenDay
-      ]} a las ${formatTime12(
-        result.nextOpenTime
-      )}`,
+      message:
+        `Abre ${DAY_LABELS[
+          result.nextOpenDay
+        ]} a las ${formatTime12(
+          result.nextOpenTime
+        )}`,
 
       schedule: "",
 
@@ -125,16 +140,18 @@ export function formatStatus(
 
   }
 
-  /**
-   * Sin horarios
-   */
+  /*
+  ==========================================================
+  SIN HORARIOS
+  ==========================================================
+  */
 
   return {
 
     badge: "Cerrado",
 
     message:
-      "No hay horarios disponibles.",
+      "Horario no configurado.",
 
     schedule: "",
 

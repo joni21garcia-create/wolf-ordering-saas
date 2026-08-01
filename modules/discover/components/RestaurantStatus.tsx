@@ -10,9 +10,18 @@ interface RestaurantStatusProps {
 export default function RestaurantStatus({
   restaurant,
 }: RestaurantStatusProps) {
+
+  console.log("================================");
+  console.log("[RESTAURANT STATUS]");
+  console.log("Restaurant:", restaurant.name);
+  console.log("Schedule:", restaurant.schedule_settings);
+
   const status = getRestaurantStatus(
     restaurant.schedule_settings
   );
+
+  console.log("Status Result:", status);
+  console.log("================================");
 
   /**
    * El restaurante puede recibir pedidos únicamente
@@ -21,6 +30,7 @@ export default function RestaurantStatus({
    * 1. Está dentro de su horario.
    * 2. El administrador no lo ha cerrado manualmente.
    */
+
   const canReceiveOrders =
     restaurant.accepting_orders &&
     status.isOpen;
@@ -28,37 +38,50 @@ export default function RestaurantStatus({
   /**
    * Color principal del estado.
    */
-  const colorClass = canReceiveOrders
-    ? "text-emerald-400"
-    : "text-red-400";
+
+  const colorClass =
+    canReceiveOrders
+      ? "text-emerald-400"
+      : "text-red-400";
 
   /**
    * Texto principal.
    */
-  let badge = status.badge;
+
+  let badge =
+    status.badge;
 
   /**
    * Texto secundario.
    */
-  let message = status.message;
+
+  let message =
+    status.message;
 
   /**
    * Si el administrador cerró el restaurante
    * manualmente, damos prioridad a ese estado.
    */
+
   if (!restaurant.accepting_orders) {
+
     badge = "Cerrado";
-    message = "No recibe pedidos temporalmente.";
+
+    message =
+      "No recibe pedidos temporalmente.";
+
   }
 
   return (
     <div className="flex flex-col">
+
       <span
         className={`inline-flex items-center gap-1 text-xs font-medium ${colorClass}`}
       >
         <span className="h-2 w-2 rounded-full bg-current" />
 
         {badge}
+
       </span>
 
       {message && (
@@ -66,6 +89,7 @@ export default function RestaurantStatus({
           {message}
         </span>
       )}
+
     </div>
   );
 }

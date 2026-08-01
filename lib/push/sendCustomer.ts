@@ -26,8 +26,6 @@ export async function sendCustomer({
 
   orderId,
 
-  title,
-
   body,
 
   url,
@@ -44,22 +42,39 @@ export async function sendCustomer({
 
     data: order,
 
+    error: orderError,
+
   } = await supabase
 
     .from("orders")
 
-    .select("push_subscription_id")
+    .select(`
+      push_subscription_id,
+      tracking_code,
+      restaurants (
+        name
+      )
+    `)
 
     .eq("id", orderId)
 
     .maybeSingle();
 
+  if (orderError) {
+
+    console.error(
+      "[CUSTOMER PUSH] Error pedido:",
+      orderError
+    );
+
+    return;
+
+  }
+
   if (!order?.push_subscription_id) {
 
     console.log(
-
       "[CUSTOMER PUSH] Pedido sin dispositivo."
-
     );
 
     return;
@@ -76,6 +91,8 @@ export async function sendCustomer({
 
     data: device,
 
+    error: deviceError,
+
   } = await supabase
 
     .from("push_subscriptions")
@@ -86,17 +103,49 @@ export async function sendCustomer({
 
     .maybeSingle();
 
-  if (!device) {
+  if (deviceError) {
 
-    console.log(
-
-      "[CUSTOMER PUSH] Dispositivo no encontrado."
-
+    console.error(
+      "[CUSTOMER PUSH] Error dispositivo:",
+      deviceError
     );
 
     return;
 
   }
+
+  if (!device) {
+
+    console.log(
+      "[CUSTOMER PUSH] Dispositivo no encontrado."
+    );
+
+    return;
+
+  }
+
+  /*
+  ==========================================================
+  NOTIFICACIÓN
+  ==========================================================
+  */
+
+  const restaurantName =
+    (order as any)?.restaurants?.name ??
+    "Wolf Ordering";
+
+  const trackingCode =
+    order.tracking_code ??
+    "Pedido";
+
+  const notificationTitle =
+    `🍽️ ${restaurantName}`;
+
+  const notificationBody =
+
+`Pedido #${trackingCode}
+
+${body}`;
 
   /*
   ==========================================================
@@ -110,9 +159,9 @@ export async function sendCustomer({
 
     {
 
-      title,
+      title: notificationTitle,
 
-      body,
+      body: notificationBody,
 
       url,
 

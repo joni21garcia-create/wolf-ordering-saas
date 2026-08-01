@@ -11,114 +11,308 @@ import BackToSettings from "@/components/admin/BackToSettings";
 import PermissionGuard from "@/components/auth/PermissionGuard";
 
 export default function DiscoverSettingsPage() {
+
   const params = useParams();
-  const restaurantId = params.id as string;
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const restaurantId =
+    params.id as string;
 
-  const [discoverVisible, setDiscoverVisible] =
+  /*
+  ==========================================================
+  ESTADOS
+  ==========================================================
+  */
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [saving, setSaving] =
     useState(false);
 
-  const [category, setCategory] =
-    useState("restaurant");
+  /*
+  ==========================================================
+  DISCOVER
+  ==========================================================
+  */
 
-  const [customCategory, setCustomCategory] =
-    useState("");
+  const [
+    discoverVisible,
+    setDiscoverVisible,
+  ] = useState(false);
+
+  /*
+  ==========================================================
+  DISTINTIVO
+  ==========================================================
+  */
+
+  const [
+    featuredType,
+    setFeaturedType,
+  ] = useState("none");
+
+  const [
+    featuredOrder,
+    setFeaturedOrder,
+  ] = useState(1);
+
+  /*
+  ==========================================================
+  CATEGORÍA
+  ==========================================================
+  */
+
+  const [
+    category,
+    setCategory,
+  ] = useState("restaurant");
+
+  const [
+    customCategory,
+    setCustomCategory,
+  ] = useState("");
 
   useEffect(() => {
+
     loadData();
+
   }, []);
 
+  /*
+  ==========================================================
+  CARGAR DATOS
+  ==========================================================
+  */
+
   async function loadData() {
+
     try {
-      const { data, error } = await supabase
+
+      const {
+        data,
+        error,
+      } = await supabase
         .from("restaurants")
         .select(`
           discover_visible,
-          category
+          category,
+          featured_type,
+          featured_order
         `)
-        .eq("id", restaurantId)
+        .eq(
+          "id",
+          restaurantId
+        )
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+
+        throw error;
+
+      }
 
       if (data) {
+
         setDiscoverVisible(
-          data.discover_visible ?? false
+          data.discover_visible ??
+            false
+        );
+
+        setFeaturedType(
+          data.featured_type ??
+            "none"
+        );
+
+        setFeaturedOrder(
+          data.featured_order ??
+            1
         );
 
         const currentCategory =
-          data.category ?? "restaurant";
+          data.category ??
+          "restaurant";
 
         const exists =
           DISCOVER_CATEGORIES.some(
             (item) =>
-              item.id === currentCategory
+              item.id ===
+              currentCategory
           );
 
         if (exists) {
-          setCategory(currentCategory);
+
+          setCategory(
+            currentCategory
+          );
+
         } else {
-          setCategory("custom");
-          setCustomCategory(currentCategory);
+
+          setCategory(
+            "custom"
+          );
+
+          setCustomCategory(
+            currentCategory
+          );
+
         }
+
       }
+
     } catch (error) {
+
       console.error(error);
+
     } finally {
+
       setLoading(false);
+
     }
+
   }
+    /*
+  ==========================================================
+  GUARDAR
+  ==========================================================
+  */
 
   async function saveData() {
+
     try {
+
       setSaving(true);
 
       const finalCategory =
+
         category === "custom"
+
           ? customCategory.trim()
+
           : category;
 
-      const { error } = await supabase
-        .from("restaurants")
-        .update({
-          discover_visible:
-            discoverVisible,
-          category: finalCategory,
-        })
-        .eq("id", restaurantId);
+      /*
+      ==========================================================
+      VALIDACIONES
+      ==========================================================
+      */
 
-      if (error) throw error;
+      if (
+        category === "custom" &&
+        !customCategory.trim()
+      ) {
+
+        alert(
+          "Debes escribir una categoría personalizada."
+        );
+
+        return;
+
+      }
+
+      if (
+        featuredType !== "none" &&
+        featuredOrder < 1
+      ) {
+
+        alert(
+          "El orden debe ser mayor que cero."
+        );
+
+        return;
+
+      }
+
+      /*
+      ==========================================================
+      GUARDAR EN SUPABASE
+      ==========================================================
+      */
+
+      const { error } =
+        await supabase
+
+          .from("restaurants")
+
+          .update({
+
+            discover_visible:
+              discoverVisible,
+
+            category:
+              finalCategory,
+
+            featured_type:
+              featuredType,
+
+            featured_order:
+
+              featuredType === "none"
+
+                ? null
+
+                : featuredOrder,
+
+          })
+
+          .eq(
+            "id",
+            restaurantId
+          );
+
+      if (error) {
+
+        throw error;
+
+      }
 
       alert(
-        "Configuración de Discover actualizada."
+        "Configuración guardada correctamente."
       );
+
     } catch (error) {
+
       console.error(error);
 
       alert(
         "No fue posible guardar la configuración."
       );
+
     } finally {
+
       setSaving(false);
+
     }
+
   }
-    if (loading) {
+
+  /*
+  ==========================================================
+  LOADING
+  ==========================================================
+  */
+
+  if (loading) {
+
     return (
+
       <main
         style={{
           padding: "40px",
           color: "#fff",
         }}
       >
-        Cargando...
-      </main>
-    );
-  }
 
-  return (
+        Cargando...
+
+      </main>
+
+    );
+
+  }
+    return (
+
     <PermissionGuard permission="discover">
+
       <main
         style={{
           maxWidth: "800px",
@@ -127,8 +321,16 @@ export default function DiscoverSettingsPage() {
           color: "#fff",
         }}
       >
-        <div style={{ marginBottom: "30px" }}>
-          <BackToSettings restaurantId={restaurantId} />
+
+        <div
+          style={{
+            marginBottom: "30px",
+          }}
+        >
+
+          <BackToSettings
+            restaurantId={restaurantId}
+          />
 
           <h1
             style={{
@@ -140,8 +342,11 @@ export default function DiscoverSettingsPage() {
               marginTop: "10px",
             }}
           >
+
             <Eye size={32} />
+
             Discover
+
           </h1>
 
           <p
@@ -152,6 +357,7 @@ export default function DiscoverSettingsPage() {
           >
             Configura cómo aparecerá este restaurante dentro de Discover.
           </p>
+
         </div>
 
         <div
@@ -162,15 +368,27 @@ export default function DiscoverSettingsPage() {
             padding: "30px",
           }}
         >
+
           <h2
             style={{
-              marginBottom: "20px",
+              marginBottom: "24px",
               fontSize: "22px",
               fontWeight: 700,
             }}
           >
             Configuración
           </h2>
+
+<h3
+  style={{
+    color: "#fff",
+    fontSize: "18px",
+    fontWeight: 700,
+    marginBottom: "16px",
+  }}
+>
+  👁️ Visibilidad
+</h3>
 
           <SwitchField
             label="Mostrar restaurante en Discover"
@@ -179,6 +397,26 @@ export default function DiscoverSettingsPage() {
           />
 
           <div style={{ height: 24 }} />
+
+
+<hr
+  style={{
+    margin: "28px 0",
+    border: "none",
+    borderTop: "1px solid rgba(255,255,255,.08)",
+  }}
+/>
+
+<h3
+  style={{
+    color: "#fff",
+    fontSize: "18px",
+    fontWeight: 700,
+    marginBottom: "16px",
+  }}
+>
+  🍽️ Clasificación
+</h3>
 
           <SelectField
             label="Categoría principal"
@@ -197,7 +435,9 @@ export default function DiscoverSettingsPage() {
           />
 
           {category === "custom" && (
-            <div style={{ marginTop: "18px" }}>
+
+            <div style={{ marginTop: 18 }}>
+
               <label
                 style={{
                   display: "block",
@@ -212,36 +452,116 @@ export default function DiscoverSettingsPage() {
               <input
                 type="text"
                 value={customCategory}
-                placeholder="Ej: Lasañas, Arepas, Desayunos..."
                 onChange={(e) =>
-                  setCustomCategory(e.target.value)
+                  setCustomCategory(
+                    e.target.value
+                  )
                 }
+                placeholder="Ej: Arepas, Sushi, Brunch..."
                 style={{
                   width: "100%",
                   padding: "14px",
                   borderRadius: "12px",
-                  border:
-                    "1px solid rgba(255,255,255,.12)",
+                  border: "1px solid rgba(255,255,255,.12)",
                   background: "#111",
                   color: "#fff",
                   fontSize: "15px",
-                  outline: "none",
                 }}
               />
+
             </div>
+
+          )}
+
+
+<hr
+  style={{
+    margin: "28px 0",
+    border: "none",
+    borderTop: "1px solid rgba(255,255,255,.08)",
+  }}
+/>
+
+<h3
+  style={{
+    color: "#fff",
+    fontSize: "18px",
+    fontWeight: 700,
+    marginBottom: "16px",
+  }}
+>
+  ⭐ Destacado
+</h3>
+
+          <div style={{ height: 28 }} />
+
+          <SelectField
+            label="Distintivo en Discover"
+            value={featuredType}
+            onChange={setFeaturedType}
+            options={[
+              {
+                value: "none",
+                label: "Sin distintivo",
+              },
+              {
+                value: "wolf",
+                label: "🐺 Recomendado por Wolf Ordering",
+              },
+              {
+                value: "featured",
+                label: "⭐ Restaurante destacado",
+              },
+              {
+                value: "discover",
+                label: "🌟 Destacado en Discover",
+              },
+              {
+                value: "premium",
+                label: "🏆 Restaurante Premium",
+              },
+              {
+                value: "popular",
+                label: "🔥 Popular",
+              },
+              {
+                value: "new",
+                label: "🆕 Nuevo",
+              },
+              {
+                value: "promoted",
+                label: "🚀 Impulsado",
+              },
+            ]}
+          />
+
+          {featuredType !== "none" && (
+
+            <>
+
+              <div style={{ height: 18 }} />
+
+              <NumberField
+                label="Orden de prioridad"
+                value={featuredOrder}
+                onChange={setFeaturedOrder}
+              />
+
+            </>
+
           )}
 
           <div
             style={{
-              marginTop: "25px",
+              marginTop: "30px",
               padding: "18px",
               borderRadius: "16px",
               background: "rgba(249,115,22,.08)",
-              border:
-                "1px solid rgba(249,115,22,.18)",
+              border: "1px solid rgba(249,115,22,.18)",
               lineHeight: 1.7,
             }}
           >
+
             <strong style={{ color: "#fff" }}>
               ¿Cómo funciona?
             </strong>
@@ -254,25 +574,23 @@ export default function DiscoverSettingsPage() {
               }}
             >
               <li>
-                El restaurante aparecerá en Discover si está
-                habilitado.
+                Activa Discover para que el restaurante aparezca en la aplicación.
               </li>
 
               <li>
-                La categoría ayudará a organizar los
-                restaurantes.
+                La categoría ayuda a organizar los restaurantes.
               </li>
 
               <li>
-                El buscador utilizará esta categoría y sus
-                palabras relacionadas.
+                El distintivo resalta la tarjeta dentro de Discover.
               </li>
 
               <li>
-                Más adelante servirá para recomendaciones
-                inteligentes.
+                El orden define la posición entre los restaurantes destacados.
               </li>
+
             </ul>
+
           </div>
 
           <button
@@ -290,17 +608,21 @@ export default function DiscoverSettingsPage() {
               cursor: "pointer",
             }}
           >
+
             {saving
               ? "Guardando..."
               : "💾 Guardar configuración"}
-          </button>
-        </div>
-      </main>
-    </PermissionGuard>
-  );
-  }
 
-function SwitchField({
+          </button>
+
+        </div>
+
+      </main>
+
+    </PermissionGuard>
+
+  );
+  function SwitchField({
   label,
   checked,
   onChange,
@@ -309,19 +631,24 @@ function SwitchField({
   checked: boolean;
   onChange: (checked: boolean) => void;
 }) {
+
   return (
+
     <div
       style={{
         display: "flex",
-        gap: "12px",
         alignItems: "center",
+        gap: "12px",
         padding: "6px 0",
       }}
     >
+
       <input
         type="checkbox"
         checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
+        onChange={(e) =>
+          onChange(e.target.checked)
+        }
         style={{
           width: "18px",
           height: "18px",
@@ -331,14 +658,17 @@ function SwitchField({
 
       <span
         style={{
-          fontSize: "14px",
           color: "#eee",
+          fontSize: "14px",
         }}
       >
         {label}
       </span>
+
     </div>
+
   );
+
 }
 
 function SelectField({
@@ -355,8 +685,11 @@ function SelectField({
     label: string;
   }[];
 }) {
+
   return (
+
     <div>
+
       <label
         style={{
           display: "block",
@@ -370,12 +703,15 @@ function SelectField({
 
       <select
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) =>
+          onChange(e.target.value)
+        }
         style={{
           width: "100%",
           padding: "14px",
           borderRadius: "12px",
-          border: "1px solid rgba(255,255,255,.12)",
+          border:
+            "1px solid rgba(255,255,255,.12)",
           background: "#111",
           color: "#fff",
           fontSize: "15px",
@@ -383,15 +719,86 @@ function SelectField({
           cursor: "pointer",
         }}
       >
+
         {options.map((option) => (
+
           <option
             key={option.value}
             value={option.value}
           >
             {option.label}
           </option>
+
         ))}
+
       </select>
+
     </div>
+
   );
+
+}
+
+function NumberField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+
+  return (
+
+    <div>
+
+      <label
+        style={{
+          display: "block",
+          marginBottom: "8px",
+          color: "#ddd",
+          fontWeight: 600,
+        }}
+      >
+        {label}
+      </label>
+
+      <input
+        type="number"
+        min={1}
+        value={value}
+        onChange={(e) =>
+          onChange(
+            Number(e.target.value)
+          )
+        }
+        style={{
+          width: "100%",
+          padding: "14px",
+          borderRadius: "12px",
+          border:
+            "1px solid rgba(255,255,255,.12)",
+          background: "#111",
+          color: "#fff",
+          fontSize: "15px",
+          outline: "none",
+        }}
+      />
+
+      <p
+        style={{
+          marginTop: "8px",
+          color: "#888",
+          fontSize: "13px",
+        }}
+      >
+        Los números más pequeños aparecen primero en Discover.
+      </p>
+
+    </div>
+
+  );
+
+}
 }
