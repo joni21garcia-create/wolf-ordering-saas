@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 
-import type { Restaurant } from "../types/restaurant";
+import type { Restaurant } from "@/modules/discover/types/restaurant";
 
 export async function getRestaurants(): Promise<Restaurant[]> {
 

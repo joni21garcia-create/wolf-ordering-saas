@@ -1,45 +1,19 @@
-import { DISCOVER_CATEGORIES } from "@/lib/discover/categories";
+import { searchRestaurants } from "@/lib/discover/search";
 
-import { Restaurant } from "../types/restaurant";
+import type { Restaurant } from "@/modules/discover/types/restaurant";
 
 export function filterRestaurants(
   restaurants: Restaurant[],
   search: string
 ): Restaurant[] {
-  const query = search.trim().toLowerCase();
 
-  if (!query) {
+  if (!search.trim()) {
     return restaurants;
   }
 
-  return restaurants.filter((restaurant) => {
-    const searchableText = [
-      restaurant.name,
-      restaurant.category,
-      restaurant.address,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
+  return searchRestaurants(
+    restaurants,
+    search
+  );
 
-    if (searchableText.includes(query)) {
-      return true;
-    }
-
-    if (!restaurant.category) {
-      return false;
-    }
-
-    const category = DISCOVER_CATEGORIES.find(
-      (item) => item.id === restaurant.category
-    );
-
-    if (!category) {
-      return false;
-    }
-
-    return category.keywords.some((keyword) =>
-      keyword.toLowerCase().includes(query)
-    );
-  });
 }

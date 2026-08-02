@@ -128,16 +128,17 @@ export async function POST(request: NextRequest) {
     ==========================================================
     */
 
-    const {
-      data: order,
-      error: orderError,
-    } = await supabase
-      .from("orders")
-      .select(`
-        id,
-        restaurant_id,
-        tracking_code
-      `)
+const {
+  data: order,
+  error: orderError,
+} = await supabase
+  .from("orders")
+  .select(`
+    id,
+    restaurant_id,
+    tracking_code,
+    order_type
+  `)
       .eq("id", orderId)
       .eq(
         "restaurant_id",
@@ -243,47 +244,127 @@ if (updateError) {
     ==========================================================
     */
 
-    let title = "";
-    let message = "";
+    
+    
 
-    switch (status) {
-      case "accepted":
-        title = "🍽️ Pedido confirmado";
-        message =
-          "El restaurante aceptó tu pedido.";
-        break;
+let title = "";
+let message = "";
 
-      case "preparing":
-        title =
-          "👨‍🍳 Preparando tu pedido";
-        message =
-          "Tu pedido ya está en preparación.";
-        break;
+if (order.order_type === "delivery") {
 
-      case "ready":
-        title = "📦 Pedido listo";
-        message =
-          "Tu pedido está listo.";
-        break;
+  switch (status) {
 
-      case "out_for_delivery":
-        title = "🛵 En camino";
-        message =
-          "Tu pedido salió para entrega.";
-        break;
+    case "accepted":
+      title = "👨‍🍳 Pedido aceptado";
+      message =
+        "El restaurante confirmó tu pedido.";
+      break;
 
-      case "completed":
-        title = "❤️ Pedido entregado";
-        message =
-          "Gracias por comprar con nosotros.";
-        break;
+    case "preparing":
+      title = "🍳 En preparación";
+      message =
+        "Nuestro equipo ya está preparando tu pedido.";
+      break;
 
-      case "cancelled":
-        title = "⚠ Pedido cancelado";
-        message =
-          "El restaurante canceló el pedido.";
-        break;
-    }
+    case "ready":
+      title = "📦 Pedido listo";
+      message =
+        "Tu pedido está listo y saldrá en unos momentos.";
+      break;
+
+    case "out_for_delivery":
+      title = "🛵 ¡Va en camino!";
+      message =
+        "Tu pedido salió del restaurante y va rumbo a ti.";
+      break;
+
+    case "completed":
+      title = "🎉 ¡Pedido entregado!";
+      message =
+        "Esperamos que disfrutes tu comida. ¡Gracias por elegirnos!";
+      break;
+
+    case "cancelled":
+      title = "❌ Pedido cancelado";
+      message =
+        "El restaurante canceló tu pedido.";
+      break;
+
+  }
+
+} else if (order.order_type === "pickup") {
+
+  switch (status) {
+
+    case "accepted":
+      title = "👨‍🍳 Pedido aceptado";
+      message =
+        "El restaurante confirmó tu pedido.";
+      break;
+
+    case "preparing":
+      title = "🍳 En preparación";
+      message =
+        "Nuestro equipo ya está preparando tu pedido.";
+      break;
+
+    case "ready":
+      title = "🥡 ¡Listo para recoger!";
+      message =
+        "Ya puedes pasar por tu pedido cuando gustes.";
+      break;
+
+    case "completed":
+      title = "🥡 ¡Pedido retirado!";
+      message =
+        "Gracias por visitarnos. ¡Buen provecho!";
+      break;
+
+    case "cancelled":
+      title = "❌ Pedido cancelado";
+      message =
+        "El restaurante canceló tu pedido.";
+      break;
+
+  }
+
+} else if (order.order_type === "table") {
+
+  switch (status) {
+
+    case "accepted":
+      title = "👨‍🍳 Pedido aceptado";
+      message =
+        "El restaurante comenzará a prepararlo.";
+      break;
+
+    case "preparing":
+      title = "🍳 En preparación";
+      message =
+        "Estamos preparando tu pedido.";
+      break;
+
+    case "ready":
+      title = "🍽️ ¡Pedido listo!";
+      message =
+        "En unos momentos será llevado a tu mesa.";
+      break;
+
+    case "completed":
+      title = "🍽️ ¡Servido!";
+      message =
+        "Tu pedido fue entregado en la mesa. ¡Buen provecho!";
+      break;
+
+    case "cancelled":
+      title = "❌ Pedido cancelado";
+      message =
+        "El restaurante canceló tu pedido.";
+      break;
+
+  }
+
+}
 
     if (title) {
       try {
@@ -327,5 +408,6 @@ orderId,
     );
   }
 }
+
 
 

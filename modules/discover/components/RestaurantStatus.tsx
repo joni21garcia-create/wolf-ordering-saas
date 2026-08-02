@@ -1,7 +1,7 @@
 "use client";
 
 import { getRestaurantStatus } from "@/lib/schedule";
-import type { Restaurant } from "../types/restaurant";
+import type { Restaurant } from "@/modules/discover/types/restaurant";
 
 interface RestaurantStatusProps {
   restaurant: Restaurant;

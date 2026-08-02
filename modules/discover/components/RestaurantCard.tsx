@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import type { Restaurant } from "../types/restaurant";
+import type { Restaurant } from "@/modules/discover/types/restaurant";
 import RestaurantStatus from "./RestaurantStatus";
 
 import { favoriteService } from "@/services/favorite.service";

@@ -8,6 +8,10 @@ Tracking Status
 ==========================================================
 */
 
+import {
+  getTrackingSteps,
+} from "./trackingSteps";
+
 interface TrackingStatusProps {
   order: any;
 }
@@ -119,45 +123,7 @@ PASOS
 ==========================================================
 */
 
-const STEPS = [
 
-  {
-    key: "pending",
-    icon: "🛎️",
-    short: "Rec.",
-  },
-
-  {
-    key: "accepted",
-    icon: "👨‍🍳",
-    short: "Acept.",
-  },
-
-  {
-    key: "preparing",
-    icon: "🍳",
-    short: "Prep.",
-  },
-
-  {
-    key: "ready",
-    icon: "📦",
-    short: "Listo",
-  },
-
-  {
-    key: "out_for_delivery",
-    icon: "🛵",
-    short: "Camino",
-  },
-
-  {
-    key: "completed",
-    icon: "🎉",
-    short: "OK",
-  },
-
-];
 
 function formatTime(
   value?: string | null
@@ -186,8 +152,13 @@ export default function TrackingStatus({
   order,
 }: TrackingStatusProps) {
 
+  const steps =
+    getTrackingSteps(
+      order.order_type
+    );
+
   const currentStep =
-    STEPS.findIndex(
+    steps.findIndex(
       (step) => step.key === order.status
     );
 
@@ -196,9 +167,8 @@ export default function TrackingStatus({
       order.status as keyof typeof STATUS
     ] ??
     STATUS.pending;
-      
-    const times = {
 
+  const times = {
   pending:
     formatTime(order.created_at),
 
@@ -372,7 +342,7 @@ export default function TrackingStatus({
           }}
 
         >
-                  {STEPS.map((step, index) => {
+                  {steps.map((step, index) => {
 
             const active =
               order.status !== "cancelled" &&
@@ -455,7 +425,7 @@ export default function TrackingStatus({
 
                 {/* Línea */}
 
-                {index < STEPS.length - 1 && (
+                {index < steps.length - 1 && (
 
                   <div
 
@@ -518,7 +488,7 @@ export default function TrackingStatus({
 
         >
 
-          {STEPS.map((step,index)=>(
+          {steps.map((step,index)=>(
 
 <div
 

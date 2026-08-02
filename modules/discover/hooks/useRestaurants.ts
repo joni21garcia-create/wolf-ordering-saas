@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { getRestaurants } from "../services/discover.service";
-import type { Restaurant } from "../types/restaurant";
+import type { Restaurant } from "@/modules/discover/types/restaurant";
 
 export function useRestaurants() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);

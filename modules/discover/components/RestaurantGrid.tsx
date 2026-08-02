@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";
 
 import RestaurantCard from "./RestaurantCard";
-import type { Restaurant } from "../types/restaurant";
+import type { Restaurant } from "@/modules/discover/types/restaurant";
 
 interface RestaurantGridProps {
   restaurants: Restaurant[];
