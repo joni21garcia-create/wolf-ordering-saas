@@ -12,7 +12,7 @@ const STATUS = {
 
   accepted: {
     label: "Aceptado",
-    color: "#2563eb",
+    color: "#3b82f6",
   },
 
   preparing: {
@@ -22,17 +22,17 @@ const STATUS = {
 
   ready: {
     label: "Listo",
-    color: "#16a34a",
+    color: "#22c55e",
   },
 
   out_for_delivery: {
     label: "En camino",
-    color: "#0891b2",
+    color: "#06b6d4",
   },
 
   completed: {
     label: "Completado",
-    color: "#22c55e",
+    color: "#16a34a",
   },
 
   cancelled: {
@@ -57,18 +57,45 @@ export default function StatusBadge({
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: 8,
-        padding: "8px 14px",
+        gap: 10,
+
+        padding: "8px 16px",
+
         borderRadius: 999,
-        background: `${current.color}18`,
+
+        background: `${current.color}14`,
+
         border: `1px solid ${current.color}35`,
+
         color: current.color,
+
         fontWeight: 700,
+
         fontSize: 13,
+
+        letterSpacing: ".2px",
+
         whiteSpace: "nowrap",
+
+        backdropFilter: "blur(8px)",
+
+        boxShadow: `0 0 18px ${current.color}15`,
       }}
     >
-      ● {current.label}
+      <span
+        style={{
+          width: 10,
+          height: 10,
+
+          borderRadius: "50%",
+
+          background: current.color,
+
+          boxShadow: `0 0 12px ${current.color}`,
+        }}
+      />
+
+      {current.label}
     </span>
   );
 }

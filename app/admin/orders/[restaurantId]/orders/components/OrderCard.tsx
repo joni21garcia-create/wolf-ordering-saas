@@ -1,5 +1,8 @@
 "use client";
 
+import { motion } from "framer-motion";
+import WolfButton from "@/components/ui/WolfButton";
+
 import {
   Clock3,
   MapPin,
@@ -51,6 +54,8 @@ interface Props {
 function money(value: number) {
   return `$ ${Number(value).toFixed(2)}`;
 }
+
+
 
 export default function OrderCard({
   order,
@@ -403,8 +408,8 @@ export default function OrderCard({
         </div>
       </div>
 
-      {/*
-           {/* ESTADO DEL PEDIDO */}
+      
+       {/* ESTADO DEL PEDIDO */}
 
       <div
         style={{
@@ -413,110 +418,73 @@ export default function OrderCard({
           gap: 10,
         }}
       >
-        <button
+        <WolfButton
+          variant={
+            order.status === "accepted"
+              ? "info"
+              : "secondary"
+          }
           onClick={() =>
             onUpdateStatus(order.id, "accepted")
           }
-          style={{
-            padding: "12px",
-            border: "none",
-            borderRadius: 12,
-            background:
-              order.status === "accepted"
-                ? "#2563eb"
-                : "#1f2937",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: 700,
-          }}
         >
-          Aceptar
-        </button>
+          ✅ Aceptar
+        </WolfButton>
 
-        <button
+        <WolfButton
+          variant={
+            order.status === "preparing"
+              ? "primary"
+              : "secondary"
+          }
           onClick={() =>
             onUpdateStatus(order.id, "preparing")
           }
-          style={{
-            padding: "12px",
-            border: "none",
-            borderRadius: 12,
-            background:
-              order.status === "preparing"
-                ? "#7c3aed"
-                : "#1f2937",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: 700,
-          }}
         >
-          Preparar
-        </button>
+          👨‍🍳 Preparar
+        </WolfButton>
 
-        <button
+        <WolfButton
+          variant={
+            order.status === "ready"
+              ? "success"
+              : "secondary"
+          }
           onClick={() =>
             onUpdateStatus(order.id, "ready")
           }
-          style={{
-            padding: "12px",
-            border: "none",
-            borderRadius: 12,
-            background:
-              order.status === "ready"
-                ? "#16a34a"
-                : "#1f2937",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: 700,
-          }}
         >
-          Listo
-        </button>
+          📦 Listo
+        </WolfButton>
 
-        <button
+        <WolfButton
+          variant={
+            order.status === "out_for_delivery"
+              ? "info"
+              : "secondary"
+          }
           onClick={() =>
             onUpdateStatus(
               order.id,
               "out_for_delivery"
             )
           }
-          style={{
-            padding: "12px",
-            border: "none",
-            borderRadius: 12,
-            background:
-              order.status ===
-              "out_for_delivery"
-                ? "#0891b2"
-                : "#1f2937",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: 700,
-          }}
         >
-          En camino
-        </button>
+          🚚 En camino
+        </WolfButton>
 
-        <button
+        <WolfButton
+          fullWidth
+          variant="success"
           onClick={() =>
-            onUpdateStatus(order.id, "completed")
+            onUpdateStatus(
+              order.id,
+              "completed"
+            )
           }
-          style={{
-            gridColumn: "1 / -1",
-            padding: "12px",
-            border: "none",
-            borderRadius: 12,
-            background:
-              order.status === "completed"
-                ? "#22c55e"
-                : "#15803d",
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: 700,
-          }}
         >
-          Completar pedido
-        </button>
+          ✔ Completar pedido
+        </WolfButton>
       </div>
 
       {/* PAGO */}
@@ -549,44 +517,34 @@ export default function OrderCard({
           </div>
         </div>
 
-        <button
-          onClick={() =>
-            onUpdatePayment(order.id, "paid")
+        <WolfButton
+          variant={
+            order.payment_status === "paid"
+              ? "success"
+              : "primary"
           }
-          style={{
-            padding: "10px 18px",
-            borderRadius: 12,
-            border: "none",
-            background:
-              order.payment_status === "paid"
-                ? "#16a34a"
-                : colors.orange,
-            color: "#fff",
-            cursor: "pointer",
-            fontWeight: 700,
-          }}
+          onClick={() =>
+            onUpdatePayment(
+              order.id,
+              "paid"
+            )
+          }
         >
-          Marcar pagado
-        </button>
+          💳 Marcar pagado
+        </WolfButton>
       </div>
 
       {/* ACTUALIZAR */}
 
-<button
-  onClick={() => onViewDetail(order.id)}
-  style={{
-    width: "100%",
-    padding: "13px",
-    borderRadius: 14,
-    border: "none",
-    background: "#d9711cc2",
-    color: "#fff",
-    cursor: "pointer",
-    fontWeight: 700,
-  }}
->
-  Ver detalle
-</button>
+      <WolfButton
+        fullWidth
+        variant="primary"
+        onClick={() =>
+          onViewDetail(order.id)
+        }
+      >
+        🔎 Ver detalle
+      </WolfButton>
     </article>
   );
 }

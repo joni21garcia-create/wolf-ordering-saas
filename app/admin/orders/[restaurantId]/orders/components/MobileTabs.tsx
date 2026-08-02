@@ -1,13 +1,8 @@
 "use client";
 
-import type {
-  OrdersBoardType,
-} from "./types";
+import type { OrdersBoardType } from "./types";
 
-import {
-  cardStyle,
-  colors,
-} from "./styles";
+import { cardStyle, colors } from "./styles";
 
 interface Props {
   value:
@@ -69,27 +64,35 @@ export default function MobileTabs({
       style={{
         ...cardStyle,
 
-        padding: 10,
+        padding: 12,
 
-        marginBottom: 18,
+        marginBottom: 20,
+
+        display: "none",
 
         overflowX: "auto",
 
-        display: "none",
+        borderRadius: 22,
+
+        border:
+          "1px solid rgba(255,255,255,.05)",
+
+        background:
+          "linear-gradient(180deg,#171717,#101010)",
+
+        boxShadow:
+          "0 15px 35px rgba(0,0,0,.35)",
       }}
     >
       <div
         style={{
           display: "flex",
-
-          gap: 10,
-
+          gap: 12,
           minWidth: "max-content",
         }}
       >
         {tabs.map((tab) => {
-          const active =
-            value === tab.id;
+          const active = value === tab.id;
 
           return (
             <button
@@ -98,35 +101,72 @@ export default function MobileTabs({
                 onChange(tab.id)
               }
               style={{
-                border: "none",
+                display: "flex",
 
-                cursor: "pointer",
+                alignItems: "center",
 
-                padding:
-                  "12px 18px",
+                gap: 10,
 
-                borderRadius: 14,
+                padding: "12px 18px",
 
-                whiteSpace:
-                  "nowrap",
+                borderRadius: 16,
 
-                fontWeight: 700,
+                border: active
+                  ? `1px solid ${tab.color}`
+                  : "1px solid rgba(255,255,255,.05)",
 
                 background: active
-                  ? tab.color
-                  : "#1f1f1f",
+                  ? `linear-gradient(180deg,${tab.color},${tab.color}cc)`
+                  : "#1b1b1b",
 
                 color: "#fff",
 
-                transition:
-                  ".25s",
+                cursor: "pointer",
+
+                whiteSpace: "nowrap",
+
+                fontWeight: 700,
+
+                transition: ".25s",
+
+                boxShadow: active
+                  ? `0 0 20px ${tab.color}40`
+                  : "none",
               }}
             >
-              {tab.label}
+              <span>{tab.label}</span>
 
-              {" · "}
+              <span
+                style={{
+                  minWidth: 28,
 
-              {tab.total}
+                  height: 28,
+
+                  padding: "0 10px",
+
+                  borderRadius: 999,
+
+                  display: "flex",
+
+                  alignItems: "center",
+
+                  justifyContent: "center",
+
+                  fontSize: 13,
+
+                  fontWeight: 800,
+
+                  background: active
+                    ? "rgba(255,255,255,.18)"
+                    : `${tab.color}22`,
+
+                  color: active
+                    ? "#fff"
+                    : tab.color,
+                }}
+              >
+                {tab.total}
+              </span>
             </button>
           );
         })}

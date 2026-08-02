@@ -13,6 +13,7 @@ import { createClient } from "@supabase/supabase-js";
 import TrackingRealtime from "@/components/tracking/TrackingRealtime";
 import TrackingStatus from "@/components/tracking/TrackingStatus";
 import TrackingInfo from "@/components/tracking/TrackingInfo";
+import TrackingOrderItems from "@/components/tracking/TrackingOrderItems";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,8 +30,7 @@ export default async function TrackingPage({
   params,
 }: Props) {
 
-  const { code } =
-    await params;
+  const { code } = await params;
 
   /*
   ==========================================================
@@ -40,6 +40,7 @@ export default async function TrackingPage({
 
   const {
     data: order,
+    error,
   } = await supabase
     .from("orders")
     .select("*")
@@ -48,6 +49,12 @@ export default async function TrackingPage({
       code
     )
     .maybeSingle();
+
+  if (error) {
+
+    console.error(error);
+
+  }
 
   if (!order) {
 
@@ -60,6 +67,7 @@ export default async function TrackingPage({
           justifyContent: "center",
           alignItems: "center",
           color: "#fff",
+          padding: 20,
         }}
       >
 
@@ -70,6 +78,40 @@ export default async function TrackingPage({
       </main>
 
     );
+
+  }
+
+  /*
+  ==========================================================
+  PRODUCTOS DEL PEDIDO
+  ==========================================================
+  */
+
+  const {
+    data: items,
+    error: itemsError,
+  } = await supabase
+    .from("order_items")
+    .select(`
+      id,
+      quantity,
+      unit_price,
+      subtotal,
+
+      products(
+        id,
+        name,
+        image_url
+      )
+    `)
+    .eq(
+      "order_id",
+      order.id
+    );
+
+  if (itemsError) {
+
+    console.error(itemsError);
 
   }
 
@@ -119,9 +161,12 @@ export default async function TrackingPage({
 
     <main
       style={{
-        maxWidth: "900px",
+        maxWidth: 900,
         margin: "0 auto",
         padding: "60px 20px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 26,
       }}
     >
 
@@ -133,25 +178,29 @@ export default async function TrackingPage({
         style={{
           color: "#fff",
           textAlign: "center",
-          marginBottom: "30px",
+          margin: 0,
+          fontSize: 34,
+          fontWeight: 800,
+          letterSpacing: ".3px",
         }}
       >
         Seguimiento del pedido
       </h1>
 
-      <TrackingInfo
-        order={order}
-        restaurantSlug={
-          restaurant?.slug
-        }
-        deliverySettings={
-          deliverySettings
-        }
-      />
+<TrackingStatus
+  order={order}
+/>
 
-      <TrackingStatus
-        status={order.status}
-      />
+<TrackingOrderItems
+  items={items ?? []}
+  order={order}
+/>
+
+<TrackingInfo
+  order={order}
+  restaurantSlug={restaurant?.slug}
+  deliverySettings={deliverySettings}
+/>
 
     </main>
 

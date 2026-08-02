@@ -3,23 +3,20 @@
 import {
   Search,
   RotateCw,
-  Filter,
+  SlidersHorizontal,
 } from "lucide-react";
 
+import WolfButton from "@/components/ui/WolfButton";
+
 import {
-  buttonStyle,
   cardStyle,
   colors,
-  inputStyle,
 } from "./styles";
 
 interface Props {
   search: string;
-
   paymentFilter: string;
-
   orderTypeFilter: string;
-
   loading: boolean;
 
   onSearchChange: (value: string) => void;
@@ -49,8 +46,21 @@ export default function FiltersBar({
     <section
       style={{
         ...cardStyle,
-        padding: 20,
-        marginBottom: 24,
+
+        padding: 24,
+
+        marginBottom: 26,
+
+        borderRadius: 22,
+
+        border:
+          "1px solid rgba(255,255,255,.05)",
+
+        background:
+          "linear-gradient(180deg,#171717,#101010)",
+
+        boxShadow:
+          "0 20px 45px rgba(0,0,0,.35)",
       }}
     >
       <div
@@ -58,7 +68,8 @@ export default function FiltersBar({
           display: "grid",
           gridTemplateColumns:
             "2fr 1fr 1fr auto",
-          gap: 16,
+          gap: 18,
+          alignItems: "center",
         }}
       >
         {/* BUSCADOR */}
@@ -72,7 +83,7 @@ export default function FiltersBar({
             size={18}
             style={{
               position: "absolute",
-              left: 14,
+              left: 16,
               top: "50%",
               transform:
                 "translateY(-50%)",
@@ -88,10 +99,32 @@ export default function FiltersBar({
                 e.target.value
               )
             }
-            placeholder="Buscar pedido, cliente..."
+            placeholder="Buscar pedido o cliente..."
             style={{
-              ...inputStyle,
-              paddingLeft: 42,
+              width: "100%",
+
+              height: 54,
+
+              paddingLeft: 48,
+
+              paddingRight: 16,
+
+              borderRadius: 16,
+
+              border:
+                "1px solid rgba(255,255,255,.06)",
+
+              background:
+                "#1a1a1a",
+
+              color: "#fff",
+
+              outline: "none",
+
+              fontSize: 15,
+
+              transition:
+                ".25s",
             }}
           />
         </div>
@@ -105,7 +138,25 @@ export default function FiltersBar({
               e.target.value
             )
           }
-          style={inputStyle}
+          style={{
+            height: 54,
+
+            borderRadius: 16,
+
+            border:
+              "1px solid rgba(255,255,255,.06)",
+
+            background:
+              "#1a1a1a",
+
+            color: "#fff",
+
+            padding: "0 16px",
+
+            fontSize: 14,
+
+            cursor: "pointer",
+          }}
         >
           <option value="all">
             Todos los pagos
@@ -133,7 +184,25 @@ export default function FiltersBar({
               e.target.value
             )
           }
-          style={inputStyle}
+          style={{
+            height: 54,
+
+            borderRadius: 16,
+
+            border:
+              "1px solid rgba(255,255,255,.06)",
+
+            background:
+              "#1a1a1a",
+
+            color: "#fff",
+
+            padding: "0 16px",
+
+            fontSize: 14,
+
+            cursor: "pointer",
+          }}
         >
           <option value="all">
             Todos
@@ -154,19 +223,13 @@ export default function FiltersBar({
 
         {/* BOTÓN */}
 
-        <button
+        <WolfButton
+          variant="primary"
           onClick={onRefresh}
           disabled={loading}
           style={{
-            ...buttonStyle,
-            background:
-              colors.orange,
-            color: "#fff",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            minWidth: 150,
-            justifyContent: "center",
+            minWidth: 170,
+            height: 54,
           }}
         >
           {loading ? (
@@ -175,17 +238,17 @@ export default function FiltersBar({
                 size={18}
                 className="animate-spin"
               />
-
-              Actualizando
+              &nbsp;Actualizando...
             </>
           ) : (
             <>
-              <Filter size={18} />
-
-              Actualizar
+              <SlidersHorizontal
+                size={18}
+              />
+              &nbsp;Actualizar
             </>
           )}
-        </button>
+        </WolfButton>
       </div>
     </section>
   );
