@@ -78,41 +78,30 @@ export async function pushEngine(
 
     try {
 
-      console.log("[ENGINE] FIREBASE");
+await messaging.send({
+  token: device.fcm_token,
 
-      await messaging.send({
+  notification: {
+    title: payload.title,
+    body: payload.body,
+    imageUrl: payload.image,
+  },
 
-        token: device.fcm_token,
+  data: {
+    url: payload.url ?? "/",
+  },
 
-        notification: {
+  android: {
+    priority: "high",
 
-          title: payload.title,
-
-          body: payload.body,
-
-        },
-
-        data: {
-
-          url: payload.url ?? "/",
-
-        },
-
-        android: {
-
-          priority: "high",
-
-          notification: {
-
-            channelId: "orders",
-
-            sound: "default",
-
-          },
-
-        },
-
-      });
+    notification: {
+      channelId: "orders",
+      sound: "default",
+      icon: "ic_stat_wolf",
+      imageUrl: payload.image,
+    },
+  },
+});
 
       android = true;
 
