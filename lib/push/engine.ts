@@ -77,7 +77,8 @@ export async function pushEngine(
   if (device.fcm_token) {
 
     try {
-
+console.log("[ENGINE] IMAGE:", payload.image);
+console.log("[ENGINE] PAYLOAD:", payload);
 await messaging.send({
   token: device.fcm_token,
 

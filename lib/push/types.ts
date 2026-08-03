@@ -9,19 +9,13 @@ Tipos centrales del sistema
 */
 
 export interface PushPayload {
-
   title: string;
-
   body: string;
-
   url?: string;
-
   icon?: string;
-
   badge?: string;
 
-  image?: "https://app.wolfordering.com/icons/push/wolf.png",
-
+  image?: string;
 }
 
 export interface PushSubscriptionDevice {
@@ -81,20 +75,15 @@ export interface RestaurantPushInput {
   url?: string;
   icon?: string;
   badge?: string;
+  image?: string;
 }
 
 export interface CustomerPushInput {
-
   orderId: string;
-
   title: string;
-
   body: string;
-
   url?: string;
-
   icon?: string;
-
   badge?: string;
-
+  image?: string;
 }
