@@ -20,7 +20,7 @@ export interface PushPayload {
 
   badge?: string;
 
-  image?: string;
+  image?: "https://app.wolfordering.com/icons/push/wolf.png",
 
 }
 
