@@ -55,11 +55,13 @@ export async function sendPush({
     console.log("Endpoint:", !!device.endpoint);
     console.log("FCM:", !!device.fcm_token);
 
-    const result = await pushEngine(device, {
-      title,
-      body,
-      url,
-    });
+const result = await pushEngine(device, {
+  title,
+  body,
+  url,
+  icon: "/icons/push/wolf.png",
+  badge: "/icons/badge/wolf.png",
+});
 
     console.log("[SEND PUSH] Resultado:", result);
 

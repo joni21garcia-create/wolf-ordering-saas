@@ -515,7 +515,7 @@ if (!title) {
 
       icon,
 
-      badge: "/icons/badge.png",
+      badge: "/icons/badge/wolf.png",
 
     });
 

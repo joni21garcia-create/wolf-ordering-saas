@@ -75,15 +75,12 @@ export interface RegisterAndroidInput {
 }
 
 export interface RestaurantPushInput {
-
   restaurantId: string;
-
   title: string;
-
   body: string;
-
   url?: string;
-
+  icon?: string;
+  badge?: string;
 }
 
 export interface CustomerPushInput {
