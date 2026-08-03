@@ -96,4 +96,8 @@ export interface CustomerPushInput {
 
   url?: string;
 
+  icon?: string;
+
+  badge?: string;
+
 }

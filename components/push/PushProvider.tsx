@@ -6,6 +6,7 @@ import { Capacitor } from "@capacitor/core";
 
 import { initializeAndroid } from "@/lib/push/initializeAndroid";
 import { initializeCustomerAndroid } from "@/lib/push/initializeCustomerAndroid";
+import { registerWeb } from "@/lib/push/registerWeb";
 
 interface PushProviderProps {
   restaurantId?: string;
@@ -17,79 +18,101 @@ export default function PushProvider({
 
   const initialized = useRef(false);
 
-  useEffect(() => {
+useEffect(() => {
 
-    if (initialized.current) return;
+  if (initialized.current) return;
 
-    if (!Capacitor.isNativePlatform()) return;
+  initialized.current = true;
 
-    initialized.current = true;
+  async function initialize() {
 
-    async function initialize() {
+    try {
 
-      console.log("=================================");
-      console.log("[PUSH PROVIDER]");
-      console.log("Inicializando Android...");
-      console.log("=================================");
+      /*
+      ==========================================================
+      WEB / PWA
+      ==========================================================
+      */
 
-      try {
+if (!Capacitor.isNativePlatform()) {
 
-        /*
-        ==========================================================
-        CLIENTE
-        ==========================================================
-        */
+  if (!restaurantId) {
+    console.log(
+      "[PUSH] WEB SIN RESTAURANT ID"
+    );
+    return;
+  }
 
-        if (restaurantId) {
+  console.log("=================================");
+  console.log("[PUSH] MODO WEB");
+  console.log("=================================");
 
-          console.log(
-            "[PUSH] MODO CLIENTE"
-          );
+  await registerWeb({
+    restaurantId,
+  });
 
-          await initializeCustomerAndroid({
+  console.log(
+    "[PUSH] WEB REGISTRADO"
+  );
 
-            restaurantId,
+  return;
 
-          });
+}
 
-          console.log(
-            "[PUSH] CLIENTE ANDROID INICIALIZADO"
-          );
+      /*
+      ==========================================================
+      ANDROID CLIENTE
+      ==========================================================
+      */
 
-          return;
+      if (restaurantId) {
 
-        }
+        console.log("=================================");
+        console.log("[PUSH] MODO CLIENTE");
+        console.log("=================================");
 
-        /*
-        ==========================================================
-        ADMINISTRADOR
-        ==========================================================
-        */
+        await initializeCustomerAndroid({
+          restaurantId,
+        });
 
         console.log(
-          "[PUSH] MODO ADMINISTRADOR"
+          "[PUSH] CLIENTE ANDROID INICIALIZADO"
         );
 
-        await initializeAndroid();
-
-        console.log(
-          "[PUSH] ADMINISTRADOR ANDROID INICIALIZADO"
-        );
-
-      } catch (error) {
-
-        console.error(
-          "[PUSH] ANDROID ERROR",
-          error
-        );
+        return;
 
       }
 
+      /*
+      ==========================================================
+      ANDROID ADMIN
+      ==========================================================
+      */
+
+      console.log("=================================");
+      console.log("[PUSH] MODO ADMINISTRADOR");
+      console.log("=================================");
+
+      await initializeAndroid();
+
+      console.log(
+        "[PUSH] ADMINISTRADOR ANDROID INICIALIZADO"
+      );
+
+    } catch (error) {
+
+      console.error(
+        "[PUSH PROVIDER]",
+        error
+      );
+
     }
 
-    initialize();
+  }
 
-  }, [restaurantId]);
+  initialize();
+
+}, [restaurantId]);
 
   return null;
 

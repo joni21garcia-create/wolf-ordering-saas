@@ -172,13 +172,30 @@ export function getTrackingSteps(
   orderType?: string
 ): TrackingStep[] {
 
-  switch (orderType) {
+  const type = String(orderType ?? "")
+    .replace(/"/g, "")
+    .trim();
+
+  console.log(
+    "[TRACKING] orderType:",
+    orderType
+  );
+
+  console.log(
+    "[TRACKING] NORMALIZADO:",
+    type
+  );
+
+  switch (type) {
 
     case "pickup":
       return PICKUP_STEPS;
 
     case "table":
       return TABLE_STEPS;
+
+    case "delivery":
+      return DELIVERY_STEPS;
 
     default:
       return DELIVERY_STEPS;

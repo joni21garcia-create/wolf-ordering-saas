@@ -26,9 +26,15 @@ export async function sendCustomer({
 
   orderId,
 
+  title,
+
   body,
 
   url,
+
+  icon,
+
+  badge,
 
 }: CustomerPushInput) {
 
@@ -138,10 +144,10 @@ export async function sendCustomer({
     order.tracking_code ??
     "Pedido";
 
-  const notificationTitle =
-    `🍽️ ${restaurantName}`;
+const notificationTitle =
+  title || `🍽️ ${restaurantName}`;
 
-  const notificationBody =
+const notificationBody =
 
 `Pedido #${trackingCode}
 
@@ -153,21 +159,25 @@ ${body}`;
   ==========================================================
   */
 
-  const result = await pushEngine(
+const result = await pushEngine(
 
-    device,
+  device,
 
-    {
+  {
 
-      title: notificationTitle,
+    title: notificationTitle,
 
-      body: notificationBody,
+    body: notificationBody,
 
-      url,
+    url,
 
-    }
+    icon,
 
-  );
+    badge,
+
+  }
+
+);
 
   console.log(
 

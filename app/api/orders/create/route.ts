@@ -97,6 +97,29 @@ delivery_instructions,
  } = body;
 
 
+/*
+==========================================================
+ORDER TYPE
+==========================================================
+*/
+
+const normalizedOrderType = String(
+  order_type ?? ""
+)
+  .replace(/"/g, "")
+  .trim();
+
+console.log(
+  "[CREATE ORDER] order_type recibido:",
+  order_type
+);
+
+console.log(
+  "[CREATE ORDER] order_type normalizado:",
+  normalizedOrderType
+);
+
+
 console.log("restaurant_id:", restaurant_id);
 const { data: restaurant } =
   await supabase
@@ -136,7 +159,7 @@ const {
   error: productsError,
 } = await supabase
   .from("products")
-  .select("id, price")
+  .select("id, name, price")
   .in("id", productIds);
 
 if (productsError) {
@@ -415,7 +438,7 @@ for (const item of items) {
 
   payment_status: "pending",
 
-  order_type,
+ order_type: normalizedOrderType,
 
 subtotal: subtotalCalculated,
 
@@ -554,23 +577,51 @@ const orderItems =
         });
     }
 
+/*
+==========================================================
+PUSH RESTAURANTE
+==========================================================
+*/
+
 try {
+
+  const productsText = items
+    .map((item: any) => {
+
+      const product = products?.find(
+        (p) => p.id === item.product_id
+      );
+
+      return `• ${product?.name ?? "Producto"} x${item.quantity}`;
+
+    })
+    .join("\n");
+
   await sendPush({
+
     restaurant_id,
 
-    title: "🛍️ Nuevo pedido",
+    title: `🔥 ${customer_name}`,
 
-    body: `${customer_name} realizó un pedido por $${final_total.toFixed(2)}`,
+    body:
+`Pedido ${trackingCode}
+
+${productsText}
+
+💰 Total: $${final_total.toFixed(2)}`,
 
     url: `/admin/orders/${restaurant_id}/orders/${order.id}`,
+
   });
+
 } catch (err) {
+
   console.error(
-    "Error enviando Push",
+    "[CREATE ORDER] Error enviando Push",
     err
   );
-}
 
+}
 
     return NextResponse.json({
       success: true,
