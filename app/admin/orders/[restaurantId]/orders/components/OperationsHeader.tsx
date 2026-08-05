@@ -1,10 +1,13 @@
 "use client";
 
+import "./orders-animations.css";
+
 import {
   Bell,
-  Wifi,
-  WifiOff,
   Store,
+  RefreshCw,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 
 import {
@@ -12,33 +15,51 @@ import {
   colors,
 } from "./styles";
 
-import type {
-  Restaurant,
-} from "./types";
+
+import type { Restaurant } from "./types";
 
 interface Props {
   restaurant: Restaurant;
   connected: boolean;
+
+  soundEnabled?: boolean;
+  refreshing?: boolean;
+  notificationCount?: number;
+
+  onToggleSound?: () => void;
+  onRefresh?: () => void;
+  onOpenNotifications?: () => void;
 }
 
 export default function OperationsHeader({
   restaurant,
   connected,
+  soundEnabled,
+  refreshing,
+  notificationCount,
+  onToggleSound,
+  onRefresh,
+  onOpenNotifications,
 }: Props) {
+
+const notifications = notificationCount ?? 0;
+
   return (
     <section
       style={{
         ...cardStyle,
-        padding: 24,
-        marginBottom: 24,
+        padding: "14px 20px",
+        marginBottom: 16,
       }}
     >
+
+
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          gap: 20,
+          gap: 16,
           flexWrap: "wrap",
         }}
       >
@@ -48,21 +69,21 @@ export default function OperationsHeader({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 18,
+            gap: 12,
           }}
         >
           <div
             style={{
-              width: 68,
-              height: 68,
-              borderRadius: 20,
+              width: 42,
+              height: 42,
+              borderRadius: 12,
               overflow: "hidden",
               background: "#181818",
-              border:
-                "1px solid rgba(255,255,255,.08)",
+              border: "1px solid rgba(255,255,255,.08)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              flexShrink: 0,
             }}
           >
             {restaurant.logo_url ? (
@@ -76,20 +97,16 @@ export default function OperationsHeader({
                 }}
               />
             ) : (
-              <Store
-                size={30}
-                color="#777"
-              />
+              <Store size={20} color="#777" />
             )}
           </div>
 
           <div>
             <div
               style={{
-                fontSize: 13,
-                color:
-                  colors.textSecondary,
-                marginBottom: 6,
+                fontSize: 11,
+                color: colors.textSecondary,
+                marginBottom: 2,
               }}
             >
               Centro de Operaciones
@@ -98,8 +115,9 @@ export default function OperationsHeader({
             <h1
               style={{
                 margin: 0,
-                fontSize: 30,
+                fontSize: 22,
                 fontWeight: 800,
+                lineHeight: 1.1,
               }}
             >
               {restaurant.name}
@@ -107,10 +125,9 @@ export default function OperationsHeader({
 
             <div
               style={{
-                marginTop: 6,
-                color:
-                  colors.textSecondary,
-                fontSize: 14,
+                marginTop: 2,
+                color: colors.textSecondary,
+                fontSize: 12,
               }}
             >
               /{restaurant.slug}
@@ -118,65 +135,159 @@ export default function OperationsHeader({
           </div>
         </div>
 
-        {/* Estado */}
+        {/* Controles globales */}
 
         <div
           style={{
             display: "flex",
-            gap: 12,
+            gap: 8,
             alignItems: "center",
             flexWrap: "wrap",
           }}
         >
+          {/* Realtime — minimalista: punto + texto, sin icono */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: 8,
-              padding:
-                "10px 16px",
+              padding: "8px 14px",
               borderRadius: 999,
-              background:
-                connected
-                  ? "rgba(34,197,94,.12)"
-                  : "rgba(239,68,68,.12)",
-              color:
-                connected
-                  ? colors.green
-                  : colors.red,
-              fontWeight: 700,
+              background: connected
+                ? "rgba(34,197,94,.10)"
+                : "rgba(239,68,68,.10)",
+              color: connected ? colors.green : colors.red,
+              fontWeight: 600,
+              fontSize: 13,
             }}
           >
-            {connected ? (
-              <Wifi size={18} />
+            <span
+              className={connected ? "wolf-dot-connected" : ""}
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: "50%",
+                background: connected ? colors.green : colors.red,
+                display: "inline-block",
+              }}
+            />
+            {connected ? "Tiempo real" : "Sin conexión"}
+          </div>
+
+          {/* Sonido — comunica estado activo/inactivo */}
+          <button
+            type="button"
+            onClick={onToggleSound ?? (() => {})}
+            aria-pressed={soundEnabled}
+            className={`wolf-sound-button${
+              soundEnabled ? " is-on" : ""
+            }`}
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: "50%",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: soundEnabled
+                ? colors.orange
+                : "#2a2a2a",
+              color: soundEnabled
+                ? "#fff"
+                : "#888",
+            }}
+          >
+            {soundEnabled ? (
+              <Volume2 size={17} />
             ) : (
-              <WifiOff size={18} />
+              <VolumeX size={17} />
             )}
+          </button>
 
-            {connected
-              ? "Tiempo real"
-              : "Sin conexión"}
-          </div>
-
-          <div
+          {/* Campana — centro de notificaciones */}
+          <button
+            type="button"
+            onClick={onOpenNotifications ?? (() => {})}
+            className={`wolf-bell-button${
+              notifications > 0
+                ? " has-alert"
+                : ""
+            }`}
             style={{
+              position: "relative",
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              border: "none",
+              cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              gap: 8,
-              padding:
-                "10px 16px",
-              borderRadius: 999,
-              background:
-                "rgba(249,115,22,.12)",
-              color:
-                colors.orange,
-              fontWeight: 700,
+              justifyContent: "center",
+              background: "rgba(249,115,22,.12)",
+              color: colors.orange,
             }}
           >
-            <Bell size={18} />
+            <Bell
+              size={19}
+              className="wolf-bell-icon"
+            />
 
-            Centro de pedidos
-          </div>
+            {notifications > 0 && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: -2,
+                  right: -2,
+                  minWidth: 16,
+                  height: 16,
+                  padding: "0 4px",
+                  borderRadius: 999,
+                  background: colors.red,
+                  color: "#fff",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "2px solid #111",
+                }}
+              >
+                {notifications}
+              </span>
+            )}
+          </button>
+
+          {/* Actualizar — acción principal, colores Wolf */}
+          <button
+            type="button"
+            onClick={onRefresh ?? (() => {})}
+            className="wolf-refresh-button"
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: "50%",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: colors.orange,
+              color: "#fff",
+              boxShadow:
+                "0 2px 10px rgba(249,115,22,.35)",
+            }}
+          >
+            <RefreshCw
+              size={17}
+              className={`wolf-refresh-icon${
+                refreshing
+                  ? " is-spinning"
+                  : ""
+              }`}
+            />
+          </button>
         </div>
       </div>
     </section>

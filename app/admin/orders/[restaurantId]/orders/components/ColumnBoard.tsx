@@ -1,5 +1,7 @@
 "use client";
 
+import { motion, AnimatePresence } from "framer-motion";
+
 import OrderCard from "./OrderCard";
 
 import {
@@ -10,6 +12,20 @@ import {
 import type {
   Order,
 } from "./types";
+
+import {
+  Clock3,
+  ChefHat,
+  PackageCheck,
+  CircleCheckBig,
+} from "lucide-react";
+
+const columnIcons = {
+  Pendientes: Clock3,
+  Preparando: ChefHat,
+  Listos: PackageCheck,
+  Completados: CircleCheckBig,
+} as const;
 
 interface Props {
   title: string;
@@ -54,98 +70,109 @@ export default function ColumnBoard({
   onViewDetail,
 }: Props) {
 
+const Icon =
+  columnIcons[
+    title as keyof typeof columnIcons
+  ] ?? Clock3;
+
   return (
-    <section
+<section
+  style={{
+    ...cardStyle,
+
+    width: "100%",
+
+    minWidth: 0,
+
+    maxWidth: 380,
+
+    maxHeight: "calc(100vh - 250px)",
+
+    display: "flex",
+
+    flexDirection: "column",
+
+    overflow: "hidden",
+  }}
+>
+{/* HEADER */}
+
+<div
+  style={{
+    padding: 18,
+    borderBottom: "1px solid rgba(255,255,255,.06)",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    background: "rgba(255,255,255,.02)",
+  }}
+>
+  {/* Izquierda */}
+  <div>
+    <div
       style={{
-        ...cardStyle,
-
-        width: 380,
-
-        minWidth: 380,
-
-        maxHeight:
-          "calc(100vh - 250px)",
-
         display: "flex",
-
-        flexDirection: "column",
-
-        overflow: "hidden",
+        alignItems: "center",
+        gap: 10,
+        fontWeight: 700,
+        fontSize: 18,
       }}
     >
-      {/* HEADER */}
+      <Icon
+        size={20}
+        color={color}
+        strokeWidth={2.2}
+      />
 
-      <div
-        style={{
-          padding: 18,
+      <span>{title}</span>
+    </div>
 
-          borderBottom:
-            "1px solid rgba(255,255,255,.06)",
+    <div
+      style={{
+        marginTop: 6,
+        fontSize: 12,
+        color: "#a1a1aa",
+        fontWeight: 600,
+      }}
+    >
+      {title === "Pendientes" && "Esperando aceptación"}
+      {title === "Aceptados" && "Esperando cocina"}
+      {title === "Preparando" && "En preparación"}
+      {title === "Listos" && "Listos para entregar"}
+    </div>
+  </div>
 
-          display: "flex",
-
-          justifyContent:
-            "space-between",
-
-          alignItems: "center",
-
-          background:
-            "rgba(255,255,255,.02)",
-        }}
+  {/* Contador */}
+  <div
+    style={{
+      width: 42,
+      height: 42,
+      borderRadius: 14,
+      background: `${color}22`,
+      color,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      fontWeight: 800,
+      overflow: "hidden",
+      flexShrink: 0,
+    }}
+  >
+    <AnimatePresence mode="popLayout" initial={false}>
+      <motion.span
+        key={orders.length}
+        initial={{ opacity: 0, scale: 0.6 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.6 }}
+        transition={{ duration: 0.18 }}
       >
-        <div>
-          <div
-            style={{
-              fontWeight: 700,
+        {orders.length}
+      </motion.span>
+    </AnimatePresence>
+  </div>
+</div>
 
-              fontSize: 18,
-            }}
-          >
-            {title}
-          </div>
-
-          <div
-            style={{
-              marginTop: 6,
-
-              color:
-                colors.textSecondary,
-
-              fontSize: 13,
-            }}
-          >
-            {orders.length} pedidos
-          </div>
-        </div>
-
-        <div
-          style={{
-            width: 42,
-
-            height: 42,
-
-            borderRadius: 14,
-
-            background:
-              `${color}22`,
-
-            color,
-
-            display: "flex",
-
-            justifyContent:
-              "center",
-
-            alignItems: "center",
-
-            fontWeight: 800,
-          }}
-        >
-          {orders.length}
-        </div>
-      </div>
-
-      {/* LISTA */}
+{/* LISTA */}
 
       <div
         style={{

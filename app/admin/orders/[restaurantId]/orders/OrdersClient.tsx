@@ -7,16 +7,13 @@ import {
   useRef,
   useState,
 } from "react";
+
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 
 import OperationsHeader from "./components/OperationsHeader";
-import MetricsBar from "./components/MetricsBar";
 import FiltersBar from "./components/FiltersBar";
 import OrdersBoard from "./components/OrdersBoard";
-import MobileTabs from "./components/MobileTabs";
-import FloatingSoundButton from "./components/FloatingSoundButton";
-import NotificationToast from "./components/NotificationToast";
 
 import type {
   DashboardMetrics,
@@ -25,546 +22,523 @@ import type {
   Restaurant,
 } from "./components/types";
 
-interface Props {
-  restaurantId: string;
+  interface Props {
+    restaurantId: string;
 
-  restaurant: Restaurant;
+    restaurant: Restaurant;
 
-  initialOrders: Order[];
+    initialOrders: Order[];
 
-  initialBoard: OrdersBoardType;
+    initialBoard: OrdersBoardType;
 
-  initialMetrics: DashboardMetrics;
+    initialMetrics: DashboardMetrics;
 
-  deliverySettings: {
-    delivery_mode: "fixed" | "manual";
-    delivery_fee: number;
-    free_delivery_enabled: boolean;
-    free_delivery_minimum: number;
-  };
-}
+    deliverySettings: {
+      delivery_mode: "fixed" | "manual";
+      delivery_fee: number;
+      free_delivery_enabled: boolean;
+      free_delivery_minimum: number;
+    };
+  }
 
-export default function OrdersClient({
-  restaurantId,
-  restaurant,
-  initialOrders,
-  initialBoard,
-  initialMetrics,
-  deliverySettings,
-}: Props) {
+  export default function OrdersClient({
+    restaurantId,
+    restaurant,
+    initialOrders,
+    initialBoard,
+    initialMetrics,
+    deliverySettings,
+  }: Props) {
 
-const router = useRouter();
+  const router = useRouter();
 
-  /*
-  ==========================================================
-  STATES
-  ==========================================================
-  */
-
-
-  
-const [orders, setOrders] =
-    useState<Order[]>(initialOrders);
+    /*
+    ==========================================================
+    STATES
+    ==========================================================
+    */
 
 
-const [loading, setLoading] =
-    useState(false);
+    
+  const [orders, setOrders] =
+      useState<Order[]>(initialOrders);
 
-const [connected, setConnected] = useState(false);
 
-  const [search, setSearch] =
-    useState("");
+  const [loading, setLoading] =
+      useState(false);
 
-  const [
-    paymentFilter,
-    setPaymentFilter,
-  ] = useState("all");
+  const [connected, setConnected] = useState(false);
 
-  const [
-    orderTypeFilter,
-    setOrderTypeFilter,
-  ] = useState("all");
+    const [search, setSearch] =
+      useState("");
 
-  const [
-    selectedMobileTab,
-    setSelectedMobileTab,
-  ] = useState<
-    | "pending"
-    | "preparing"
-    | "ready"
-    | "completed"
-  >("pending");
+    const [
+      paymentFilter,
+      setPaymentFilter,
+    ] = useState("all");
 
-  const [
-    soundEnabled,
-    setSoundEnabled,
-  ] = useState(true);
+    const [
+      orderTypeFilter,
+      setOrderTypeFilter,
+    ] = useState("all");
 
-  const [toastOpen, setToastOpen] =
-    useState(false);
+    const [
+      selectedMobileTab,
+      setSelectedMobileTab,
+    ] = useState<
+      | "pending"
+      | "preparing"
+      | "ready"
+      | "completed"
+    >("pending");
 
-  const [toastTitle, setToastTitle] =
-    useState("");
+    const [
+      soundEnabled,
+      setSoundEnabled,
+    ] = useState(true);
 
-  const [
-    toastMessage,
-    setToastMessage,
-  ] = useState("");
+    const [toastOpen, setToastOpen] =
+      useState(false);
 
-  /*
-  ==========================================================
-  REFS
-  ==========================================================
-  */
+    const [toastTitle, setToastTitle] =
+      useState("");
 
-  const audioRef =
-    useRef<HTMLAudioElement | null>(
-      null
-    );
+    const [
+      toastMessage,
+      setToastMessage,
+    ] = useState("");
 
-  const channelRef =
-    useRef<any>(null);
+    /*
+    ==========================================================
+    REFS
+    ==========================================================
+    */
 
-  /*
-  ==========================================================
-  REFRESH
-  ==========================================================
-  */
-
-  const refreshOrders = useCallback(async () => {
-    try {
-      setLoading(true);
-
-      const response = await fetch(
-        "/api/orders/get-orders",
-        {
-          cache: "no-store",
-        }
+    const audioRef =
+      useRef<HTMLAudioElement | null>(
+        null
       );
 
-      const json = await response.json();
+    const channelRef =
+      useRef<any>(null);
 
-      if (!json.success) {
-        return;
+    /*
+    ==========================================================
+    REFRESH
+    ==========================================================
+    */
+
+    const refreshOrders = useCallback(async () => {
+      try {
+        setLoading(true);
+
+        const response = await fetch(
+          "/api/orders/get-orders",
+          {
+            cache: "no-store",
+          }
+        );
+
+        const json = await response.json();
+
+        if (!json.success) {
+          return;
+        }
+
+        setOrders(json.orders ?? []);
+
+
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
+    }, []);
 
-      setOrders(json.orders ?? []);
+    /*
+    ==========================================================
+    BOARD
+    ==========================================================
+    */
 
-
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  /*
-  ==========================================================
-  BOARD
-  ==========================================================
-  */
-
-  const board = useMemo<OrdersBoardType>(() => {
-    return {
-      pending: orders.filter(
-        (o) => o.status === "pending"
-      ),
-
-      accepted: orders.filter(
-        (o) => o.status === "accepted"
-      ),
-
-      preparing: orders.filter(
-        (o) => o.status === "preparing"
-      ),
-
-      ready: orders.filter(
-        (o) => o.status === "ready"
-      ),
-
-      delivery: orders.filter(
-        (o) =>
-          o.status ===
-          "out_for_delivery"
-      ),
-
-      completed: orders.filter(
-        (o) =>
-          o.status === "completed"
-      ),
-    };
-  }, [orders]);
-
-  /*
-  ==========================================================
-  METRICS
-  ==========================================================
-  */
-
-  const metrics =
-    useMemo<DashboardMetrics>(() => {
+    const board = useMemo<OrdersBoardType>(() => {
       return {
-        pending: board.pending.length,
-
-        preparing:
-          board.accepted.length +
-          board.preparing.length,
-
-        ready:
-          board.ready.length +
-          board.delivery.length,
-
-        sales: orders.reduce(
-          (acc, order) =>
-            acc +
-            Number(order.total ?? 0),
-          0
+        pending: orders.filter(
+          (o) => o.status === "pending"
         ),
 
-        wolf: orders.reduce(
-          (acc, order) =>
-            acc +
-            Number(
-              order.wolf_amount ?? 0
-            ),
-          0
+        accepted: orders.filter(
+          (o) => o.status === "accepted"
         ),
 
-        restaurant:
-          orders.reduce(
+        preparing: orders.filter(
+          (o) => o.status === "preparing"
+        ),
+
+        ready: orders.filter(
+          (o) => o.status === "ready"
+        ),
+
+        delivery: orders.filter(
+          (o) =>
+            o.status ===
+            "out_for_delivery"
+        ),
+
+        completed: orders.filter(
+          (o) =>
+            o.status === "completed"
+        ),
+      };
+    }, [orders]);
+
+    /*
+    ==========================================================
+    METRICS
+    ==========================================================
+    */
+
+    const metrics =
+      useMemo<DashboardMetrics>(() => {
+        return {
+          pending: board.pending.length,
+
+          preparing:
+            board.accepted.length +
+            board.preparing.length,
+
+          ready:
+            board.ready.length +
+            board.delivery.length,
+
+          sales: orders.reduce(
+            (acc, order) =>
+              acc +
+              Number(order.total ?? 0),
+            0
+          ),
+
+          wolf: orders.reduce(
             (acc, order) =>
               acc +
               Number(
-                order.restaurant_amount ??
-                  0
+                order.wolf_amount ?? 0
               ),
             0
           ),
-      };
-    }, [orders, board]);
 
-  /*
-  ==========================================================
-  FILTROS
-  ==========================================================
-  */
+          restaurant:
+            orders.reduce(
+              (acc, order) =>
+                acc +
+                Number(
+                  order.restaurant_amount ??
+                    0
+                ),
+              0
+            ),
+        };
+      }, [orders, board]);
 
-  const filteredBoard =
-    useMemo(() => {
-      const apply = (
-        list: Order[]
-      ) =>
-        list.filter((order) => {
-          const matchesSearch =
-            search === "" ||
-            order.customer_name
-              .toLowerCase()
-              .includes(
-                search.toLowerCase()
-              ) ||
-            order.customer_phone
-              ?.includes(search);
+    /*
+    ==========================================================
+    FILTROS
+    ==========================================================
+    */
 
-          const matchesPayment =
-            paymentFilter === "all"
-              ? true
-              : order.payment_status ===
-                paymentFilter;
+    const filteredBoard =
+      useMemo(() => {
+        const apply = (
+          list: Order[]
+        ) =>
+          list.filter((order) => {
+            const matchesSearch =
+              search === "" ||
+              order.customer_name
+                .toLowerCase()
+                .includes(
+                  search.toLowerCase()
+                ) ||
+              order.customer_phone
+                ?.includes(search);
 
-          const matchesType =
-            orderTypeFilter === "all"
-              ? true
-              : order.order_type ===
-                orderTypeFilter;
+            const matchesPayment =
+              paymentFilter === "all"
+                ? true
+                : order.payment_status ===
+                  paymentFilter;
 
-          return (
-            matchesSearch &&
-            matchesPayment &&
-            matchesType
-          );
-        });
+            const matchesType =
+              orderTypeFilter === "all"
+                ? true
+                : order.order_type ===
+                  orderTypeFilter;
 
-      return {
-        pending: apply(board.pending),
+            return (
+              matchesSearch &&
+              matchesPayment &&
+              matchesType
+            );
+          });
 
-        accepted: apply(
-          board.accepted
-        ),
+        return {
+          pending: apply(board.pending),
 
-        preparing: apply(
-          board.preparing
-        ),
+          accepted: apply(
+            board.accepted
+          ),
 
-        ready: apply(board.ready),
+          preparing: apply(
+            board.preparing
+          ),
 
-        delivery: apply(
-          board.delivery
-        ),
+          ready: apply(board.ready),
 
-        completed: apply(
-          board.completed
-        ),
-      };
-    }, [
-      board,
-      paymentFilter,
-      orderTypeFilter,
-      search,
-    ]);
+          delivery: apply(
+            board.delivery
+          ),
 
-  /*
-  ==========================================================
-  SONIDO
-  ==========================================================
-  */
+          completed: apply(
+            board.completed
+          ),
+        };
+      }, [
+        board,
+        paymentFilter,
+        orderTypeFilter,
+        search,
+      ]);
 
-  useEffect(() => {
-    audioRef.current = new Audio(
-      "/sounds/new-order.mp3"
-    );
+    /*
+    ==========================================================
+    SONIDO
+    ==========================================================
+    */
 
-    const saved =
-      localStorage.getItem(
-        "wolf-orders-sound"
+    useEffect(() => {
+      audioRef.current = new Audio(
+        "/sounds/new-order.mp3"
       );
 
-    if (saved !== null) {
-      setSoundEnabled(
-        saved === "true"
+      const saved =
+        localStorage.getItem(
+          "wolf-orders-sound"
+        );
+
+      if (saved !== null) {
+        setSoundEnabled(
+          saved === "true"
+        );
+      }
+    }, []);
+
+    const toggleSound = () => {
+      const next =
+        !soundEnabled;
+
+      setSoundEnabled(next);
+
+      localStorage.setItem(
+        "wolf-orders-sound",
+        String(next)
       );
-    }
-  }, []);
+    };
 
-  const toggleSound = () => {
-    const next =
-      !soundEnabled;
+    /*
+    ==========================================================
+    REALTIME
+    ==========================================================
+    */
 
-    setSoundEnabled(next);
-
-    localStorage.setItem(
-      "wolf-orders-sound",
-      String(next)
-    );
-  };
-
-  /*
-  ==========================================================
-  REALTIME
-  ==========================================================
-  */
-
-  useEffect(() => {
-    if (channelRef.current) {
-      supabase.removeChannel(
-        channelRef.current
-      );
-    }
-
-    channelRef.current =
-      supabase
-        .channel(
-          `orders-${restaurantId}`
-        )
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "orders",
-            filter: `restaurant_id=eq.${restaurantId}`,
-          },
-          async (payload) => {
-            await refreshOrders();
-
-            if (
-              payload.eventType ===
-                "INSERT" &&
-              soundEnabled &&
-              audioRef.current
-            ) {
-              try {
-                await audioRef.current.play();
-              } catch {}
-
-              setToastTitle(
-                "Nuevo pedido"
-              );
-
-              setToastMessage(
-                "Ha llegado un nuevo pedido."
-              );
-
-              setToastOpen(true);
-
-              setTimeout(() => {
-                setToastOpen(
-                  false
-                );
-              }, 4000);
-            }
-          }
-        )
-        .subscribe((status) => {
-          setConnected(
-            status ===
-              "SUBSCRIBED"
-          );
-        });
-
-    return () => {
-      if (
-        channelRef.current
-      ) {
+    useEffect(() => {
+      if (channelRef.current) {
         supabase.removeChannel(
           channelRef.current
         );
       }
-    };
-  }, [
-    restaurantId,
-    refreshOrders,
-    soundEnabled,
-  ]);
 
-  /*
-  ==========================================================
-  ACCIONES
-  ==========================================================
-  */
-
-  const updateStatus =
-    useCallback(
-      async (
-        orderId: string,
-        status: string
-      ) => {
-        await fetch(
-          "/api/orders/update-status",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
+      channelRef.current =
+        supabase
+          .channel(
+            `orders-${restaurantId}`
+          )
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "orders",
+              filter: `restaurant_id=eq.${restaurantId}`,
             },
+            async (payload) => {
+              await refreshOrders();
 
-            body: JSON.stringify({
-              orderId,
-              status,
-            }),
-          }
-        );
+              if (
+                payload.eventType ===
+                  "INSERT" &&
+                soundEnabled &&
+                audioRef.current
+              ) {
+                try {
+                  await audioRef.current.play();
+                } catch {}
 
-        await refreshOrders();
-      },
-      [refreshOrders]
+                setToastTitle(
+                  "Nuevo pedido"
+                );
+
+                setToastMessage(
+                  "Ha llegado un nuevo pedido."
+                );
+
+                setToastOpen(true);
+
+                setTimeout(() => {
+                  setToastOpen(
+                    false
+                  );
+                }, 4000);
+              }
+            }
+          )
+          .subscribe((status) => {
+            setConnected(
+              status ===
+                "SUBSCRIBED"
+            );
+          });
+
+      return () => {
+        if (
+          channelRef.current
+        ) {
+          supabase.removeChannel(
+            channelRef.current
+          );
+        }
+      };
+    }, [
+      restaurantId,
+      refreshOrders,
+      soundEnabled,
+    ]);
+
+    /*
+    ==========================================================
+    ACCIONES
+    ==========================================================
+    */
+
+    const updateStatus =
+      useCallback(
+        async (
+          orderId: string,
+          status: string
+        ) => {
+          await fetch(
+            "/api/orders/update-status",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+                orderId,
+                status,
+              }),
+            }
+          );
+
+          await refreshOrders();
+        },
+        [refreshOrders]
+      );
+
+    const updatePayment =
+      useCallback(
+        async (
+          orderId: string,
+          paymentStatus: string
+        ) => {
+          await fetch(
+            "/api/orders/update-payment-status",
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+                orderId,
+                paymentStatus,
+              }),
+            }
+          );
+
+          await refreshOrders();
+        },
+        [refreshOrders]
+      );
+
+  const handleViewDetail = (orderId: string) => {
+    router.push(
+      `/admin/orders/${restaurantId}/orders/${orderId}`
     );
+  };
 
-  const updatePayment =
-    useCallback(
-      async (
-        orderId: string,
-        paymentStatus: string
-      ) => {
-        await fetch(
-          "/api/orders/update-payment-status",
-          {
-            method: "POST",
+/*
+==========================================================
+RENDER
+==========================================================
+*/
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-
-            body: JSON.stringify({
-              orderId,
-              paymentStatus,
-            }),
-          }
-        );
-
-        await refreshOrders();
-      },
-      [refreshOrders]
-    );
-
-const handleViewDetail = (orderId: string) => {
-  router.push(
-    `/admin/orders/${restaurantId}/orders/${orderId}`
-  );
-};
-
-  /*
-  ==========================================================
-  RENDER
-  ==========================================================
-  */
-
-  return (
-    <>
-      <NotificationToast
-        open={toastOpen}
-        title={toastTitle}
-        message={toastMessage}
-        onClose={() => setToastOpen(false)}
-      />
-
-      <FloatingSoundButton
-        enabled={soundEnabled}
-        connected={connected}
-        onToggle={toggleSound}
-      />
-
-      <main
+return (
+  <>
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#090909",
+        padding: 24,
+      }}
+    >
+      <div
         style={{
-          minHeight: "100vh",
-          background: "#090909",
-          padding: 24,
+          maxWidth: 1900,
+          margin: "0 auto",
         }}
       >
-        <div
-          style={{
-            maxWidth: 1900,
-            margin: "0 auto",
-          }}
-        >
-          <OperationsHeader
-            restaurant={restaurant}
-            connected={connected}
-          />
+        <OperationsHeader
+          restaurant={restaurant}
+          connected={connected}
+        />
 
-          <MetricsBar
-            metrics={metrics}
-          />
+        <FiltersBar
+          search={search}
+          paymentFilter={paymentFilter}
+          orderTypeFilter={orderTypeFilter}
+          loading={loading}
+          onSearchChange={setSearch}
+          onPaymentFilterChange={setPaymentFilter}
+          onOrderTypeFilterChange={setOrderTypeFilter}
+          onRefresh={refreshOrders}
+        />
 
-          <FiltersBar
-            search={search}
-            paymentFilter={paymentFilter}
-            orderTypeFilter={orderTypeFilter}
-            loading={loading}
-            onSearchChange={setSearch}
-            onPaymentFilterChange={setPaymentFilter}
-            onOrderTypeFilterChange={setOrderTypeFilter}
-            onRefresh={refreshOrders}
-          />
-
-          <MobileTabs
-            value={selectedMobileTab}
-            board={filteredBoard}
-            onChange={setSelectedMobileTab}
-          />
-
-<OrdersBoard
-  board={filteredBoard}
-  mobileTab={selectedMobileTab}
-  deliverySettings={deliverySettings}
-  onRefresh={refreshOrders}
-  onViewDetail={handleViewDetail}
-  onUpdateStatus={updateStatus}
-  onUpdatePayment={updatePayment}
-/>
-        </div>
-      </main>
-    </>
-  );
+        <OrdersBoard
+          board={filteredBoard}
+          mobileTab={selectedMobileTab}
+          deliverySettings={deliverySettings}
+          onRefresh={refreshOrders}
+          onViewDetail={handleViewDetail}
+          onUpdateStatus={updateStatus}
+          onUpdatePayment={updatePayment}
+        />
+      </div>
+    </main>
+  </>
+);
 }

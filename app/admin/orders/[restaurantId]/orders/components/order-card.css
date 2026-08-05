@@ -1,0 +1,242 @@
+/* ============================================================
+   OrderCard — temas por estado (borde, LED, badge)
+   ============================================================ */
+
+.wolf-order-card {
+  --wolf-status-color: #a1a1aa;
+  --wolf-status-bg: rgba(161, 161, 170, 0.12);
+
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 3px solid var(--wolf-status-color);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  transition: border-color 0.25s ease, opacity 0.25s ease;
+}
+
+.wolf-order-card[data-status-theme="pending"] {
+  --wolf-status-color: #f97316;
+  --wolf-status-bg: rgba(249, 115, 22, 0.12);
+}
+
+.wolf-order-card[data-status-theme="preparing"] {
+  --wolf-status-color: #3b82f6;
+  --wolf-status-bg: rgba(59, 130, 246, 0.12);
+}
+
+.wolf-order-card[data-status-theme="ready"] {
+  --wolf-status-color: #22c55e;
+  --wolf-status-bg: rgba(34, 197, 94, 0.12);
+}
+
+.wolf-order-card[data-status-theme="completed"] {
+  --wolf-status-color: #71717a;
+  --wolf-status-bg: rgba(113, 113, 122, 0.1);
+  opacity: 0.72;
+}
+
+/* ============================================================
+   LED — discreto, preparado para animación futura (pulso)
+   ============================================================ */
+
+.wolf-led {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--wolf-status-color);
+  flex-shrink: 0;
+}
+
+/* Clase preparada, no aplicada todavía */
+.wolf-led-pulse {
+  animation: wolf-led-pulse 1.8s infinite;
+}
+
+@keyframes wolf-led-pulse {
+  0% { box-shadow: 0 0 0 0 var(--wolf-status-bg); }
+  70% { box-shadow: 0 0 0 6px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* ============================================================
+   Badges
+   ============================================================ */
+
+.wolf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.wolf-badge-neutral {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.wolf-badge-status {
+  background: var(--wolf-status-bg);
+  color: var(--wolf-status-color);
+}
+
+/* ============================================================
+   Productos — flat, sin cajas
+   ============================================================ */
+
+.wolf-product-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.wolf-product-qty {
+  font-weight: 800;
+  color: var(--wolf-status-color);
+  min-width: 24px;
+  flex-shrink: 0;
+}
+
+.wolf-product-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Cliente — flat, sin cajas
+   ============================================================ */
+
+.wolf-client-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #a1a1aa;
+}
+
+/* ============================================================
+   Resumen económico — Cliente / Wolf / Restaurante
+   Sin cajas, sin bordes. Solo labels + valores alineados.
+   ============================================================ */
+
+.wolf-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.wolf-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.wolf-summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b8b93;
+}
+
+.wolf-summary-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e5e5e5;
+}
+
+/* ============================================================
+   Acción principal — un solo botón, con microinteracciones
+   ============================================================ */
+
+/* ============================================================
+   Nota de "completado" — el botón principal ahora usa WolfButton
+   (ver OrderCard.tsx). Este bloque solo mantiene el layout del
+   mensaje final cuando ya no hay acción pendiente.
+   ============================================================ */
+
+.wolf-order-card[data-status-theme="completed"] .wolf-completed-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 10px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wolf-status-color);
+}
+
+/* ============================================================
+   Acciones secundarias — discretas
+   ============================================================ */
+
+.wolf-secondary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.wolf-secondary-action {
+  border: none;
+  background: transparent;
+  color: #8b8b93;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+
+.wolf-secondary-action:active {
+  transform: scale(0.97);
+}
+
+.wolf-secondary-action:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.wolf-secondary-action:active,
+.wolf-secondary-action.is-pressed {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.wolf-secondary-action:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.wolf-secondary-action.is-positive {
+  color: #22c55e;
+}
+
+/* ============================================================
+   Responsive — 390px hasta escritorio, nunca desbordar
+   ============================================================ */
+
+@media (max-width: 420px) {
+  .wolf-order-card {
+    padding: 10px;
+    gap: 7px;
+  }
+
+  .wolf-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .wolf-product-line {
+    font-size: 14px;
+  }
+}

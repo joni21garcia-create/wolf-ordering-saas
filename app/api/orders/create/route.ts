@@ -9,6 +9,7 @@ import {
   getRestaurantAmount,
   getCommissionConfig,
   getOrderTotal,
+  getFinalPrice,
 } from "@/lib/configuration/pricing";
 
 
@@ -217,34 +218,19 @@ const subtotalCalculated = Number(
 );
 
 
-const percentage =
-  Number(
-    commissionConfig.commission_percentage
-  ) || 0;
-
-const baseSubtotal =
-  commissionConfig.commission_active &&
-  commissionConfig.commission_type ===
-    "customer"
-    ? Number(
-        (
-          subtotalCalculated /
-          (1 + percentage / 100)
-        ).toFixed(2)
-      )
-    : subtotalCalculated;
-
 const commission_amount =
   getCommissionAmount(
-    baseSubtotal,
+    subtotalCalculated,
     commissionConfig
   );
 
 const restaurant_amount =
   getRestaurantAmount(
-    baseSubtotal,
+    subtotalCalculated,
     commissionConfig
   );
+
+
 
 const wolf_amount =
   commission_amount;
@@ -268,9 +254,29 @@ if (deliverySettings) {
   }
 }
 
+const subtotalWithCommission =
+  getFinalPrice(
+    subtotalCalculated,
+    commissionConfig
+  );
+
+console.log("CONFIG:", commissionConfig);
+
+console.log("SUBTOTAL:", subtotalCalculated);
+
+console.log(
+  "SUBTOTAL CON COMISION:",
+  subtotalWithCommission
+);
+
+console.log(
+  "DELIVERY:",
+  deliveryFeeCalculated
+);
+
 const final_total =
   getOrderTotal(
-    subtotalCalculated,
+    subtotalWithCommission,
     deliveryFeeCalculated
   );
 

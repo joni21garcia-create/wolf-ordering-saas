@@ -1,20 +1,28 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import WolfButton from "@/components/ui/WolfButton";
+import "./order-card.css";
 
 import {
-  Clock3,
   MapPin,
   Phone,
+  Mail,
   CreditCard,
-  User,
+  Truck,
+  ShoppingBag,
+  Clock,
+  ChefHat,
+  CheckCircle2,
+  Bike,
+  CheckCheck,
 } from "lucide-react";
 
 import {
-  cardStyle,
   colors,
 } from "./styles";
+
+import "./order-card.css";
 
 import type {
   Order,
@@ -23,6 +31,8 @@ import type {
 import {
   getDeliveryDisplay,
 } from "@/lib/delivery/getDeliveryDisplay";
+
+import WolfButton from "@/components/ui/WolfButton";
 
 interface Props {
   order: Order;
@@ -51,11 +61,135 @@ interface Props {
   ) => Promise<void>;
 }
 
-function money(value: number) {
+function money(value: number | string) {
   return `$ ${Number(value).toFixed(2)}`;
 }
 
+// Tiempo transcurrido desde la creación del pedido.
+// Función pura: recibe "now" desde afuera en vez de leer Date.now()
+// internamente. Así el resultado es determinista y no depende de
+// cuándo se ejecuta el render (evita el hydration mismatch).
+// Devuelve null si no hay una fecha válida (no se inventa información).
+function getElapsedLabel(
+  createdAt: string | undefined,
+  now: number
+): string | null {
+  if (!createdAt) return null;
 
+  const created = new Date(createdAt).getTime();
+  if (Number.isNaN(created)) return null;
+
+  const diffMs = now - created;
+  const minutes = Math.max(0, Math.floor(diffMs / 60000));
+
+  if (minutes < 1) return "Recién";
+  if (minutes < 60) return `Hace ${minutes} min`;
+
+  const hours = Math.floor(minutes / 60);
+  return `Hace ${hours} h`;
+}
+
+// Tema visual por estado: pending (naranja) / preparing (azul) /
+// ready (verde) / completed (gris apagado).
+// NOTA: esta función no cambió. Sigue leyendo el status técnico del backend.
+function getStatusTheme(
+  status: string
+): "pending" | "preparing" | "ready" | "completed" {
+  switch (status) {
+    case "preparing":
+      return "preparing";
+    case "ready":
+    case "out_for_delivery":
+      return "ready";
+    case "completed":
+      return "completed";
+    case "accepted":
+    default:
+      return "pending";
+  }
+}
+
+// Texto humano para el badge de estado.
+// Solo cambia lo que VE el usuario. El status técnico (order.status)
+// nunca se modifica ni se envía distinto al backend.
+function getStatusLabel(status: string): string {
+  switch (status) {
+    case "accepted":
+      return "Esperando cocina";
+    case "preparing":
+      return "Preparando";
+    case "ready":
+      return "Listo para entregar";
+    case "out_for_delivery":
+      return "En camino";
+    case "completed":
+      return "Completado";
+    default:
+      return "Pendiente";
+  }
+}
+
+// Icono funcional (lucide-react) que acompaña al texto humano del estado.
+function getStatusIcon(status: string) {
+  switch (status) {
+    case "accepted":
+      return Clock;
+    case "preparing":
+      return ChefHat;
+    case "ready":
+      return CheckCircle2;
+    case "out_for_delivery":
+      return Bike;
+    case "completed":
+      return CheckCheck;
+    default:
+      return Clock;
+  }
+}
+
+// Acción principal según el estado actual.
+// La lógica (next status) es exactamente la misma que antes.
+// Solo se humanizan label + icon para mostrarlos en el botón.
+function getPrimaryAction(
+  status: string,
+  isDelivery: boolean
+): { label: string; next: string; icon: typeof Clock } | null {
+  switch (status) {
+    case "accepted":
+      return { label: "Empezar preparación", next: "preparing", icon: ChefHat };
+    case "preparing":
+      return { label: "Marcar listo", next: "ready", icon: CheckCircle2 };
+    case "ready":
+      return isDelivery
+        ? { label: "Entregar pedido", next: "out_for_delivery", icon: Bike }
+        : { label: "Completar pedido", next: "completed", icon: CheckCheck };
+    case "out_for_delivery":
+      return { label: "Completar pedido", next: "completed", icon: CheckCheck };
+    case "completed":
+      return null;
+    default:
+      // Estado inicial o desconocido
+      return { label: "Aceptar pedido", next: "accepted", icon: Clock };
+  }
+}
+
+// Variante visual de WolfButton según el tema de estado.
+// Mantiene la misma identidad de color (naranja/azul/verde) que ya
+// usa el borde, el LED y el badge de la tarjeta.
+function getStatusVariant(
+  theme: "pending" | "preparing" | "ready" | "completed"
+): "primary" | "info" | "success" | "secondary" {
+  switch (theme) {
+    case "pending":
+      return "primary";
+    case "preparing":
+      return "info";
+    case "ready":
+      return "success";
+    default:
+      return "secondary";
+  }
+}
 
 export default function OrderCard({
   order,
@@ -71,480 +205,342 @@ export default function OrderCard({
     orderTotal: Number(order.subtotal ?? 0),
   });
 
+  // "now" solo existe en el cliente, después del mount. Mientras es
+  // null (servidor + primer render del cliente antes de hidratar),
+  // "elapsed" es null en ambos lados — no hay nada que diverja.
+  // El intervalo refresca el texto cada 60s: como el formato solo
+  // cambia por minuto ("Hace 3 min" → "Hace 4 min"), no hace falta
+  // un tick más frecuente que ese.
+  const [now, setNow] = useState<number | null>(null);
+
+  useEffect(() => {
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const elapsed = now
+    ? getElapsedLabel((order as { created_at?: string }).created_at, now)
+    : null;
+
+  // tracking_code es el identificador visible para el restaurante.
+  // Nunca se usa el UUID: si el campo no viene poblado, se muestra un
+  // placeholder neutro en vez de order.id.
+  const trackingLabel =
+    (order as { tracking_code?: string }).tracking_code || "SIN CÓDIGO";
+
+  const isDelivery = order.order_type === "delivery";
+  const statusTheme = getStatusTheme(order.status);
+  const primaryAction = getPrimaryAction(order.status, isDelivery);
+
+
 
   return (
-    <article
-      style={{
-        ...cardStyle,
-
-        padding: 18,
-
-        display: "flex",
-
-        flexDirection: "column",
-
-        gap: 18,
-      }}
+    <motion.article
+      className="wolf-order-card"
+      data-status-theme={statusTheme}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
     >
-      {/* CABECERA */}
-
+      {/* HEADER — tracking + nombre a la izquierda, badges + tiempo a la derecha */}
       <div
         style={{
           display: "flex",
-
-          justifyContent:
-            "space-between",
-
+          justifyContent: "space-between",
           alignItems: "flex-start",
+          gap: 10,
         }}
       >
-        <div>
+        <div style={{ minWidth: 0 }}>
           <div
             style={{
-              fontSize: 18,
-
+              fontSize: 12,
               fontWeight: 700,
+              color: "#f97316",
+              letterSpacing: 0.4,
+              textTransform: "uppercase",
+            }}
+          >
+            {trackingLabel}
+          </div>
+
+          <div
+            style={{
+              marginTop: 4,
+              fontSize: 16,
+              fontWeight: 700,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {order.customer_name}
           </div>
-
-          <div
-            style={{
-              marginTop: 6,
-
-              color:
-                colors.textSecondary,
-
-              fontSize: 13,
-            }}
-          >
-            #{order.id.slice(0,8)}
-          </div>
         </div>
 
         <div
           style={{
-            background:
-              "rgba(249,115,22,.12)",
-
-            color:
-              colors.orange,
-
-            padding:
-              "6px 12px",
-
-            borderRadius:999,
-
-            fontWeight:700,
-
-            fontSize:12,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: 5,
+            flexShrink: 0,
           }}
         >
-          {order.status}
-        </div>
-      </div>
+<div style={{ display: "flex", gap: 6 }}>
+  <span className="wolf-badge wolf-badge-neutral">
+    {isDelivery ? (
+      <Truck size={12} />
+    ) : (
+      <ShoppingBag size={12} />
+    )}
 
-      {/* DATOS */}
-
-      <div
-        style={{
-          display:"grid",
-
-          gap:10,
-        }}
-      >
-        <div
-          style={{
-            display:"flex",
-            gap:10,
-            alignItems:"center",
-          }}
-        >
-          <User size={16}/>
-
-          {order.customer_name}
-        </div>
-
-        {order.customer_phone && (
-
-        <div
-          style={{
-            display:"flex",
-            gap:10,
-            alignItems:"center",
-          }}
-        >
-          <Phone size={16}/>
-
-          {order.customer_phone}
-        </div>
-
-        )}
-
-        <div
-          style={{
-            display:"flex",
-            gap:10,
-            alignItems:"center",
-          }}
-        >
-          <CreditCard size={16}/>
-
-          {order.payment_method}
-        </div>
-
-        <div
-          style={{
-            display:"flex",
-            gap:10,
-            alignItems:"center",
-          }}
-        >
-          <Clock3 size={16}/>
-
-          {order.estimated_minutes ?? "--"} min
-        </div>
-
-        {order.order_type==="delivery" && (
-
-        <div
-          style={{
-            display:"flex",
-            gap:10,
-            alignItems:"flex-start",
-          }}
-        >
-          <MapPin size={16}/>
-
-          <span>
-
-            {order.delivery_address ?? "-"}
-
-          </span>
-
-        </div>
-
-        )}
-
-      </div>
-
-      {/* PRODUCTOS */}
-
-      <div>
-
-        <div
-          style={{
-            fontWeight:700,
-
-            marginBottom:12,
-          }}
-        >
-          Productos
-        </div>
-
-        {(order.order_items ?? []).map(item=>(
-
-          <div
-            key={item.id}
-            style={{
-              display:"flex",
-
-              justifyContent:"space-between",
-
-              marginBottom:8,
-
-              fontSize:14,
-            }}
-          >
-            <span>
-
-              {item.quantity} × {item.products?.name}
-
+    {isDelivery ? "Delivery" : "Pickup"}
+  </span>
+</div>
+          {elapsed && (
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: colors.textSecondary,
+              }}
+            >
+              {elapsed}
             </span>
-
-            <strong>
-
-              {money(item.subtotal)}
-
-            </strong>
-
-          </div>
-
-        ))}
-
+          )}
+        </div>
       </div>
 
-      {/* TOTALES */}
-
-      <div
-        style={{
-          borderTop:
-            "1px solid rgba(255,255,255,.06)",
-
-          paddingTop:16,
-
-          display:"grid",
-
-          gap:8,
-        }}
-      >
-        <div
-          style={{
-            display:"flex",
-
-            justifyContent:"space-between",
-          }}
-        >
-          <span>Subtotal</span>
-
-          <strong>
-
-            {money(order.subtotal)}
-
-          </strong>
-        </div>
-
-        <div
-          style={{
-            display:"flex",
-
-            justifyContent:"space-between",
-          }}
-        >
-<div
-  style={{
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 12,
-  }}
->
-  <span>Delivery</span>
-
+{/* CONTACTO */}
+{(order.customer_phone ||
+  order.customer_email ||
+  order.delivery_address ||
+  order.payment_method) && (
   <div
     style={{
       display: "flex",
       flexDirection: "column",
-      alignItems: "flex-end",
-      gap: 6,
+      gap: 5,
     }}
   >
-    {delivery.isManual && (
-      <>
-        <span
-          style={{
-            background: "rgba(249,115,22,.15)",
-            color: "#f97316",
-            padding: "4px 10px",
-            borderRadius: 999,
-            fontSize: 12,
-            fontWeight: 700,
-          }}
-        >
-          🟠 Manual
-        </span>
-
-        <span
-          style={{
-            fontSize: 12,
-            color: "#a1a1aa",
-            textAlign: "right",
-          }}
-        >
-          Costo acordado con el restaurante
-        </span>
-      </>
+    {order.customer_phone && (
+      <div className="wolf-client-line">
+        <Phone size={13} />
+        {order.customer_phone}
+      </div>
     )}
 
+    {order.customer_email && (
+      <div className="wolf-client-line">
+        <Mail size={13} />
+        {order.customer_email}
+      </div>
+    )}
+
+    {isDelivery && order.delivery_address && (
+      <div
+        className="wolf-client-line"
+        style={{ alignItems: "flex-start" }}
+      >
+        <MapPin
+          size={13}
+          style={{
+            marginTop: 1,
+            flexShrink: 0,
+          }}
+        />
+        <span>{order.delivery_address}</span>
+      </div>
+    )}
+
+    {order.payment_method && (
+      <div className="wolf-client-line">
+        <CreditCard size={13} />
+        {order.payment_method}
+      </div>
+    )}
+  </div>
+)}
+
+{/* PRODUCTOS */}
+<div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 5,
+  }}
+>
+  {(order.order_items ?? []).map((item) => (
+    <div key={item.id} className="wolf-product-line">
+      <span className="wolf-product-qty">
+        {item.quantity}×
+      </span>
+      <span className="wolf-product-name">
+        {item.products?.name}
+      </span>
+    </div>
+  ))}
+</div>
+
+{/* DELIVERY */}
+{isDelivery && (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "flex-end",
+    }}
+  >
     {delivery.isFree && (
       <span
+        className="wolf-badge"
         style={{
           background: "rgba(34,197,94,.15)",
           color: "#22c55e",
-          padding: "4px 10px",
-          borderRadius: 999,
-          fontSize: 12,
-          fontWeight: 700,
         }}
       >
         🟢 Delivery gratis
       </span>
     )}
 
-    {!delivery.isManual && !delivery.isFree && (
-      <strong
+    {delivery.isManual && !delivery.isFree && (
+      <span
+        className="wolf-badge"
         style={{
-          fontSize: 16,
-          fontWeight: 700,
+          background: "rgba(249,115,22,.15)",
+          color: "#f97316",
         }}
       >
+        🟠 Manual
+      </span>
+    )}
+
+    {!delivery.isManual && !delivery.isFree && (
+      <span className="wolf-badge wolf-badge-neutral">
         {delivery.label}
-      </strong>
+      </span>
     )}
   </div>
-</div>
-        </div>
+)}
 
-        <div
-          style={{
-            display:"flex",
-
-            justifyContent:"space-between",
-
-            fontSize:18,
-
-            fontWeight:800,
-          }}
-        >
-          <span>Total</span>
-
-          <span>
-
-            {money(order.total)}
-
+      {/* RESUMEN ECONÓMICO — usa exactamente los valores del pedido */}
+      <div className="wolf-summary">
+        <div className="wolf-summary-row">
+          <span className="wolf-summary-label">
+            Cliente
           </span>
 
+          <span className="wolf-summary-value">
+            {money(order.total)}
+          </span>
+        </div>
+
+        <div className="wolf-summary-row">
+          <span className="wolf-summary-label">
+            Wolf
+          </span>
+
+          <span className="wolf-summary-value">
+            {money(
+              Number(
+                (order as { wolf_amount?: number | string })
+                  .wolf_amount ?? 0
+              )
+            )}
+          </span>
+        </div>
+
+        <div className="wolf-summary-row">
+          <span className="wolf-summary-label">
+            Restaurante
+          </span>
+
+          <span className="wolf-summary-value">
+            {money(
+              Number(
+                (order as {
+                  restaurant_amount?: number | string;
+                }).restaurant_amount ?? 0
+              )
+            )}
+          </span>
         </div>
       </div>
 
-      
-       {/* ESTADO DEL PEDIDO */}
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2,1fr)",
-          gap: 10,
-        }}
-      >
-        <WolfButton
-          variant={
-            order.status === "accepted"
-              ? "info"
-              : "secondary"
-          }
-          onClick={() =>
-            onUpdateStatus(order.id, "accepted")
-          }
-        >
-          ✅ Aceptar
-        </WolfButton>
-
-        <WolfButton
-          variant={
-            order.status === "preparing"
-              ? "primary"
-              : "secondary"
-          }
-          onClick={() =>
-            onUpdateStatus(order.id, "preparing")
-          }
-        >
-          👨‍🍳 Preparar
-        </WolfButton>
-
-        <WolfButton
-          variant={
-            order.status === "ready"
-              ? "success"
-              : "secondary"
-          }
-          onClick={() =>
-            onUpdateStatus(order.id, "ready")
-          }
-        >
-          📦 Listo
-        </WolfButton>
-
-        <WolfButton
-          variant={
-            order.status === "out_for_delivery"
-              ? "info"
-              : "secondary"
-          }
-          onClick={() =>
-            onUpdateStatus(
-              order.id,
-              "out_for_delivery"
-            )
-          }
-        >
-          🚚 En camino
-        </WolfButton>
-
-        <WolfButton
-          fullWidth
-          variant="success"
-          onClick={() =>
-            onUpdateStatus(
-              order.id,
-              "completed"
-            )
-          }
-        >
-          ✔ Completar pedido
-        </WolfButton>
-      </div>
-
-      {/* PAGO */}
-
+      {/* TOTAL — cifra grande, igual al valor pagado por el cliente */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          gap: 12,
         }}
       >
-        <div>
-          <div
-            style={{
-              fontSize: 13,
-              color: colors.textSecondary,
-            }}
-          >
-            Estado del pago
-          </div>
-
-          <div
-            style={{
-              fontWeight: 700,
-              marginTop: 4,
-            }}
-          >
-            {order.payment_status}
-          </div>
-        </div>
-
-        <WolfButton
-          variant={
-            order.payment_status === "paid"
-              ? "success"
-              : "primary"
-          }
-          onClick={() =>
-            onUpdatePayment(
-              order.id,
-              "paid"
-            )
-          }
+        <span
+          style={{
+            fontSize: 12,
+            color: colors.textSecondary,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: 0.4,
+          }}
         >
-          💳 Marcar pagado
-        </WolfButton>
+          Total
+        </span>
+
+        <span
+          style={{
+            fontSize: 22,
+            fontWeight: 800,
+          }}
+        >
+          {money(order.total)}
+        </span>
       </div>
 
-      {/* ACTUALIZAR */}
+      {/* ACCIÓN — una sola, con el color del estado (WolfButton) */}
+      {primaryAction ? (
+        <WolfButton
+          type="button"
+          fullWidth
+          variant={getStatusVariant(statusTheme)}
+          onClick={() => onUpdateStatus(order.id, primaryAction.next)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          <primaryAction.icon size={16} />
+          {primaryAction.label}
+        </WolfButton>
+      ) : (
+        <div className="wolf-completed-note">
+          <CheckCheck size={14} />
+          Pedido completado
+        </div>
+      )}
 
-      <WolfButton
-        fullWidth
-        variant="primary"
-        onClick={() =>
-          onViewDetail(order.id)
-        }
-      >
-        🔎 Ver detalle
-      </WolfButton>
-    </article>
+      {/* SECUNDARIAS — discretas */}
+      <div className="wolf-secondary-row">
+        <button
+          type="button"
+          className={`wolf-secondary-action${order.payment_status === "paid" ? " is-positive" : ""}`}
+          onClick={() => onUpdatePayment(order.id, "paid")}
+        >
+          <CreditCard size={13} />
+          {order.payment_status === "paid" ? "Pagado" : "Marcar pagado"}
+        </button>
+
+        <button
+          type="button"
+          className="wolf-secondary-action"
+          onClick={() => onViewDetail(order.id)}
+        >
+          Ver detalle →
+        </button>
+      </div>
+    </motion.article>
   );
 }

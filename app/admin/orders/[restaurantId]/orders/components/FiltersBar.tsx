@@ -1,17 +1,22 @@
 "use client";
 
+import { useState } from "react";
+
 import {
   Search,
-  RotateCw,
+  RefreshCw,
+  Truck,
+  ShoppingBag,
   SlidersHorizontal,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
-
-import WolfButton from "@/components/ui/WolfButton";
 
 import {
   cardStyle,
-  colors,
 } from "./styles";
+
+import "./filters-bar.css";
 
 interface Props {
   search: string;
@@ -34,222 +39,157 @@ interface Props {
 
 export default function FiltersBar({
   search,
-  paymentFilter,
   orderTypeFilter,
   loading,
   onSearchChange,
-  onPaymentFilterChange,
   onOrderTypeFilterChange,
   onRefresh,
 }: Props) {
+
+  const [open, setOpen] = useState(true);
+
   return (
     <section
       style={{
         ...cardStyle,
-
-        padding: 24,
-
-        marginBottom: 26,
-
-        borderRadius: 22,
-
-        border:
-          "1px solid rgba(255,255,255,.05)",
-
+        marginBottom: 20,
+        borderRadius: 20,
+        border: "1px solid rgba(255,255,255,.05)",
         background:
-          "linear-gradient(180deg,#171717,#101010)",
-
+          "linear-gradient(180deg,#161616,#0d0d0d)",
         boxShadow:
-          "0 20px 45px rgba(0,0,0,.35)",
+          "0 12px 30px rgba(0,0,0,.3)",
+        overflow: "hidden",
       }}
     >
-      <div
+      {/* CABECERA */}
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
         style={{
-          display: "grid",
-          gridTemplateColumns:
-            "2fr 1fr 1fr auto",
-          gap: 18,
+          width: "100%",
+          display: "flex",
           alignItems: "center",
+          justifyContent: "space-between",
+          padding: "18px 20px",
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          color: "#fff",
         }}
       >
-        {/* BUSCADOR */}
-
         <div
           style={{
-            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontWeight: 700,
+            fontSize: 16,
           }}
         >
-          <Search
-            size={18}
-            style={{
-              position: "absolute",
-              left: 16,
-              top: "50%",
-              transform:
-                "translateY(-50%)",
-              color:
-                colors.textSecondary,
-            }}
-          />
-
-          <input
-            value={search}
-            onChange={(e) =>
-              onSearchChange(
-                e.target.value
-              )
-            }
-            placeholder="Buscar pedido o cliente..."
-            style={{
-              width: "100%",
-
-              height: 54,
-
-              paddingLeft: 48,
-
-              paddingRight: 16,
-
-              borderRadius: 16,
-
-              border:
-                "1px solid rgba(255,255,255,.06)",
-
-              background:
-                "#1a1a1a",
-
-              color: "#fff",
-
-              outline: "none",
-
-              fontSize: 15,
-
-              transition:
-                ".25s",
-            }}
-          />
+          <SlidersHorizontal size={18} />
+          Filtros
         </div>
 
-        {/* PAGO */}
+        {open ? (
+          <ChevronUp size={18} />
+        ) : (
+          <ChevronDown size={18} />
+        )}
+      </button>
 
-        <select
-          value={paymentFilter}
-          onChange={(e) =>
-            onPaymentFilterChange(
-              e.target.value
-            )
-          }
+      {/* CONTENIDO */}
+      {open && (
+        <div
           style={{
-            height: 54,
-
-            borderRadius: 16,
-
-            border:
-              "1px solid rgba(255,255,255,.06)",
-
-            background:
-              "#1a1a1a",
-
-            color: "#fff",
-
-            padding: "0 16px",
-
-            fontSize: 14,
-
-            cursor: "pointer",
+            padding: "0 20px 18px",
           }}
         >
-          <option value="all">
-            Todos los pagos
-          </option>
+          <div className="wolf-toolbar">
+            {/* FILA 1 */}
+            <div className="wolf-spotlight">
+              <Search size={18} />
 
-          <option value="pending">
-            Pendiente
-          </option>
-
-          <option value="paid">
-            Pagado
-          </option>
-
-          <option value="refunded">
-            Reembolsado
-          </option>
-        </select>
-
-        {/* TIPO */}
-
-        <select
-          value={orderTypeFilter}
-          onChange={(e) =>
-            onOrderTypeFilterChange(
-              e.target.value
-            )
-          }
-          style={{
-            height: 54,
-
-            borderRadius: 16,
-
-            border:
-              "1px solid rgba(255,255,255,.06)",
-
-            background:
-              "#1a1a1a",
-
-            color: "#fff",
-
-            padding: "0 16px",
-
-            fontSize: 14,
-
-            cursor: "pointer",
-          }}
-        >
-          <option value="all">
-            Todos
-          </option>
-
-          <option value="delivery">
-            Delivery
-          </option>
-
-          <option value="pickup">
-            Pickup
-          </option>
-
-          <option value="table">
-            Mesa
-          </option>
-        </select>
-
-        {/* BOTÓN */}
-
-        <WolfButton
-          variant="primary"
-          onClick={onRefresh}
-          disabled={loading}
-          style={{
-            minWidth: 170,
-            height: 54,
-          }}
-        >
-          {loading ? (
-            <>
-              <RotateCw
-                size={18}
-                className="animate-spin"
+              <input
+                value={search}
+                onChange={(e) =>
+                  onSearchChange(
+                    e.target.value
+                  )
+                }
+                placeholder="Buscar por cliente, teléfono o código..."
               />
-              &nbsp;Actualizando...
-            </>
-          ) : (
-            <>
-              <SlidersHorizontal
-                size={18}
-              />
-              &nbsp;Actualizar
-            </>
-          )}
-        </WolfButton>
-      </div>
+            </div>
+
+            {/* FILA 2 */}
+            <div className="wolf-chip-row">
+              <button
+                type="button"
+                className={`wolf-chip${
+                  orderTypeFilter ===
+                  "delivery"
+                    ? " is-active"
+                    : ""
+                }`}
+                onClick={() =>
+                  onOrderTypeFilterChange(
+                    "delivery"
+                  )
+                }
+              >
+                <Truck size={14} />
+                Delivery
+              </button>
+
+              <button
+                type="button"
+                className={`wolf-chip${
+                  orderTypeFilter ===
+                  "pickup"
+                    ? " is-active"
+                    : ""
+                }`}
+                onClick={() =>
+                  onOrderTypeFilterChange(
+                    "pickup"
+                  )
+                }
+              >
+                <ShoppingBag size={14} />
+                Pickup
+              </button>
+
+              <div className="wolf-chip-spacer" />
+
+              <button
+                type="button"
+                className="wolf-ghost-refresh"
+                onClick={onRefresh}
+                disabled={loading}
+                aria-label={
+                  loading
+                    ? "Actualizando..."
+                    : "Actualizar"
+                }
+                title={
+                  loading
+                    ? "Actualizando..."
+                    : "Actualizar"
+                }
+              >
+                <RefreshCw
+                  size={15}
+                  className={
+                    loading
+                      ? "animate-spin"
+                      : ""
+                  }
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -158,6 +158,10 @@ export async function GET() {
         }
       );
     }
+    
+console.log(
+  JSON.stringify(orders?.[0], null, 2)
+);
 
 return NextResponse.json({
   success: true,

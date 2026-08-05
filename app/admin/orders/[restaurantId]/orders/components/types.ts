@@ -48,6 +48,8 @@ export interface Order {
 
   customer_phone: string | null;
 
+  customer_email?: string;
+
   delivery_address: string | null;
 
   payment_method: string;
