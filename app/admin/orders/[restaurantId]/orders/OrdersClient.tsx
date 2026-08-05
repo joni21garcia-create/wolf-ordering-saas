@@ -14,6 +14,7 @@ import { supabase } from "@/lib/supabase/client";
 import OperationsHeader from "./components/OperationsHeader";
 import FiltersBar from "./components/FiltersBar";
 import OrdersBoard from "./components/OrdersBoard";
+import AppShell from "./components/layout/AppShell";
 
 import type {
   DashboardMetrics,
@@ -21,6 +22,8 @@ import type {
   OrdersBoardType,
   Restaurant,
 } from "./components/types";
+
+
 
   interface Props {
     restaurantId: string;
@@ -107,6 +110,10 @@ import type {
       toastMessage,
       setToastMessage,
     ] = useState("");
+
+const [ringBell, setRingBell] =
+  useState(false);
+
 
     /*
     ==========================================================
@@ -373,15 +380,19 @@ import type {
             async (payload) => {
               await refreshOrders();
 
-              if (
-                payload.eventType ===
-                  "INSERT" &&
-                soundEnabled &&
-                audioRef.current
-              ) {
-                try {
-                  await audioRef.current.play();
-                } catch {}
+if (payload.eventType === "INSERT") {
+
+  setRingBell(true);
+
+  setTimeout(() => {
+    setRingBell(false);
+  }, 700);
+
+  if (soundEnabled && audioRef.current) {
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
+  }
+
 
                 setToastTitle(
                   "Nuevo pedido"
@@ -491,54 +502,52 @@ import type {
     );
   };
 
-/*
-==========================================================
-RENDER
-==========================================================
-*/
-
 return (
-  <>
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "#090909",
-        padding: 24,
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1900,
-          margin: "0 auto",
-        }}
-      >
-        <OperationsHeader
-          restaurant={restaurant}
-          connected={connected}
-        />
+  <AppShell>
+<div
+  style={{
+    width: "100%",
+    padding: 0,
+    margin: 0,
+  }}
+>
+<OperationsHeader
+  restaurant={restaurant}
+  refreshing={loading}
+  connectionStatus={
+    connected
+      ? "online"
+      : "offline"
+  }
+  notificationCount={board.pending.length}
+  ringBell={ringBell}
+  onRefresh={refreshOrders}
+  onOpenNotifications={() => {
+    setSelectedMobileTab("pending");
+  }}
+/>
 
-        <FiltersBar
-          search={search}
-          paymentFilter={paymentFilter}
-          orderTypeFilter={orderTypeFilter}
-          loading={loading}
-          onSearchChange={setSearch}
-          onPaymentFilterChange={setPaymentFilter}
-          onOrderTypeFilterChange={setOrderTypeFilter}
-          onRefresh={refreshOrders}
-        />
+      <FiltersBar
+        search={search}
+        paymentFilter={paymentFilter}
+        orderTypeFilter={orderTypeFilter}
+        loading={loading}
+        onSearchChange={setSearch}
+        onPaymentFilterChange={setPaymentFilter}
+        onOrderTypeFilterChange={setOrderTypeFilter}
+        onRefresh={refreshOrders}
+      />
 
-        <OrdersBoard
-          board={filteredBoard}
-          mobileTab={selectedMobileTab}
-          deliverySettings={deliverySettings}
-          onRefresh={refreshOrders}
-          onViewDetail={handleViewDetail}
-          onUpdateStatus={updateStatus}
-          onUpdatePayment={updatePayment}
-        />
-      </div>
-    </main>
-  </>
+      <OrdersBoard
+        board={filteredBoard}
+        mobileTab={selectedMobileTab}
+        deliverySettings={deliverySettings}
+        onRefresh={refreshOrders}
+        onViewDetail={handleViewDetail}
+        onUpdateStatus={updateStatus}
+        onUpdatePayment={updatePayment}
+      />
+    </div>
+  </AppShell>
 );
 }

@@ -1,9 +1,9 @@
 /* ==========================================================
-   Wolf Ordering - Shared Animations
+    Wolf Ordering - Shared Animations
 ========================================================== */
 
 /* ===========================
-   Connected LED
+    Connected LED
 =========================== */
 
 @keyframes wolf-pulse {
@@ -31,211 +31,244 @@
 }
 
 /* ===========================
-   Refresh
+    Refresh
 =========================== */
 
 @keyframes wolf-spin {
-
   from{
-    transform:rotate(0deg);
+    transform: rotate(0deg);
   }
-
   to{
-    transform:rotate(360deg);
+    transform: rotate(360deg);
   }
-
 }
 
 @keyframes wolf-refresh-press{
-
   0%{
-    transform:scale(1);
+    transform: scale(1);
   }
-
   50%{
-    transform:scale(.88);
+    transform: scale(.88);
   }
-
   100%{
-    transform:scale(1);
+    transform: scale(1);
   }
-
 }
 
 .wolf-refresh-button{
-
   transition:
     transform .18s,
     box-shadow .25s;
-
 }
 
 .wolf-refresh-button:active{
-
   animation:
     wolf-refresh-press .18s;
-
 }
 
 .wolf-refresh-button:hover{
+  transform:
+    translateY(-2px)
+    scale(1.05);
 
   box-shadow:
     0 0 18px rgba(249,115,22,.35);
+}
 
+.wolf-refresh-button:hover svg:not(.is-spinning){
+    transform: rotate(-18deg);
+    transition: .25s;
 }
 
 .wolf-refresh-icon.is-spinning{
-
   animation:
     wolf-spin .65s linear infinite;
-
 }
 
 /* ===========================
-   Bell
+    Bell
 =========================== */
 
 @keyframes wolf-ring{
-
   0%,100%{
-    transform:rotate(0);
+    transform: rotate(0);
   }
-
   10%{
-    transform:rotate(-18deg);
+    transform: rotate(-18deg);
   }
-
   20%{
-    transform:rotate(18deg);
+    transform: rotate(18deg);
   }
-
   30%{
-    transform:rotate(-12deg);
+    transform: rotate(-12deg);
   }
-
   40%{
-    transform:rotate(12deg);
+    transform: rotate(12deg);
   }
-
   50%{
-    transform:rotate(0);
+    transform: rotate(0);
   }
-
 }
 
 @keyframes wolf-badge-pop{
-
   0%{
-    transform:scale(1);
+    transform: scale(1);
   }
-
   40%{
-    transform:scale(1.25);
+    transform: scale(1.25);
   }
-
   100%{
-    transform:scale(1);
+    transform: scale(1);
   }
-
 }
 
 .wolf-bell-button{
-
-  position:relative;
+  position: relative;
 
   transition:
     transform .18s,
+    background .25s,
     box-shadow .25s;
-
 }
 
 .wolf-bell-button:hover{
+  transform: translateY(-2px);
+  background: rgba(249,115,22,.10);
 
   box-shadow:
     0 0 18px rgba(249,115,22,.30);
-
 }
 
 .wolf-bell-button:active{
-
-  transform:scale(.92);
-
+  transform: scale(.92);
 }
 
-.wolf-bell-button.has-alert .wolf-bell-icon{
-
-  animation:
-    wolf-ring 4s ease infinite;
-
-  transform-origin:top center;
-
+.wolf-bell-button.ringing .wolf-bell-icon{
+  animation: wolf-ring .7s ease;
+  transform-origin: top center;
 }
 
-.wolf-bell-button.has-alert span{
+.wolf-bell-button span {
+  transition: transform .2s ease;
+}
 
-  animation:
-    wolf-badge-pop 1.4s infinite;
-
+.wolf-bell-button.badge-pop span,
+.wolf-bell-button .badge-pop {
+  animation: wolf-badge-pop .35s ease;
 }
 
 /* ===========================
-   Sound
+    Sound
 =========================== */
 
 @keyframes wolf-sound-pop{
-
   0%{
-
-    transform:scale(1);
-
+    transform: scale(1);
   }
-
   40%{
-
-    transform:scale(1.18);
-
+    transform: scale(1.18);
   }
-
   100%{
-
-    transform:scale(1);
-
+    transform: scale(1);
   }
-
 }
 
 .wolf-sound-button{
-
   transition:
     transform .18s,
     background .25s,
     box-shadow .25s,
     color .25s;
-
 }
 
 .wolf-sound-button:hover{
-
-  transform:translateY(-1px);
-
+  transform: translateY(-1px);
 }
 
 .wolf-sound-button:active{
-
-  transform:scale(.90);
-
+  transform: scale(.90);
 }
 
 .wolf-sound-button.is-on{
-
   box-shadow:
     0 0 18px rgba(249,115,22,.35);
-
 }
 
 .wolf-sound-button.is-on svg{
-
   animation:
     wolf-sound-pop .28s;
+}
 
+/* ===========================
+    Wolf Live
+=========================== */
+
+.wolf-live{
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,.05);
+
+  transition:
+    transform .2s,
+    box-shadow .25s,
+    background .25s;
+}
+
+.wolf-live:hover{
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 0 16px rgba(34,197,94,.18);
+}
+
+.wolf-live.syncing{
+  background: rgba(59,130,246,.12);
+  color: #3B82F6;
+}
+
+.wolf-live.syncing .wolf-dot-connected{
+  background: #3B82F6;
+  animation: wolf-pulse 1.4s infinite;
+}
+
+.wolf-live.offline{
+  background: rgba(239,68,68,.12);
+  color: #EF4444;
+}
+
+.wolf-live.offline .wolf-dot-connected{
+  background: #EF4444;
+  animation: none;
+}
+
+/* ===========================
+    Fade In (Order Cards)
+=========================== */
+
+@keyframes wolf-fade-in{
+  from{
+    opacity: 0;
+    transform:
+      translateY(-6px)
+      scale(.95);
+  }
+  to{
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+.wolf-order-card,
+.order-card{
+    will-change:
+        transform,
+        opacity;
+
+    animation:
+        wolf-fade-in .25s ease;
+}
+
+html{
+    scroll-behavior: smooth;
 }
