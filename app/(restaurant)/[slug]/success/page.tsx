@@ -201,9 +201,6 @@ const estimatedTime =
       } min`;
 
   if (!orderData) {
-    const customerSubtotal =
-  Number(orderData.subtotal) +
-  Number(orderData.commission_amount ?? 0);
 
      return (
       <main
@@ -223,6 +220,10 @@ const estimatedTime =
       </main>
     );
   }
+
+ const customerSubtotal =
+  Number(orderData.subtotal) +
+  Number(orderData.commission_amount ?? 0);
 
   return (
     <main
