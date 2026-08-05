@@ -607,20 +607,57 @@ const estimatedTime =
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    color: "#f97316",
-                    fontWeight: "700",
-                    fontSize: "14.5px",
-                    flexShrink: 0
-                  }}
-                >
-                  ${Number(item.subtotal).toFixed(2)}
-                </div>
+
               </div>
             ))}
           </div>
         )}
+
+<div
+  style={{
+    marginTop: 24,
+    paddingTop: 18,
+    borderTop: "1px solid rgba(255,255,255,.08)",
+    display: "grid",
+    gap: 10,
+  }}
+>
+  <SummaryRow
+    label="Productos"
+    value={Number(orderData.subtotal)}
+  />
+
+  {Number(orderData.commission_amount) > 0 && (
+    <SummaryRow
+      label="Comisión"
+      value={Number(orderData.commission_amount)}
+    />
+  )}
+
+  {Number(orderData.delivery_fee) > 0 && (
+    <SummaryRow
+      label="Delivery"
+      value={Number(orderData.delivery_fee)}
+    />
+  )}
+
+  <div
+    style={{
+      borderTop:
+        "1px solid rgba(255,255,255,.08)",
+      marginTop: 6,
+      paddingTop: 12,
+    }}
+  >
+    <SummaryRow
+      label="TOTAL"
+      value={Number(orderData.total)}
+      strong
+    />
+  </div>
+</div>
+
+
 
         {/* ACCIONES GLOBALES */}
         <div
@@ -806,6 +843,46 @@ const estimatedTime =
         </div>
       </div>
     </main>
+  );
+}
+
+function SummaryRow({
+  label,
+  value,
+  strong = false,
+}: {
+  label: string;
+  value: number;
+  strong?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}
+    >
+      <span
+        style={{
+          color: strong ? "#fff" : "#A1A1AA",
+          fontWeight: strong ? 700 : 500,
+          fontSize: strong ? 15 : 14,
+        }}
+      >
+        {label}
+      </span>
+
+      <span
+        style={{
+          color: "#fff",
+          fontWeight: strong ? 800 : 600,
+          fontSize: strong ? 18 : 15,
+        }}
+      >
+        ${value.toFixed(2)}
+      </span>
+    </div>
   );
 }
 

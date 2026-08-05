@@ -292,21 +292,40 @@ INFORMACIÓN DEL PEDIDO
     value={order.customer_name}
   />
 
-  <Section
-    label="💰 Total"
-    value={`$${Number(order.total).toFixed(2)}`}
-  />
+<Section
+  label="🛍️ Productos"
+  value={`$${Number(order.subtotal).toFixed(2)}`}
+/>
 
+{Number(order.commission_amount) > 0 && (
   <Section
-    label="📦 Tipo de pedido"
-    value={orderType}
+    label="🟠 Comisión"
+    value={`$${Number(order.commission_amount).toFixed(2)}`}
   />
+)}
 
+{Number(order.delivery_fee) > 0 && (
   <Section
-    label="💳 Estado del pago"
-    value={paymentStatus}
-    last
+    label="🚚 Delivery"
+    value={`$${Number(order.delivery_fee).toFixed(2)}`}
   />
+)}
+
+<Section
+  label="💰 Total"
+  value={`$${Number(order.total).toFixed(2)}`}
+/>
+
+<Section
+  label="📦 Tipo de pedido"
+  value={orderType}
+/>
+
+<Section
+  label="💳 Estado del pago"
+  value={paymentStatus}
+  last
+/>
 
 </div>
 
