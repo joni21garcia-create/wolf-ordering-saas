@@ -73,6 +73,10 @@ export default function TrackingInfo({
   ==========================================================
   */
 
+const customerSubtotal =
+  Number(order.subtotal) +
+  Number(order.commission_amount ?? 0);
+
   return (
     <>
       <style>{`
@@ -287,22 +291,15 @@ INFORMACIÓN DEL PEDIDO
   }}
 >
 
-  <Section
-    label="👤 Cliente"
-    value={order.customer_name}
-  />
+<Section
+  label="👤 Cliente"
+  value={order.customer_name}
+/>
 
 <Section
   label="🛍️ Productos"
-  value={`$${Number(order.subtotal).toFixed(2)}`}
+  value={`$${customerSubtotal.toFixed(2)}`}
 />
-
-{Number(order.commission_amount) > 0 && (
-  <Section
-    label="🟠 Comisión"
-    value={`$${Number(order.commission_amount).toFixed(2)}`}
-  />
-)}
 
 {Number(order.delivery_fee) > 0 && (
   <Section

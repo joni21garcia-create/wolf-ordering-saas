@@ -201,7 +201,11 @@ const estimatedTime =
       } min`;
 
   if (!orderData) {
-    return (
+    const customerSubtotal =
+  Number(orderData.subtotal) +
+  Number(orderData.commission_amount ?? 0);
+
+     return (
       <main
         style={{
           minHeight: "100vh",
@@ -622,17 +626,10 @@ const estimatedTime =
     gap: 10,
   }}
 >
-  <SummaryRow
-    label="Productos"
-    value={Number(orderData.subtotal)}
-  />
-
-  {Number(orderData.commission_amount) > 0 && (
-    <SummaryRow
-      label="Comisión"
-      value={Number(orderData.commission_amount)}
-    />
-  )}
+<SummaryRow
+  label="Productos"
+  value={customerSubtotal}
+/>
 
   {Number(orderData.delivery_fee) > 0 && (
     <SummaryRow
