@@ -84,7 +84,7 @@ const Icon =
 
     minWidth: 0,
 
-    maxWidth: "100%",
+    maxWidth: 380,
 
     maxHeight: "calc(100vh - 250px)",
 

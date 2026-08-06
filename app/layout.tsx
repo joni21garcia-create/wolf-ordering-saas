@@ -43,16 +43,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   suppressHydrationWarning
   data-scroll-behavior="smooth"
 >
-      <body
+<body
   className="
     bg-[#050505]
     text-white
     antialiased
-    overflow-x-hidden
     overscroll-none
-    min-h-dvh
-    selection:bg-orange-500/30
   "
+  style={{
+    minHeight: "100dvh",
+    overflow: "hidden",
+  }}
 >
         
         {/* Capas decorativas fijas con pointer-events-none */}
@@ -80,14 +81,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <InstallProvider>
       <UpdateBanner />
 
-      <main
-        className="
-          relative
-          min-h-dvh
-          w-full
-          overflow-x-hidden
-        "
-      >
+
+<main
+  style={{
+    position: "relative",
+    width: "100%",
+    minHeight: "100dvh",
+    overflowX: "hidden",
+    overflowY: "auto",
+
+    paddingTop: "env(safe-area-inset-top)",
+    paddingBottom: "env(safe-area-inset-bottom)",
+
+    WebkitOverflowScrolling: "touch",
+  }}
+>
+
         {children}
       </main>
 

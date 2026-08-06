@@ -25,15 +25,17 @@ function Layout({ children }: Props) {
     >
       <Sidebar />
 
-      <main
-        style={{
-          flex: 1,
-          overflow: "auto",
-          padding: 24,
-          transition: "all .25s ease",
-          marginLeft: collapsed ? -12 : 0,
-        }}
-      >
+<main
+  style={{
+    flex: 1,
+    overflowY: "auto",
+    overflowX: "hidden",
+    padding: 24,
+    transition: "all .25s ease",
+    marginLeft: collapsed ? -12 : 0,
+    WebkitOverflowScrolling: "touch",
+  }}
+>
         {children}
       </main>
     </div>
