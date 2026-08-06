@@ -23,6 +23,15 @@ export async function updateManagerPWAAssets({
     return (icon?.url && icon.url.startsWith('http')) ? icon.url : null;
   };
 
+  console.log("========== ICONS RECIBIDOS ==========");
+
+console.table(
+  icons.map((icon) => ({
+    filename: icon.filename,
+    url: icon.url,
+  }))
+);
+
   const payload = {
     app_logo: (appLogo && appLogo.startsWith('http')) ? appLogo : null,
     icon_72_url: getUrl("icon-72.png"),

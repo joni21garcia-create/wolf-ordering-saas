@@ -34,16 +34,18 @@ export function useManagerLogoUpload() {
       setProgress(80);
       const json: UploadResult = await response.json();
 
-      if (json.success && json.logo?.url) {
-        // ✅ CORRECCIÓN: Eliminamos refreshSettings() para evitar el bucle infinito.
-        // La UI debería reaccionar al cambio de estado localmente o mediante 
-        // el evento que disparó la subida.
-        
-        setProgress(100);
-        return json;
-      } else {
-        return { success: false, error: "Error: No se recibió la URL de la imagen." };
-      }
+if (json.success) {
+
+  setProgress(100);
+
+  return json;
+
+}
+
+return {
+  success: false,
+  error: json.error ?? "Error desconocido."
+};
 
     } catch (err) {
       console.error("Fallo crítico en uploadLogo:", err);

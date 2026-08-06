@@ -615,15 +615,15 @@ export default function PWASettingsForm({
 
   ) : (
 
-    <ManagerLogoUploader
-      value={managerSettings.app_logo ?? null}
-      onChange={(url) =>
-       setManagerSettings((prev: any) => ({
-          ...prev,
-          app_logo: url,
-        }))
-      }
-    />
+<ManagerLogoUploader
+  value={managerSettings.app_logo ?? null}
+  onChange={(newSettings) =>
+    setManagerSettings((prev: any) => ({
+      ...prev,
+      ...newSettings,
+    }))
+  }
+/>
 
   )}
 

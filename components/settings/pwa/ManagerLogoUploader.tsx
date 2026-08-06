@@ -1,12 +1,12 @@
 "use client";
-
+import { RestaurantPWASettings, UploadResult } from "@/types/pwa";
 import { useRef } from "react";
 import { useManagerLogoUpload } from "@/hooks/useManagerLogoUpload";
 
 interface Props {
   value: string | null;
   version?: string;
-  onChange: (url: string) => void;
+  onChange: (settings: any) => void;
 }
 
 export default function ManagerLogoUploader({
@@ -27,11 +27,11 @@ const {
   async function handleFile(file: File) {
     const result = await uploadLogo(file);
 
-    if (
+if (
   result.success &&
-  result.logo?.url
+  result.settings
 ) {
-  onChange(result.logo.url);
+  onChange(result.settings);
 } else {
   alert(
     result.error ??
@@ -172,5 +172,3 @@ src={`${value}?t=${Date.now()}`}
   </div>
 );
 }
-
-

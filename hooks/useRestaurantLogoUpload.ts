@@ -24,14 +24,12 @@ export function useRestaurantLogoUpload(restaurantId: string) {
       setUploading(true);
       setProgress(10);
 
-      if (!file.type.startsWith("image/")) {
-        return {
-          success: false,
-          error: "Debe ser una imagen.",
-          url: "", // Requerido si UploadResult lo exige
-          path: ""
-        };
-      }
+if (!file.type.startsWith("image/")) {
+  return {
+    success: false,
+    error: "Debe ser una imagen.",
+  };
+}
 
       setProgress(25);
 
@@ -54,12 +52,12 @@ export function useRestaurantLogoUpload(restaurantId: string) {
       return json;
     } catch (error) {
       console.error(error);
-      return {
-        success: false,
-        error: "Error subiendo logo.",
-        url: "",
-        path: ""
-      };
+
+return {
+  success: false,
+  error: "Error subiendo logo.",
+};
+
     } finally {
       setUploading(false);
       setTimeout(() => {
