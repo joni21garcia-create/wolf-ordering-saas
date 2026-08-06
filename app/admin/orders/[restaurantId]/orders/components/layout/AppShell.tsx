@@ -19,7 +19,7 @@ function Layout({ children }: Props) {
     <div
       style={{
         display: "flex",
-        minHeight: "100vh",
+        minHeight: "100dvh",
         background: "#090909",
       }}
     >

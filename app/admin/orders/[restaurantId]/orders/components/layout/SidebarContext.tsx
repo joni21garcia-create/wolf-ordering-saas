@@ -24,8 +24,8 @@ export function SidebarProvider({
 }: {
   children: ReactNode;
 }) {
-  const [collapsed, setCollapsed] =
-    useState(false);
+const [collapsed, setCollapsed] =
+  useState(true);
 
   const toggle = useCallback(() => {
     setCollapsed((v) => !v);

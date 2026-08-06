@@ -10,6 +10,7 @@ import {
   SlidersHorizontal,
   ChevronDown,
   ChevronUp,
+  LayoutGrid,
 } from "lucide-react";
 
 import {
@@ -122,6 +123,21 @@ export default function FiltersBar({
             </div>
 
             {/* FILA 2 */}
+<button
+  type="button"
+  className={`wolf-chip${
+    orderTypeFilter === "all"
+      ? " is-active"
+      : ""
+  }`}
+onClick={() =>
+  onOrderTypeFilterChange("all")
+}
+>
+  <LayoutGrid size={14} />
+  Todos
+</button>
+
             <div className="wolf-chip-row">
               <button
                 type="button"

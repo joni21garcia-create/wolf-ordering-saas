@@ -1,5 +1,6 @@
 "use client";
 
+
 import {
   ChevronLeft,
   ChevronRight,
@@ -11,36 +12,54 @@ import {
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import {
+  useParams,
+  usePathname,
+} from "next/navigation";
 
 import SidebarItem from "./SidebarItem";
 import { useSidebar } from "./SidebarContext";
 
-const MENU = [
-  {
-    label: "Pedidos",
-    href: "/orders",
-    icon: ShoppingBag,
-  },
-  {
-    label: "Ventas",
-    href: "/sales",
-    icon: BarChart3,
-  },
-  {
-    label: "Restaurante",
-    href: "/restaurant",
-    icon: Store,
-  },
-  {
-    label: "Configuración",
-    href: "/settings",
-    icon: Settings,
-  },
-];
+
 
 export default function Sidebar() {
   const pathname = usePathname();
+
+  const params = useParams();
+
+const restaurantId =
+  typeof params.restaurantId === "string"
+    ? params.restaurantId
+    : "";
+
+
+  const MENU = [
+
+  {
+    label: "Pedidos",
+    href: `/admin/orders/${restaurantId}/orders`,
+    icon: ShoppingBag,
+  },
+
+  {
+    label: "Ventas",
+    href: `/admin/sales/${restaurantId}`,
+    icon: BarChart3,
+  },
+
+  {
+    label: "Restaurante",
+    href: `/admin/restaurant/${restaurantId}`,
+    icon: Store,
+  },
+
+  {
+    label: "Configuración",
+    href: `/admin/settings/${restaurantId}`,
+    icon: Settings,
+  },
+
+];
 
   const {
     collapsed,
@@ -264,7 +283,7 @@ export default function Sidebar() {
             <SidebarItem
               icon={item.icon}
               label={item.label}
-              active={pathname.includes(item.href)}
+              active={pathname.startsWith(item.href)}
               collapsed={collapsed}
             />
           </Link>
