@@ -32,10 +32,15 @@ export const containerStyle: CSSProperties = {
 };
 
 export const cardStyle: CSSProperties = {
-  background: colors.surface,
-  border: `1px solid ${colors.border}`,
-  borderRadius: 22,
-  boxShadow: colors.shadow,
+
+  background: "transparent",
+
+  border: "none",
+
+  borderRadius: 0,
+
+  boxShadow: "none",
+
 };
 
 export const columnStyle: CSSProperties = {

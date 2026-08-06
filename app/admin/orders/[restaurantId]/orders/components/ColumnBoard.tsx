@@ -104,7 +104,7 @@ const Icon =
     display: "flex",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    background: "rgba(255,255,255,.02)",
+    background: "#111111",
   }}
 >
   {/* Izquierda */}
