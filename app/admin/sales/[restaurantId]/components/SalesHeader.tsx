@@ -57,7 +57,7 @@ flex-wrap:wrap;
 
 .wolf-sales-title{
 
-font-size:38px;
+font-size:32px;
 
 font-weight:900;
 
@@ -223,7 +223,7 @@ align-items:stretch;
 
 .wolf-sales-title{
 
-font-size:30px;
+font-size:22px;
 
 }
 
