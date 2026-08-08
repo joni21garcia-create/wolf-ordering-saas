@@ -223,9 +223,7 @@ align-items:stretch;
 
 .wolf-sales-title{
 
-font-size:22px;
-
-}
+font-size:22px;padding-left:8px;}
 
 .wolf-segment{
 
