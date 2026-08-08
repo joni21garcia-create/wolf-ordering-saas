@@ -29,7 +29,8 @@
 ========================================================== */
 
 html {
-  height: 100%;
+  min-height: 100%;
+  width: 100%;
 
   scroll-behavior: smooth;
 
@@ -38,10 +39,11 @@ html {
   overscroll-behavior-y: auto;
 
   scrollbar-width: none;
-
   -ms-overflow-style: none;
 
   color-scheme: dark;
+
+  background: #050505;
 }
 
 /* ==========================================================
@@ -49,16 +51,10 @@ html {
 ========================================================== */
 
 body {
-
   min-height: 100dvh;
-
-  height: 100%;
-
+  width: 100%;
   margin: 0;
-
-  padding-top: env(safe-area-inset-top);
-
-  padding-bottom: env(safe-area-inset-bottom);
+  padding: 0;
 
   color: var(--wolf-text);
 
@@ -75,22 +71,19 @@ body {
   background:
     radial-gradient(
       circle at top right,
-      rgba(249,115,22,.20),
+      rgba(249, 115, 22, .20),
       transparent 25%
     ),
-
     radial-gradient(
       circle at bottom left,
-      rgba(249,115,22,.15),
+      rgba(249, 115, 22, .15),
       transparent 20%
     ),
-
     radial-gradient(
       circle at center,
-      rgba(249,115,22,.05),
+      rgba(249, 115, 22, .05),
       transparent 45%
     ),
-
     var(--wolf-dark);
 }
 
