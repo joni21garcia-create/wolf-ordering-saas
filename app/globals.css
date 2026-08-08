@@ -66,18 +66,17 @@ html::-webkit-scrollbar {
 body {
   min-height: 100dvh;
   width: 100%;
-
   margin: 0;
   padding: 0;
 
-  position: relative;
-
   color: var(--wolf-text);
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  /* QUITAR touch-action: pan-y */
+
+  overscroll-behavior-x: none;
 
   background:
     radial-gradient(
@@ -96,21 +95,6 @@ body {
       transparent 45%
     ),
     var(--wolf-dark);
-
-  overflow-x: hidden;
-  overflow-y: auto;
-
-  /*
-   * Android / PWA:
-   * permite el gesto vertical normal
-   * sin convertir el body en un scroll
-   * de dos dedos.
-   */
-  touch-action: pan-y;
-
-  overscroll-behavior-x: none;
-
-  -webkit-overflow-scrolling: touch;
 }
 
 
