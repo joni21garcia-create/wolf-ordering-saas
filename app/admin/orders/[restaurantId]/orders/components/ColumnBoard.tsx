@@ -135,38 +135,50 @@ export default function ColumnBoard({
 
   return (
 
-    <WolfCard
+<WolfCard
+  variant="glass"
+  padding="none"
+  style={{
+    /*
+     * La columna ya no intenta ocupar un ancho
+     * arbitrario ni limitar al board.
+     *
+     * El ancho lo controla el viewport del board.
+     */
+    flex:
+      "0 0 clamp(292px, 82vw, 380px)",
 
-      variant="glass"
+    width:
+      "clamp(292px, 82vw, 380px)",
 
-      padding="none"
+    minWidth:
+      "292px",
 
-      style={{
+    maxWidth:
+      "380px",
 
-        width: "100%",
+    height:
+      "calc(100dvh - 220px)",
 
-        maxWidth: 380,
+    display:
+      "flex",
 
-        minWidth: 320,
+    flexDirection:
+      "column",
 
-        height:
-          "calc(100dvh - 220px)",
+    overflow:
+      "hidden",
 
-        display: "flex",
+    boxSizing:
+      "border-box",
 
-        flexDirection: "column",
+    border:
+      "1px solid rgba(255,255,255,.05)",
 
-        overflow: "hidden",
-
-        border:
-          "1px solid rgba(255,255,255,.05)",
-
-        backdropFilter:
-          "blur(18px)",
-
-      }}
-
-    >
+    backdropFilter:
+      "blur(18px)",
+  }}
+>
 
       <div
 

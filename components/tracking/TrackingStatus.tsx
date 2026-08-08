@@ -608,7 +608,7 @@ export default function TrackingStatus({
                 fontSize: 14,
               }}
             >
-              Gracias por elegir Wolf Ordering.
+              Gracias por elegirnos. ¡Esperamos verte pronto!
             </div>
           </div>
 
