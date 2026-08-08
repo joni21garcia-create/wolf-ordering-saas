@@ -33,7 +33,9 @@ style={{
   cursor: "pointer",
   transition: "all .25s ease",
 
-  background: "transparent",
+  background: active
+  ? "rgba(249,115,22,.10)"
+  : "transparent",
 
   borderLeft: active
     ? "3px solid #F97316"

@@ -572,7 +572,7 @@ return (
             ? `${bestProduct.name} lidera las ventas`
             : "Sin productos vendidos"
         }
-        defaultOpen
+
       >
 
         <TopProducts
