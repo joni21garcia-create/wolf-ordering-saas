@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+
 import "./globals.css";
 
 import ParticlesBackground from "@/components/ParticlesBackground";
@@ -8,100 +9,87 @@ import UpdateBanner from "@/components/pwa/UpdateBanner";
 import InstallProvider from "@/components/pwa/InstallProvider";
 import AppSplash from "@/components/splash/AppSplash";
 
-
-
 export const viewport: Viewport = {
   themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1, // Previene zoom accidental
+  maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover", // Muy importante para pantallas con notch
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://app.wolfordering.com"),
   title: "Wolf Ordering",
-  description: "Sistema SaaS de pedidos digitales para restaurantes",
-  // ❌ SE ELIMINÓ LA PROPIEDAD "manifest" DE AQUÍ
-  // Esto evita que el login y el restaurante intenten cargar el manifest del manager por defecto.
+  description:
+    "Sistema SaaS de pedidos digitales para restaurantes",
+
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Wolf Ordering",
   },
+
   other: {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
-  lang="es"
-  suppressHydrationWarning
-  data-scroll-behavior="smooth"
->
+      lang="es"
+      suppressHydrationWarning
+      data-scroll-behavior="smooth"
+    >
       <body
         className="
           bg-[#050505]
           text-white
           antialiased
           overflow-x-hidden
-          min-h-dvh
         "
       >
-        
-        {/* Capas decorativas fijas con pointer-events-none */}
+        {/* Capas decorativas */}
         <div
-  className="
-    fixed
-    inset-0
-    pointer-events-none
-    overflow-hidden
-    -z-10
-  "
->
+          className="
+            fixed
+            inset-0
+            pointer-events-none
+            overflow-hidden
+            -z-10
+          "
+        >
           <div className="wolf-orb-top" />
           <div className="wolf-orb-bottom" />
           <div className="stripe-lines" />
           <ParticlesBackground />
         </div>
 
- <SessionProvider>
-  <AppSplash>
-    
-    
-    <ServiceWorkerProvider />
+        <SessionProvider>
+          <AppSplash>
+            <ServiceWorkerProvider />
 
-    <InstallProvider>
-      <UpdateBanner />
+            <InstallProvider>
+              <UpdateBanner />
 
-
-
-          <main
-            style={{
-              position: "relative",
-              width: "100%",
-              minHeight: "100dvh",
-
-              overflowY: "auto",
-              overflowX: "hidden",
-
-              paddingTop: "env(safe-area-inset-top)",
-              paddingBottom: "env(safe-area-inset-bottom)",
-
-              WebkitOverflowScrolling: "touch",
-            }}
-          >
-
-        {children}
-      </main>
-
-    </InstallProvider>
-  </AppSplash>
-</SessionProvider>
+              <main
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  minHeight: "100dvh",
+                }}
+              >
+                {children}
+              </main>
+            </InstallProvider>
+          </AppSplash>
+        </SessionProvider>
       </body>
     </html>
   );
