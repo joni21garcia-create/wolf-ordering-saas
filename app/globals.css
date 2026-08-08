@@ -1069,6 +1069,20 @@ a:focus-visible{
     animation-delay: .4s;
 }
 
+/* ============================================================
+   Wolf Scroll Area
+   ============================================================ */
+
+.wolf-scroll-area {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.wolf-scroll-area::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
 
 /* ==========================================================
    FIN DEL ARCHIVO

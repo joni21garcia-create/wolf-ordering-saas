@@ -6,6 +6,16 @@ import type {
   ReactNode,
 } from "react";
 
+import {
+  WolfColors,
+  WolfRadius,
+  WolfShadows,
+  WolfSizes,
+  WolfSpacing,
+  WolfTypography,
+  WolfTransitions,
+} from "@/lib/wolf-ui/core";
+
 export type WolfButtonVariant =
   | "primary"
   | "secondary"
@@ -20,8 +30,7 @@ export type WolfButtonSize =
 
 export interface WolfButtonProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {
-
-  children: ReactNode;
+  children?: ReactNode;
 
   variant?: WolfButtonVariant;
 
@@ -34,94 +43,76 @@ export interface WolfButtonProps
   leftIcon?: ReactNode;
 
   rightIcon?: ReactNode;
-
 }
 
 const variants: Record<
   WolfButtonVariant,
   CSSProperties
 > = {
-
   primary: {
-
-    background:
-      "linear-gradient(135deg,#F97316,#EA580C)",
+    background: `linear-gradient(135deg, ${WolfColors.primary}, ${WolfColors.primaryHover})`,
 
     color: "#fff",
 
     border: "none",
 
-    boxShadow:
-      "0 12px 28px rgba(249,115,22,.25)",
-
+    boxShadow: WolfShadows.glowOrange,
   },
 
   secondary: {
+    background: WolfColors.card,
 
-    background: "#181818",
+    color: WolfColors.text,
 
-    color: "#fff",
-
-    border:
-      "1px solid rgba(255,255,255,.08)",
-
+    border: `1px solid ${WolfColors.borderStrong}`,
   },
 
   ghost: {
-
     background: "transparent",
 
-    color: "#fff",
+    color: WolfColors.text,
 
-    border:
-      "1px solid transparent",
-
+    border: "1px solid transparent",
   },
 
   danger: {
-
-    background: "#DC2626",
+    background: WolfColors.danger,
 
     color: "#fff",
 
     border: "none",
 
+    boxShadow: WolfShadows.md,
   },
 
   success: {
-
-    background: "#16A34A",
+    background: WolfColors.success,
 
     color: "#fff",
 
     border: "none",
 
+    boxShadow: WolfShadows.md,
   },
-
 };
 
 const heights = {
+  sm: WolfSizes.button.sm,
 
-  sm: 38,
+  md: WolfSizes.button.md,
 
-  md: 46,
-
-  lg: 56,
-
-} as const;
+  lg: WolfSizes.button.lg,
+};
 
 const fontSizes = {
+  sm: WolfTypography.size.md,
 
-  sm: 14,
+  md: WolfTypography.size.md,
 
-  md: 15,
-
-  lg: 16,
-
-} as const;
+  lg: WolfTypography.size.lg,
+};
 
 export default function WolfButton({
-
   children,
 
   variant = "primary",
@@ -141,159 +132,133 @@ export default function WolfButton({
   style,
 
   ...props
-
 }: WolfButtonProps) {
-
   const isDisabled =
-
     disabled || loading;
 
   return (
+    <button
+      {...props}
+      disabled={isDisabled}
+      style={{
+        display: "inline-flex",
 
-<button
+        alignItems: "center",
 
-{...props}
+        justifyContent: "center",
 
-disabled={isDisabled}
+        gap: WolfSpacing.sm,
 
-style={{
+        height: heights[size],
 
-display:"inline-flex",
+        padding: `0 ${WolfSpacing.xl}px`,
 
-alignItems:"center",
+        borderRadius: WolfRadius.lg,
 
-justifyContent:"center",
+        fontFamily:
+          WolfTypography.fontFamily,
 
-gap:10,
+        fontSize: fontSizes[size],
 
-height:heights[size],
+        fontWeight:
+          WolfTypography.weight.bold,
 
-padding:"0 20px",
+        cursor: isDisabled
+          ? "not-allowed"
+          : "pointer",
 
-borderRadius:16,
+        transition:
+          WolfTransitions.default,
 
-fontSize:fontSizes[size],
+        opacity: isDisabled
+          ? 0.6
+          : 1,
 
-fontWeight:700,
+        width: fullWidth
+          ? "100%"
+          : undefined,
 
-cursor:isDisabled
+        userSelect: "none",
 
-? "not-allowed"
+        outline: "none",
 
-: "pointer",
+        willChange:
+          "transform, box-shadow",
 
-transition:
+        ...variants[variant],
 
-"all .25s cubic-bezier(.22,.61,.36,1)",
+        ...style,
+      }}
+      onMouseEnter={(e) => {
+        if (isDisabled) return;
 
-opacity:isDisabled
+        e.currentTarget.style.transform =
+          "translateY(-2px)";
 
-? .6
+        if (variant === "primary") {
+          e.currentTarget.style.boxShadow =
+            WolfShadows.lg;
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (isDisabled) return;
 
-: 1,
+        e.currentTarget.style.transform =
+          "translateY(0)";
 
-width:fullWidth
+        if (variant === "primary") {
+          e.currentTarget.style.boxShadow =
+            WolfShadows.glowOrange;
+        }
+      }}
+      onMouseDown={(e) => {
+        if (isDisabled) return;
 
-? "100%"
+        e.currentTarget.style.transform =
+          "scale(.98)";
+      }}
+      onMouseUp={(e) => {
+        if (isDisabled) return;
 
-: undefined,
+        e.currentTarget.style.transform =
+          "translateY(-2px)";
+      }}
+    >
+      {loading ? (
+        <>
+          <span
+            style={{
+              width:
+                WolfSizes.icon.md,
 
-userSelect:"none",
+              height:
+                WolfSizes.icon.md,
 
-outline:"none",
+              borderRadius:
+                WolfRadius.round,
 
-...variants[variant],
-
-...style,
-
-}}
-
-onMouseEnter={(e)=>{
-
-if(isDisabled) return;
-
-e.currentTarget.style.transform=
-
-"translateY(-2px)";
-
-}}
-
-onMouseLeave={(e)=>{
-
-if(isDisabled) return;
-
-e.currentTarget.style.transform=
-
-"translateY(0px)";
-
-}}
-
->
-
-{loading ? (
-
-<>
-
-<span
-
-style={{
-
-width:16,
-
-height:16,
-
-borderRadius:"50%",
-
-border:"2px solid rgba(255,255,255,.25)",
-
-borderTopColor:"#fff",
-
-animation:
-
-"wolfButtonSpin .7s linear infinite",
-
-}}
-
- />
-
-Cargando...
-
-</>
-
-) : (
-
-<>
-
-{leftIcon}
-
-<span>
-
-{children}
-
-</span>
-
-{rightIcon}
-
-</>
-
-)}
-
-<style>{`
-
-@keyframes wolfButtonSpin{
-
-to{
-
-transform:rotate(360deg);
-
-}
-
-}
-
-`}</style>
-
-</button>
-
+              border:
+                "2px solid rgba(255,255,255,.25)",
+
+              borderTopColor:
+                "#fff",
+
+              animation:
+                "wolfButtonSpin .7s linear infinite",
+            }}
+          />
+
+          Cargando...
+        </>
+      ) : (
+        <>
+          {leftIcon}
+
+          {children}
+
+          {rightIcon}
+        </>
+      )}
+    </button>
   );
-
 }

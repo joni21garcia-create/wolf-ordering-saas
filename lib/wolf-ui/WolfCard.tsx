@@ -6,6 +6,14 @@ import type {
   ReactNode,
 } from "react";
 
+import {
+  WolfColors,
+  WolfRadius,
+  WolfShadows,
+  WolfSpacing,
+  WolfTransitions,
+} from "@/lib/wolf-ui/core";
+
 export type WolfCardVariant =
   | "default"
   | "glass"
@@ -20,7 +28,6 @@ export type WolfCardPadding =
 
 export interface WolfCardProps
   extends HTMLAttributes<HTMLDivElement> {
-
   children: ReactNode;
 
   variant?: WolfCardVariant;
@@ -32,70 +39,51 @@ export interface WolfCardProps
   glow?: boolean;
 
   clickable?: boolean;
-
 }
 
 const paddingMap: Record<
   WolfCardPadding,
   number
 > = {
-
   none: 0,
 
-  sm: 16,
+  sm: WolfSpacing.lg,
 
-  md: 24,
+  md: WolfSpacing["2xl"],
 
-  lg: 32,
-
+  lg: WolfSpacing["3xl"],
 };
 
 const variants: Record<
   WolfCardVariant,
   CSSProperties
 > = {
-
   default: {
+    background: WolfColors.surface,
 
-    background: "#121212",
-
-    border:
-      "1px solid rgba(255,255,255,.05)",
-
+    border: `1px solid ${WolfColors.border}`,
   },
 
   glass: {
+    background: "rgba(255,255,255,.05)",
 
-    background:
-      "rgba(255,255,255,.05)",
+    backdropFilter: "blur(18px)",
 
-    backdropFilter:
-      "blur(18px)",
-
-    border:
-      "1px solid rgba(255,255,255,.08)",
-
+    border: `1px solid ${WolfColors.borderStrong}`,
   },
 
   ghost: {
-
     background: "transparent",
-
   },
 
   outlined: {
+    background: WolfColors.surface,
 
-    background: "#111111",
-
-    border:
-      "1px solid rgba(249,115,22,.22)",
-
+    border: `1px solid ${WolfColors.primarySoft}`,
   },
-
 };
 
 export default function WolfCard({
-
   children,
 
   variant = "default",
@@ -111,89 +99,58 @@ export default function WolfCard({
   style,
 
   ...props
-
 }: WolfCardProps) {
-
   return (
-
     <div
-
       {...props}
-
       style={{
-
         ...variants[variant],
 
         padding: paddingMap[padding],
 
-        borderRadius: 24,
+        borderRadius: WolfRadius["2xl"],
 
         position: "relative",
 
-        transition:
-          "all .28s cubic-bezier(.22,.61,.36,1)",
+        transition: WolfTransitions.default,
 
         boxShadow: glow
-
-          ? "0 0 40px rgba(249,115,22,.12)"
-
-          : "none",
+          ? WolfShadows.glowOrange
+          : WolfShadows.none,
 
         cursor: clickable
-
           ? "pointer"
-
           : "default",
 
         userSelect: "none",
 
-        ...(hover && {
-
-          transform:
-            "translateZ(0)",
-
-        }),
+        willChange:
+          hover ? "transform, box-shadow" : undefined,
 
         ...style,
-
       }}
-
       onMouseEnter={(e) => {
-
         if (!hover) return;
 
         e.currentTarget.style.transform =
           "translateY(-4px)";
 
         e.currentTarget.style.boxShadow = glow
-
-          ? "0 20px 48px rgba(249,115,22,.18)"
-
-          : "0 18px 40px rgba(0,0,0,.28)";
-
+          ? WolfShadows.glowOrange
+          : WolfShadows.lg;
       }}
-
       onMouseLeave={(e) => {
-
         if (!hover) return;
 
         e.currentTarget.style.transform =
           "translateY(0)";
 
         e.currentTarget.style.boxShadow = glow
-
-          ? "0 0 40px rgba(249,115,22,.12)"
-
-          : "none";
-
+          ? WolfShadows.glowOrange
+          : WolfShadows.none;
       }}
-
     >
-
       {children}
-
     </div>
-
   );
-
 }

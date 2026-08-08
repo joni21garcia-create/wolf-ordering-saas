@@ -6,138 +6,170 @@ import type {
   ReactNode,
 } from "react";
 
+import {
+  WolfColors,
+  WolfRadius,
+  WolfSpacing,
+  WolfTypography,
+  WolfTransitions,
+} from "@/lib/wolf-ui/core";
+
 export type WolfBadgeVariant =
   | "default"
+  | "primary"
   | "success"
   | "warning"
   | "danger"
   | "info"
   | "orange";
 
+export type WolfBadgeSize =
+  | "sm"
+  | "md"
+  | "lg";
+
 export interface WolfBadgeProps
   extends HTMLAttributes<HTMLSpanElement> {
-
   children: ReactNode;
 
   variant?: WolfBadgeVariant;
 
+  size?: WolfBadgeSize;
+
+  rounded?: boolean;
 }
 
 const variants: Record<
   WolfBadgeVariant,
   CSSProperties
 > = {
-
   default: {
+    background: WolfColors.surfaceLight,
 
-    background:
-      "rgba(255,255,255,.08)",
+    color: WolfColors.text,
+  },
 
-    color: "#fff",
+  primary: {
+    background: WolfColors.primarySoft,
 
+    color: WolfColors.primary,
   },
 
   success: {
+    background: WolfColors.successSoft,
 
-    background:
-      "rgba(34,197,94,.14)",
-
-    color: "#22C55E",
-
+    color: WolfColors.success,
   },
 
   warning: {
+    background: WolfColors.warningSoft,
 
-    background:
-      "rgba(245,158,11,.14)",
-
-    color: "#F59E0B",
-
+    color: WolfColors.warning,
   },
 
   danger: {
+    background: WolfColors.dangerSoft,
 
-    background:
-      "rgba(239,68,68,.14)",
-
-    color: "#EF4444",
-
+    color: WolfColors.danger,
   },
 
   info: {
+    background: WolfColors.infoSoft,
 
-    background:
-      "rgba(59,130,246,.14)",
-
-    color: "#3B82F6",
-
+    color: WolfColors.info,
   },
 
   orange: {
+    background: WolfColors.primarySoft,
 
-    background:
-      "rgba(249,115,22,.14)",
+    color: WolfColors.primary,
+  },
+};
 
-    color: "#F97316",
+const sizes = {
+  sm: {
+    height: 24,
 
+    padding: `0 ${WolfSpacing.sm}px`,
+
+    fontSize: WolfTypography.size.xs,
   },
 
+  md: {
+    height: 30,
+
+    padding: `0 ${WolfSpacing.md}px`,
+
+    fontSize: WolfTypography.size.sm,
+  },
+
+  lg: {
+    height: 36,
+
+    padding: `0 ${WolfSpacing.lg}px`,
+
+    fontSize: WolfTypography.size.md,
+  },
 };
 
 export default function WolfBadge({
-
   children,
 
-  variant="default",
+  variant = "default",
+
+  size = "md",
+
+  rounded = true,
 
   style,
 
   ...props
+}: WolfBadgeProps) {
+  return (
+    <span
+      {...props}
+      style={{
+        display: "inline-flex",
 
-}:WolfBadgeProps){
+        alignItems: "center",
 
-return(
+        justifyContent: "center",
 
-<span
+        gap: WolfSpacing.xs,
 
-{...props}
+        height: sizes[size].height,
 
-style={{
+        padding: sizes[size].padding,
 
-display:"inline-flex",
+        borderRadius: rounded
+          ? WolfRadius.round
+          : WolfRadius.lg,
 
-alignItems:"center",
+        fontFamily:
+          WolfTypography.fontFamily,
 
-justifyContent:"center",
+        fontSize:
+          sizes[size].fontSize,
 
-gap:6,
+        fontWeight:
+          WolfTypography.weight.bold,
 
-padding:"6px 12px",
+        lineHeight:
+          WolfTypography.lineHeight.tight,
 
-borderRadius:999,
+        whiteSpace: "nowrap",
 
-fontSize:12,
+        userSelect: "none",
 
-fontWeight:700,
+        transition:
+          WolfTransitions.default,
 
-lineHeight:1,
+        ...variants[variant],
 
-whiteSpace:"nowrap",
-
-userSelect:"none",
-
-...variants[variant],
-
-...style,
-
-}}
-
->
-
-{children}
-
-</span>
-
-);
-
+        ...style,
+      }}
+    >
+      {children}
+    </span>
+  );
 }

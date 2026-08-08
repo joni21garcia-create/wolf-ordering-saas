@@ -1,13 +1,23 @@
 "use client";
 
-
 import "./orders-animations.css";
 
 import {
   Bell,
   RefreshCw,
-  Store,
 } from "lucide-react";
+
+import {
+  WolfAvatar,
+  WolfBadge,
+  WolfButton,
+} from "@/lib/wolf-ui";
+
+import {
+  WolfFlex,
+  WolfSpacer,
+  WolfStack,
+} from "@/lib/wolf-ui/layout";
 
 import type { Restaurant } from "./types";
 
@@ -17,10 +27,10 @@ interface Props {
   refreshing?: boolean;
 
   connectionStatus?:
-  | "online"
-  | "syncing"
-  | "reconnecting"
-  | "offline";
+    | "online"
+    | "syncing"
+    | "reconnecting"
+    | "offline";
 
   notificationCount?: number;
 
@@ -41,299 +51,236 @@ export default function OperationsHeader({
   onOpenNotifications,
 }: Props) {
 
-
-const isOnline = connectionStatus === "online";
-
-const isSyncing = connectionStatus === "syncing";
-
-const isReconnecting =
-  connectionStatus === "reconnecting";
-
-const isOffline =
-  connectionStatus === "offline";
-
   const liveConfig = {
-  online: {
-    label: "Wolf Live",
-    color: "#22C55E",
-    background: "rgba(34,197,94,.12)",
-    className: "",
-  },
+    online: {
+      label: "Wolf Live",
+      color: "#22C55E",
+      background: "rgba(34,197,94,.12)",
+    },
 
-  syncing: {
-    label: "Sincronizando",
-    color: "#3B82F6",
-    background: "rgba(59,130,246,.12)",
-    className: "syncing",
-  },
+    syncing: {
+      label: "Sincronizando",
+      color: "#3B82F6",
+      background: "rgba(59,130,246,.12)",
+    },
 
-  reconnecting: {
-    label: "Reconectando",
-    color: "#F59E0B",
-    background: "rgba(245,158,11,.12)",
-    className: "",
-  },
+    reconnecting: {
+      label: "Reconectando",
+      color: "#F59E0B",
+      background: "rgba(245,158,11,.12)",
+    },
 
-  offline: {
-    label: "Sin conexión",
-    color: "#EF4444",
-    background: "rgba(239,68,68,.12)",
-    className: "offline",
-  },
-} as const;
+    offline: {
+      label: "Sin conexión",
+      color: "#EF4444",
+      background: "rgba(239,68,68,.12)",
+    },
+  } as const;
 
-const live = liveConfig[connectionStatus];
+  const live =
+    liveConfig[connectionStatus];
 
   return (
-  <section
-    style={{
-      marginBottom: 20,
 
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-
-      flexWrap: "wrap",
-
-      gap: 20,
-    }}
-  >
-    {/* Restaurante */}
-
-    <div
+    <section
       style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 16,
+        marginBottom: 34,
       }}
     >
-      <div
-        style={{
-          width: 58,
-          height: 58,
 
-          borderRadius: 16,
-
-          overflow: "hidden",
-
-          background: "#171717",
-
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-
-          flexShrink: 0,
-        }}
+      <WolfFlex
+        justify="between"
+        align="center"
+        wrap
+        gap="xl"
       >
-        {restaurant.logo_url ? (
-          <img
-            src={restaurant.logo_url}
-            alt={restaurant.name}
+
+        {/* Restaurante */}
+
+        <WolfFlex
+          align="center"
+          gap="lg"
+        >
+
+          <WolfAvatar
+            size={72}
+            src={
+              restaurant.logo_url ??
+              undefined
+            }
+            fallback={
+              restaurant.name
+            }
+            shadow
+          />
+
+          <WolfStack spacing="xs">
+
+            <h1
+              style={{
+                margin: 0,
+                fontSize: 34,
+                fontWeight: 900,
+                lineHeight: 1,
+                letterSpacing:
+                  "-.04em",
+                color: "#FFF",
+              }}
+            >
+              {restaurant.name}
+            </h1>
+
+            <div
+              style={{
+                color: "#A1A1AA",
+                fontSize: 15,
+                fontWeight: 600,
+              }}
+            >
+              Panel de operaciones
+            </div>
+
+            <div
+              style={{
+                color: "#71717A",
+                fontSize: 13,
+                fontWeight: 500,
+              }}
+            >
+              /{restaurant.slug}
+            </div>
+
+          </WolfStack>
+
+        </WolfFlex>
+
+        <WolfSpacer />
+
+        <WolfFlex
+          align="center"
+          gap="md"
+        >
+
+                 <WolfBadge
+            variant={
+              connectionStatus === "online"
+                ? "success"
+                : connectionStatus === "syncing"
+                ? "info"
+                : connectionStatus ===
+                  "reconnecting"
+                ? "warning"
+                : "danger"
+            }
+          >
+            <span
+              className={
+                connectionStatus !==
+                "offline"
+                  ? "wolf-dot-connected"
+                  : ""
+              }
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: live.color,
+                display: "inline-block",
+                marginRight: 6,
+              }}
+            />
+
+            {live.label}
+          </WolfBadge>
+
+          <div
             style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
+              position: "relative",
             }}
-          />
-        ) : (
-          <Store
-            size={24}
-            color="#888"
-          />
-        )}
-      </div>
+          >
+            <WolfButton
+              variant="secondary"
+              size="md"
+              onClick={
+                onOpenNotifications
+              }
+              leftIcon={
+                <Bell size={18} />
+              }
+            />
 
-      <div>
-        <h1
-          style={{
-            margin: 0,
+            {notificationCount >
+              0 && (
+              <div
+                style={{
+                  position:
+                    "absolute",
 
-            fontSize: 28,
+                  top: -5,
 
-            fontWeight: 800,
+                  right: -5,
 
-            color: "#fff",
+                  minWidth: 20,
 
-            lineHeight: 1.1,
-          }}
-        >
-          {restaurant.name}
-        </h1>
+                  height: 20,
 
-        <div
-          style={{
-            marginTop: 5,
+                  borderRadius: 999,
 
-            fontSize: 13,
+                  background:
+                    "#EF4444",
 
-            color: "#8A8A8A",
+                  color: "#fff",
 
-            fontWeight: 500,
-          }}
-        >
-          /{restaurant.slug}
-        </div>
-      </div>
-    </div>
-{/* Acciones */}
+                  display: "flex",
 
-<div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 14,
-  }}
->
-  {/* Wolf Live */}
+                  alignItems:
+                    "center",
 
- <div
-  className={`wolf-live ${live.className}`}
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
+                  justifyContent:
+                    "center",
 
-    padding: "8px 14px",
+                  fontSize: 10,
 
-    borderRadius: 999,
+                  fontWeight: 800,
 
-    background: live.background,
+                  padding:
+                    "0 6px",
 
-    color: live.color,
+                  pointerEvents:
+                    "none",
 
-    fontSize: 13,
-    fontWeight: 700,
-  }}
->
-  <span
-    className={
-      connectionStatus !== "offline"
-        ? "wolf-dot-connected"
-        : ""
-    }
-    style={{
-      width: 8,
-      height: 8,
+                  boxShadow:
+                    "0 8px 18px rgba(239,68,68,.28)",
+                }}
+              >
+                {notificationCount >
+                99
+                  ? "99+"
+                  : notificationCount}
+              </div>
+            )}
+          </div>
 
-      borderRadius: "50%",
+          <WolfButton
+            variant="primary"
+            size="md"
+            loading={refreshing}
+            leftIcon={
+              <RefreshCw
+                size={18}
+              />
+            }
+            onClick={onRefresh}
+          >
+            Actualizar
+          </WolfButton>
 
-      background: live.color,
+        </WolfFlex>
 
-      display: "inline-block",
-    }}
-  />
+      </WolfFlex>
 
-  {live.label}
-</div>
+    </section>
 
-  {/* Campana */}
+  );
 
- <button
-  type="button"
-  onClick={onOpenNotifications}
-  className={`wolf-bell-button ${
-    notificationCount > 0 ? "has-alert" : ""
-  } ${ringBell ? "ringing" : ""}`}
-  style={{
-    position: "relative",
-
-    width: 42,
-    height: 42,
-
-    border: "none",
-    borderRadius: "50%",
-
-    cursor: "pointer",
-
-    background: "#1A1A1A",
-
-    color: "#F59E0B",
-
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }}
->
-  <Bell
-    size={20}
-    className="wolf-bell-icon"
-  />
-
-  {notificationCount > 0 && (
-    <span
-      style={{
-        position: "absolute",
-
-        top: -3,
-        right: -3,
-
-        minWidth: 18,
-        height: 18,
-
-        padding: "0 5px",
-
-        borderRadius: 999,
-
-        background: "#EF4444",
-
-        color: "#fff",
-
-        fontSize: 10,
-        fontWeight: 700,
-
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-
-        border: "2px solid #090909",
-      }}
-    >
-      {notificationCount > 99
-        ? "99+"
-        : notificationCount}
-    </span>
-  )}
-</button>
-
-  {/* Refrescar */}
-
-  <button
-    type="button"
-    onClick={onRefresh}
-    className="wolf-refresh-button"
-    style={{
-      width: 42,
-      height: 42,
-
-      borderRadius: "50%",
-
-      border: "none",
-
-      cursor: "pointer",
-
-      background:
-        "linear-gradient(135deg,#F97316,#EA580C)",
-
-      color: "#fff",
-
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-
-      boxShadow:
-        "0 8px 18px rgba(249,115,22,.28)",
-    }}
-  >
-    <RefreshCw
-      size={19}
-      className={
-        refreshing
-          ? "wolf-refresh-icon is-spinning"
-          : ""
-      }
-    />
-  </button>
-</div>
-</section>
-);
 }

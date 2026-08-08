@@ -2,12 +2,17 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 
-import OrderCard from "./OrderCard";
+import {
+  WolfBadge,
+  WolfCard,
+} from "@/lib/wolf-ui";
 
 import {
-  cardStyle,
-  colors,
-} from "./styles";
+  WolfFlex,
+  WolfStack,
+} from "@/lib/wolf-ui/layout";
+
+import OrderCard from "./OrderCard";
 
 import type {
   Order,
@@ -21,203 +26,451 @@ import {
 } from "lucide-react";
 
 const columnIcons = {
+
   Pendientes: Clock3,
+
+  Aceptados: ChefHat,
+
   Preparando: ChefHat,
+
   Listos: PackageCheck,
-  Completados: CircleCheckBig,
+
+  Completados:
+    CircleCheckBig,
+
 } as const;
 
 interface Props {
+
   title: string;
 
   color: string;
 
   orders: Order[];
 
- deliverySettings: {
-  delivery_mode: "fixed" | "manual";
-  delivery_fee: number;
-  free_delivery_enabled: boolean;
-  free_delivery_minimum: number;
-};
+  deliverySettings: {
+
+    delivery_mode:
+      | "fixed"
+      | "manual";
+
+    delivery_fee: number;
+
+    free_delivery_enabled: boolean;
+
+    free_delivery_minimum: number;
+
+  };
 
   onUpdateStatus: (
+
     orderId: string,
+
     status: string
+
   ) => Promise<void>;
 
   onUpdatePayment: (
+
     orderId: string,
+
     payment: string
+
   ) => Promise<void>;
 
   onRefresh: () => Promise<void>;
 
   onViewDetail: (
-  orderId: string
-) => void;
+
+    orderId: string
+
+  ) => void;
 
 }
 
 export default function ColumnBoard({
+
   title,
+
   color,
+
   orders,
+
   deliverySettings,
+
   onUpdateStatus,
+
   onUpdatePayment,
+
   onRefresh,
+
   onViewDetail,
+
 }: Props) {
 
-const Icon =
-  columnIcons[
-    title as keyof typeof columnIcons
-  ] ?? Clock3;
+  const Icon =
+    columnIcons[
+      title as keyof typeof columnIcons
+    ] ?? Clock3;
+
+  const subtitle =
+
+    title === "Pendientes"
+
+      ? "Esperando aceptación"
+
+      : title === "Aceptados"
+
+      ? "Esperando cocina"
+
+      : title === "Preparando"
+
+      ? "En preparación"
+
+      : title === "Listos"
+
+      ? "Listos para entregar"
+
+      : "Pedidos finalizados";
 
   return (
-<section
-  style={{
-    ...cardStyle,
 
-    width: "100%",
+    <WolfCard
 
-    minWidth: 0,
+      variant="glass"
 
-    maxWidth: 380,
+      padding="none"
 
-    maxHeight: "calc(100vh - 250px)",
-
-    display: "flex",
-
-    flexDirection: "column",
-
-    overflow: "hidden",
-  }}
->
-{/* HEADER */}
-
-<div
-  style={{
-    padding: 18,
-    borderBottom: "1px solid rgba(255,255,255,.06)",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    background: "#111111",
-  }}
->
-  {/* Izquierda */}
-  <div>
-    <div
       style={{
+
+        width: "100%",
+
+        maxWidth: 380,
+
+        minWidth: 320,
+
+        height:
+          "calc(100dvh - 220px)",
+
         display: "flex",
-        alignItems: "center",
-        gap: 10,
-        fontWeight: 700,
-        fontSize: 18,
+
+        flexDirection: "column",
+
+        overflow: "hidden",
+
+        border:
+          "1px solid rgba(255,255,255,.05)",
+
+        backdropFilter:
+          "blur(18px)",
+
       }}
+
     >
-      <Icon
-        size={20}
-        color={color}
-        strokeWidth={2.2}
-      />
-
-      <span>{title}</span>
-    </div>
-
-    <div
-      style={{
-        marginTop: 6,
-        fontSize: 12,
-        color: "#a1a1aa",
-        fontWeight: 600,
-      }}
-    >
-      {title === "Pendientes" && "Esperando aceptación"}
-      {title === "Aceptados" && "Esperando cocina"}
-      {title === "Preparando" && "En preparación"}
-      {title === "Listos" && "Listos para entregar"}
-    </div>
-  </div>
-
-  {/* Contador */}
-  <div
-    style={{
-      width: 42,
-      height: 42,
-      borderRadius: 14,
-      background: `${color}22`,
-      color,
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      fontWeight: 800,
-      overflow: "hidden",
-      flexShrink: 0,
-    }}
-  >
-    <AnimatePresence mode="popLayout" initial={false}>
-      <motion.span
-        key={orders.length}
-        initial={{ opacity: 0, scale: 0.6 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.6 }}
-        transition={{ duration: 0.18 }}
-      >
-        {orders.length}
-      </motion.span>
-    </AnimatePresence>
-  </div>
-</div>
-
-{/* LISTA */}
 
       <div
+
         style={{
+
+          padding:
+            "22px 22px 18px",
+
+          borderBottom:
+            "1px solid rgba(255,255,255,.05)",
+
+        }}
+
+      >
+
+        <WolfFlex
+
+          justify="between"
+
+          align="center"
+
+        >
+
+          <WolfFlex
+
+            align="center"
+
+            gap="md"
+
+          >
+
+            <div
+
+              style={{
+
+                width: 46,
+
+                height: 46,
+
+                borderRadius: 16,
+
+                display: "flex",
+
+                alignItems: "center",
+
+                justifyContent:
+                  "center",
+
+                background:
+                  `${color}18`,
+
+              }}
+
+            >
+
+              <Icon
+
+                size={22}
+
+                color={color}
+
+              />
+
+            </div>
+
+            <WolfStack
+              spacing="xs"
+            >
+
+              <div
+
+                style={{
+
+                  fontSize: 22,
+
+                  fontWeight: 800,
+
+                  color: "#fff",
+
+                  letterSpacing:
+                    "-.03em",
+
+                }}
+
+              >
+
+                {title}
+
+              </div>
+
+              <div
+
+                style={{
+
+                  fontSize: 13,
+
+                  color:
+                    "#8B8B93",
+
+                }}
+
+              >
+
+                {subtitle}
+
+              </div>
+
+            </WolfStack>
+
+          </WolfFlex>
+
+          <WolfBadge
+            variant="default"
+          >
+            {orders.length}
+          </WolfBadge>
+
+        </WolfFlex>
+
+      </div>
+
+      <div
+
+        style={{
+
           flex: 1,
 
           overflowY: "auto",
 
-          padding: 18,
+          padding: 20,
 
           display: "flex",
 
-          flexDirection: "column",
+          flexDirection:
+            "column",
 
-          gap: 16,
+          gap: 18,
+
         }}
+
       >
-        {orders.length === 0 && (
-          <div
+              {orders.length === 0 && (
+
+          <WolfCard
+            variant="ghost"
+            padding="lg"
             style={{
+              flex: 1,
+
+              display: "flex",
+
+              alignItems: "center",
+
+              justifyContent: "center",
+
               textAlign: "center",
 
-              padding: 60,
+              color: "#71717A",
 
-              color:
-                colors.textSecondary,
-
-              fontSize: 14,
+              minHeight: 180,
             }}
           >
-            No hay pedidos
-          </div>
+
+            <WolfStack
+              align="center"
+              spacing="sm"
+            >
+
+              <div
+                style={{
+                  width: 56,
+
+                  height: 56,
+
+                  borderRadius: 18,
+
+                  display: "flex",
+
+                  alignItems: "center",
+
+                  justifyContent: "center",
+
+                  background:
+                    "rgba(255,255,255,.04)",
+                }}
+              >
+
+                <Icon
+                  size={24}
+                  color={color}
+                />
+
+              </div>
+
+              <div
+                style={{
+                  fontWeight: 700,
+
+                  color: "#E4E4E7",
+
+                  fontSize: 15,
+                }}
+              >
+
+                Sin pedidos
+
+              </div>
+
+              <div
+                style={{
+                  fontSize: 13,
+
+                  color: "#71717A",
+
+                  maxWidth: 180,
+
+                  lineHeight: 1.5,
+                }}
+              >
+
+                Los nuevos pedidos aparecerán
+                automáticamente aquí.
+
+              </div>
+
+            </WolfStack>
+
+          </WolfCard>
+
         )}
 
-        {orders.map((order) => (
-<OrderCard
-  key={order.id}
-  order={order}
-  deliverySettings={deliverySettings}
-  onRefresh={onRefresh}
-  onViewDetail={onViewDetail}
-  onUpdateStatus={onUpdateStatus}
-  onUpdatePayment={onUpdatePayment}
-/>
-        ))}
+        <AnimatePresence
+          mode="popLayout"
+        >
+
+          {orders.map((order) => (
+
+            <motion.div
+
+              key={order.id}
+
+              layout
+
+              initial={{
+                opacity: 0,
+                y: 14,
+                scale: .98,
+              }}
+
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: 1,
+              }}
+
+              exit={{
+                opacity: 0,
+                y: -8,
+                scale: .96,
+              }}
+
+              transition={{
+                duration: .22,
+                ease: "easeOut",
+              }}
+
+            >
+
+              <OrderCard
+
+                order={order}
+
+                deliverySettings={
+                  deliverySettings
+                }
+
+                onRefresh={
+                  onRefresh
+                }
+
+                onViewDetail={
+                  onViewDetail
+                }
+
+                onUpdateStatus={
+                  onUpdateStatus
+                }
+
+                onUpdatePayment={
+                  onUpdatePayment
+                }
+
+              />
+
+            </motion.div>
+
+          ))}
+
+        </AnimatePresence>
+
       </div>
-    </section>
+
+    </WolfCard>
+
   );
+
 }
