@@ -40,9 +40,9 @@ html {
   color-scheme: dark;
 
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: scroll;
 
-  overscroll-behavior-x: none;
+  overscroll-behavior: auto;
 
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -822,7 +822,7 @@ select {
 
   -ms-overflow-style: none;
 
-  -webkit-overflow-scrolling: touch;
+
 
   overscroll-behavior: contain;
 }

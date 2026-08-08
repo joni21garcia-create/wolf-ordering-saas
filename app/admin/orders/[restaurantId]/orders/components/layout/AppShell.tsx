@@ -30,34 +30,25 @@ function Layout({ children }: Props) {
     >
       <Sidebar />
 
-      <main
-        style={{
-          flex: "1 1 auto",
+<main
+  style={{
+    flex: "1 1 auto",
+    minWidth: 0,
+    width: "100%",
 
-          minWidth: 0,
-          width: "100%",
+    overflow: "visible",
 
-          /*
-           * IMPORTANTE:
-           * El scroll principal pertenece al documento
-           * (html/body), no a <main>.
-           */
-          overflow: "visible",
+    padding: 24,
 
-          padding: 24,
+    transition: "margin-left .25s ease",
 
-          transition:
-            "margin-left .25s ease",
+    marginLeft: collapsed ? -12 : 0,
 
-          marginLeft:
-            collapsed ? -12 : 0,
-
-          WebkitOverflowScrolling:
-            "touch",
-        }}
-      >
-        {children}
-      </main>
+    touchAction: "auto",
+  }}
+>
+  {children}
+</main>
     </div>
   );
 }
