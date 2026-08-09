@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type React from "react";
+import Link from "next/link";
 import { getRestaurantStatus } from "@/lib/schedule";
 
 import { supabase } from "@/lib/supabase/client";
@@ -18,7 +20,8 @@ interface RestaurantViewProps {
 type RestaurantSection =
   | "products"
   | "hours"
-  | "marketing";
+  | "marketing"
+  | "payments";
 
 export default function RestaurantView({
   restaurantId,
@@ -85,7 +88,7 @@ useEffect(() => {
             margin: 0,
             fontSize: "23px",
             lineHeight: 1.15,
-            fontWeight: 800,
+            fontWeight: 700,
             letterSpacing:
               "-0.5px",
             color: "#FFFFFF",
@@ -112,6 +115,7 @@ useEffect(() => {
           ===================================================== */}
 
       <RestaurantToolbar
+        restaurantId={restaurantId}
         activeSection={
           activeSection
         }
@@ -149,6 +153,10 @@ useEffect(() => {
 {activeSection === "marketing" && restaurant && (
   <Marketing restaurant={restaurant} />
 )}
+
+        {activeSection === "payments" && (
+          <div />
+        )}
       </section>
     </main>
   );
@@ -159,6 +167,7 @@ useEffect(() => {
    ========================================================= */
 
 interface RestaurantToolbarProps {
+  restaurantId: string;
   activeSection: RestaurantSection;
   onChange: (
     section: RestaurantSection
@@ -166,6 +175,7 @@ interface RestaurantToolbarProps {
 }
 
 function RestaurantToolbar({
+  restaurantId,
   activeSection,
   onChange,
 }: RestaurantToolbarProps) {
@@ -185,6 +195,10 @@ function RestaurantToolbar({
       id: "marketing",
       label: "Marketing",
     },
+    {
+      id: "payments",
+      label: "Pagos",
+    },
   ];
 
   return (
@@ -193,10 +207,10 @@ function RestaurantToolbar({
       style={{
         width: "100%",
         display: "flex",
-        gap: "7px",
+        gap: "6px",
         overflowX: "auto",
         padding:
-          "17px 14px 11px",
+          "14px 14px 9px",
         boxSizing:
           "border-box",
         WebkitOverflowScrolling:
@@ -217,9 +231,18 @@ function RestaurantToolbar({
             key={tab.id}
             label={tab.label}
             active={active}
-            onClick={() =>
-              onChange(tab.id)
-            }
+            onClick={() => {
+              if (tab.id === "payments") {
+                window.location.assign(
+                  `/admin/restaurant/${encodeURIComponent(
+                    restaurantId
+                  )}/payments`
+                );
+                return;
+              }
+
+              onChange(tab.id);
+            }}
           />
         );
       })}
@@ -242,53 +265,63 @@ function RestaurantTab({
   active,
   onClick,
 }: RestaurantTabProps) {
+  const isPayments = label === "Pagos";
+
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-current={
-        active
-          ? "page"
-          : undefined
-      }
+      aria-current={active ? "page" : undefined}
       style={{
-        position:
-          "relative",
+        position: "relative",
         flexShrink: 0,
-        minHeight:
-          "39px",
-        padding:
-          "0 15px",
-        borderRadius:
-          "10px",
+        minHeight: "36px",
+        padding: "0 12px",
+        borderRadius: "9px",
         border: active
-          ? "1px solid rgba(249,115,22,.28)"
-          : "1px solid rgba(255,255,255,.06)",
-        background:
-          active
-            ? "#F97316"
-            : "#121212",
-        color:
-          active
-            ? "#FFFFFF"
+          ? "1px solid rgba(249,115,22,.48)"
+          : isPayments
+            ? "1px solid rgba(249,115,22,.20)"
+            : "1px solid rgba(255,255,255,.07)",
+        background: active
+          ? "linear-gradient(135deg,#ff7a18,#f97316)"
+          : isPayments
+            ? "linear-gradient(135deg,rgba(249,115,22,.10),rgba(255,255,255,.025))"
+            : "linear-gradient(180deg,#151515,#101010)",
+        color: active
+          ? "#FFFFFF"
+          : isPayments
+            ? "#F4B183"
             : "#A1A1AA",
-        fontSize:
-          "13px",
-        fontWeight:
-          700,
+        fontSize: "11px",
+        fontWeight: 800,
+        letterSpacing: "-0.1px",
         lineHeight: 1,
-        cursor:
-          "pointer",
-        WebkitTapHighlightColor:
-          "transparent",
+        cursor: "pointer",
+        WebkitTapHighlightColor: "transparent",
         transition:
-          "all 180ms cubic-bezier(.16,.84,.44,1)",
-        boxShadow:
-          active
-            ? "0 0 18px rgba(249,115,22,.18)"
-            : "none",
+          "transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease",
+        boxShadow: active
+          ? "0 4px 12px rgba(249,115,22,.16)"
+          : "none",
+        overflow: "hidden",
       }}
     >
+      {isPayments && !active && (
+        <span
+          aria-hidden="true"
+          style={{
+            display: "inline-block",
+            width: "4px",
+            height: "4px",
+            marginRight: "6px",
+            verticalAlign: "middle",
+            borderRadius: "50%",
+            background: "#f97316",
+            boxShadow: "0 0 9px rgba(249,115,22,.75)",
+          }}
+        />
+      )}
       {label}
     </button>
   );

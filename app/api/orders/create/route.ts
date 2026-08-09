@@ -83,6 +83,7 @@ delivery_instructions,
   payment_confirmed,
   selected_qr_id,
   selected_qr_name,
+  selected_bank_account_id,
   payment_proof_url,
 
   cash_amount,
@@ -436,6 +437,7 @@ for (const item of items) {
 
   selected_qr_id,
   selected_qr_name,
+  selected_bank_account_id,
 
   payment_proof_url,
 
@@ -649,5 +651,3 @@ ${productsText}
     );
   }
 }
-
-

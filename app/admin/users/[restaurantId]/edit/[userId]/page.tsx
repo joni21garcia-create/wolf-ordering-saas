@@ -1,0 +1,667 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase/client";
+
+type Role = {
+  id: string;
+  code: string;
+  name: string;
+};
+
+type UserData = {
+  id: string;
+  full_name: string | null;
+  email: string;
+  phone: string | null;
+  active: boolean;
+  role_id: string | null;
+};
+
+const PROTECTED_ROLES = [
+  "super-user",
+  "owner",
+  "manager",
+];
+
+export default function EditUserPage() {
+  const params = useParams();
+  const router = useRouter();
+
+  const restaurantId = params.restaurantId as string;
+  const userId = params.userId as string;
+
+  const [user, setUser] = useState<UserData | null>(null);
+  const [roles, setRoles] = useState<Role[]>([]);
+
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [roleId, setRoleId] = useState("");
+  const [active, setActive] = useState(true);
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (restaurantId && userId) {
+      loadData();
+    }
+  }, [restaurantId, userId]);
+
+  async function loadData() {
+    try {
+      setLoading(true);
+
+      const [
+        { data: userData, error: userError },
+        { data: roleData, error: roleError },
+      ] = await Promise.all([
+        supabase
+          .from("restaurant_users")
+          .select(
+            `
+              id,
+              full_name,
+              email,
+              phone,
+              active,
+              role_id,
+              restaurant_roles (
+                id,
+                code,
+                name
+              )
+            `
+          )
+          .eq("id", userId)
+          .eq("restaurant_id", restaurantId)
+          .single(),
+
+        supabase
+          .from("restaurant_roles")
+          .select("id, code, name")
+          .eq("restaurant_id", restaurantId)
+          .order("name"),
+      ]);
+
+      if (userError) {
+        console.error("Error cargando usuario:", userError);
+        setMessage("No se pudo cargar el usuario.");
+        return;
+      }
+
+      if (roleError) {
+        console.error("Error cargando roles:", roleError);
+        setMessage("No se pudieron cargar los roles.");
+        return;
+      }
+
+      const loadedUser: UserData = {
+        id: userData.id,
+        full_name: userData.full_name,
+        email: userData.email,
+        phone: userData.phone,
+        active: Boolean(userData.active),
+        role_id: userData.role_id,
+      };
+
+      setUser(loadedUser);
+
+      setFullName(userData.full_name || "");
+      setEmail(userData.email || "");
+      setPhone(userData.phone || "");
+      setRoleId(userData.role_id || "");
+      setActive(Boolean(userData.active));
+
+      const operationalRoles = (roleData || []).filter(
+        (role: Role) =>
+          !PROTECTED_ROLES.includes(
+            String(role.code || "").trim().toLowerCase()
+          )
+      );
+
+      setRoles(operationalRoles);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const currentRole = user
+    ? null
+    : null;
+
+  const selectedOriginalRole = roles.find(
+    (role) => role.id === user?.role_id
+  );
+
+  const isProtectedRole =
+    selectedOriginalRole
+      ? PROTECTED_ROLES.includes(
+          selectedOriginalRole.code
+            .trim()
+            .toLowerCase()
+        )
+      : false;
+
+  async function handleSave() {
+    if (!user) return;
+
+    try {
+      setSaving(true);
+      setMessage("");
+
+      const updateData: Record<string, any> = {
+        full_name: fullName.trim(),
+        email: email.trim(),
+        phone: phone.trim() || null,
+        active,
+      };
+
+      if (!isProtectedRole) {
+        updateData.role_id = roleId || null;
+      }
+
+      const { error } = await supabase
+        .from("restaurant_users")
+        .update(updateData)
+        .eq("id", userId)
+        .eq("restaurant_id", restaurantId);
+
+      if (error) {
+        console.error("Error actualizando usuario:", error);
+        setMessage("No se pudo guardar el usuario.");
+        return;
+      }
+
+      setMessage("Usuario actualizado correctamente.");
+
+      setTimeout(() => {
+        router.push(
+          `/admin/users/${restaurantId}`
+        );
+      }, 700);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <main className="edit-page">
+        <div className="loading">
+          Cargando usuario...
+        </div>
+
+        <style>{styles}</style>
+      </main>
+    );
+  }
+
+  if (!user) {
+    return (
+      <main className="edit-page">
+        <div className="empty">
+          <h1>Usuario no encontrado</h1>
+
+          <button
+            onClick={() =>
+              router.push(
+                `/admin/users/${restaurantId}`
+              )
+            }
+          >
+            Volver a usuarios
+          </button>
+        </div>
+
+        <style>{styles}</style>
+      </main>
+    );
+  }
+
+  return (
+    <main className="edit-page">
+      <div className="edit-header">
+        <button
+          className="back-button"
+          onClick={() =>
+            router.push(
+              `/admin/users/${restaurantId}`
+            )
+          }
+        >
+          ← Usuarios
+        </button>
+
+        <div className="eyebrow">Equipo</div>
+
+        <h1>Editar usuario</h1>
+
+        <p>
+          Actualiza los datos y el acceso de esta
+          persona.
+        </p>
+      </div>
+
+      <section className="card">
+        <div className="field">
+          <label>Nombre completo</label>
+
+          <input
+            value={fullName}
+            onChange={(e) =>
+              setFullName(e.target.value)
+            }
+            placeholder="Nombre completo"
+          />
+        </div>
+
+        <div className="two-columns">
+          <div className="field">
+            <label>Email</label>
+
+            <input
+              type="email"
+              value={email}
+              onChange={(e) =>
+                setEmail(e.target.value)
+              }
+              placeholder="correo@ejemplo.com"
+            />
+          </div>
+
+          <div className="field">
+            <label>Teléfono</label>
+
+            <input
+              value={phone}
+              onChange={(e) =>
+                setPhone(e.target.value)
+              }
+              placeholder="099..."
+            />
+          </div>
+        </div>
+
+        <div className="field">
+          <label>Rol operativo</label>
+
+          {isProtectedRole ? (
+            <div className="protected-role">
+              <strong>
+                Rol protegido
+              </strong>
+
+              <span>
+                Este usuario pertenece a un rol
+                administrativo y no puede cambiarse
+                desde aquí.
+              </span>
+            </div>
+          ) : (
+            <select
+              value={roleId}
+              onChange={(e) =>
+                setRoleId(e.target.value)
+              }
+            >
+              <option value="">
+                Seleccionar rol
+              </option>
+
+              {roles.map((role) => (
+                <option
+                  key={role.id}
+                  value={role.id}
+                >
+                  {role.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        <div className="status-section">
+          <div>
+            <div className="status-title">
+              Estado del usuario
+            </div>
+
+            <div className="status-description">
+              {active
+                ? "El usuario puede acceder al restaurante."
+                : "El usuario está desactivado y no puede acceder."}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className={`status-toggle ${
+              active ? "active" : ""
+            }`}
+            onClick={() =>
+              setActive((value) => !value)
+            }
+            aria-label={
+              active
+                ? "Desactivar usuario"
+                : "Activar usuario"
+            }
+          >
+            <span />
+          </button>
+        </div>
+
+        {message && (
+          <div className="message">
+            {message}
+          </div>
+        )}
+
+        <div className="actions">
+          <button
+            className="cancel-button"
+            onClick={() =>
+              router.push(
+                `/admin/users/${restaurantId}`
+              )
+            }
+          >
+            Cancelar
+          </button>
+
+          <button
+            className="save-button"
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving
+              ? "Guardando..."
+              : "Guardar cambios"}
+          </button>
+        </div>
+      </section>
+
+      <style>{styles}</style>
+    </main>
+  );
+}
+
+const styles = `
+  .edit-page {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+    box-sizing: border-box;
+    color: #fff;
+  }
+
+  .edit-header {
+    margin-bottom: 22px;
+  }
+
+  .back-button {
+    border: 0;
+    background: transparent;
+    color: rgba(255,255,255,.42);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0;
+    margin-bottom: 20px;
+    cursor: pointer;
+  }
+
+  .back-button:hover {
+    color: #fff;
+  }
+
+  .eyebrow {
+    color: #f97316;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .edit-header h1 {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.1;
+    font-weight: 800;
+  }
+
+  .edit-header p {
+    margin: 7px 0 0;
+    color: rgba(255,255,255,.42);
+    font-size: 12px;
+  }
+
+  .card {
+    background: rgba(17,24,39,.94);
+    border: 1px solid rgba(255,255,255,.065);
+    border-radius: 14px;
+    padding: 20px;
+  }
+
+  .field {
+    margin-bottom: 17px;
+  }
+
+  .field label {
+    display: block;
+    margin-bottom: 7px;
+    color: rgba(255,255,255,.62);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .field input,
+  .field select {
+    width: 100%;
+    height: 42px;
+    box-sizing: border-box;
+    border-radius: 9px;
+    border: 1px solid rgba(255,255,255,.075);
+    background: rgba(5,10,20,.72);
+    color: #fff;
+    padding: 0 12px;
+    outline: none;
+    font-size: 12px;
+  }
+
+  .field input:focus,
+  .field select:focus {
+    border-color: rgba(249,115,22,.45);
+  }
+
+  .field select option {
+    background: #111827;
+    color: #fff;
+  }
+
+  .two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .protected-role {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 11px 12px;
+    border: 1px solid rgba(249,115,22,.16);
+    background: rgba(249,115,22,.055);
+    border-radius: 9px;
+  }
+
+  .protected-role strong {
+    color: #fff;
+    font-size: 12px;
+  }
+
+  .protected-role span {
+    color: rgba(255,255,255,.38);
+    font-size: 10px;
+    line-height: 1.45;
+  }
+
+  .status-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 14px 0;
+    margin-top: 2px;
+    border-top: 1px solid rgba(255,255,255,.055);
+    border-bottom: 1px solid rgba(255,255,255,.055);
+  }
+
+  .status-title {
+    color: #fff;
+    font-size: 12px;
+    font-weight: 750;
+  }
+
+  .status-description {
+    margin-top: 4px;
+    color: rgba(255,255,255,.35);
+    font-size: 10px;
+  }
+
+  .status-toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    min-width: 40px;
+    border: 0;
+    border-radius: 999px;
+    background: #374151;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .status-toggle span {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 3px;
+    left: 3px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform .18s ease;
+  }
+
+  .status-toggle.active {
+    background: #f97316;
+  }
+
+  .status-toggle.active span {
+    transform: translateX(18px);
+  }
+
+  .message {
+    margin-top: 13px;
+    padding: 9px 11px;
+    border-radius: 8px;
+    background: rgba(34,197,94,.08);
+    color: #22c55e;
+    font-size: 11px;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .cancel-button,
+  .save-button {
+    border-radius: 8px;
+    padding: 9px 13px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .cancel-button {
+    border: 1px solid rgba(255,255,255,.07);
+    background: rgba(255,255,255,.035);
+    color: rgba(255,255,255,.55);
+  }
+
+  .save-button {
+    border: 0;
+    background: #f97316;
+    color: #fff;
+  }
+
+  .save-button:disabled {
+    opacity: .55;
+    cursor: wait;
+  }
+
+  .loading {
+    padding: 60px 20px;
+    text-align: center;
+    color: rgba(255,255,255,.4);
+    font-size: 12px;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .empty h1 {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+
+  .empty button {
+    border: 0;
+    border-radius: 8px;
+    background: #f97316;
+    color: #fff;
+    padding: 9px 13px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  @media (max-width: 600px) {
+    .edit-page {
+      padding: 20px 14px 40px;
+    }
+
+    .edit-header h1 {
+      font-size: 25px;
+    }
+
+    .card {
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    .two-columns {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .cancel-button,
+    .save-button {
+      width: 100%;
+    }
+  }
+`;

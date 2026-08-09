@@ -6,7 +6,7 @@ import {
   ShoppingBag,
   BarChart3,
   Store,
-  Settings,
+  Users,
   Truck,
   Volume2,
   LogOut,
@@ -21,7 +21,6 @@ import {
 import {
   useEffect,
   useRef,
-  type CSSProperties,
   type TouchEvent,
 } from "react";
 
@@ -56,26 +55,31 @@ export default function Sidebar() {
       label: "Pedidos",
       href: `/admin/orders/${restaurantId}/orders`,
       icon: ShoppingBag,
+      highlight: true,
     },
     {
       label: "Ventas",
       href: `/admin/sales/${restaurantId}`,
       icon: BarChart3,
+      highlight: false,
     },
     {
       label: "Restaurante",
       href: `/admin/restaurant/${restaurantId}`,
       icon: Store,
+      highlight: false,
+    },
+    {
+      label: "Usuarios",
+      href: `/admin/users/${restaurantId}`,
+      icon: Users,
+      highlight: false,
     },
     {
       label: "Delivery y Pick-up",
       href: `/admin/restaurant/${restaurantId}/delivery-pickup`,
       icon: Truck,
-    },
-    {
-      label: "Configuración",
-      href: `/admin/settings/${restaurantId}`,
-      icon: Settings,
+      highlight: false,
     },
   ];
 
@@ -102,11 +106,6 @@ export default function Sidebar() {
     touchStartY.current = touch.clientY;
   }
 
-  /*
-   * El touchEnd anterior necesita conocer la posición inicial.
-   * Este helper conserva el inicio sin depender del estado
-   * después de limpiar los refs.
-   */
   function handleTouchEndSafe(
     event: TouchEvent<HTMLElement>
   ) {
@@ -199,8 +198,7 @@ export default function Sidebar() {
             inset: 0,
             border: 0,
             padding: 0,
-            background:
-              "rgba(0,0,0,.42)",
+            background: "rgba(0,0,0,.42)",
             backdropFilter: "blur(2px)",
             zIndex: 195,
             cursor: "default",
@@ -237,6 +235,7 @@ export default function Sidebar() {
           touchAction: "pan-y",
         }}
       >
+        {/* HEADER / LOGO */}
         <div
           style={{
             height: 74,
@@ -260,22 +259,27 @@ export default function Sidebar() {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 3,
+                gap: 2,
               }}
             >
               <Image
                 src="/wolf-log.png"
                 alt="Wolf"
-                width={18}
-                height={18}
+                width={28}
+                height={28}
                 priority
+                style={{
+                  objectFit: "contain",
+                }}
               />
 
               <span
                 style={{
-                  fontSize: 8,
+                  fontSize: 7,
                   fontWeight: 700,
                   color: "#fff",
+                  lineHeight: 1,
+                  letterSpacing: ".2px",
                 }}
               >
                 Wolf
@@ -294,36 +298,29 @@ export default function Sidebar() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 8,
+                    gap: 9,
                   }}
                 >
                   <Image
                     src="/wolf-log.png"
                     alt="Wolf"
-                    width={20}
-                    height={20}
+                    width={28}
+                    height={28}
                     priority
+                    style={{
+                      objectFit: "contain",
+                    }}
                   />
 
                   <span
                     style={{
-                      fontSize: 19,
+                      fontSize: 16,
                       fontWeight: 800,
+                      lineHeight: 1,
                     }}
                   >
                     Wolf
                   </span>
-                </div>
-
-                <div
-                  style={{
-                    marginLeft: 28,
-                    marginTop: 3,
-                    color: "#777",
-                    fontSize: 11,
-                  }}
-                >
-                  Ordering SaaS
                 </div>
               </Link>
 
@@ -352,6 +349,7 @@ export default function Sidebar() {
           )}
         </div>
 
+        {/* BOTÓN EXPANDIR CUANDO ESTÁ CERRADO */}
         {collapsed && (
           <button
             onClick={toggle}
@@ -380,6 +378,7 @@ export default function Sidebar() {
           </button>
         )}
 
+        {/* MENÚ */}
         <div
           style={{
             flex: 1,
@@ -392,34 +391,49 @@ export default function Sidebar() {
             minHeight: 0,
           }}
         >
-          {MENU.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => {
-                if (
-                  window.matchMedia(
-                    "(max-width: 768px)"
-                  ).matches
-                ) {
-                  close();
-                }
-              }}
-              style={{
-                textDecoration: "none",
-              }}
-            >
-              <SidebarItem
-                icon={item.icon}
-                label={item.label}
-                active={pathname.startsWith(
-                  item.href
-                )}
-                collapsed={collapsed}
-              />
-            </Link>
-          ))}
+          {MENU.map((item) => {
+            const isCurrentPath =
+              pathname.startsWith(item.href);
 
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => {
+                  if (
+                    window.matchMedia(
+                      "(max-width: 768px)"
+                    ).matches
+                  ) {
+                    close();
+                  }
+                }}
+                style={{
+                  textDecoration: "none",
+                }}
+              >
+                <SidebarItem
+                  icon={item.icon}
+                  label={item.label}
+                  /*
+                   * Solamente Pedidos utiliza el
+                   * highlight naranja.
+                   *
+                   * Los demás módulos permanecen
+                   * visualmente neutros.
+                   */
+                  active={
+                    item.highlight
+                      ? isCurrentPath
+                      : false
+                  }
+                  collapsed={collapsed}
+                />
+              </Link>
+            );
+          })}
+
+          {/* ACCIONES INFERIORES */}
           <div
             style={{
               marginTop: "auto",
@@ -428,6 +442,7 @@ export default function Sidebar() {
                 "1px solid rgba(255,255,255,.05)",
             }}
           >
+            {/* SONIDO */}
             <Link
               href={`/admin/restaurant/${restaurantId}/sound`}
               onClick={() => {
@@ -447,13 +462,12 @@ export default function Sidebar() {
               <SidebarItem
                 icon={Volume2}
                 label="Sonido"
-                active={pathname.startsWith(
-                  `/admin/restaurant/${restaurantId}/sound`
-                )}
+                active={false}
                 collapsed={collapsed}
               />
             </Link>
 
+            {/* SALIR */}
             <button
               type="button"
               onClick={handleLogout}

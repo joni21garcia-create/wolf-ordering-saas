@@ -48,7 +48,14 @@ const [changeAmount, setChangeAmount] =
 const [selectedQr, setSelectedQr] =
   useState<any>(null);
 
-  const [paymentProof, setPaymentProof] =
+  
+const [bankAccounts, setBankAccounts] =
+  useState<any[]>([]);
+
+const [selectedBankAccount, setSelectedBankAccount] =
+  useState<any>(null);
+
+const [paymentProof, setPaymentProof] =
   useState<File | null>(null);
 
   const [customerName, setCustomerName] =
@@ -224,6 +231,38 @@ console.log(
   setPaymentQrs(
     qrs || []
   );
+
+
+    const {
+      data: accounts,
+      error: accountsError,
+    } = await supabase
+      .from("restaurant_bank_accounts")
+      .select(
+        "id,bank_name,account_type,account_holder,account_number,active"
+      )
+      .eq(
+        "restaurant_id",
+        restaurantId
+      )
+      .eq(
+        "active",
+        true
+      )
+      .order(
+        "bank_name"
+      );
+
+    if (accountsError) {
+      console.error(
+        "Error cargando cuentas bancarias:",
+        accountsError
+      );
+      setBankAccounts([]);
+    } else {
+      setBankAccounts(accounts || []);
+    }
+
 }
   };
 
@@ -459,7 +498,12 @@ selected_qr_id:
 selected_qr_name:
   selectedQr?.name || null,
 
-        order_type:
+        
+
+        selected_bank_account_id:
+          selectedBankAccount?.id || null,
+
+order_type:
           orderType || "pickup",
 
 
@@ -915,7 +959,7 @@ router.push(
           }
           style={{ accentColor: "#f97316", width: "18px", height: "18px" }}
         />
-        Transferencia Bancaria
+        Transferencia
       </label>
     )}
 
@@ -948,43 +992,29 @@ router.push(
           }
           style={{ accentColor: "#f97316", width: "18px", height: "18px" }}
         />
-        Pago por QR
-      </label>
-    )}
-
-    {restaurant?.accepts_delivery_payment && (
-      <label
-        style={{
-          color: "#fff",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          padding: "14px 16px",
-          borderRadius: "14px",
-          background: paymentMethod === "delivery" ? "rgba(249,115,22,.1)" : "rgba(255,255,255,.02)",
-          border: paymentMethod === "delivery" ? "1px solid #f97316" : "1px solid rgba(255,255,255,.08)",
-          cursor: "pointer",
-          fontSize: "15px",
-        }}
-      >
-        <input
-          type="radio"
-          value="delivery"
-          checked={
-            paymentMethod ===
-            "delivery"
-          }
-          onChange={(e) =>
-            setPaymentMethod(
-              e.target.value
-            )
-          }
-          style={{ accentColor: "#f97316", width: "18px", height: "18px" }}
-        />
-        Pago contra entrega
+        Código QR
       </label>
     )}
   </div>
+
+  {!restaurant?.accepts_cash &&
+    !restaurant?.accepts_transfer &&
+    !restaurant?.accepts_qr && (
+      <p
+        style={{
+          marginTop: "14px",
+          padding: "12px 14px",
+          borderRadius: "10px",
+          background: "rgba(239,68,68,.07)",
+          border: "1px solid rgba(239,68,68,.16)",
+          color: "#fca5a5",
+          fontSize: "12px",
+          lineHeight: 1.45,
+        }}
+      >
+        Este restaurante no tiene métodos de pago activos.
+      </p>
+    )}
 </div>
 
 {paymentMethod === "transfer" && (
@@ -992,7 +1022,7 @@ router.push(
     style={{
       marginTop: "20px",
       marginBottom: "32px",
-      padding: "24px",
+      padding: "20px",
       borderRadius: "20px",
       background: "rgba(255,255,255,.03)",
       border: "1px solid rgba(255,255,255,.08)",
@@ -1001,30 +1031,186 @@ router.push(
   >
     <h3
       style={{
-        marginBottom: "18px",
+        margin: "0 0 6px",
         fontSize: "16px",
-        fontWeight: 600,
+        fontWeight: 700,
       }}
     >
-      Datos Bancarios
+      Elige una cuenta
     </h3>
 
-    <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "15px", marginBottom: "20px" }}>
-      <p style={{ margin: 0, color: "rgba(255,255,255,.7)" }}>
-        <strong style={{ color: "#fff" }}>Banco:</strong>{" "}
-        {restaurant?.bank_name}
-      </p>
+    <p
+      style={{
+        margin: "0 0 16px",
+        color: "rgba(255,255,255,.55)",
+        fontSize: "13px",
+        lineHeight: 1.5,
+      }}
+    >
+      Selecciona la cuenta configurada por el restaurante.
+    </p>
 
-      <p style={{ margin: 0, color: "rgba(255,255,255,.7)" }}>
-        <strong style={{ color: "#fff" }}>Titular:</strong>{" "}
-        {restaurant?.account_holder}
-      </p>
+    {bankAccounts.length === 0 ? (
+      <div
+        style={{
+          padding: "14px",
+          borderRadius: "12px",
+          background: "rgba(239,68,68,.08)",
+          border: "1px solid rgba(239,68,68,.2)",
+          color: "#fca5a5",
+          fontSize: "13px",
+          lineHeight: 1.5,
+        }}
+      >
+        No hay cuentas bancarias activas disponibles.
+      </div>
+    ) : (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "9px",
+        }}
+      >
+        {bankAccounts.map((account: any) => {
+          const selected =
+            selectedBankAccount?.id === account.id;
 
-      <p style={{ margin: 0, color: "rgba(255,255,255,.7)" }}>
-        <strong style={{ color: "#fff" }}>Cuenta:</strong>{" "}
-        <span style={{ fontFamily: "monospace" }}>{restaurant?.account_number}</span>
-      </p>
-    </div>
+          const accountType =
+            account.account_type === "checking"
+              ? "Corriente"
+              : "Ahorros";
+
+          return (
+            <button
+              key={account.id}
+              type="button"
+              onClick={() =>
+                setSelectedBankAccount(account)
+              }
+              style={{
+                width: "100%",
+                padding: "14px",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                textAlign: "left",
+                borderRadius: "14px",
+                border: selected
+                  ? "1px solid #f97316"
+                  : "1px solid rgba(255,255,255,.08)",
+                background: selected
+                  ? "rgba(249,115,22,.09)"
+                  : "rgba(255,255,255,.02)",
+                color: "#fff",
+                cursor: "pointer",
+                transition: "all .18s ease",
+              }}
+            >
+              <span
+                style={{
+                  width: "34px",
+                  height: "34px",
+                  flexShrink: 0,
+                  display: "grid",
+                  placeItems: "center",
+                  borderRadius: "10px",
+                  background: selected
+                    ? "#f97316"
+                    : "rgba(255,255,255,.06)",
+                  color: "#fff",
+                  fontSize: "15px",
+                }}
+              >
+                $
+              </span>
+
+              <span style={{ minWidth: 0, flex: 1 }}>
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "10px",
+                  }}
+                >
+                  <strong
+                    style={{
+                      fontSize: "14px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {account.bank_name}
+                  </strong>
+
+                  <span
+                    style={{
+                      flexShrink: 0,
+                      padding: "4px 7px",
+                      borderRadius: "999px",
+                      background: selected
+                        ? "rgba(249,115,22,.14)"
+                        : "rgba(255,255,255,.05)",
+                      color: selected
+                        ? "#f97316"
+                        : "rgba(255,255,255,.55)",
+                      fontSize: "9px",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {accountType}
+                  </span>
+                </span>
+
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: "4px",
+                    color: "rgba(255,255,255,.55)",
+                    fontSize: "11px",
+                  }}
+                >
+                  {account.account_holder}
+                </span>
+
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: "3px",
+                    color: "rgba(255,255,255,.75)",
+                    fontFamily: "monospace",
+                    fontSize: "11px",
+                  }}
+                >
+                  {account.account_number}
+                </span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    )}
+
+    {selectedBankAccount && (
+      <div
+        style={{
+          marginTop: "14px",
+          padding: "10px 12px",
+          borderRadius: "10px",
+          background: "rgba(34,197,94,.06)",
+          border: "1px solid rgba(34,197,94,.14)",
+          color: "rgba(255,255,255,.65)",
+          fontSize: "11px",
+        }}
+      >
+        Cuenta seleccionada:{" "}
+        <strong style={{ color: "#22c55e" }}>
+          {selectedBankAccount.bank_name}
+        </strong>
+      </div>
+    )}
 
     <label
       style={{
@@ -1045,20 +1231,32 @@ router.push(
             e.target.checked
           )
         }
-        style={{ accentColor: "#f97316", marginTop: "2px", width: "16px", height: "16px" }}
+        style={{
+          accentColor: "#f97316",
+          marginTop: "2px",
+          width: "16px",
+          height: "16px",
+        }}
       />
       Confirmo que realizaré la transferencia bancaria
     </label>
 
     <div
       style={{
-        marginTop: "24px",
-        paddingTop: "20px",
+        marginTop: "20px",
+        paddingTop: "18px",
         borderTop: "1px solid rgba(255,255,255,.08)",
       }}
     >
-      <label style={{ display: "block", fontSize: "14px", fontWeight: 500, marginBottom: "10px" }}>
-        Subir comprobante:
+      <label
+        style={{
+          display: "block",
+          fontSize: "13px",
+          fontWeight: 600,
+          marginBottom: "9px",
+        }}
+      >
+        Subir comprobante
       </label>
 
       <input
@@ -1073,12 +1271,13 @@ router.push(
           display: "block",
           width: "100%",
           color: "rgba(255,255,255,.6)",
-          fontSize: "14px",
+          fontSize: "13px",
         }}
       />
     </div>
   </div>
 )}
+
 
 {paymentMethod === "qr" && (
   <div
@@ -1255,8 +1454,7 @@ router.push(
   </div>
 )}
 
-{(paymentMethod === "cash" ||
-  paymentMethod === "delivery") && (
+{paymentMethod === "cash" && (
   <div
     style={{
       marginTop: "20px",
@@ -1419,5 +1617,3 @@ setChangeAmount(
     </div>
   );
 }
-
-

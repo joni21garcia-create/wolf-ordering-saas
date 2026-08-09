@@ -6,206 +6,300 @@ import { useParams } from "next/navigation";
 export default function AccessPage() {
   const params = useParams();
 
-  const restaurantId =
-    params.id as string;
-
-  const modules = [
-    {
-      title: "Usuarios",
-      description:
-        "Gestiona las cuentas que pueden acceder al restaurante.",
-      icon: "👥",
-      href: `/super-admin/restaurants/${restaurantId}/access/users`,
-      color: "#3b82f6",
-    },
-
-    {
-      title: "Roles",
-      description:
-        "Define cargos, niveles y responsabilidades.",
-      icon: "🛡️",
-      href: `/super-admin/restaurants/${restaurantId}/access/roles`,
-      color: "#f97316",
-    },
-
-    {
-      title: "Permisos",
-      description:
-        "Controla qué módulos puede visualizar cada rol.",
-      icon: "🔐",
-      href: `/super-admin/restaurants/${restaurantId}/access/permissions`,
-      color: "#10b981",
-    },
-  ];
+  const restaurantId = params.id as string;
 
   return (
     <main
       style={{
-        maxWidth: "1600px",
+        maxWidth: "1100px",
         margin: "0 auto",
-        padding: "40px",
+        padding: "28px 24px 60px",
         color: "#fff",
       }}
     >
-      <div
+      {/* HEADER */}
+      <header
         style={{
-          marginBottom: "40px",
+          marginBottom: "28px",
         }}
       >
-        <p
+        <div
           style={{
-            color: "#666",
-            marginBottom: "10px",
+            color: "#f97316",
+            fontSize: "12px",
+            fontWeight: 800,
+            letterSpacing: "1.8px",
+            textTransform: "uppercase",
+            marginBottom: "8px",
           }}
         >
-          Wolf Ordering /
-          Seguridad /
-          Accesos
-        </p>
+          Acceso
+        </div>
 
         <h1
           style={{
-            fontSize: "54px",
-            fontWeight: "800",
             margin: 0,
+            fontSize: "30px",
+            lineHeight: 1.15,
+            fontWeight: 800,
+            letterSpacing: "-0.5px",
           }}
         >
-          🛡️ Acceso y Seguridad
+          Usuarios
         </h1>
 
         <p
           style={{
-            color: "#999",
-            marginTop: "15px",
-            maxWidth: "700px",
-            lineHeight: 1.8,
+            margin: "8px 0 0",
+            color: "rgba(255,255,255,.48)",
+            fontSize: "14px",
+            lineHeight: 1.5,
           }}
         >
-          Administra usuarios,
-          roles y permisos del
-          restaurante desde un
-          único lugar.
+          Administra el equipo y los roles operativos del restaurante.
         </p>
-      </div>
+      </header>
 
+      {/* NAVEGACIÓN */}
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(320px,1fr))",
-          gap: "25px",
+          display: "flex",
+          gap: "8px",
+          marginBottom: "22px",
+          borderBottom: "1px solid rgba(255,255,255,.08)",
+          paddingBottom: "12px",
         }}
       >
-        {modules.map(
-          (module) => (
-            <Link
-              key={module.title}
-              href={module.href}
+        <Link
+          href={`/super-admin/restaurants/${restaurantId}/access/users`}
+          style={{
+            textDecoration: "none",
+            color: "#fff",
+            background: "#f97316",
+            borderRadius: "10px",
+            padding: "9px 15px",
+            fontSize: "13px",
+            fontWeight: 700,
+          }}
+        >
+          Usuarios
+        </Link>
+
+        <Link
+          href={`/super-admin/restaurants/${restaurantId}/access/roles`}
+          style={{
+            textDecoration: "none",
+            color: "rgba(255,255,255,.62)",
+            background: "rgba(255,255,255,.045)",
+            border: "1px solid rgba(255,255,255,.07)",
+            borderRadius: "10px",
+            padding: "9px 15px",
+            fontSize: "13px",
+            fontWeight: 700,
+          }}
+        >
+          Roles operativos
+        </Link>
+      </div>
+
+      {/* ACCESOS PRINCIPALES */}
+      <section
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: "12px",
+        }}
+      >
+        {/* USUARIOS */}
+        <Link
+          href={`/super-admin/restaurants/${restaurantId}/access/users`}
+          style={{
+            textDecoration: "none",
+            color: "inherit",
+          }}
+        >
+          <div
+            style={{
+              background: "#111827",
+              border: "1px solid rgba(255,255,255,.08)",
+              borderRadius: "16px",
+              padding: "20px",
+              transition: "transform .18s ease, border-color .18s ease",
+            }}
+          >
+            <div
               style={{
-                textDecoration:
-                  "none",
+                width: "40px",
+                height: "40px",
+                borderRadius: "11px",
+                background: "rgba(249,115,22,.12)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "20px",
+                marginBottom: "16px",
               }}
             >
-              <div
-                style={{
-                  background:
-                    "rgba(17,17,17,.95)",
-                  border:
-                    "1px solid rgba(255,255,255,.08)",
-                  borderRadius:
-                    "28px",
-                  padding: "30px",
-                  backdropFilter:
-                    "blur(20px)",
-                  height: "100%",
-                  transition:
-                    ".25s",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize:
-                      "58px",
-                    marginBottom:
-                      "20px",
-                  }}
-                >
-                  {module.icon}
-                </div>
+              👤
+            </div>
 
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+              }}
+            >
+              <div>
                 <h2
                   style={{
-                    color:
-                      "#fff",
-                    marginBottom:
-                      "10px",
+                    margin: 0,
+                    fontSize: "17px",
+                    fontWeight: 750,
                   }}
                 >
-                  {module.title}
+                  Usuarios
                 </h2>
 
                 <p
                   style={{
-                    color:
-                      "#888",
-                    lineHeight:
-                      1.7,
-                    marginBottom:
-                      "25px",
+                    margin: "5px 0 0",
+                    color: "rgba(255,255,255,.45)",
+                    fontSize: "13px",
                   }}
                 >
-                  {
-                    module.description
-                  }
+                  Cuentas y acceso del equipo
                 </p>
+              </div>
 
-                <div
+              <span
+                style={{
+                  color: "#f97316",
+                  fontSize: "18px",
+                }}
+              >
+                →
+              </span>
+            </div>
+          </div>
+        </Link>
+
+        {/* ROLES */}
+        <Link
+          href={`/super-admin/restaurants/${restaurantId}/access/roles`}
+          style={{
+            textDecoration: "none",
+            color: "inherit",
+          }}
+        >
+          <div
+            style={{
+              background: "#111827",
+              border: "1px solid rgba(255,255,255,.08)",
+              borderRadius: "16px",
+              padding: "20px",
+              transition: "transform .18s ease, border-color .18s ease",
+            }}
+          >
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "11px",
+                background: "rgba(255,255,255,.06)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "20px",
+                marginBottom: "16px",
+              }}
+            >
+              🛡
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "12px",
+              }}
+            >
+              <div>
+                <h2
                   style={{
-                    color:
-                      module.color,
-                    fontWeight:
-                      "700",
+                    margin: 0,
+                    fontSize: "17px",
+                    fontWeight: 750,
                   }}
                 >
-                  Abrir módulo →
-                </div>
-              </div>
-            </Link>
-          )
-        )}
-      </div>
+                  Roles operativos
+                </h2>
 
+                <p
+                  style={{
+                    margin: "5px 0 0",
+                    color: "rgba(255,255,255,.45)",
+                    fontSize: "13px",
+                  }}
+                >
+                  Roles utilizados por el equipo
+                </p>
+              </div>
+
+              <span
+                style={{
+                  color: "rgba(255,255,255,.45)",
+                  fontSize: "18px",
+                }}
+              >
+                →
+              </span>
+            </div>
+          </div>
+        </Link>
+      </section>
+
+      {/* INFORMACIÓN */}
       <div
         style={{
-          marginTop: "40px",
-          background:
-            "rgba(17,17,17,.95)",
-          border:
-            "1px solid rgba(255,255,255,.08)",
-          borderRadius: "24px",
-          padding: "25px",
+          marginTop: "18px",
+          padding: "15px 16px",
+          borderRadius: "13px",
+          background: "rgba(255,255,255,.025)",
+          border: "1px solid rgba(255,255,255,.06)",
         }}
       >
-        <h3
+        <div
           style={{
-            marginTop: 0,
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "10px",
           }}
         >
-          Seguridad Wolf
-        </h3>
+          <span
+            style={{
+              fontSize: "15px",
+              opacity: 0.7,
+            }}
+          >
+            ℹ
+          </span>
 
-        <p
-          style={{
-            color: "#888",
-            lineHeight: 1.8,
-          }}
-        >
-          Los permisos se aplican
-          por rol. Los usuarios
-          heredan automáticamente
-          los accesos asignados
-          a su cargo.
-        </p>
+          <p
+            style={{
+              margin: 0,
+              color: "rgba(255,255,255,.42)",
+              fontSize: "12px",
+              lineHeight: 1.6,
+            }}
+          >
+            Los permisos y módulos del sistema son administrados desde
+            Wolf. Los usuarios del restaurante trabajan únicamente con
+            los roles operativos disponibles.
+          </p>
+        </div>
       </div>
     </main>
   );
