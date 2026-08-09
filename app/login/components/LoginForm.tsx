@@ -33,200 +33,431 @@ export default function LoginForm({
   loginWithGoogle,
 }: LoginFormProps) {
   return (
-    <aside
-      style={{
-        width: "100%",
-        maxWidth: 620,
-        margin: "0 auto",
-        padding: "56px 64px",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        boxSizing: "border-box",
-      }}
-    >
-      {/* Header */}
+    <>
+      <style jsx>{`
+        .form {
+          width: 100%;
+          max-width: 560px;
 
-      <div
-        style={{
-          marginBottom: 42,
-        }}
-      >
-        <span
-          style={{
-            color: "#f97316",
-            fontWeight: 800,
-            letterSpacing: 4,
-            fontSize: 12,
-            textTransform: "uppercase",
-          }}
-        >
+          margin: 0 auto;
+
+          padding:
+            clamp(32px, 5vw, 72px)
+            clamp(24px, 5vw, 64px);
+
+          box-sizing: border-box;
+
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+
+        .eyebrow {
+          color: #f97316;
+          font-weight: 800;
+          letter-spacing: 3.5px;
+          font-size: 11px;
+          text-transform: uppercase;
+          margin-bottom: 14px;
+        }
+
+        .title {
+          color: #fff;
+          font-size: clamp(34px, 4vw, 46px);
+          font-weight: 750;
+          letter-spacing: -1.5px;
+          line-height: 1.05;
+          margin: 0 0 10px;
+        }
+
+        .subtitle {
+          color: #8d8d8d;
+          font-size: 15px;
+          line-height: 1.6;
+          margin: 0 0 38px;
+        }
+
+        .field {
+          margin-bottom: 18px;
+        }
+
+        .label {
+          display: block;
+          margin-bottom: 8px;
+
+          color: #a6a6a6;
+
+          font-size: 13px;
+          font-weight: 500;
+        }
+
+        .input {
+          width: 100%;
+          height: 56px;
+
+          padding: 0 17px;
+
+          border-radius: 14px;
+
+          border: 1px solid rgba(255,255,255,.075);
+
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255,255,255,.045),
+              rgba(255,255,255,.018)
+            );
+
+          color: #fff;
+
+          outline: none;
+
+          font-size: 15px;
+
+          box-sizing: border-box;
+
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.025);
+
+          transition:
+            border-color .18s ease,
+            background .18s ease,
+            box-shadow .18s ease;
+        }
+
+        .input::placeholder {
+          color: #555;
+        }
+
+        .input:focus {
+          border-color: rgba(249,115,22,.42);
+
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255,255,255,.055),
+              rgba(255,255,255,.022)
+            );
+
+          box-shadow:
+            0 0 0 3px rgba(249,115,22,.07),
+            inset 0 1px 0 rgba(255,255,255,.04);
+        }
+
+        .options {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          gap: 14px;
+
+          margin:
+            4px 0
+            26px;
+
+          font-size: 13px;
+        }
+
+        .remember {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          color: #858585;
+
+          cursor: pointer;
+
+          white-space: nowrap;
+        }
+
+        .remember input {
+          width: 15px;
+          height: 15px;
+          accent-color: #f97316;
+        }
+
+        .forgot {
+          border: 0;
+          background: transparent;
+
+          color: #f97316;
+
+          cursor: pointer;
+
+          font-size: 13px;
+          font-weight: 600;
+
+          padding: 4px 0;
+
+          transition: opacity .18s ease;
+        }
+
+        .forgot:hover {
+          opacity: .75;
+        }
+
+        .login-button {
+          position: relative;
+          isolation: isolate;
+          overflow: hidden;
+
+          width: 100%;
+          height: 58px;
+
+          border-radius: 15px;
+
+          border: 1px solid rgba(255, 190, 130, .38);
+
+          color: #fff;
+
+          font-size: 15px;
+          font-weight: 750;
+          letter-spacing: .1px;
+
+          cursor: pointer;
+
+          background:
+            linear-gradient(
+              180deg,
+              #ff9a48 0%,
+              #ff872f 38%,
+              #f97316 100%
+            );
+
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.34),
+            inset 0 -1px 0 rgba(111,34,0,.32),
+            0 1px 2px rgba(0,0,0,.40),
+            0 8px 24px rgba(249,115,22,.13);
+
+          transition:
+            transform .18s cubic-bezier(.2,.8,.2,1),
+            box-shadow .18s ease,
+            filter .18s ease,
+            border-color .18s ease;
+        }
+
+        /* Borde luminoso superior */
+        .login-button::before {
+          content: "";
+          position: absolute;
+          z-index: -1;
+
+          top: 1px;
+          left: 9%;
+          width: 82%;
+          height: 1px;
+
+          border-radius: 999px;
+
+          background:
+            linear-gradient(
+              90deg,
+              transparent,
+              rgba(255,255,255,.58),
+              transparent
+            );
+
+          opacity: .75;
+          pointer-events: none;
+        }
+
+        /* Reflejo diagonal muy sutil */
+        .login-button::after {
+          content: "";
+          position: absolute;
+          z-index: -1;
+
+          top: -90%;
+          left: -35%;
+
+          width: 28%;
+          height: 280%;
+
+          transform: rotate(18deg);
+
+          background:
+            linear-gradient(
+              90deg,
+              transparent,
+              rgba(255,255,255,.16),
+              transparent
+            );
+
+          opacity: 0;
+
+          transition:
+            left .55s cubic-bezier(.2,.7,.2,1),
+            opacity .25s ease;
+
+          pointer-events: none;
+        }
+
+        .login-button:hover:not(:disabled) {
+          transform: translateY(-1px);
+
+          filter: brightness(1.035);
+
+          border-color: rgba(255, 205, 160, .52);
+
+          box-shadow:
+            inset 0 1px 0 rgba(255,255,255,.40),
+            inset 0 -1px 0 rgba(111,34,0,.28),
+            0 2px 4px rgba(0,0,0,.32),
+            0 12px 30px rgba(249,115,22,.19);
+        }
+
+        .login-button:hover:not(:disabled)::after {
+          left: 115%;
+          opacity: 1;
+        }
+
+        .login-button:active:not(:disabled) {
+          transform: translateY(1px);
+
+          filter: brightness(.98);
+
+          box-shadow:
+            inset 0 2px 5px rgba(92,28,0,.25),
+            0 3px 10px rgba(249,115,22,.09);
+        }
+
+        .login-button:focus-visible {
+          outline: none;
+
+          box-shadow:
+            0 0 0 3px rgba(249,115,22,.13),
+            inset 0 1px 0 rgba(255,255,255,.34),
+            0 8px 24px rgba(249,115,22,.15);
+        }
+
+        .login-button:disabled {
+          cursor: wait;
+          opacity: .55;
+          filter: saturate(.75);
+        }
+
+        @media (max-width: 700px) {
+          .form {
+            max-width: none;
+            padding: 38px 24px 34px;
+          }
+
+          .subtitle {
+            margin-bottom: 30px;
+          }
+
+          .options {
+            margin-bottom: 22px;
+          }
+        }
+
+        @media (max-width: 380px) {
+          .form {
+            padding-left: 20px;
+            padding-right: 20px;
+          }
+
+          .options {
+            align-items: flex-start;
+          }
+
+          .forgot {
+            text-align: right;
+          }
+        }
+      `}</style>
+
+      <aside className="form">
+        <div className="eyebrow">
           WOLF ORDERING OS
-        </span>
+        </div>
 
-        <h2
-          style={{
-            color: "#fff",
-            fontSize: 42,
-            fontWeight: 700,
-            marginTop: 16,
-            marginBottom: 10,
-            lineHeight: 1.15,
-          }}
-        >
+        <h2 className="title">
           Bienvenido
         </h2>
 
-        <p
-          style={{
-            color: "#9ca3af",
-            fontSize: 16,
-            margin: 0,
-          }}
-        >
-          Inicia sesión para acceder.
+        <p className="subtitle">
+          Inicia sesión para acceder a tu operación.
         </p>
-      </div>
 
-      {/* EMAIL */}
+        {/* EMAIL */}
+        <div className="field">
+          <label className="label">
+            Correo electrónico
+          </label>
 
-      <div style={{ marginBottom: 22 }}>
-        <label
-          style={{
-            color: "#b5b5b5",
-            display: "block",
-            marginBottom: 10,
-            fontSize: 14,
-            fontWeight: 500,
-          }}
-        >
-          Correo electrónico
-        </label>
-
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="correo@empresa.com"
-          style={{
-            width: "100%",
-            height: 62,
-            padding: "0 20px",
-            borderRadius: 16,
-            border: "1px solid rgba(255,255,255,.08)",
-            background: "rgba(255,255,255,.03)",
-            color: "#fff",
-            outline: "none",
-            fontSize: 16,
-            boxSizing: "border-box",
-          }}
-        />
-      </div>
-
-      {/* PASSWORD */}
-
-      <div style={{ marginBottom: 28 }}>
-        <label
-          style={{
-            color: "#b5b5b5",
-            display: "block",
-            marginBottom: 10,
-            fontSize: 14,
-            fontWeight: 500,
-          }}
-        >
-          Contraseña
-        </label>
-
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          style={{
-            width: "100%",
-            height: 62,
-            padding: "0 20px",
-            borderRadius: 16,
-            border: "1px solid rgba(255,255,255,.08)",
-            background: "rgba(255,255,255,.03)",
-            color: "#fff",
-            outline: "none",
-            fontSize: 16,
-            boxSizing: "border-box",
-          }}
-        />
-      </div>
-
-      {/* OPTIONS */}
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 32,
-          fontSize: 14,
-        }}
-      >
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            color: "#9ca3af",
-            cursor: "pointer",
-          }}
-        >
           <input
-            type="checkbox"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
+            className="input"
+            type="email"
+            value={email}
+            onChange={(e) =>
+              setEmail(e.target.value)
+            }
+            placeholder="correo@empresa.com"
+            autoComplete="email"
           />
-          Recordarme
-        </label>
+        </div>
 
+        {/* PASSWORD */}
+        <div className="field">
+          <label className="label">
+            Contraseña
+          </label>
+
+          <input
+            className="input"
+            type="password"
+            value={password}
+            onChange={(e) =>
+              setPassword(e.target.value)
+            }
+            placeholder="••••••••"
+            autoComplete="current-password"
+          />
+        </div>
+
+        {/* OPTIONS */}
+        <div className="options">
+          <label className="remember">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) =>
+                setRememberMe(e.target.checked)
+              }
+            />
+
+            <span>Recordarme</span>
+          </label>
+
+          <button
+            onClick={resetPassword}
+            type="button"
+            className="forgot"
+          >
+            ¿Olvidaste tu contraseña?
+          </button>
+        </div>
+
+        {/* LOGIN */}
         <button
-          onClick={resetPassword}
+          onClick={login}
+          disabled={loading}
+          className="login-button"
           type="button"
-          style={{
-            border: "none",
-            background: "transparent",
-            color: "#f97316",
-            cursor: "pointer",
-            fontWeight: 600,
-            fontSize: 14,
-          }}
         >
-          ¿Olvidaste tu contraseña?
+          {loading
+            ? "Ingresando..."
+            : "Ingresar"}
         </button>
-      </div>
 
-      {/* LOGIN */}
+        <GoogleButton
+          onClick={loginWithGoogle}
+        />
 
-      <button
-        onClick={login}
-        disabled={loading}
-        style={{
-          width: "100%",
-          height: 64,
-          borderRadius: 18,
-          border: "none",
-          cursor: "pointer",
-          color: "#fff",
-          fontSize: 17,
-          fontWeight: 700,
-          background:
-            "linear-gradient(90deg,#f97316,#ff8c2f)",
-          transition: "all .25s ease",
-        }}
-      >
-        {loading ? "Ingresando..." : "Ingresar"}
-      </button>
-
-      <GoogleButton onClick={loginWithGoogle} />
-
-      <InstallSection />
-    </aside>
+        <InstallSection />
+      </aside>
+    </>
   );
 }

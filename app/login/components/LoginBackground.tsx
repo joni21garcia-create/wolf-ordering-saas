@@ -9,7 +9,6 @@ export default function LoginBackground({
 }: LoginBackgroundProps) {
   return (
     <>
-      {/* Fondo principal */}
       <div
         style={{
           position: "fixed",
@@ -20,76 +19,83 @@ export default function LoginBackground({
         }}
       />
 
-      {/* Glow superior derecho */}
+      {/* Glow superior */}
       <div
         style={{
           position: "fixed",
-          top: "-280px",
-          right: "-220px",
-          width: "900px",
-          height: "900px",
+          top: "-25vh",
+          right: "-12vw",
+          width: "60vw",
+          height: "60vw",
+          maxWidth: 900,
+          maxHeight: 900,
+          minWidth: 420,
+          minHeight: 420,
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(249,115,22,.18), transparent 70%)",
+            "radial-gradient(circle, rgba(249,115,22,.16), transparent 68%)",
           filter: "blur(100px)",
           pointerEvents: "none",
           zIndex: -19,
         }}
       />
 
-      {/* Glow inferior izquierdo */}
+      {/* Glow inferior */}
       <div
         style={{
           position: "fixed",
-          bottom: "-320px",
-          left: "-260px",
-          width: "900px",
-          height: "900px",
+          bottom: "-28vh",
+          left: "-15vw",
+          width: "60vw",
+          height: "60vw",
+          maxWidth: 900,
+          maxHeight: 900,
+          minWidth: 420,
+          minHeight: 420,
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(249,115,22,.10), transparent 72%)",
+            "radial-gradient(circle, rgba(249,115,22,.09), transparent 70%)",
           filter: "blur(120px)",
           pointerEvents: "none",
           zIndex: -19,
         }}
       />
 
-      {/* Cuadrícula */}
+      {/* Grid muy discreta */}
       <div
         style={{
           position: "fixed",
           inset: 0,
           pointerEvents: "none",
-          opacity: 0.06,
+          opacity: 0.035,
           backgroundImage: `
-            linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px)
+            linear-gradient(rgba(255,255,255,.16) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,.16) 1px, transparent 1px)
           `,
-          backgroundSize: "52px 52px",
+          backgroundSize: "64px 64px",
           zIndex: -18,
         }}
       />
 
-      {/* Líneas diagonales */}
+      {/* Líneas Wolf */}
       <div
         style={{
           position: "fixed",
           inset: 0,
           pointerEvents: "none",
-          opacity: 0.08,
+          opacity: 0.055,
           backgroundImage:
-            "repeating-linear-gradient(-28deg, transparent 0px, transparent 58px, rgba(249,115,22,.22) 60px, transparent 61px)",
+            "repeating-linear-gradient(-28deg, transparent 0px, transparent 72px, rgba(249,115,22,.20) 73px, transparent 74px)",
           zIndex: -17,
         }}
       />
 
       <main
         style={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "20px",
+          width: "100%",
+          minHeight: "100dvh",
+          padding: 0,
+          margin: 0,
           position: "relative",
           zIndex: 1,
         }}
@@ -99,5 +105,3 @@ export default function LoginBackground({
     </>
   );
 }
-
-

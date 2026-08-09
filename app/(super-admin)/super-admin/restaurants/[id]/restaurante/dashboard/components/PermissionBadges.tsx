@@ -2,7 +2,7 @@
 
 type Props = {
   role?: string;
-  permissions?: number; // Sigue siendo un número limpio
+  permissions?: number;
 };
 
 export default function PermissionBadges({
@@ -10,26 +10,19 @@ export default function PermissionBadges({
   permissions = 0,
 }: Props) {
   return (
-    <div
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: 8, // Separación más unificada y elegante
-      }}
-    >
+    <div style={containerStyle} aria-label="Información de acceso">
       <Badge
         color="#f97316"
         text={role || "Sin rol"}
       />
 
-      <Badge
-        color="#22c55e"
-        text={`${permissions} módulos habilitados`}
-      />
+      <span style={separatorStyle}>·</span>
 
       <Badge
-        color="#3b82f6"
-        text="Sistema Online"
+        color="#22c55e"
+        text={`${permissions} ${
+          permissions === 1 ? "módulo habilitado" : "módulos habilitados"
+        }`}
       />
     </div>
   );
@@ -43,41 +36,55 @@ function Badge({
   color: string;
 }) {
   return (
-    <div
+    <span
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 6, // Gap ajustado
-        padding: "4px 10px", // Reducción premium de tamaño (antes era 10px 18px)
-        borderRadius: 999,
-        background: `${color}08`, // Menos opacidad de fondo para mayor elegancia
-        border: `1px solid ${color}20`, // Borde ultra sutil
-        backdropFilter: "blur(8px)",
-        whiteSpace: "nowrap",
-        transition: "all 0.2s ease",
+        ...badgeStyle,
+        color,
       }}
     >
       <span
+        aria-hidden="true"
         style={{
-          width: 6, // Burbuja más pequeña y delicada (antes 10)
-          height: 6,
-          borderRadius: "50%",
+          ...dotStyle,
           background: color,
-          boxShadow: `0 0 6px ${color}`,
         }}
       />
-
-      <span
-        style={{
-          color,
-          fontWeight: 600,
-          fontSize: 11, // Fuente reducida de 14 a 11 para un look "pro"
-          letterSpacing: "0.3px",
-        }}
-      >
-        {text}
-      </span>
-    </div>
+      {text}
+    </span>
   );
 }
+
+const containerStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  flexWrap: "wrap",
+  gap: 6,
+  minHeight: 20,
+};
+
+const separatorStyle: React.CSSProperties = {
+  color: "rgba(255,255,255,.16)",
+  fontSize: 12,
+  userSelect: "none",
+};
+
+const badgeStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 5,
+  minWidth: 0,
+  padding: "3px 0",
+  background: "transparent",
+  fontSize: 9.5,
+  lineHeight: 1.2,
+  fontWeight: 700,
+  letterSpacing: ".15px",
+  whiteSpace: "nowrap",
+};
+
+const dotStyle: React.CSSProperties = {
+  width: 5,
+  height: 5,
+  flexShrink: 0,
+  borderRadius: "50%",
+};

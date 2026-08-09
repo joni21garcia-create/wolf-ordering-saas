@@ -1,414 +1,251 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import PermissionGuard from "@/components/auth/PermissionGuard";
 
-type Role = {
-  id: string;
-  name: string;
-  code?: string | null;
-};
+type Role = { id: string; name: string; code: string };
+type Module = { id: string; code: string; name: string };
 
-export default function EditUserPage() {
+export default function PermissionsPage() {
   const params = useParams();
-  const router = useRouter();
-
+  const searchParams = useSearchParams();
   const restaurantId = params.id as string;
-  const userId = params.userId as string;
+  const roleFromUrl = searchParams.get("role");
 
   const [roles, setRoles] = useState<Role[]>([]);
-  const [email, setEmail] = useState("");
-  const [roleId, setRoleId] = useState("");
-  const [active, setActive] = useState(true);
-
-  const [loading, setLoading] = useState(false);
-  const [loadingData, setLoadingData] = useState(true);
+  const [modules, setModules] = useState<Module[]>([]);
+  const [selectedRole, setSelectedRole] = useState("");
+  const [permissions, setPermissions] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (restaurantId && userId) {
-      loadData();
-    }
-  }, [restaurantId, userId]);
+    loadData();
+  }, [roleFromUrl]);
 
   async function loadData() {
-    try {
-      setLoadingData(true);
+    const { data: rolesData } = await supabase.from("restaurant_roles").select("*").eq("restaurant_id", restaurantId).order("name");
+    const { data: modulesData } = await supabase.from("system_modules").select("*").order("name");
 
-      await Promise.all([
-        loadRoles(),
-        loadUser(),
-      ]);
-    } finally {
-      setLoadingData(false);
+    setRoles(rolesData || []);
+    setModules(modulesData || []);
+
+    if (rolesData && rolesData.length > 0) {
+      const initialRole = roleFromUrl || rolesData[0].id;
+      setSelectedRole(initialRole);
+      loadPermissions(initialRole);
     }
   }
 
-  async function loadRoles() {
-    const { data, error } = await supabase
-      .from("restaurant_roles")
-      .select("id,name,code")
-      .eq("restaurant_id", restaurantId)
-      .order("name");
-
-    if (error) {
-      console.error("Error cargando roles:", error);
-      return;
-    }
-
-    /*
-     * Super Admin y Propietario son roles protegidos
-     * y nunca aparecen en la administración operativa.
-     */
-    const operationalRoles = (data || []).filter((role) => {
-      const name = String(role.name || "")
-        .trim()
-        .toLowerCase();
-
-      const code = String(role.code || "")
-        .trim()
-        .toLowerCase();
-
-      const protectedCodes = [
-  "super-user",
-  "owner",
-  "manager",
-];
-
-      return !protectedCodes.includes(code);
-    });
-
-    setRoles(operationalRoles);
+  async function loadPermissions(roleId: string) {
+    const { data } = await supabase.from("role_modules").select("module_code").eq("role_id", roleId).eq("can_view", true);
+    setPermissions((data || []).map((x) => x.module_code));
   }
 
-  async function loadUser() {
-    const { data, error } = await supabase
-      .from("restaurant_users")
-      .select("*")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Error cargando usuario:", error);
-      return;
-    }
-
-    if (!data) {
-      alert("No se encontró el usuario.");
-      router.back();
-      return;
-    }
-
-    setEmail(data.email || "");
-    setRoleId(data.role_id || "");
-    setActive(Boolean(data.active));
-  }
-
-  async function saveUser() {
-    if (!email || !roleId) {
-      alert("Por favor, completa los campos requeridos.");
-      return;
-    }
-
-    /*
-     * Comprobación adicional:
-     * el rol seleccionado debe pertenecer al listado operativo.
-     */
-    const selectedRole = roles.find(
-      (role) => role.id === roleId
-    );
-
+  async function savePermissions() {
     if (!selectedRole) {
-      alert("Selecciona un rol operativo válido.");
+      alert("Selecciona un rol antes de guardar.");
       return;
     }
 
+    setSaving(true);
+
     try {
-      setLoading(true);
+      // 1. Eliminar los permisos actuales del rol.
+      const { error: deleteError } = await supabase
+        .from("role_modules")
+        .delete()
+        .eq("role_id", selectedRole);
 
-      const { error } = await supabase
-        .from("restaurant_users")
-        .update({
-          email: email.trim(),
-          role_id: roleId,
-          active,
-        })
-        .eq("id", userId);
-
-      if (error) {
-        alert(error.message);
+      if (deleteError) {
+        console.error("Error eliminando permisos:", deleteError);
+        alert(`No se pudieron actualizar los permisos: ${deleteError.message}`);
         return;
       }
 
-      alert("Usuario actualizado correctamente.");
+      // 2. Crear las nuevas asignaciones.
+      const rows = permissions.map((moduleCode) => ({
+        role_id: selectedRole,
+        module_code: moduleCode,
+        can_view: true,
+      }));
 
-      router.push(
-        `/super-admin/restaurants/${restaurantId}/access/users`
-      );
+      // 3. Guardar las nuevas asignaciones y comprobar el error real.
+      if (rows.length > 0) {
+        const { error: insertError } = await supabase
+          .from("role_modules")
+          .insert(rows);
+
+        if (insertError) {
+          console.error("Error insertando permisos:", insertError);
+          alert(`No se pudieron guardar los permisos: ${insertError.message}`);
+          return;
+        }
+      }
+
+      // 4. Confirmar leyendo nuevamente desde Supabase.
+      await loadPermissions(selectedRole);
+
+      alert("Permisos actualizados correctamente.");
+    } catch (error) {
+      console.error("Error guardando permisos:", error);
+      alert("Ocurrió un error inesperado al guardar los permisos.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   }
 
-  if (loadingData) {
-    return (
-      <main
-        style={{
-          maxWidth: "680px",
-          margin: "0 auto",
-          padding: "40px 20px",
-          color: "#fff",
-        }}
-      >
-        <div
-          style={{
-            textAlign: "center",
-            color: "rgba(255,255,255,.4)",
-            fontSize: "13px",
-          }}
-        >
-          Cargando usuario...
-        </div>
-      </main>
-    );
-  }
-
   return (
-    <main
-      style={{
-        maxWidth: "680px",
-        margin: "0 auto",
-        padding: "24px 20px 60px",
-        color: "#fff",
-      }}
-    >
-      {/* HEADER */}
-      <header style={{ marginBottom: "22px" }}>
-        <div
-          style={{
-            color: "#f97316",
-            fontSize: "11px",
-            fontWeight: 800,
-            letterSpacing: "1.6px",
-            textTransform: "uppercase",
-            marginBottom: "7px",
-          }}
-        >
-          Equipo
-        </div>
+    <PermissionGuard permission="permissions">
+      <main style={mainContainerStyle}>
+        
+        {/* HEADER SECTION */}
+        <header style={{ marginBottom: "35px" }}>
+          <p style={{ color: "#71717a", marginBottom: "8px", fontSize: "14px", fontWeight: "500" }}>
+            Acceso / Gestión de Seguridad
+          </p>
+          <h1 style={{ fontSize: "clamp(28px, 5vw, 42px)", fontWeight: "900", margin: 0, letterSpacing: "-1px" }}>
+            🔐 Control de Permisos
+          </h1>
+          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "15px", marginTop: "6px", maxWidth: "600px" }}>
+            Asigna qué secciones y herramientas de la plataforma Wolf tiene permitidas visualizar cada rol.
+          </p>
+        </header>
 
-        <h1
-          style={{
-            margin: 0,
-            fontSize: "28px",
-            lineHeight: 1.15,
-            fontWeight: 800,
-          }}
-        >
-          Editar usuario
-        </h1>
-
-        <p
-          style={{
-            margin: "7px 0 0",
-            color: "rgba(255,255,255,.45)",
-            fontSize: "13px",
-          }}
-        >
-          Actualiza el acceso y el rol operativo del usuario.
-        </p>
-      </header>
-
-      {/* FORMULARIO */}
-      <section
-        style={{
-          background: "#111827",
-          border: "1px solid rgba(255,255,255,.07)",
-          borderRadius: "16px",
-          padding: "20px",
-        }}
-      >
-        {/* EMAIL */}
-        <div style={{ marginBottom: "17px" }}>
-          <label style={labelStyle}>Email</label>
-
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={inputStyle}
-            disabled={loading}
-          />
-        </div>
-
-        {/* ROL */}
-        <div style={{ marginBottom: "18px" }}>
-          <label style={labelStyle}>Rol operativo</label>
-
-          {roles.length === 0 ? (
-            <div
-              style={{
-                marginTop: "7px",
-                padding: "12px",
-                color: "#facc15",
-                background: "rgba(250,204,21,.06)",
-                border: "1px solid rgba(250,204,21,.12)",
-                borderRadius: "10px",
-                fontSize: "13px",
-              }}
-            >
-              No hay roles operativos disponibles.
-            </div>
-          ) : (
-            <select
-              value={roleId}
-              onChange={(e) => setRoleId(e.target.value)}
-              style={inputStyle}
-              disabled={loading}
+        {/* CONTENEDOR PRINCIPAL */}
+        <div style={panelCardStyle}>
+          
+          {/* SELECTOR DE ROL */}
+          <div style={{ marginBottom: "35px" }}>
+            <label style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)", fontWeight: "600", letterSpacing: "0.2px", display: "block" }}>
+              Seleccionar Rol para Configurar
+            </label>
+            <select 
+              value={selectedRole} 
+              onChange={(e) => { setSelectedRole(e.target.value); loadPermissions(e.target.value); }} 
+              style={selectStyle}
             >
               {roles.map((role) => (
-                <option key={role.id} value={role.id}>
+                <option key={role.id} value={role.id} style={{ background: "#0b0b0b", color: "#fff" }}>
                   {role.name}
                 </option>
               ))}
             </select>
-          )}
+          </div>
 
-          <p
-            style={{
-              margin: "7px 0 0",
-              color: "rgba(255,255,255,.3)",
-              fontSize: "11px",
+          {/* GRID DE MÓDULOS DE SISTEMA */}
+          <div style={gridStyle}>
+            {modules.map((module) => {
+              const isSelected = permissions.includes(module.code);
+              return (
+                <div 
+                  key={module.id} 
+                  onClick={() => isSelected ? setPermissions(permissions.filter(p => p !== module.code)) : setPermissions([...permissions, module.code])}
+                  style={{ 
+                    background: isSelected ? "rgba(249,115,22,.08)" : "rgba(255,255,255,.02)",
+                    border: `1px solid ${isSelected ? "#f97316" : "rgba(255,255,255,.06)"}`,
+                    borderRadius: "16px", 
+                    padding: "18px 20px", 
+                    cursor: "pointer", 
+                    transition: "all 0.2s ease",
+                    display: "flex", 
+                    justifyContent: "space-between", 
+                    alignItems: "center",
+                    boxSizing: "border-box"
+                  }}
+                >
+                  <span style={{ 
+                    fontSize: "14px", 
+                    fontWeight: isSelected ? "600" : "500", 
+                    color: isSelected ? "#fff" : "rgba(255,255,255,0.8)" 
+                  }}>
+                    {module.name}
+                  </span>
+                  
+                  <span style={{ 
+                    fontSize: "18px", 
+                    color: isSelected ? "#f97316" : "rgba(255,255,255,0.2)",
+                    userSelect: "none"
+                  }}>
+                    {isSelected ? "●" : "○"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* BOTÓN DE ACCIÓN GLOBAL */}
+          <button 
+            onClick={savePermissions} 
+            disabled={saving}
+            style={{ 
+              ...saveBtnStyle,
+              background: saving ? "rgba(255,255,255,0.1)" : "#f97316",
+              color: saving ? "rgba(255,255,255,0.3)" : "#fff",
+              boxShadow: saving ? "none" : "0 8px 24px rgba(249,115,22,0.2)"
             }}
           >
-            Solo puedes asignar roles operativos.
-          </p>
-        </div>
-
-        {/* ESTADO */}
-        <div
-          style={{
-            padding: "12px 13px",
-            borderRadius: "10px",
-            background: "rgba(255,255,255,.025)",
-            border: "1px solid rgba(255,255,255,.06)",
-            marginBottom: "20px",
-          }}
-        >
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "15px",
-              cursor: loading ? "default" : "pointer",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontSize: "13px",
-                  fontWeight: 700,
-                }}
-              >
-                Usuario activo
-              </div>
-
-              <div
-                style={{
-                  marginTop: "3px",
-                  color: "rgba(255,255,255,.35)",
-                  fontSize: "11px",
-                }}
-              >
-                Permite o bloquea el acceso al restaurante.
-              </div>
-            </div>
-
-            <input
-              type="checkbox"
-              checked={active}
-              onChange={(e) => setActive(e.target.checked)}
-              disabled={loading}
-              style={{
-                width: "18px",
-                height: "18px",
-                accentColor: "#f97316",
-              }}
-            />
-          </label>
-        </div>
-
-        {/* ACCIONES */}
-        <div
-          style={{
-            display: "flex",
-            gap: "8px",
-          }}
-        >
-          <button
-            onClick={saveUser}
-            disabled={loading || roles.length === 0}
-            style={{
-              flex: 1,
-              background:
-                loading || roles.length === 0
-                  ? "rgba(249,115,22,.4)"
-                  : "#f97316",
-              color: "#fff",
-              border: "none",
-              padding: "11px 15px",
-              borderRadius: "10px",
-              cursor:
-                loading || roles.length === 0
-                  ? "not-allowed"
-                  : "pointer",
-              fontSize: "13px",
-              fontWeight: 750,
-            }}
-          >
-            {loading ? "Guardando..." : "Guardar cambios"}
-          </button>
-
-          <button
-            onClick={() => router.back()}
-            disabled={loading}
-            style={{
-              padding: "11px 15px",
-              background: "rgba(255,255,255,.05)",
-              border: "1px solid rgba(255,255,255,.07)",
-              borderRadius: "10px",
-              color: "rgba(255,255,255,.65)",
-              cursor: loading ? "not-allowed" : "pointer",
-              fontSize: "13px",
-              fontWeight: 700,
-            }}
-          >
-            Cancelar
+            {saving ? "Actualizando políticas de seguridad..." : "Guardar Cambios de Acceso"}
           </button>
         </div>
-      </section>
-    </main>
+      </main>
+    </PermissionGuard>
   );
 }
 
-const labelStyle: React.CSSProperties = {
-  display: "block",
-  color: "rgba(255,255,255,.62)",
-  fontSize: "12px",
-  fontWeight: 700,
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  boxSizing: "border-box",
-  padding: "11px 12px",
-  marginTop: "7px",
-  background: "#0b0f16",
+// =====================================================
+// ARQUITECTURA DE ESTILOS PREMIUM
+// =====================================================
+const mainContainerStyle = { 
+  maxWidth: "1200px", 
+  margin: "0 auto", 
+  padding: "clamp(24px, 5vw, 50px)", 
   color: "#fff",
-  border: "1px solid rgba(255,255,255,.08)",
-  borderRadius: "10px",
-  outline: "none",
-  fontSize: "13px",
+  fontFamily: "system-ui, sans-serif"
 };
 
+const panelCardStyle = { 
+  background: "rgba(15, 15, 15, 0.6)", 
+  backdropFilter: "blur(20px)",
+  WebkitBackdropFilter: "blur(20px)",
+  border: "1px solid rgba(255,255,255,.06)", 
+  borderRadius: "28px", 
+  padding: "clamp(20px, 4vw, 35px)",
+  boxShadow: "0 20px 40px rgba(0,0,0,0.3)"
+};
+
+const selectStyle: React.CSSProperties = {
+  width: "100%", 
+  padding: "14px 16px", 
+  marginTop: "10px", 
+  background: "#0b0b0b", 
+  color: "#fff",
+  border: "1px solid rgba(255,255,255,.08)", 
+  borderRadius: "14px", 
+  fontSize: "15px", 
+  fontWeight: "500",
+  outline: "none",
+  cursor: "pointer",
+  colorScheme: "dark", // Sincroniza con el fix global de CSS que agregamos
+  boxSizing: "border-box"
+};
+
+const gridStyle = { 
+  display: "grid", 
+  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", 
+  gap: "14px", 
+  marginBottom: "35px" 
+};
+
+const saveBtnStyle = { 
+  border: "none", 
+  padding: "16px 32px", 
+  borderRadius: "14px", 
+  fontWeight: "700" as const, 
+  fontSize: "14px",
+  cursor: "pointer", 
+  width: "100%",
+  letterSpacing: "0.2px",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+};
