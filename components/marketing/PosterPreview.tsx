@@ -29,7 +29,7 @@ export default function PosterPreview({
       <div
         style={{
           background:
-            "linear-gradient(135deg,#f97316,#ea580c)",
+            "linear-gradient(180deg,#1f2937,#111827)",
           padding: "28px",
           display: "flex",
           flexDirection: "column",
@@ -37,30 +37,28 @@ export default function PosterPreview({
           gap: 18,
         }}
       >
-        {logoUrl && (
-          <div
-            style={{
-              width: 86,
-              height: 86,
-              borderRadius: 20,
-              background: "#ffffff",
-              padding: 8,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <img
-              src={logoUrl}
-              alt={restaurantName}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-              }}
-            />
-          </div>
-        )}
+ {logoUrl && (
+  <div
+    style={{
+      width: 86,
+      height: 86,
+      borderRadius: 20,
+      overflow: "hidden",
+      flexShrink: 0,
+    }}
+  >
+    <img
+      src={logoUrl}
+      alt={restaurantName}
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        display: "block",
+      }}
+    />
+  </div>
+)}
 
         <h2
           style={{

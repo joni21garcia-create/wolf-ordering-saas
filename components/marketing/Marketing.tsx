@@ -1,10 +1,10 @@
 "use client";
 
-import MarketingHeader from "./MarketingHeader";
-import MarketingLayout from "./MarketingLayout";
+import MarketingAccordion from "./MarketingAccordion";
 import MarketingSettings from "./MarketingSettings";
-import MarketingPreview from "./MarketingPreview";
 import QRActions from "./QRActions";
+import QRPreview from "./QRPreview";
+import PosterPreview from "./PosterPreview";
 
 import { useMarketing } from "@/hooks/useMarketing";
 
@@ -29,11 +29,21 @@ export default function Marketing({
     setConfig,
   } = useMarketing(restaurant);
 
+  /*
+  =========================================================
+  ACCIONES
+  =========================================================
+  */
+
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(publicUrl);
+      await navigator.clipboard.writeText(
+        publicUrl
+      );
 
-      alert("✅ Enlace copiado correctamente.");
+      alert(
+        "✅ Enlace copiado correctamente."
+      );
     } catch (error) {
       console.error(error);
 
@@ -45,7 +55,7 @@ export default function Marketing({
 
   function handleShare() {
     const message = encodeURIComponent(
-`🍽️ ${restaurant.name}
+      `🍽️ ${restaurant.name}
 
 Haz tu pedido desde nuestro menú digital.
 
@@ -83,47 +93,185 @@ Powered by Wolf Ordering`
     });
   }
 
-  return (
+  /*
+  =========================================================
+  LOGO
+  =========================================================
+  */
+
+  const logoUrl = config.showLogo
+    ? restaurant.logo_url ?? undefined
+    : undefined;
+
+  /*
+  =========================================================
+  QR
+  =========================================================
+  */
+
+  const qrContent = (
     <>
-      <MarketingHeader />
-
-      <MarketingLayout
-        settings={
-          <>
-            <MarketingSettings
-              restaurant={restaurant}
-              publicUrl={publicUrl}
-              config={config}
-              setConfig={setConfig}
-            />
-
-            <div
-              style={{
-                marginTop: 24,
-              }}
-            >
-              <QRActions
-                onCopy={handleCopy}
-                onShare={handleShare}
-                onDownloadPNG={handleDownloadPNG}
-                onDownloadPDF={handleDownloadPDF}
-              />
-            </div>
-          </>
-        }
-        preview={
-          <MarketingPreview
-            restaurant={restaurant}
-            publicUrl={publicUrl}
-            qrImage={qrImage}
-            loading={loading}
-            error={error}
-            config={config}
-          />
-        }
-      />
+      {loading ? (
+        <div
+          style={{
+            width: "100%",
+            minHeight: 280,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#9ca3af",
+            fontSize: 14,
+            textAlign: "center",
+          }}
+        >
+          Generando código QR...
+        </div>
+      ) : error ? (
+        <div
+          style={{
+            width: "100%",
+            minHeight: 280,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#ef4444",
+            fontSize: 14,
+            fontWeight: 600,
+            textAlign: "center",
+            padding: 20,
+            boxSizing: "border-box",
+          }}
+        >
+          {error}
+        </div>
+      ) : qrImage ? (
+        <QRPreview
+          restaurantName={restaurant.name}
+          qrImage={qrImage}
+          url={publicUrl}
+          logoUrl={logoUrl}
+        />
+      ) : (
+        <div
+          style={{
+            width: "100%",
+            minHeight: 280,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#9ca3af",
+            fontSize: 14,
+          }}
+        >
+          No hay código QR disponible.
+        </div>
+      )}
     </>
   );
+
+  /*
+  =========================================================
+  ACCIONES
+  =========================================================
+  */
+
+  const actions = (
+    <QRActions
+      onCopy={handleCopy}
+      onShare={handleShare}
+      onDownloadPNG={handleDownloadPNG}
+      onDownloadPDF={handleDownloadPDF}
+    />
+  );
+
+  /*
+  =========================================================
+  CONFIGURACIÓN QR
+  =========================================================
+  */
+
+  const qrSettings = (
+    <MarketingSettings
+      restaurant={restaurant}
+      publicUrl={publicUrl}
+      config={config}
+      setConfig={setConfig}
+    />
+  );
+
+  /*
+  =========================================================
+  PÓSTER
+  =========================================================
+  */
+
+  const poster = (
+    <>
+      {loading ? (
+        <div
+          style={{
+            minHeight: 280,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#9ca3af",
+            fontSize: 14,
+          }}
+        >
+          Generando póster...
+        </div>
+      ) : error ? (
+        <div
+          style={{
+            minHeight: 280,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#ef4444",
+            fontSize: 14,
+            fontWeight: 600,
+            textAlign: "center",
+          }}
+        >
+          {error}
+        </div>
+      ) : qrImage ? (
+        <PosterPreview
+          restaurantName={restaurant.name}
+          qrImage={qrImage}
+          url={publicUrl}
+          logoUrl={logoUrl}
+        />
+      ) : (
+        <div
+          style={{
+            minHeight: 280,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#9ca3af",
+            fontSize: 14,
+          }}
+        >
+          No hay información suficiente
+          para generar el póster.
+        </div>
+      )}
+    </>
+  );
+
+  /*
+  =========================================================
+  UI
+  =========================================================
+  */
+
+  return (
+    <MarketingAccordion
+      qrContent={qrContent}
+      actions={actions}
+      qrSettings={qrSettings}
+      poster={poster}
+    />
+  );
 }
-
-

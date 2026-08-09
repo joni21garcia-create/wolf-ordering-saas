@@ -24,11 +24,10 @@ export function SidebarProvider({
 }: {
   children: ReactNode;
 }) {
-const [collapsed, setCollapsed] =
-  useState(true);
+  const [collapsed, setCollapsed] = useState(true);
 
   const toggle = useCallback(() => {
-    setCollapsed((v) => !v);
+    setCollapsed((value) => !value);
   }, []);
 
   const open = useCallback(() => {

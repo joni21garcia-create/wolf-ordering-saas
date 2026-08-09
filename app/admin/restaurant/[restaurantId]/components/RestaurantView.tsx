@@ -3,8 +3,13 @@
 import { useEffect, useState } from "react";
 import { getRestaurantStatus } from "@/lib/schedule";
 
+import { supabase } from "@/lib/supabase/client";
+import type { RestaurantData } from "@/types/marketing";
+
 import ProductsPanel from "./products/ProductsPanel";
+import { Marketing } from "@/components/marketing";
 import HoursPanel from "./HoursPanel";
+
 
 interface RestaurantViewProps {
   restaurantId: string;
@@ -20,6 +25,37 @@ export default function RestaurantView({
 }: RestaurantViewProps) {
   const [activeSection, setActiveSection] =
     useState<RestaurantSection>("products");
+
+    const [restaurant, setRestaurant] =
+  useState<RestaurantData | null>(null);
+
+useEffect(() => {
+  async function loadRestaurant() {
+    const { data, error } = await supabase
+      .from("restaurants")
+      .select(`
+        id,
+        name,
+        slug,
+        logo_url,
+        primary_color
+      `)
+      .eq("id", restaurantId)
+      .single();
+
+    if (error || !data) {
+      console.error(
+        "Error cargando restaurante:",
+        error
+      );
+      return;
+    }
+
+    setRestaurant(data);
+  }
+
+  loadRestaurant();
+}, [restaurantId]);
 
   return (
     <main
@@ -110,13 +146,9 @@ export default function RestaurantView({
           <HoursSection restaurantId={restaurantId} />
         )}
 
-        {activeSection ===
-          "marketing" && (
-          <PlaceholderSection
-            title="Marketing"
-            description="Herramientas sencillas para compartir y promocionar tu restaurante."
-          />
-        )}
+{activeSection === "marketing" && restaurant && (
+  <Marketing restaurant={restaurant} />
+)}
       </section>
     </main>
   );

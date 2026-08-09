@@ -43,44 +43,29 @@ export default function QRPreview({
               "linear-gradient(180deg,#1f2937,#111827)",
           }}
         >
-          {logoUrl ? (
-            <div
-              style={{
-                width: 90,
-                height: 90,
-                borderRadius: 22,
-                background: "#ffffff",
-                padding: 8,
-                marginBottom: 20,
-              }}
-            >
-              <img
-                src={logoUrl}
-                alt={restaurantName}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain",
-                }}
-              />
-            </div>
-          ) : (
-            <div
-              style={{
-                width: 90,
-                height: 90,
-                borderRadius: 22,
-                background:
-                  "linear-gradient(135deg,#f97316,#ea580c)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 34,
-              }}
-            >
-              🍽️
-            </div>
-          )}
+{logoUrl && (
+  <div
+    style={{
+      width: 90,
+      height: 90,
+      borderRadius: 22,
+      overflow: "hidden",
+      marginBottom: 20,
+      flexShrink: 0,
+    }}
+  >
+    <img
+      src={logoUrl}
+      alt={restaurantName}
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        display: "block",
+      }}
+    />
+  </div>
+)}
 
           <h2
             style={{
