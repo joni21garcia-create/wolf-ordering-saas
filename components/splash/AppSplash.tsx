@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 
 import SplashScene from "./SplashScene";
 import { SPLASH_TIMING } from "./SplashAnimations";
@@ -10,10 +11,19 @@ interface Props {
 }
 
 export default function AppSplash({ children }: Props) {
-  const [visible, setVisible] = useState(true);
+  // En web no mostramos el splash.
+  // En Android/iOS solo aparece al montar la app nativa.
+  const [visible, setVisible] = useState(false);
   const [fade, setFade] = useState(false);
 
   useEffect(() => {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
+    setVisible(true);
+    setFade(false);
+
     const fadeTimer = setTimeout(() => {
       setFade(true);
     }, SPLASH_TIMING.FADE);
