@@ -21,6 +21,16 @@ export default function AppSplash({ children }: Props) {
       return;
     }
 
+    // Mostrar el splash solo una vez por sesión de la app.
+    // sessionStorage evita que aparezca al navegar o recargar una pantalla.
+    const splashKey = "wolf-app-splash-shown";
+
+    if (sessionStorage.getItem(splashKey) === "1") {
+      return;
+    }
+
+    sessionStorage.setItem(splashKey, "1");
+
     setVisible(true);
     setFade(false);
 
