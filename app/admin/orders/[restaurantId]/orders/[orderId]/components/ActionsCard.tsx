@@ -37,6 +37,30 @@ export default function ActionsCard({
   }
 
   function printOrder() {
+    /*
+     * window.print() is supported by normal browsers, but Android PWAs
+     * and some in-app WebViews may not expose the print dialog correctly.
+     *
+     * We keep the native print call first, and provide a dedicated
+     * printable popup as a fallback when the browser does not handle it.
+     */
+    const printUrl =
+      `${window.location.href}${
+        window.location.href.includes("?")
+          ? "&"
+          : "?"
+      }print=order`;
+
+    const printWindow = window.open(
+      printUrl,
+      "_blank",
+      "noopener,noreferrer"
+    );
+
+    if (printWindow) {
+      return;
+    }
+
     window.print();
   }
 
@@ -329,6 +353,17 @@ export default function ActionsCard({
             display: none !important;
           }
         }
+
+        /*
+         * Dedicated print mode used by mobile/PWA.
+         * The order print component remains responsible for rendering
+         * the actual ticket/order content.
+         */
+        @media screen {
+          body[data-print-order="true"] .order-actions {
+            display: none !important;
+          }
+        }
       `}</style>
 
       <div className="actions-title">
@@ -343,6 +378,7 @@ export default function ActionsCard({
           type="button"
           className="action-item"
           onClick={printOrder}
+          aria-label="Imprimir pedido"
         >
           <span className="action-left">
             <span className="action-icon">

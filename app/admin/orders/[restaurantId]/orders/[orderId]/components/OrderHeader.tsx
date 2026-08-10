@@ -15,21 +15,23 @@ export default function OrderHeader({
 
   const date = created
     ? created.toLocaleDateString(
-        undefined,
+        "es-CO",
         {
           day: "2-digit",
           month: "short",
           year: "numeric",
+          timeZone: "America/Bogota",
         }
       )
     : "—";
 
   const hour = created
     ? created.toLocaleTimeString(
-        undefined,
+        "es-CO",
         {
           hour: "2-digit",
           minute: "2-digit",
+          timeZone: "America/Bogota",
         }
       )
     : "—";
