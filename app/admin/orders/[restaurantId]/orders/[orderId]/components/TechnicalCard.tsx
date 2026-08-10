@@ -2,168 +2,222 @@ interface Props {
   order: any;
 }
 
-export default function TechnicalCard({ order }: Props) {
+export default function TechnicalCard({
+  order,
+}: Props) {
   const rows = [
-    {
-      label: "ID del Pedido",
-      value: order.id,
-    },
-    {
-      label: "Tracking",
-      value: order.tracking_code,
-    },
-    {
-      label: "Restaurant ID",
-      value: order.restaurant_id,
-    },
-    {
-      label: "Cliente ID",
-      value: order.customer_id,
-    },
-    {
-      label: "QR ID",
-      value: order.selected_qr_id,
-    },
-    {
-      label: "QR",
-      value: order.selected_qr_name,
-    },
-    {
-      label: "Estado",
-      value: order.status,
-    },
-    {
-      label: "Estado Pago",
-      value: order.payment_status,
-    },
-    {
-      label: "Método Pago",
-      value: order.payment_method,
-    },
-    {
-      label: "Creado",
-      value: format(order.created_at),
-    },
-    {
-      label: "Aceptado",
-      value: format(order.accepted_at),
-    },
-    {
-      label: "Preparando",
-      value: format(order.preparing_at),
-    },
-    {
-      label: "Listo",
-      value: format(order.ready_at),
-    },
-    {
-      label: "Entregado",
-      value: format(order.completed_at),
-    },
-    {
-      label: "Actualizado",
-      value: format(order.updated_at),
-    },
+    ["ID del Pedido", order.id],
+    ["Tracking", order.tracking_code],
+    ["Restaurant ID", order.restaurant_id],
+    ["Cliente ID", order.customer_id],
+    ["QR ID", order.selected_qr_id],
+    ["QR", order.selected_qr_name],
+    ["Estado", order.status],
+    ["Estado Pago", order.payment_status],
+    ["Método Pago", order.payment_method],
+    ["Creado", format(order.created_at)],
+    ["Aceptado", format(order.accepted_at)],
+    ["Preparando", format(order.preparing_at)],
+    ["Listo", format(order.ready_at)],
+    ["Entregado", format(order.completed_at)],
+    ["Actualizado", format(order.updated_at)],
   ];
 
   return (
-    <section
-      style={{
-        background:
-          "linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015))",
-        border: "1px solid rgba(255,255,255,.07)",
-        borderRadius: 24,
-        padding: 28,
-        backdropFilter: "blur(14px)",
-      }}
-    >
-      <div style={{ marginBottom: 24 }}>
-        <div
-          style={{
-            color: "#f97316",
-            fontWeight: 700,
-            fontSize: 12,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-          }}
-        >
-          Auditoría
-        </div>
+    <section className="technical-native">
+      <style>{`
+        .technical-native {
+          width: 100%;
+          color: #fff;
+        }
 
-        <h2
-          style={{
-            color: "#fff",
-            margin: "6px 0 0",
-            fontSize: 26,
-            fontWeight: 700,
-          }}
-        >
-          Información Técnica
+        /* ==========================================
+           HEADER
+        ========================================== */
+
+        .technical-header {
+          padding: 2px 0 20px;
+        }
+
+        .technical-title {
+          margin: 0;
+
+          color: #f5f5f5;
+          font-size: 21px;
+          font-weight: 750;
+          letter-spacing: -.5px;
+        }
+
+        .technical-subtitle {
+          margin-top: 6px;
+
+          color: #666;
+          font-size: 12px;
+          line-height: 1.5;
+        }
+
+        /* ==========================================
+           DATA
+        ========================================== */
+
+        .technical-list {
+          border-top:
+            1px solid rgba(255,255,255,.07);
+        }
+
+        .technical-row {
+          display: grid;
+
+          grid-template-columns:
+            minmax(105px, .8fr)
+            minmax(0, 1.4fr);
+
+          gap: 18px;
+
+          padding: 13px 0;
+
+          border-bottom:
+            1px solid rgba(255,255,255,.045);
+        }
+
+        .technical-label {
+          color: #555;
+
+          font-size: 10px;
+          font-weight: 600;
+
+          letter-spacing: .7px;
+          text-transform: uppercase;
+
+          line-height: 1.5;
+        }
+
+        .technical-value {
+          min-width: 0;
+
+          color: #999;
+
+          font-family:
+            ui-monospace,
+            SFMono-Regular,
+            Menlo,
+            Monaco,
+            Consolas,
+            monospace;
+
+          font-size: 11px;
+          font-weight: 500;
+
+          line-height: 1.5;
+
+          text-align: right;
+
+          overflow-wrap: anywhere;
+        }
+
+        .technical-value.empty {
+          color: #333;
+        }
+
+        /* ==========================================
+           MOBILE
+        ========================================== */
+
+        @media (max-width: 420px) {
+          .technical-title {
+            font-size: 20px;
+          }
+
+          .technical-row {
+            grid-template-columns:
+              minmax(92px, .75fr)
+              minmax(0, 1.5fr);
+
+            gap: 12px;
+
+            padding: 12px 0;
+          }
+
+          .technical-label {
+            font-size: 9px;
+          }
+
+          .technical-value {
+            font-size: 10px;
+          }
+        }
+      `}</style>
+
+      {/* HEADER */}
+
+      <div className="technical-header">
+        <h2 className="technical-title">
+          Información técnica
         </h2>
+
+        <div className="technical-subtitle">
+          Datos internos para auditoría y diagnóstico
+        </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gap: 12,
-        }}
-      >
-        {rows.map((row) => (
-          <Row
-            key={row.label}
-            title={row.label}
-            value={row.value}
-          />
+      {/* DATA */}
+
+      <div className="technical-list">
+        {rows.map(([label, value]) => (
+          <div
+            key={label}
+            className="technical-row"
+          >
+            <span className="technical-label">
+              {label}
+            </span>
+
+            <span
+              className={`technical-value ${
+                value
+                  ? ""
+                  : "empty"
+              }`}
+              title={
+                value
+                  ? String(value)
+                  : "-"
+              }
+            >
+              {value || "—"}
+            </span>
+          </div>
         ))}
       </div>
     </section>
   );
 }
 
-function Row({
-  title,
-  value,
-}: {
-  title: string;
-  value: any;
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 20,
-        flexWrap: "wrap",
-        padding: "14px 0",
-        borderBottom:
-          "1px solid rgba(255,255,255,.05)",
-      }}
-    >
-      <span
-        style={{
-          color: "#777",
-          fontSize: 14,
-        }}
-      >
-        {title}
-      </span>
+/* ==========================================
+   DATE
+========================================== */
 
-      <span
-        style={{
-          color: "#fff",
-          fontWeight: 600,
-          textAlign: "right",
-          wordBreak: "break-all",
-        }}
-      >
-        {value || "-"}
-      </span>
-    </div>
-  );
-}
+function format(
+  date: any
+) {
+  if (!date) {
+    return "—";
+  }
 
-function format(date: any) {
-  if (!date) return "-";
-
-  return new Date(date).toLocaleString();
+  try {
+    return new Date(
+      date
+    ).toLocaleString(
+      undefined,
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    );
+  } catch {
+    return "—";
+  }
 }

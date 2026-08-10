@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type React from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { useSession } from "@/providers/SessionProvider";
 import { getRestaurantStatus } from "@/lib/schedule";
-
 import { supabase } from "@/lib/supabase/client";
 import type { RestaurantData } from "@/types/marketing";
 
@@ -20,45 +18,102 @@ interface RestaurantViewProps {
 type RestaurantSection =
   | "products"
   | "hours"
-  | "marketing"
-  | "payments";
+  | "marketing";
 
 export default function RestaurantView({
   restaurantId,
 }: RestaurantViewProps) {
+  const { user } = useSession();
+  const roleCode = String(user?.role?.code ?? "")
+    .trim()
+    .toLowerCase();
+
+  const [restaurant, setRestaurant] =
+    useState<RestaurantData | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRestaurant() {
+      const { data, error } = await supabase
+        .from("restaurants")
+        .select(`
+          id,
+          name,
+          slug,
+          logo_url,
+          primary_color
+        `)
+        .eq("id", restaurantId)
+        .single();
+
+      if (cancelled) return;
+
+      if (error || !data) {
+        console.error(
+          "Error cargando restaurante:",
+          error
+        );
+        setRestaurant(null);
+        return;
+      }
+
+      setRestaurant(data as RestaurantData);
+    }
+
+    loadRestaurant();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [restaurantId]);
+
+  /*
+   * Configuración visible por rol.
+   *
+   * Cocina:
+   *   Productos + Horarios
+   *
+   * Manager:
+   *   Productos + Horarios + Marketing
+   *
+   * Owner / Super Admin:
+   *   Todas las opciones disponibles en este módulo.
+   *
+   * "kitchen" se mantiene como alias por compatibilidad
+   * con roles antiguos que todavía puedan existir.
+   */
+  const allowedSections = useMemo<RestaurantSection[]>(() => {
+    switch (roleCode) {
+      case "cocina":
+      case "kitchen":
+        return ["products", "hours"];
+
+      case "manager":
+      case "owner":
+      case "super-user":
+        return [
+          "products",
+          "hours",
+          "marketing",
+        ];
+
+      default:
+        return [];
+    }
+  }, [roleCode]);
+
   const [activeSection, setActiveSection] =
     useState<RestaurantSection>("products");
 
-    const [restaurant, setRestaurant] =
-  useState<RestaurantData | null>(null);
-
-useEffect(() => {
-  async function loadRestaurant() {
-    const { data, error } = await supabase
-      .from("restaurants")
-      .select(`
-        id,
-        name,
-        slug,
-        logo_url,
-        primary_color
-      `)
-      .eq("id", restaurantId)
-      .single();
-
-    if (error || !data) {
-      console.error(
-        "Error cargando restaurante:",
-        error
-      );
-      return;
+  useEffect(() => {
+    if (
+      allowedSections.length > 0 &&
+      !allowedSections.includes(activeSection)
+    ) {
+      setActiveSection(allowedSections[0]);
     }
-
-    setRestaurant(data);
-  }
-
-  loadRestaurant();
-}, [restaurantId]);
+  }, [allowedSections, activeSection]);
 
   return (
     <main
@@ -88,7 +143,7 @@ useEffect(() => {
             margin: 0,
             fontSize: "23px",
             lineHeight: 1.15,
-            fontWeight: 700,
+            fontWeight: 800,
             letterSpacing:
               "-0.5px",
             color: "#FFFFFF",
@@ -115,7 +170,6 @@ useEffect(() => {
           ===================================================== */}
 
       <RestaurantToolbar
-        restaurantId={restaurantId}
         activeSection={
           activeSection
         }
@@ -150,13 +204,12 @@ useEffect(() => {
           <HoursSection restaurantId={restaurantId} />
         )}
 
-{activeSection === "marketing" && restaurant && (
-  <Marketing restaurant={restaurant} />
-)}
-
-        {activeSection === "payments" && (
-          <div />
-        )}
+{activeSection === "marketing" &&
+  restaurant && (
+    <Marketing
+      restaurant={restaurant}
+    />
+  )}
       </section>
     </main>
   );
@@ -167,7 +220,6 @@ useEffect(() => {
    ========================================================= */
 
 interface RestaurantToolbarProps {
-  restaurantId: string;
   activeSection: RestaurantSection;
   onChange: (
     section: RestaurantSection
@@ -175,11 +227,31 @@ interface RestaurantToolbarProps {
 }
 
 function RestaurantToolbar({
-  restaurantId,
   activeSection,
   onChange,
 }: RestaurantToolbarProps) {
-  const tabs: {
+  const { user } = useSession();
+
+  const roleCode = String(user?.role?.code ?? "")
+    .trim()
+    .toLowerCase();
+
+  const allowedSections: RestaurantSection[] =
+    roleCode === "cocina" ||
+    roleCode === "kitchen"
+      ? ["products", "hours"]
+      : roleCode === "manager" ||
+        roleCode === "owner" ||
+        roleCode === "super-user"
+        ? [
+            "products",
+            "hours",
+            "marketing",
+          ]
+        : [];
+
+
+  const allTabs: {
     id: RestaurantSection;
     label: string;
   }[] = [
@@ -195,11 +267,14 @@ function RestaurantToolbar({
       id: "marketing",
       label: "Marketing",
     },
-    {
-      id: "payments",
-      label: "Pagos",
-    },
   ];
+
+  const tabs: {
+    id: RestaurantSection;
+    label: string;
+  }[] = allTabs.filter((tab) =>
+    allowedSections.includes(tab.id)
+  );
 
   return (
     <nav
@@ -207,10 +282,10 @@ function RestaurantToolbar({
       style={{
         width: "100%",
         display: "flex",
-        gap: "6px",
+        gap: "7px",
         overflowX: "auto",
         padding:
-          "14px 14px 9px",
+          "17px 14px 11px",
         boxSizing:
           "border-box",
         WebkitOverflowScrolling:
@@ -231,18 +306,9 @@ function RestaurantToolbar({
             key={tab.id}
             label={tab.label}
             active={active}
-            onClick={() => {
-              if (tab.id === "payments") {
-                window.location.assign(
-                  `/admin/restaurant/${encodeURIComponent(
-                    restaurantId
-                  )}/payments`
-                );
-                return;
-              }
-
-              onChange(tab.id);
-            }}
+            onClick={() =>
+              onChange(tab.id)
+            }
           />
         );
       })}
@@ -265,63 +331,53 @@ function RestaurantTab({
   active,
   onClick,
 }: RestaurantTabProps) {
-  const isPayments = label === "Pagos";
-
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-current={active ? "page" : undefined}
+      aria-current={
+        active
+          ? "page"
+          : undefined
+      }
       style={{
-        position: "relative",
+        position:
+          "relative",
         flexShrink: 0,
-        minHeight: "36px",
-        padding: "0 12px",
-        borderRadius: "9px",
+        minHeight:
+          "39px",
+        padding:
+          "0 15px",
+        borderRadius:
+          "10px",
         border: active
-          ? "1px solid rgba(249,115,22,.48)"
-          : isPayments
-            ? "1px solid rgba(249,115,22,.20)"
-            : "1px solid rgba(255,255,255,.07)",
-        background: active
-          ? "linear-gradient(135deg,#ff7a18,#f97316)"
-          : isPayments
-            ? "linear-gradient(135deg,rgba(249,115,22,.10),rgba(255,255,255,.025))"
-            : "linear-gradient(180deg,#151515,#101010)",
-        color: active
-          ? "#FFFFFF"
-          : isPayments
-            ? "#F4B183"
+          ? "1px solid rgba(249,115,22,.28)"
+          : "1px solid rgba(255,255,255,.06)",
+        background:
+          active
+            ? "#F97316"
+            : "#121212",
+        color:
+          active
+            ? "#FFFFFF"
             : "#A1A1AA",
-        fontSize: "11px",
-        fontWeight: 800,
-        letterSpacing: "-0.1px",
+        fontSize:
+          "13px",
+        fontWeight:
+          700,
         lineHeight: 1,
-        cursor: "pointer",
-        WebkitTapHighlightColor: "transparent",
+        cursor:
+          "pointer",
+        WebkitTapHighlightColor:
+          "transparent",
         transition:
-          "transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease",
-        boxShadow: active
-          ? "0 4px 12px rgba(249,115,22,.16)"
-          : "none",
-        overflow: "hidden",
+          "all 180ms cubic-bezier(.16,.84,.44,1)",
+        boxShadow:
+          active
+            ? "0 0 18px rgba(249,115,22,.18)"
+            : "none",
       }}
     >
-      {isPayments && !active && (
-        <span
-          aria-hidden="true"
-          style={{
-            display: "inline-block",
-            width: "4px",
-            height: "4px",
-            marginRight: "6px",
-            verticalAlign: "middle",
-            borderRadius: "50%",
-            background: "#f97316",
-            boxShadow: "0 0 9px rgba(249,115,22,.75)",
-          }}
-        />
-      )}
       {label}
     </button>
   );

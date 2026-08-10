@@ -2,137 +2,267 @@ interface Props {
   order: any;
 }
 
-export default function RestaurantCard({ order }: Props) {
-  return (
-    <section
-      style={{
-        background:
-          "linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015))",
-        border: "1px solid rgba(255,255,255,.07)",
-        borderRadius: 24,
-        padding: 28,
-        backdropFilter: "blur(14px)",
-      }}
-    >
-      <div style={{ marginBottom: 24 }}>
-        <div
-          style={{
-            color: "#f97316",
-            fontWeight: 700,
-            fontSize: 12,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-          }}
-        >
-          Restaurante
-        </div>
+export default function RestaurantCard({
+  order,
+}: Props) {
+  const createdAt = formatDate(
+    order.created_at
+  );
 
-        <h2
-          style={{
-            color: "#fff",
-            margin: "6px 0 0",
-            fontSize: 26,
-            fontWeight: 700,
-          }}
-        >
-          Información del Restaurante
+  const updatedAt = formatDate(
+    order.updated_at
+  );
+
+  return (
+    <section className="restaurant-native">
+      <style>{`
+        .restaurant-native {
+          width: 100%;
+          color: #fff;
+        }
+
+        /* ==========================================
+           HEADER
+        ========================================== */
+
+        .restaurant-header {
+          padding: 2px 0 20px;
+        }
+
+        .restaurant-title {
+          margin: 0;
+
+          color: #f5f5f5;
+          font-size: 21px;
+          font-weight: 750;
+          letter-spacing: -.5px;
+        }
+
+        .restaurant-subtitle {
+          margin-top: 6px;
+
+          color: #666;
+          font-size: 12px;
+          line-height: 1.5;
+        }
+
+        /* ==========================================
+           INFORMATION
+        ========================================== */
+
+        .restaurant-list {
+          border-top:
+            1px solid rgba(255,255,255,.07);
+        }
+
+        .restaurant-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          gap: 20px;
+
+          min-height: 54px;
+
+          border-bottom:
+            1px solid rgba(255,255,255,.055);
+        }
+
+        .restaurant-label {
+          flex-shrink: 0;
+
+          color: #666;
+          font-size: 11px;
+          font-weight: 550;
+        }
+
+        .restaurant-value {
+          min-width: 0;
+          max-width: 65%;
+
+          overflow: hidden;
+
+          color: #bbb;
+          font-size: 13px;
+          font-weight: 600;
+
+          text-align: right;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .restaurant-value.status {
+          color: #ddd;
+        }
+
+        .restaurant-value.tracking {
+          color: #999;
+          letter-spacing: .25px;
+        }
+
+        /* ==========================================
+           MOBILE
+        ========================================== */
+
+        @media (max-width: 420px) {
+          .restaurant-title {
+            font-size: 20px;
+          }
+
+          .restaurant-row {
+            min-height: 50px;
+          }
+
+          .restaurant-label {
+            font-size: 10px;
+          }
+
+          .restaurant-value {
+            font-size: 12px;
+          }
+        }
+      `}</style>
+
+      {/* HEADER */}
+
+      <div className="restaurant-header">
+        <h2 className="restaurant-title">
+          Restaurante
         </h2>
+
+        <div className="restaurant-subtitle">
+          Información del pedido y del sistema
+        </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(230px,1fr))",
-          gap: 18,
-        }}
-      >
-        <Info
-          title="Restaurante ID"
-          value={order.restaurant_id}
-        />
+      {/* INFORMATION */}
 
-        <Info
-          title="Tipo de Pedido"
-          value={order.order_type}
-        />
+      <div className="restaurant-list">
 
-        <Info
-          title="Estado"
-          value={order.status}
-        />
-
-        <Info
-          title="Tracking"
-          value={order.tracking_code}
-        />
-
-        <Info
-          title="Creado"
+        <InfoRow
+          label="Restaurante ID"
           value={
-            order.created_at
-              ? new Date(
-                  order.created_at
-                ).toLocaleString()
-              : "-"
+            order.restaurant_id
           }
         />
 
-        <Info
-          title="Actualizado"
+        <InfoRow
+          label="Tipo de pedido"
           value={
-            order.updated_at
-              ? new Date(
-                  order.updated_at
-                ).toLocaleString()
-              : "-"
+            order.order_type
           }
         />
+
+        <InfoRow
+          label="Estado"
+          value={
+            formatStatus(order.status)
+          }
+          valueClass="status"
+        />
+
+        <InfoRow
+          label="Tracking"
+          value={
+            order.tracking_code
+          }
+          valueClass="tracking"
+        />
+
+        <InfoRow
+          label="Creado"
+          value={createdAt}
+        />
+
+        <InfoRow
+          label="Actualizado"
+          value={updatedAt}
+        />
+
       </div>
     </section>
   );
 }
 
-function Info({
-  title,
+/* ==========================================
+   ROW
+========================================== */
+
+function InfoRow({
+  label,
   value,
+  valueClass = "",
 }: {
-  title: string;
+  label: string;
   value: any;
+  valueClass?: string;
 }) {
   return (
-    <div
-      style={{
-        background:
-          "rgba(255,255,255,.025)",
-        borderRadius: 18,
-        padding: 18,
-        border:
-          "1px solid rgba(255,255,255,.05)",
-      }}
-    >
-      <div
-        style={{
-          color: "#777",
-          fontSize: 12,
-          marginBottom: 8,
-          textTransform: "uppercase",
-          letterSpacing: 1,
-        }}
-      >
-        {title}
-      </div>
+    <div className="restaurant-row">
+      <span className="restaurant-label">
+        {label}
+      </span>
 
-      <div
-        style={{
-          color: "#fff",
-          fontWeight: 600,
-          fontSize: 16,
-          wordBreak: "break-word",
-        }}
+      <span
+        className={`restaurant-value ${valueClass}`}
+        title={value || "—"}
       >
-        {value || "-"}
-      </div>
+        {value || "—"}
+      </span>
     </div>
   );
+}
+
+/* ==========================================
+   STATUS
+========================================== */
+
+function formatStatus(
+  status: string
+) {
+  const labels: Record<
+    string,
+    string
+  > = {
+    pending: "Pendiente",
+    accepted: "Aceptado",
+    preparing: "En preparación",
+    ready: "Listo",
+    completed: "Completado",
+    cancelled: "Cancelado",
+  };
+
+  return (
+    labels[status] ??
+    status ??
+    "—"
+  );
+}
+
+/* ==========================================
+   DATE
+========================================== */
+
+function formatDate(
+  value: string | null
+) {
+  if (!value) {
+    return "—";
+  }
+
+  try {
+    return new Date(
+      value
+    ).toLocaleString(
+      undefined,
+      {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    );
+  } catch {
+    return "—";
+  }
 }

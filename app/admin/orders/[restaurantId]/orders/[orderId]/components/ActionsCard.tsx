@@ -4,19 +4,35 @@ interface Props {
   order: any;
 }
 
-export default function ActionsCard({ order }: Props) {
-  function copy(text: string) {
+export default function ActionsCard({
+  order,
+}: Props) {
+  function copy(text?: string) {
+    if (!text) return;
+
     navigator.clipboard.writeText(text);
+  }
+
+  function callCustomer() {
+    if (!order.customer_phone) return;
+
+    window.location.href =
+      `tel:${order.customer_phone}`;
   }
 
   function whatsapp() {
     if (!order.customer_phone) return;
 
-    const phone = order.customer_phone.replace(/\D/g, "");
+    const phone =
+      order.customer_phone.replace(
+        /\D/g,
+        ""
+      );
 
     window.open(
       `https://wa.me/${phone}`,
-      "_blank"
+      "_blank",
+      "noopener,noreferrer"
     );
   }
 
@@ -24,134 +40,471 @@ export default function ActionsCard({ order }: Props) {
     window.print();
   }
 
-  return (
-    <section
-      style={{
-        background:
-          "linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015))",
-        border: "1px solid rgba(255,255,255,.07)",
-        borderRadius: 24,
-        padding: 28,
-        backdropFilter: "blur(14px)",
-      }}
-    >
-      <div
-        style={{
-          marginBottom: 24,
-        }}
-      >
-        <div
-          style={{
-            color: "#f97316",
-            fontWeight: 700,
-            fontSize: 12,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-          }}
-        >
-          Acciones
-        </div>
+  function openMap() {
+    if (!order.delivery_address) return;
 
-        <h2
-          style={{
-            color: "#fff",
-            margin: "6px 0 0",
-            fontSize: 26,
-            fontWeight: 700,
-          }}
-        >
-          Acciones Rápidas
-        </h2>
+    const url =
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        order.delivery_address
+      )}`;
+
+    window.open(
+      url,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  }
+
+  const hasPhone =
+    Boolean(order.customer_phone);
+
+  const hasMap =
+    Boolean(order.delivery_address);
+
+  const proofUrl =
+    order.payment_proof_url ||
+    order.proof_url;
+
+  return (
+    <section className="order-actions">
+      <style>{`
+        .order-actions {
+          width: 100%;
+          margin-top: 2px;
+
+          color: #fff;
+        }
+
+        .actions-title {
+          margin-bottom: 10px;
+
+          color: #555;
+
+          font-size: 10px;
+          font-weight: 700;
+
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+        }
+
+        /*
+        ============================================
+        ACTION GRID
+        ============================================
+        */
+
+        .actions-grid {
+          display: grid;
+
+          grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+          gap: 8px;
+        }
+
+        .action-item {
+          min-width: 0;
+
+          min-height: 48px;
+
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          gap: 10px;
+
+          padding:
+            0
+            13px;
+
+          border:
+            1px solid
+            rgba(255,255,255,.065);
+
+          border-radius: 13px;
+
+          background:
+            rgba(255,255,255,.022);
+
+          color: #bcbcbc;
+
+          font-size: 11px;
+          font-weight: 600;
+
+          cursor: pointer;
+
+          transition:
+            background .18s ease,
+            border-color .18s ease,
+            color .18s ease,
+            transform .18s ease;
+        }
+
+        .action-item:hover:not(:disabled) {
+          background:
+            rgba(255,255,255,.05);
+
+          border-color:
+            rgba(255,255,255,.11);
+
+          color: #fff;
+        }
+
+        .action-item:active:not(:disabled) {
+          transform: scale(.98);
+        }
+
+        .action-item:disabled {
+          cursor: default;
+          opacity: .35;
+        }
+
+        .action-left {
+          min-width: 0;
+
+          display: flex;
+          align-items: center;
+
+          gap: 9px;
+        }
+
+        .action-icon {
+          width: 25px;
+          height: 25px;
+
+          flex: 0 0 25px;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          border-radius: 8px;
+
+          background:
+            rgba(255,255,255,.045);
+
+          color: #999;
+
+          font-size: 12px;
+        }
+
+        .action-label {
+          overflow: hidden;
+
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .action-arrow {
+          flex: 0 0 auto;
+
+          color: #444;
+
+          font-size: 14px;
+        }
+
+        /*
+        ============================================
+        SECONDARY ACTIONS
+        ============================================
+        */
+
+        .action-link {
+          width: 100%;
+
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          gap: 16px;
+
+          min-height: 48px;
+
+          padding:
+            0
+            2px;
+
+          border: 0;
+          border-bottom:
+            1px solid
+            rgba(255,255,255,.045);
+
+          background: transparent;
+
+          color: #777;
+
+          font-size: 11px;
+          font-weight: 600;
+
+          text-decoration: none;
+
+          cursor: pointer;
+
+          transition:
+            color .18s ease;
+        }
+
+        .action-link:first-of-type {
+          margin-top: 9px;
+        }
+
+        .action-link:hover {
+          color: #fff;
+        }
+
+        .action-link-left {
+          display: flex;
+          align-items: center;
+
+          gap: 9px;
+        }
+
+        .action-link-icon {
+          color: #888;
+
+          font-size: 13px;
+        }
+
+        .action-link-arrow {
+          color: #444;
+
+          font-size: 16px;
+        }
+
+        /*
+        ============================================
+        MAP
+        ============================================
+        */
+
+        .map-action {
+          color: #aaa;
+        }
+
+        .map-action .action-link-icon {
+          color: #999;
+        }
+
+        /*
+        ============================================
+        PROOF
+        ============================================
+        */
+
+        .proof-action {
+          color: #888;
+        }
+
+        /*
+        ============================================
+        MOBILE
+        ============================================
+        */
+
+        @media (max-width: 360px) {
+          .action-item {
+            padding: 0 10px;
+            font-size: 10px;
+          }
+
+          .action-icon {
+            width: 23px;
+            height: 23px;
+            flex-basis: 23px;
+          }
+
+          .action-left {
+            gap: 7px;
+          }
+        }
+
+        /*
+        ============================================
+        PRINT
+        ============================================
+        */
+
+        @media print {
+          .order-actions {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      <div className="actions-title">
+        Acciones
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gap: 14,
-        }}
-      >
-        <ActionButton
-          text="🖨 Imprimir pedido"
-          onClick={printOrder}
-        />
+      <div className="actions-grid">
 
-        <ActionButton
-          text="📋 Copiar Tracking"
+        {/* IMPRIMIR */}
+
+        <button
+          type="button"
+          className="action-item"
+          onClick={printOrder}
+        >
+          <span className="action-left">
+            <span className="action-icon">
+              🖨
+            </span>
+
+              <span className="action-label">
+               Imprimir pedido
+              </span>
+          </span>
+
+          <span className="action-arrow">
+            →
+          </span>
+        </button>
+
+        {/* TRACKING */}
+
+        <button
+          type="button"
+          className="action-item"
           onClick={() =>
             copy(order.tracking_code)
           }
-        />
-
-        <ActionButton
-          text="📞 Copiar Teléfono"
-          onClick={() =>
-            copy(order.customer_phone)
+          disabled={
+            !order.tracking_code
           }
-        />
+        >
+          <span className="action-left">
+            <span className="action-icon">
+              #
+            </span>
 
-        <ActionButton
-          text="💬 Abrir WhatsApp"
+            <span className="action-label">
+              Copiar tracking
+            </span>
+          </span>
+
+          <span className="action-arrow">
+            →
+          </span>
+        </button>
+
+        {/* LLAMAR */}
+
+        <button
+          type="button"
+          className="action-item"
+          onClick={callCustomer}
+          disabled={!hasPhone}
+        >
+          <span className="action-left">
+            <span className="action-icon">
+              ☎
+            </span>
+
+            <span className="action-label">
+              Llamar
+            </span>
+          </span>
+
+          <span className="action-arrow">
+            →
+          </span>
+        </button>
+
+        {/* WHATSAPP */}
+
+        <button
+          type="button"
+          className="action-item"
           onClick={whatsapp}
-        />
+          disabled={!hasPhone}
+        >
+          <span className="action-left">
+            <span className="action-icon">
+              ◌
+            </span>
 
-        {order.payment_proof_url && (
-          <a
-            href={order.payment_proof_url}
-            target="_blank"
-            style={{
-              textDecoration: "none",
-            }}
-          >
-            <ActionButton
-              text="📄 Ver comprobante"
-            />
-          </a>
-        )}
+            <span className="action-label">
+              WhatsApp
+            </span>
+          </span>
 
-        {order.payment_proof_url && (
-          <a
-            href={order.payment_proof_url}
-            download
-            style={{
-              textDecoration: "none",
-            }}
-          >
-            <ActionButton
-              text="⬇ Descargar comprobante"
-            />
-          </a>
-        )}
+          <span className="action-arrow">
+            →
+          </span>
+        </button>
       </div>
-    </section>
-  );
-}
 
-function ActionButton({
-  text,
-  onClick,
-}: {
-  text: string;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        width: "100%",
-        padding: "16px",
-        background:
-          "rgba(255,255,255,.04)",
-        border:
-          "1px solid rgba(255,255,255,.07)",
-        borderRadius: 16,
-        color: "#fff",
-        fontWeight: 700,
-        cursor: "pointer",
-        fontSize: 15,
-        transition: ".25s",
-      }}
-    >
-      {text}
-    </button>
+      {/* MAPA */}
+
+      {hasMap && (
+        <button
+          type="button"
+          className="action-link map-action"
+          onClick={openMap}
+        >
+          <span className="action-link-left">
+            <span className="action-link-icon">
+              📍
+            </span>
+
+            <span>
+              Abrir ubicación en Maps
+            </span>
+          </span>
+
+          <span className="action-link-arrow">
+            →
+          </span>
+        </button>
+      )}
+
+      {/* COMPROBANTE */}
+
+      {proofUrl && (
+        <a
+          href={proofUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="action-link proof-action"
+        >
+          <span className="action-link-left">
+            <span className="action-link-icon">
+              ◉
+            </span>
+
+            <span>
+              Ver comprobante de pago
+            </span>
+          </span>
+
+          <span className="action-link-arrow">
+            →
+          </span>
+        </a>
+      )}
+
+      {/* DESCARGAR COMPROBANTE */}
+
+      {proofUrl && (
+        <a
+          href={proofUrl}
+          download
+          className="action-link proof-action"
+        >
+          <span className="action-link-left">
+            <span className="action-link-icon">
+              ↓
+            </span>
+
+            <span>
+              Descargar comprobante
+            </span>
+          </span>
+
+          <span className="action-link-arrow">
+            →
+          </span>
+        </a>
+      )}
+    </section>
   );
 }

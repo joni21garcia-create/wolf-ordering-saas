@@ -5,209 +5,332 @@ interface Props {
 export default function ProductsCard({ order }: Props) {
   const products = order.order_items ?? [];
 
+  const subtotal = Number(order.subtotal ?? 0);
+  const commission = Number(
+    order.commission_amount ?? 0
+  );
+  const total = Number(
+    order.total ?? subtotal + commission
+  );
+
   return (
-    <section
-      style={{
-        background:
-          "linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015))",
-        border: "1px solid rgba(255,255,255,.07)",
-        borderRadius: 24,
-        padding: 28,
-        backdropFilter: "blur(14px)",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 24,
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
-        <div>
-          <div
-            style={{
-              color: "#f97316",
-              fontWeight: 700,
-              fontSize: 12,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-            }}
-          >
-            Pedido
-          </div>
+    <section className="products-native">
+      <style>{`
+        .products-native {
+          width: 100%;
+          color: #fff;
+        }
 
-          <h2
-            style={{
-              color: "#fff",
-              margin: "6px 0 0",
-              fontSize: 26,
-              fontWeight: 700,
-            }}
-          >
-            Productos
-          </h2>
-        </div>
+        /* ==========================================
+           HEADER
+        ========================================== */
 
-        <div
-          style={{
-            padding: "10px 18px",
-            borderRadius: 999,
-            background: "rgba(249,115,22,.12)",
-            color: "#f97316",
-            fontWeight: 700,
-          }}
-        >
-          {products.length} Producto{products.length !== 1 ? "s" : ""}
-        </div>
+        .products-header {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 16px;
+          padding: 2px 0 18px;
+        }
+
+        .products-title {
+          margin: 0;
+          color: #f5f5f5;
+          font-size: 21px;
+          font-weight: 750;
+          letter-spacing: -.55px;
+        }
+
+        .products-count {
+          color: #666;
+          font-size: 12px;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+
+        /* ==========================================
+           PRODUCTS
+        ========================================== */
+
+        .products-list {
+          border-top:
+            1px solid rgba(255,255,255,.07);
+        }
+
+        .product-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 18px;
+
+          min-height: 72px;
+          padding: 15px 0;
+
+          border-bottom:
+            1px solid rgba(255,255,255,.055);
+        }
+
+        .product-info {
+          min-width: 0;
+          flex: 1;
+        }
+
+        .product-name {
+          overflow: hidden;
+
+          color: #f2f2f2;
+          font-size: 14px;
+          font-weight: 650;
+          line-height: 1.4;
+
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .product-meta {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+
+          margin-top: 5px;
+
+          color: #666;
+          font-size: 11px;
+        }
+
+        .product-quantity {
+          color: #a0a0a0;
+          font-weight: 650;
+        }
+
+        .product-dot {
+          color: #3d3d3d;
+        }
+
+        .product-unit {
+          color: #666;
+        }
+
+        .product-price {
+          flex-shrink: 0;
+
+          color: #f2f2f2;
+          font-size: 14px;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+
+        /* ==========================================
+           FINANCIAL SUMMARY
+        ========================================== */
+
+        .products-financial {
+          margin-top: 22px;
+          padding-top: 18px;
+
+          border-top:
+            1px solid rgba(255,255,255,.07);
+        }
+
+        .financial-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          min-height: 34px;
+          gap: 20px;
+        }
+
+        .financial-label {
+          color: #666;
+          font-size: 12px;
+          font-weight: 550;
+        }
+
+        .financial-value {
+          color: #aaa;
+          font-size: 12px;
+          font-weight: 650;
+        }
+
+        .financial-total {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          margin-top: 12px;
+          padding-top: 15px;
+
+          border-top:
+            1px solid rgba(255,255,255,.07);
+        }
+
+        .financial-total-label {
+          color: #fff;
+          font-size: 14px;
+          font-weight: 650;
+        }
+
+        .financial-total-value {
+          color: #fff;
+          font-size: 21px;
+          font-weight: 800;
+          letter-spacing: -.5px;
+        }
+
+        /* ==========================================
+           EMPTY
+        ========================================== */
+
+        .products-empty {
+          padding: 34px 4px;
+
+          color: #666;
+          font-size: 13px;
+          text-align: center;
+
+          border-top:
+            1px solid rgba(255,255,255,.06);
+        }
+
+        /* ==========================================
+           MOBILE
+        ========================================== */
+
+        @media (max-width: 420px) {
+          .products-title {
+            font-size: 20px;
+          }
+
+          .product-row {
+            gap: 14px;
+          }
+
+          .product-name {
+            font-size: 14px;
+          }
+
+          .product-price {
+            font-size: 13px;
+          }
+
+          .financial-total-value {
+            font-size: 20px;
+          }
+        }
+      `}</style>
+
+      {/* HEADER */}
+
+      <div className="products-header">
+        <h2 className="products-title">
+          Productos
+        </h2>
+
+        <span className="products-count">
+          {products.length}{" "}
+          {products.length === 1
+            ? "producto"
+            : "productos"}
+        </span>
       </div>
 
-      <div
-        style={{
-          overflowX: "auto",
-          borderRadius: 18,
-        }}
-      >
-        <table
-          style={{
-            width: "100%",
-            minWidth: 760,
-            borderCollapse: "collapse",
-          }}
-        >
-          <thead>
-            <tr
-              style={{
-                background: "rgba(255,255,255,.03)",
-              }}
-            >
-              <Th>Producto</Th>
+      {/* PRODUCT LIST */}
 
-              <Th align="center">Cantidad</Th>
+      {products.length === 0 ? (
+        <div className="products-empty">
+          No hay productos en este pedido.
+        </div>
+      ) : (
+        <>
+          <div className="products-list">
+            {products.map((item: any) => {
+              const quantity = Number(
+                item.quantity ?? 0
+              );
 
-              <Th align="center">Precio Unitario</Th>
+              const unitPrice = Number(
+                item.unit_price ?? 0
+              );
 
-              <Th align="right">Subtotal</Th>
-            </tr>
-          </thead>
+              const itemSubtotal = Number(
+                item.subtotal ??
+                  quantity * unitPrice
+              );
 
-          <tbody>
-            {products.map((item: any) => (
-              <tr
-                key={item.id}
-                style={{
-                  borderBottom:
-                    "1px solid rgba(255,255,255,.05)",
-                }}
-              >
-                <Td>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 4,
-                    }}
-                  >
-                    <strong
-                      style={{
-                        color: "#fff",
-                        fontSize: 16,
-                      }}
-                    >
+              return (
+                <div
+                  key={item.id}
+                  className="product-row"
+                >
+                  <div className="product-info">
+                    <div className="product-name">
                       {item.products?.name ??
                         "Producto"}
-                    </strong>
+                    </div>
 
-                    <span
-                      style={{
-                        color: "#777",
-                        fontSize: 13,
-                      }}
-                    >
-                      ID {item.product_id}
-                    </span>
+                    <div className="product-meta">
+                      <span className="product-quantity">
+                        {quantity} ×
+                      </span>
+
+                      <span className="product-dot">
+                        ·
+                      </span>
+
+                      <span className="product-unit">
+                        ${unitPrice.toFixed(2)}
+                      </span>
+                    </div>
                   </div>
-                </Td>
 
-                <Td align="center">
-                  {item.quantity}
-                </Td>
+                  <div className="product-price">
+                    ${itemSubtotal.toFixed(2)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-                <Td align="center">
-                  $
-                  {Number(
-                    item.unit_price ?? 0
-                  ).toFixed(2)}
-                </Td>
+          {/* FINANCIAL SUMMARY */}
 
-                <Td align="right">
-                  <strong
-                    style={{
-                      color: "#22c55e",
-                    }}
-                  >
-                    $
-                    {Number(
-                      item.subtotal ?? 0
-                    ).toFixed(2)}
-                  </strong>
-                </Td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          <div className="products-financial">
 
-      {products.length === 0 && (
-        <div
-          style={{
-            padding: 40,
-            textAlign: "center",
-            color: "#777",
-          }}
-        >
-          No existen productos.
-        </div>
+            <div className="financial-row">
+              <span className="financial-label">
+                Productos
+              </span>
+
+              <span className="financial-value">
+                ${subtotal.toFixed(2)}
+              </span>
+            </div>
+
+            {commission > 0 && (
+              <div className="financial-row">
+                <span className="financial-label">
+                  Comisión
+                </span>
+
+                <span className="financial-value">
+                  ${commission.toFixed(2)}
+                </span>
+              </div>
+            )}
+
+            <div className="financial-total">
+              <span className="financial-total-label">
+                Total
+              </span>
+
+              <strong className="financial-total-value">
+                ${total.toFixed(2)}
+              </strong>
+            </div>
+
+          </div>
+        </>
       )}
     </section>
-  );
-}
-
-function Th({
-  children,
-  align = "left",
-}: any) {
-  return (
-    <th
-      style={{
-        padding: 16,
-        color: "#777",
-        textAlign: align,
-        fontSize: 13,
-        fontWeight: 600,
-      }}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({
-  children,
-  align = "left",
-}: any) {
-  return (
-    <td
-      style={{
-        padding: 18,
-        color: "#ddd",
-        textAlign: align,
-        verticalAlign: "middle",
-      }}
-    >
-      {children}
-    </td>
   );
 }

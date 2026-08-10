@@ -4,70 +4,245 @@ interface Props {
 
 export default function PaymentCard({ order }: Props) {
   const method = order.payment_method ?? "";
-
   const paid = order.payment_status === "paid";
 
+  const total = Number(order.total ?? 0);
+
+  const status = paid
+    ? "Pagado"
+    : "Pendiente";
+
   return (
-    <section
-      style={{
-        background:
-          "linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015))",
-        border: "1px solid rgba(255,255,255,.07)",
-        borderRadius: 24,
-        padding: 28,
-        backdropFilter: "blur(14px)",
-      }}
-    >
-      <div
-        style={{
-          marginBottom: 26,
-        }}
-      >
-        <div
-          style={{
-            color: "#f97316",
-            fontWeight: 700,
-            fontSize: 12,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-          }}
-        >
-          Pago
+    <section className="payment-native">
+      <style>{`
+        .payment-native {
+          width: 100%;
+          color: #fff;
+        }
+
+        /* ==========================================
+           HEADER
+        ========================================== */
+
+        .payment-header {
+          padding: 2px 0 20px;
+        }
+
+        .payment-kicker {
+          margin-bottom: 7px;
+
+          color: #666;
+          font-size: 10px;
+          font-weight: 650;
+          letter-spacing: 1.5px;
+          text-transform: uppercase;
+        }
+
+        .payment-title {
+          margin: 0;
+
+          color: #f5f5f5;
+          font-size: 23px;
+          font-weight: 750;
+          letter-spacing: -.6px;
+        }
+
+        /* ==========================================
+           TOTAL
+        ========================================== */
+
+        .payment-total {
+          padding: 2px 0 21px;
+
+          border-bottom:
+            1px solid rgba(255,255,255,.07);
+        }
+
+        .payment-total-label {
+          color: #666;
+          font-size: 11px;
+          font-weight: 600;
+        }
+
+        .payment-total-value {
+          margin-top: 3px;
+
+          color: #fff;
+          font-size: 32px;
+          font-weight: 800;
+          letter-spacing: -1.2px;
+          line-height: 1.1;
+        }
+
+        /* ==========================================
+           STATUS
+        ========================================== */
+
+        .payment-status {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+
+          padding: 17px 0;
+
+          border-bottom:
+            1px solid rgba(255,255,255,.055);
+        }
+
+        .status-dot {
+          width: 7px;
+          height: 7px;
+
+          flex: 0 0 7px;
+
+          border-radius: 50%;
+
+          background: #f59e0b;
+        }
+
+        .status-dot.paid {
+          background: #22c55e;
+        }
+
+        .status-text {
+          color: #ddd;
+          font-size: 14px;
+          font-weight: 650;
+        }
+
+        .status-separator {
+          color: #444;
+        }
+
+        .status-method {
+          color: #777;
+          font-size: 13px;
+        }
+
+        /* ==========================================
+           DETAILS
+        ========================================== */
+
+        .payment-details {
+          margin-top: 3px;
+        }
+
+        .payment-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          gap: 20px;
+
+          min-height: 48px;
+
+          border-bottom:
+            1px solid rgba(255,255,255,.045);
+        }
+
+        .payment-label {
+          color: #666;
+          font-size: 12px;
+          font-weight: 550;
+        }
+
+        .payment-value {
+          max-width: 62%;
+
+          color: #bbb;
+          font-size: 13px;
+          font-weight: 600;
+          text-align: right;
+
+          overflow-wrap: anywhere;
+        }
+
+        .payment-value.confirmed {
+          color: #aaa;
+        }
+
+        /* ==========================================
+           EMPTY / FALLBACK
+        ========================================== */
+
+        .payment-empty {
+          padding: 24px 0;
+
+          color: #666;
+          font-size: 13px;
+        }
+
+        /* ==========================================
+           MOBILE
+        ========================================== */
+
+        @media (max-width: 420px) {
+          .payment-title {
+            font-size: 21px;
+          }
+
+          .payment-total-value {
+            font-size: 30px;
+          }
+
+          .payment-row {
+            min-height: 46px;
+          }
+        }
+      `}</style>
+
+      {/* HEADER */}
+
+      <div className="payment-header">
+        <div className="payment-kicker">
+          Pedido
         </div>
 
-        <h2
-          style={{
-            color: "#fff",
-            margin: "6px 0 0",
-            fontSize: 26,
-            fontWeight: 700,
-          }}
-        >
-          Información del Pago
+        <h2 className="payment-title">
+          Pago
         </h2>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(220px,1fr))",
-          gap: 18,
-        }}
-      >
-        <Info
-          title="Método"
-          value={paymentMethod(method)}
+      {/* TOTAL */}
+
+      <div className="payment-total">
+        <div className="payment-total-label">
+          Total
+        </div>
+
+        <div className="payment-total-value">
+          ${total.toFixed(2)}
+        </div>
+      </div>
+
+      {/* STATUS */}
+
+      <div className="payment-status">
+        <span
+          className={`status-dot ${
+            paid ? "paid" : ""
+          }`}
         />
 
-        <Info
-          title="Estado"
-          value={paid ? "Pagado" : "Pendiente"}
-          color={paid ? "#22c55e" : "#f59e0b"}
-        />
+        <span className="status-text">
+          {status}
+        </span>
 
-        <Info
-          title="Confirmado"
+        <span className="status-separator">
+          ·
+        </span>
+
+        <span className="status-method">
+          {paymentMethod(method)}
+        </span>
+      </div>
+
+      {/* DETAILS */}
+
+      <div className="payment-details">
+
+        <PaymentRow
+          label="Confirmado"
           value={
             order.payment_confirmed
               ? "Sí"
@@ -75,213 +250,142 @@ export default function PaymentCard({ order }: Props) {
           }
         />
 
-        <Info
-          title="Total"
-          value={`$${Number(order.total ?? 0).toFixed(2)}`}
-        />
+        {/* CASH */}
+
+        {method === "cash" && (
+          <>
+            <PaymentRow
+              label="Recibido"
+              value={`$${Number(
+                order.cash_amount ?? 0
+              ).toFixed(2)}`}
+            />
+
+            <PaymentRow
+              label="Cambio"
+              value={`$${Number(
+                order.change_amount ?? 0
+              ).toFixed(2)}`}
+            />
+          </>
+        )}
+
+        {/* TRANSFER */}
+
+        {(method === "transfer" ||
+          method === "bank_transfer") && (
+          <>
+            <PaymentRow
+              label="Banco"
+              value={
+                order.bank_name ?? "—"
+              }
+            />
+
+            <PaymentRow
+              label="Referencia"
+              value={
+                order.transaction_reference ??
+                "—"
+              }
+            />
+          </>
+        )}
+
+        {/* QR */}
+
+        {method === "qr" && (
+          <>
+            <PaymentRow
+              label="QR"
+              value={
+                order.selected_qr_name ??
+                "—"
+              }
+            />
+
+            <PaymentRow
+              label="QR ID"
+              value={
+                order.selected_qr_id ?? "—"
+              }
+            />
+          </>
+        )}
+
+        {/* CARD */}
+
+        {method === "card" && (
+          <>
+            <PaymentRow
+              label="Referencia"
+              value={
+                order.transaction_reference ??
+                "—"
+              }
+            />
+
+            <PaymentRow
+              label="Autorización"
+              value={
+                order.authorization_code ??
+                "—"
+              }
+            />
+          </>
+        )}
+
       </div>
-
-      {method === "cash" && (
-        <CashSection order={order} />
-      )}
-
-      {(method === "transfer" ||
-        method === "bank_transfer") && (
-        <TransferSection order={order} />
-      )}
-
-      {method === "qr" && (
-        <QRSection order={order} />
-      )}
-
-      {method === "card" && (
-        <CardSection order={order} />
-      )}
     </section>
   );
 }
 
-function CashSection({
-  order,
-}: {
-  order: any;
-}) {
-  return (
-    <ExtraGrid>
-      <Info
-        title="Recibido"
-        value={`$${Number(
-          order.cash_amount ?? 0
-        ).toFixed(2)}`}
-      />
+/* ==========================================
+   ROW
+========================================== */
 
-      <Info
-        title="Cambio"
-        value={`$${Number(
-          order.change_amount ?? 0
-        ).toFixed(2)}`}
-      />
-    </ExtraGrid>
-  );
-}
-
-function TransferSection({
-  order,
-}: {
-  order: any;
-}) {
-  return (
-    <ExtraGrid>
-      <Info
-        title="Banco"
-        value={order.bank_name ?? "-"}
-      />
-
-      <Info
-        title="Referencia"
-        value={
-          order.transaction_reference ??
-          "-"
-        }
-      />
-    </ExtraGrid>
-  );
-}
-
-function QRSection({
-  order,
-}: {
-  order: any;
-}) {
-  return (
-    <ExtraGrid>
-      <Info
-        title="QR utilizado"
-        value={
-          order.selected_qr_name ?? "-"
-        }
-      />
-
-      <Info
-        title="QR ID"
-        value={
-          order.selected_qr_id ?? "-"
-        }
-      />
-    </ExtraGrid>
-  );
-}
-
-function CardSection({
-  order,
-}: {
-  order: any;
-}) {
-  return (
-    <ExtraGrid>
-      <Info
-        title="Referencia"
-        value={
-          order.transaction_reference ??
-          "-"
-        }
-      />
-
-      <Info
-        title="Autorización"
-        value={
-          order.authorization_code ??
-          "-"
-        }
-      />
-    </ExtraGrid>
-  );
-}
-
-function ExtraGrid({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      style={{
-        marginTop: 24,
-        display: "grid",
-        gridTemplateColumns:
-          "repeat(auto-fit,minmax(220px,1fr))",
-        gap: 18,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function Info({
-  title,
+function PaymentRow({
+  label,
   value,
-  color,
 }: {
-  title: string;
+  label: string;
   value: any;
-  color?: string;
 }) {
   return (
-    <div
-      style={{
-        background:
-          "rgba(255,255,255,.025)",
-        borderRadius: 18,
-        padding: 18,
-        border:
-          "1px solid rgba(255,255,255,.05)",
-      }}
-    >
-      <div
-        style={{
-          color: "#777",
-          fontSize: 12,
-          marginBottom: 8,
-          textTransform: "uppercase",
-          letterSpacing: 1,
-        }}
-      >
-        {title}
-      </div>
+    <div className="payment-row">
+      <span className="payment-label">
+        {label}
+      </span>
 
-      <div
-        style={{
-          color: color ?? "#fff",
-          fontWeight: 700,
-          fontSize: 17,
-          wordBreak: "break-word",
-        }}
-      >
-        {value || "-"}
-      </div>
+      <span className="payment-value">
+        {value || "—"}
+      </span>
     </div>
   );
 }
+
+/* ==========================================
+   PAYMENT METHOD
+========================================== */
 
 function paymentMethod(method: string) {
   switch (method) {
     case "cash":
-      return "💵 Efectivo";
+      return "Efectivo";
 
     case "qr":
-      return "📱 QR";
+      return "QR";
 
     case "transfer":
-      return "🏦 Transferencia";
+      return "Transferencia";
 
     case "bank_transfer":
-      return "🏦 Transferencia";
+      return "Transferencia";
 
     case "card":
-      return "💳 Tarjeta";
+      return "Tarjeta";
 
     default:
-      return method || "-";
+      return method || "Sin método";
   }
 }

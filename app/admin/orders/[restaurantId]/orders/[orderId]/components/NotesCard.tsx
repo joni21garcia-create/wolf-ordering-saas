@@ -20,118 +20,153 @@ export default function NotesCard({ order }: Props) {
   }
 
   return (
-    <section
-      style={{
-        background:
-          "linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015))",
-        border: "1px solid rgba(255,255,255,.07)",
-        borderRadius: 24,
-        padding: 28,
-        backdropFilter: "blur(14px)",
-      }}
-    >
-      <div
-        style={{
-          marginBottom: 24,
-        }}
-      >
-        <div
-          style={{
-            color: "#f97316",
-            fontWeight: 700,
-            fontSize: 12,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-          }}
-        >
-          Observaciones
-        </div>
+    <section className="notes-native">
+      <style>{`
+        .notes-native {
+          width: 100%;
+          color: #fff;
+        }
 
-        <h2
-          style={{
-            color: "#fff",
-            margin: "6px 0 0",
-            fontSize: 26,
-            fontWeight: 700,
-          }}
-        >
-          Notas del Pedido
+        /* ==========================================
+           HEADER
+        ========================================== */
+
+        .notes-header {
+          padding: 2px 0 20px;
+        }
+
+        .notes-title {
+          margin: 0;
+
+          color: #f5f5f5;
+          font-size: 21px;
+          font-weight: 750;
+          letter-spacing: -.5px;
+        }
+
+        .notes-subtitle {
+          margin-top: 6px;
+
+          color: #666;
+          font-size: 12px;
+          line-height: 1.5;
+        }
+
+        /* ==========================================
+           CONTENT
+        ========================================== */
+
+        .notes-list {
+          border-top:
+            1px solid rgba(255,255,255,.07);
+        }
+
+        .note-section {
+          padding: 18px 0;
+
+          border-bottom:
+            1px solid rgba(255,255,255,.055);
+        }
+
+        .note-label {
+          margin-bottom: 8px;
+
+          color: #666;
+          font-size: 10px;
+          font-weight: 650;
+          letter-spacing: 1.2px;
+          text-transform: uppercase;
+        }
+
+        .note-value {
+          color: #d0d0d0;
+          font-size: 14px;
+          font-weight: 500;
+          line-height: 1.65;
+
+          white-space: pre-wrap;
+          overflow-wrap: anywhere;
+        }
+
+        /* ==========================================
+           SECTOR
+        ========================================== */
+
+        .sector-value {
+          color: #aaa;
+          font-size: 14px;
+          font-weight: 600;
+        }
+
+        /* ==========================================
+           MOBILE
+        ========================================== */
+
+        @media (max-width: 420px) {
+          .notes-title {
+            font-size: 20px;
+          }
+
+          .note-value,
+          .sector-value {
+            font-size: 13px;
+          }
+        }
+      `}</style>
+
+      {/* HEADER */}
+
+      <div className="notes-header">
+        <h2 className="notes-title">
+          Notas
         </h2>
+
+        <div className="notes-subtitle">
+          Observaciones e indicaciones del pedido
+        </div>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 18,
-        }}
-      >
+      {/* CONTENT */}
+
+      <div className="notes-list">
+
         {notes && (
-          <Box
-            title="Notas del Cliente"
-            value={order.notes}
-          />
+          <div className="note-section">
+            <div className="note-label">
+              Notas del cliente
+            </div>
+
+            <div className="note-value">
+              {order.notes}
+            </div>
+          </div>
         )}
 
         {instructions && (
-          <Box
-            title="Instrucciones de Entrega"
-            value={order.delivery_instructions}
-          />
+          <div className="note-section">
+            <div className="note-label">
+              Instrucciones de entrega
+            </div>
+
+            <div className="note-value">
+              {order.delivery_instructions}
+            </div>
+          </div>
         )}
 
         {sector && (
-          <Box
-            title="Sector"
-            value={order.delivery_sector}
-          />
+          <div className="note-section">
+            <div className="note-label">
+              Sector
+            </div>
+
+            <div className="sector-value">
+              {order.delivery_sector}
+            </div>
+          </div>
         )}
+
       </div>
     </section>
-  );
-}
-
-function Box({
-  title,
-  value,
-}: {
-  title: string;
-  value: string;
-}) {
-  return (
-    <div
-      style={{
-        background:
-          "rgba(255,255,255,.03)",
-        border:
-          "1px solid rgba(255,255,255,.05)",
-        borderRadius: 18,
-        padding: 20,
-      }}
-    >
-      <div
-        style={{
-          color: "#f97316",
-          fontSize: 13,
-          marginBottom: 10,
-          fontWeight: 700,
-          letterSpacing: 1,
-          textTransform: "uppercase",
-        }}
-      >
-        {title}
-      </div>
-
-      <div
-        style={{
-          color: "#ddd",
-          lineHeight: 1.7,
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-        }}
-      >
-        {value}
-      </div>
-    </div>
   );
 }

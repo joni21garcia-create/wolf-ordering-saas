@@ -27,6 +27,7 @@ import {
 import { supabase } from "@/lib/supabase/client";
 import SidebarItem from "./SidebarItem";
 import { useSidebar } from "./SidebarContext";
+import { useSession } from "@/providers/SessionProvider";
 
 const SWIPE_THRESHOLD = 55;
 const EDGE_ZONE = 28;
@@ -34,6 +35,11 @@ const EDGE_ZONE = 28;
 export default function Sidebar() {
   const pathname = usePathname();
   const params = useParams();
+  const { user } = useSession();
+
+  const roleCode = String(user?.role?.code ?? "")
+    .trim()
+    .toLowerCase();
 
   const restaurantId =
     typeof params.restaurantId === "string"
@@ -56,32 +62,37 @@ export default function Sidebar() {
       href: `/admin/orders/${restaurantId}/orders`,
       icon: ShoppingBag,
       highlight: true,
+      roles: ["cocina", "kitchen", "cashier", "manager", "owner", "super-user"],
     },
     {
       label: "Ventas",
       href: `/admin/sales/${restaurantId}`,
       icon: BarChart3,
       highlight: false,
+      roles: ["manager", "owner", "super-user"],
     },
     {
       label: "Restaurante",
       href: `/admin/restaurant/${restaurantId}`,
       icon: Store,
       highlight: false,
+      roles: ["cocina", "kitchen", "cashier", "manager", "owner", "super-user"],
     },
     {
       label: "Usuarios",
       href: `/admin/users/${restaurantId}`,
       icon: Users,
       highlight: false,
+      roles: ["owner", "super-user"],
     },
     {
       label: "Delivery y Pick-up",
       href: `/admin/restaurant/${restaurantId}/delivery-pickup`,
       icon: Truck,
       highlight: false,
+      roles: ["owner", "super-user"],
     },
-  ];
+  ].filter((item) => item.roles.includes(roleCode));
 
   // En móvil, después de navegar cerramos el panel.
   // En desktop no afecta el comportamiento actual.
