@@ -38,30 +38,410 @@ export default function ActionsCard({
 
   function printOrder() {
     /*
-     * window.print() is supported by normal browsers, but Android PWAs
-     * and some in-app WebViews may not expose the print dialog correctly.
-     *
-     * We keep the native print call first, and provide a dedicated
-     * printable popup as a fallback when the browser does not handle it.
+     * Impresión compatible con Android, PWA y navegador.
+     * No dependemos de window.open(url) ni de ?print=order:
+     * construimos un documento de impresión independiente.
      */
-    const printUrl =
-      `${window.location.href}${
-        window.location.href.includes("?")
-          ? "&"
-          : "?"
-      }print=order`;
+    const printWindow = window.open("", "_blank");
 
-    const printWindow = window.open(
-      printUrl,
-      "_blank",
-      "noopener,noreferrer"
-    );
-
-    if (printWindow) {
+    if (!printWindow) {
+      window.print();
       return;
     }
 
-    window.print();
+    const products = Array.isArray(order.order_items)
+      ? order.order_items
+      : [];
+
+    const money = (value: unknown) =>
+      `$${Number(value ?? 0).toFixed(2)}`;
+
+    const escapeHtml = (value: unknown) =>
+      String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    const created = order.created_at
+      ? new Date(order.created_at)
+      : null;
+
+    const date = created
+      ? created.toLocaleDateString("es-CO", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          timeZone: "America/Bogota",
+        })
+      : "—";
+
+    const time = created
+      ? created.toLocaleTimeString("es-CO", {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: "America/Bogota",
+        })
+      : "—";
+
+    const orderType =
+      order.order_type === "delivery"
+        ? "Delivery"
+        : order.order_type === "pickup"
+          ? "Pick-up"
+          : order.order_type === "dine_in"
+            ? "Restaurante"
+            : order.order_type || "—";
+
+    const paymentMethod =
+      order.payment_method === "cash"
+        ? "Efectivo"
+        : order.payment_method === "qr"
+          ? "QR"
+          : order.payment_method === "transfer" ||
+              order.payment_method === "bank_transfer"
+            ? "Transferencia"
+            : order.payment_method === "card"
+              ? "Tarjeta"
+              : order.payment_method || "Sin método";
+
+    const subtotal = Number(order.subtotal ?? 0);
+    const commission = Number(order.commission_amount ?? 0);
+    const total = Number(
+      order.total ?? subtotal + commission
+    );
+
+    const productsHtml = products
+      .map((item: any) => {
+        const quantity = Number(item.quantity ?? 0);
+        const unitPrice = Number(item.unit_price ?? 0);
+        const itemSubtotal = Number(
+          item.subtotal ?? quantity * unitPrice
+        );
+
+        return `
+          <div class="product">
+            <div>
+              <div class="product-name">
+                ${escapeHtml(item.products?.name ?? "Producto")}
+              </div>
+              <div class="product-meta">
+                ${quantity} × ${money(unitPrice)}
+              </div>
+            </div>
+            <strong>${money(itemSubtotal)}</strong>
+          </div>
+        `;
+      })
+      .join("");
+
+    printWindow.document.open();
+    printWindow.document.write(`
+      <!doctype html>
+      <html lang="es">
+        <head>
+          <meta charset="utf-8" />
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1"
+          />
+          <title>Pedido #${escapeHtml(
+            order.tracking_code ?? ""
+          )}</title>
+
+          <style>
+            * { box-sizing: border-box; }
+
+            html, body {
+              margin: 0;
+              padding: 0;
+              background: #fff;
+              color: #000;
+              font-family: Arial, Helvetica, sans-serif;
+            }
+
+            body { padding: 18px; }
+
+            .ticket {
+              width: 100%;
+              max-width: 420px;
+              margin: 0 auto;
+            }
+
+            .brand {
+              margin-bottom: 16px;
+              text-align: center;
+              font-size: 20px;
+              font-weight: 800;
+            }
+
+            h1 {
+              margin: 0;
+              text-align: center;
+              font-size: 18px;
+            }
+
+            .tracking {
+              margin-top: 5px;
+              text-align: center;
+              font-size: 13px;
+              font-weight: 700;
+            }
+
+            .meta {
+              margin-top: 5px;
+              text-align: center;
+              color: #555;
+              font-size: 10px;
+            }
+
+            .divider {
+              margin: 15px 0;
+              border: 0;
+              border-top: 1px dashed #999;
+            }
+
+            .section-title {
+              margin-bottom: 7px;
+              font-size: 10px;
+              font-weight: 800;
+              text-transform: uppercase;
+            }
+
+            .customer, .note {
+              margin-bottom: 12px;
+              font-size: 11px;
+              line-height: 1.5;
+            }
+
+            .row, .product, .total {
+              display: flex;
+              justify-content: space-between;
+              gap: 15px;
+            }
+
+            .row {
+              padding: 5px 0;
+              font-size: 11px;
+            }
+
+            .product {
+              padding: 7px 0;
+              border-bottom: 1px solid #eee;
+              font-size: 11px;
+            }
+
+            .product-name { font-weight: 700; }
+
+            .product-meta {
+              margin-top: 2px;
+              color: #555;
+              font-size: 9px;
+            }
+
+            .total {
+              margin-top: 9px;
+              padding-top: 10px;
+              border-top: 1px solid #000;
+              font-size: 14px;
+              font-weight: 800;
+            }
+
+            .footer {
+              margin-top: 22px;
+              color: #666;
+              text-align: center;
+              font-size: 9px;
+            }
+
+            .print-actions {
+              display: flex;
+              justify-content: center;
+              gap: 8px;
+              margin: 18px auto 0;
+              max-width: 420px;
+            }
+
+            .print-actions button {
+              min-height: 42px;
+              padding: 0 18px;
+              border: 0;
+              border-radius: 10px;
+              background: #111;
+              color: #fff;
+              font-weight: 700;
+              cursor: pointer;
+            }
+
+            @media print {
+              body { padding: 0; }
+              .print-actions { display: none !important; }
+              .ticket { max-width: none; }
+            }
+          </style>
+        </head>
+
+        <body>
+          <main class="ticket">
+            <div class="brand">WOLF</div>
+            <h1>Pedido</h1>
+
+            <div class="tracking">
+              #${escapeHtml(order.tracking_code ?? "—")}
+            </div>
+
+            <div class="meta">
+              ${escapeHtml(date)} · ${escapeHtml(time)}
+            </div>
+
+            <hr class="divider" />
+
+            <div class="section-title">Cliente</div>
+
+            <div class="customer">
+              <strong>
+                ${escapeHtml(order.customer_name ?? "No registrado")}
+              </strong>
+              <br />
+              ${escapeHtml(order.customer_phone ?? "Sin teléfono")}
+              ${
+                order.customer_email
+                  ? `<br />${escapeHtml(order.customer_email)}`
+                  : ""
+              }
+            </div>
+
+            <div class="row">
+              <span>Tipo</span>
+              <strong>${escapeHtml(orderType)}</strong>
+            </div>
+
+            ${
+              order.delivery_address
+                ? `
+                  <div class="note">
+                    <strong>Dirección</strong><br />
+                    ${escapeHtml(order.delivery_address)}
+                  </div>
+                `
+                : ""
+            }
+
+            ${
+              order.delivery_instructions
+                ? `
+                  <div class="note">
+                    <strong>Instrucciones</strong><br />
+                    ${escapeHtml(order.delivery_instructions)}
+                  </div>
+                `
+                : ""
+            }
+
+            <hr class="divider" />
+
+            <div class="section-title">Productos</div>
+
+            ${productsHtml}
+
+            <div class="row">
+              <span>Productos</span>
+              <strong>${money(subtotal)}</strong>
+            </div>
+
+            ${
+              commission > 0
+                ? `
+                  <div class="row">
+                    <span>Comisión</span>
+                    <strong>${money(commission)}</strong>
+                  </div>
+                `
+                : ""
+            }
+
+            <div class="total">
+              <span>Total</span>
+              <span>${money(total)}</span>
+            </div>
+
+            <hr class="divider" />
+
+            <div class="section-title">Pago</div>
+
+            <div class="row">
+              <span>Método</span>
+              <strong>${escapeHtml(paymentMethod)}</strong>
+            </div>
+
+            <div class="row">
+              <span>Estado</span>
+              <strong>
+                ${
+                  order.payment_status === "paid"
+                    ? "Pagado"
+                    : "Pendiente"
+                }
+              </strong>
+            </div>
+
+            ${
+              order.payment_method === "cash"
+                ? `
+                  <div class="row">
+                    <span>Recibido</span>
+                    <strong>${money(order.cash_amount)}</strong>
+                  </div>
+
+                  <div class="row">
+                    <span>Cambio</span>
+                    <strong>${money(order.change_amount)}</strong>
+                  </div>
+                `
+                : ""
+            }
+
+            ${
+              order.notes
+                ? `
+                  <hr class="divider" />
+
+                  <div class="section-title">Notas</div>
+
+                  <div class="note">
+                    ${escapeHtml(order.notes)}
+                  </div>
+                `
+                : ""
+            }
+
+            <div class="footer">
+              Pedido generado desde Wolf
+            </div>
+          </main>
+
+          <div class="print-actions">
+            <button type="button" onclick="window.print()">
+              🖨 Imprimir
+            </button>
+
+            <button type="button" onclick="window.close()">
+              Cerrar
+            </button>
+          </div>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+
+    printWindow.onload = () => {
+      window.setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 350);
+    };
   }
 
   function openMap() {

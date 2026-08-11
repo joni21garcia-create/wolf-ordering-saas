@@ -18,7 +18,8 @@ interface RestaurantViewProps {
 type RestaurantSection =
   | "products"
   | "hours"
-  | "marketing";
+  | "marketing"
+  | "payments";
 
 export default function RestaurantView({
   restaurantId,
@@ -90,12 +91,19 @@ export default function RestaurantView({
         return ["products", "hours"];
 
       case "manager":
+        return [
+          "products",
+          "hours",
+          "marketing",
+        ];
+
       case "owner":
       case "super-user":
         return [
           "products",
           "hours",
           "marketing",
+          "payments",
         ];
 
       default:
@@ -266,6 +274,10 @@ function RestaurantToolbar({
     {
       id: "marketing",
       label: "Marketing",
+    },
+    {
+      id: "payments",
+      label: "Pagos",
     },
   ];
 
@@ -688,6 +700,43 @@ function HoursSection({
     />
   );
 }
+/* =========================================================
+   PAGOS
+   ========================================================= */
+
+interface PaymentsSectionProps {
+  restaurantId: string;
+}
+
+function PaymentsSection({
+  restaurantId,
+}: PaymentsSectionProps) {
+  useEffect(() => {
+    /*
+     * Pagos ya tiene su propio módulo/ruta.
+     * Aquí solamente conectamos el botón del Restaurante
+     * con esa implementación existente, sin duplicar el módulo.
+     */
+    window.location.href =
+      `/admin/restaurant/${restaurantId}/payments`;
+  }, [restaurantId]);
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        padding: "30px 12px",
+        boxSizing: "border-box",
+        textAlign: "center",
+        color: "#71717A",
+        fontSize: 13,
+      }}
+    >
+      Abriendo Pagos...
+    </div>
+  );
+}
+
 /* =========================================================
    FUTURAS SECCIONES
    ========================================================= */
