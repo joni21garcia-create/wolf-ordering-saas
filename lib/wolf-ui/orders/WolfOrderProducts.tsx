@@ -197,11 +197,11 @@ export default function WolfOrderProducts({
 
             >
 
-              $
-
-              {Number(
-                item.subtotal
-              ).toLocaleString()}
+$
+{Number(item.subtotal ?? 0).toLocaleString("en-US", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})}
 
             </div>
 

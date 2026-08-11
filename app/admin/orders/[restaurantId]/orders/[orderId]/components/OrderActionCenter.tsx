@@ -6,13 +6,26 @@ interface Props {
   order: any;
 }
 
-const STATUS_ORDER = [
-  "pending",
-  "accepted",
-  "preparing",
-  "ready",
-  "completed",
-];
+function getStatusOrder(order: any) {
+  const isDelivery = order?.order_type === "delivery";
+
+  return isDelivery
+    ? [
+        "pending",
+        "accepted",
+        "preparing",
+        "ready",
+        "out_for_delivery",
+        "completed",
+      ]
+    : [
+        "pending",
+        "accepted",
+        "preparing",
+        "ready",
+        "completed",
+      ];
+}
 
 const STATUS_CONFIG: Record<
   string,
@@ -38,6 +51,11 @@ const STATUS_CONFIG: Record<
 
   ready: {
     label: "Listo",
+    nextLabel: "Enviar pedido",
+  },
+
+  out_for_delivery: {
+    label: "En camino",
     nextLabel: "Marcar como entregado",
   },
 
@@ -64,6 +82,8 @@ export default function OrderActionCenter({
   const config =
     STATUS_CONFIG[currentStatus] ??
     STATUS_CONFIG.pending;
+
+  const STATUS_ORDER = getStatusOrder(order);
 
   const currentIndex =
     STATUS_ORDER.indexOf(
@@ -231,18 +251,79 @@ export default function OrderActionCenter({
 
           cursor: pointer;
 
+          position: relative;
+          overflow: hidden;
+          isolation: isolate;
+
+          border-radius: 12px;
+          background:
+            linear-gradient(
+              135deg,
+              rgba(249,115,22,.12),
+              rgba(249,115,22,.035)
+            );
+
+          box-shadow:
+            0 8px 24px rgba(249,115,22,.08),
+            0 0 0 1px rgba(249,115,22,.08) inset;
+
           transition:
             color .18s ease,
-            padding .18s ease;
+            padding .18s ease,
+            transform .2s cubic-bezier(.22,1,.36,1),
+            background .2s ease,
+            box-shadow .2s ease;
+        }
+
+        .action-primary::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+
+          background:
+            linear-gradient(
+              115deg,
+              transparent 25%,
+              rgba(255,255,255,.18) 45%,
+              transparent 65%
+            );
+
+          transform: translateX(-120%);
+          transition:
+            transform .55s cubic-bezier(.22,1,.36,1);
+
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .action-primary > * {
+          position: relative;
+          z-index: 1;
         }
 
         .action-primary:hover:not(:disabled) {
-          padding-left: 4px;
-          color: #fb923c;
+          padding-left: 6px;
+          color: #ffb067;
+          transform: translateY(-2px);
+
+          background:
+            linear-gradient(
+              135deg,
+              rgba(249,115,22,.20),
+              rgba(249,115,22,.055)
+            );
+
+          box-shadow:
+            0 14px 32px rgba(249,115,22,.14),
+            0 0 0 1px rgba(249,115,22,.14) inset;
+        }
+
+        .action-primary:hover:not(:disabled)::before {
+          transform: translateX(120%);
         }
 
         .action-primary:active:not(:disabled) {
-          transform: scale(.995);
+          transform: translateY(0) scale(.985);
         }
 
         .action-primary:disabled {

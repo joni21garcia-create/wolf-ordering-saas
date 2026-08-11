@@ -4,12 +4,28 @@ import { useState } from "react";
 
 interface Props {
   order: any;
+  onUpdatePayment: (
+    orderId: string,
+    payment: string
+  ) => Promise<void>;
 }
 
 export default function ActionsCard({
   order,
+  onUpdatePayment,
 }: Props) {
   const [copyLabel, setCopyLabel] = useState("Copiar tracking");
+  const [activeAction, setActiveAction] = useState<string | null>(null);
+  const [localPaymentStatus, setLocalPaymentStatus] =
+    useState<string | null>(null);
+
+  const paymentStatus =
+    localPaymentStatus ?? order.payment_status;
+
+  function pressAction(action: string) {
+    setActiveAction(action);
+    window.setTimeout(() => setActiveAction(null), 220);
+  }
 
   async function copy(text?: string) {
     if (!text) return;
@@ -59,6 +75,34 @@ export default function ActionsCard({
       "_blank",
       "noopener,noreferrer"
     );
+  }
+
+  async function handlePaymentToggle() {
+    const nextPayment =
+      paymentStatus === "paid"
+        ? "pending"
+        : "paid";
+
+    pressAction("payment");
+    setLocalPaymentStatus(nextPayment);
+
+    try {
+      await onUpdatePayment(
+        String(order.id),
+        nextPayment
+      );
+
+      window.setTimeout(() => {
+        setLocalPaymentStatus(null);
+      }, 250);
+    } catch (error) {
+      setLocalPaymentStatus(null);
+      console.error(
+        "Error actualizando pago:",
+        error
+      );
+      throw error;
+    }
   }
 
   async function printOrder() {
@@ -579,30 +623,11 @@ const blob = new Blob(
 
       /*
        * Android / PWA:
-       * Use the native file share sheet when available.
-       * This keeps the PDF in the device/system flow and does
-       * not navigate back to the Wolf order page.
+       * Open the generated PDF directly.
+       *
+       * We intentionally do NOT use navigator.share() first:
+       * the requested flow is Wolf -> PDF viewer -> Android "Imprimir".
        */
-      if (
-        (isMobileDevice || isStandalonePwa) &&
-        typeof navigator !== "undefined" &&
-        typeof navigator.share === "function"
-      ) {
-        const canShareFiles =
-          typeof navigator.canShare === "function"
-            ? navigator.canShare({ files: [file] })
-            : false;
-
-        if (canShareFiles) {
-          await navigator.share({
-            title: "Imprimir pedido",
-            text: `Pedido #${String(order.tracking_code ?? "")}`,
-            files: [file],
-          });
-          return;
-        }
-      }
-
       const url = URL.createObjectURL(blob);
 
       /*
@@ -792,6 +817,27 @@ const blob = new Blob(
           transform: scale(.98);
         }
 
+        .action-item.action-pressed {
+          transform: translateY(1px) scale(.975);
+          background: rgba(249,115,22,.09);
+          border-color: rgba(249,115,22,.28);
+          color: #fff;
+        }
+
+        .action-item.action-pressed .action-arrow {
+          color: #f97316;
+          transform: translateX(4px);
+        }
+
+        .action-arrow {
+          flex: 0 0 auto;
+          color: #444;
+          font-size: 14px;
+          transition:
+            color .18s ease,
+            transform .18s ease;
+        }
+
         .action-item:disabled {
           cursor: default;
           opacity: .35;
@@ -841,6 +887,97 @@ const blob = new Blob(
           font-size: 14px;
         }
 
+        .payment-action {
+          width: 100%;
+          min-height: 44px;
+          margin-top: 8px;
+
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          gap: 12px;
+          padding: 0 13px;
+
+          border: 1px solid rgba(249,115,22,.18);
+          border-radius: 12px;
+
+          background: rgba(249,115,22,.055);
+          color: #d6d6d6;
+
+          font-size: 11px;
+          font-weight: 700;
+
+          cursor: pointer;
+
+          transition:
+            background .18s ease,
+            border-color .18s ease,
+            color .18s ease,
+            transform .18s ease,
+            box-shadow .18s ease;
+        }
+
+        .payment-action:hover {
+          background: rgba(249,115,22,.10);
+          border-color: rgba(249,115,22,.30);
+          color: #fff;
+        }
+
+        .payment-action.is-paid {
+          border-color: rgba(34,197,94,.22);
+          background: rgba(34,197,94,.055);
+        }
+
+        .payment-action.payment-pressed {
+          transform: translateY(1px) scale(.975);
+          border-color: rgba(249,115,22,.42);
+          box-shadow: 0 0 0 3px rgba(249,115,22,.08);
+        }
+
+        .payment-action.is-paid.payment-pressed {
+          border-color: rgba(34,197,94,.42);
+          box-shadow: 0 0 0 3px rgba(34,197,94,.08);
+        }
+
+        .payment-action-left {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+        }
+
+        .payment-action-icon {
+          width: 25px;
+          height: 25px;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          border-radius: 8px;
+          background: rgba(255,255,255,.045);
+          font-size: 12px;
+        }
+
+        .payment-action-arrow {
+          font-size: 14px;
+          color: #f97316;
+
+          transition:
+            transform .18s ease,
+            color .18s ease;
+        }
+
+        .payment-action.payment-pressed
+          .payment-action-arrow {
+          transform: translateX(4px);
+        }
+
+        .payment-action.is-paid
+          .payment-action-arrow {
+          color: #22c55e;
+        }
+
         /*
         ============================================
         SECONDARY ACTIONS
@@ -888,6 +1025,11 @@ const blob = new Blob(
 
         .action-link:hover {
           color: #fff;
+        }
+
+        .action-pressed-link {
+          color: #f97316 !important;
+          transform: translateX(2px);
         }
 
         .action-link-left {
@@ -990,8 +1132,11 @@ const blob = new Blob(
 
         <button
           type="button"
-          className="action-item"
-          onClick={printOrder}
+          className={`action-item ${activeAction === "print" ? "action-pressed" : ""}`}
+          onClick={() => {
+            pressAction("print");
+            void printOrder();
+          }}
           aria-label="Imprimir pedido"
         >
           <span className="action-left">
@@ -1013,10 +1158,11 @@ const blob = new Blob(
 
         <button
           type="button"
-          className="action-item"
-          onClick={() =>
-            copy(order.tracking_code)
-          }
+          className={`action-item ${activeAction === "tracking" ? "action-pressed" : ""}`}
+          onClick={() => {
+            pressAction("tracking");
+            void copy(order.tracking_code);
+          }}
           disabled={
             !order.tracking_code
           }
@@ -1040,8 +1186,11 @@ const blob = new Blob(
 
         <button
           type="button"
-          className="action-item"
-          onClick={callCustomer}
+          className={`action-item ${activeAction === "call" ? "action-pressed" : ""}`}
+          onClick={() => {
+            pressAction("call");
+            callCustomer();
+          }}
           disabled={!hasPhone}
         >
           <span className="action-left">
@@ -1063,8 +1212,11 @@ const blob = new Blob(
 
         <button
           type="button"
-          className="action-item"
-          onClick={whatsapp}
+          className={`action-item ${activeAction === "whatsapp" ? "action-pressed" : ""}`}
+          onClick={() => {
+            pressAction("whatsapp");
+            whatsapp();
+          }}
           disabled={!hasPhone}
         >
           <span className="action-left">
@@ -1083,13 +1235,57 @@ const blob = new Blob(
         </button>
       </div>
 
+      {/* PAGO */}
+
+      <button
+        type="button"
+        className={`payment-action ${
+          activeAction === "payment"
+            ? "payment-pressed"
+            : ""
+        } ${
+          paymentStatus === "paid"
+            ? "is-paid"
+            : ""
+        }`}
+        onClick={() => {
+          void handlePaymentToggle();
+        }}
+        aria-label={
+          paymentStatus === "paid"
+            ? "Marcar pago como pendiente"
+            : "Marcar pedido como pagado"
+        }
+      >
+        <span className="payment-action-left">
+          <span className="payment-action-icon">
+            💳
+          </span>
+
+          <span>
+            {paymentStatus === "paid"
+              ? "Pagado"
+              : "Marcar pagado"}
+          </span>
+        </span>
+
+        <span className="payment-action-arrow">
+          {paymentStatus === "paid"
+            ? "✓"
+            : "→"}
+        </span>
+      </button>
+
       {/* MAPA */}
 
       {hasMap && (
         <button
           type="button"
-          className="action-link map-action"
-          onClick={openMap}
+          className={`action-link map-action ${activeAction === "map" ? "action-pressed-link" : ""}`}
+          onClick={() => {
+            pressAction("map");
+            openMap();
+          }}
         >
           <span className="action-link-left">
             <span className="action-link-icon">

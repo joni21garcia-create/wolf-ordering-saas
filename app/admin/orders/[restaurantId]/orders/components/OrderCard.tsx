@@ -670,6 +670,17 @@ export default function OrderCard({
 
   void onRefresh;
 
+  // Feedback inmediato del pago. El estado real sigue viniendo de Supabase.
+  const [localPaymentStatus, setLocalPaymentStatus] =
+    useState<string | null>(null);
+
+  useEffect(() => {
+    setLocalPaymentStatus(null);
+  }, [order.payment_status]);
+
+  const paymentStatus =
+    localPaymentStatus ?? order.payment_status;
+
 
   /* =======================================================
      DELIVERY
@@ -714,7 +725,7 @@ export default function OrderCard({
           setNow(
             Date.now()
           ),
-        60_000
+        1_000
       );
 
 
@@ -1347,22 +1358,38 @@ const restaurantAmount =
                 colors.textSecondary,
             }}
           >
-            {
+            {(
+              order.order_items ??
+              []
+            ).reduce(
               (
-                order.order_items ??
-                []
-              ).length
-            }{" "}
-            producto
-            {
+                total: number,
+                item: any
+              ) =>
+                total +
+                Number(
+                  item.quantity ??
+                  1
+                ),
+              0
+            )}{" "}
+            {(
+              order.order_items ??
+              []
+            ).reduce(
               (
-                order.order_items ??
-                []
-              ).length ===
-              1
-                ? ""
-                : "s"
-            }
+                total: number,
+                item: any
+              ) =>
+                total +
+                Number(
+                  item.quantity ??
+                  1
+                ),
+              0
+            ) === 1
+              ? "producto"
+              : "productos"}
           </span>
 
         </div>
@@ -1644,12 +1671,66 @@ const restaurantAmount =
 
       {primaryAction ? (
 
-        <WolfButton
-          type="button"
-          fullWidth
-          variant="primary"
+        <>
+          <style>{`
+            .wolf-premium-action {
+              position: relative;
+              overflow: hidden;
+              isolation: isolate;
+              border-radius: 14px !important;
+              transform: translateY(0);
+              transition:
+                transform .2s cubic-bezier(.22,1,.36,1),
+                box-shadow .2s ease,
+                filter .2s ease !important;
+            }
 
-          onClick={
+            .wolf-premium-action::before {
+              content: "";
+              position: absolute;
+              inset: 0;
+              background:
+                linear-gradient(
+                  115deg,
+                  transparent 25%,
+                  rgba(255,255,255,.24) 45%,
+                  transparent 65%
+                );
+              transform: translateX(-120%);
+              transition: transform .55s cubic-bezier(.22,1,.36,1);
+              pointer-events: none;
+              z-index: 0;
+            }
+
+            .wolf-premium-action:hover {
+              transform: translateY(-2px);
+              filter: brightness(1.06);
+              box-shadow:
+                0 14px 34px rgba(249,115,22,.28),
+                0 0 0 1px rgba(255,255,255,.08) inset !important;
+            }
+
+            .wolf-premium-action:hover::before {
+              transform: translateX(120%);
+            }
+
+            .wolf-premium-action:active {
+              transform: translateY(0) scale(.985);
+            }
+
+            .wolf-premium-action > * {
+              position: relative;
+              z-index: 1;
+            }
+          `}</style>
+
+          <WolfButton
+            type="button"
+            fullWidth
+            variant="primary"
+       
+
+            onClick={
             handleStatusUpdate
           }
 
@@ -1688,6 +1769,7 @@ const restaurantAmount =
           }
 
         </WolfButton>
+        </>
 
       ) : (
 
@@ -1728,31 +1810,47 @@ const restaurantAmount =
 
           className={
             `wolf-secondary-action${
-              order.payment_status ===
-              "paid"
+              paymentStatus === "paid"
                 ? " is-positive"
                 : ""
             }`
           }
-
-          onClick={() =>
-            onUpdatePayment(
-              order.id,
-              "paid"
-            )
+          aria-label={
+            paymentStatus === "paid"
+              ? "Pago registrado"
+              : "Marcar pedido como pagado"
           }
+
+          onClick={async () => {
+            const nextStatus =
+              paymentStatus === "paid"
+                ? "pending"
+                : "paid";
+
+            setLocalPaymentStatus(nextStatus);
+
+            try {
+              await onUpdatePayment(
+                order.id,
+                nextStatus
+              );
+            } catch (error) {
+              setLocalPaymentStatus(null);
+              console.error(
+                "Error actualizando pago:",
+                error
+              );
+            }
+          }}
         >
 
           <CreditCard
             size={13}
           />
 
-          {
-            order.payment_status ===
-            "paid"
-              ? "Pagado"
-              : "Marcar pagado"
-          }
+          {paymentStatus === "paid"
+            ? "Pagado"
+            : "Marcar pagado"}
 
         </button>
 

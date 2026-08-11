@@ -342,17 +342,39 @@ const estimatedTime =
 
       <div
         style={{
-          background: "rgba(18,18,18,0.8)",
-          border: "1px solid rgba(255,255,255,0.06)",
-          borderRadius: "24px",
+          background:
+            "linear-gradient(145deg, rgba(22,22,22,.94), rgba(10,10,10,.90))",
+          border: "1px solid rgba(255,255,255,.08)",
+          borderRadius: "28px",
           padding: "clamp(20px, 5vw, 35px)",
           color: "#fff",
-          backdropFilter: "blur(20px)",
-          boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+          backdropFilter: "blur(24px)",
+          boxShadow:
+            "0 28px 80px rgba(0,0,0,.58), inset 0 1px 0 rgba(255,255,255,.04)",
+          position: "relative" as const,
+          overflow: "hidden",
         }}
       >
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: -90,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 260,
+            height: 180,
+            borderRadius: "50%",
+            background: "rgba(249,115,22,.10)",
+            filter: "blur(55px)",
+            pointerEvents: "none",
+          }}
+        />
+
         <div
           style={{
+            position: "relative",
+            zIndex: 1,
             textAlign: "center",
             marginBottom: "30px",
           }}
@@ -370,79 +392,33 @@ const estimatedTime =
             Código de seguimiento
           </p>
 
-          <h2
-            style={{
-              fontSize: "clamp(32px, 8vw, 44px)",
-              letterSpacing: "4px",
-              color: "#f97316",
-              fontWeight: "900",
-              margin: 0,
-              textShadow: "0 0 30px rgba(249,115,22,0.2)"
-            }}
-          >
-            {orderData.tracking_code}
-          </h2>
-
-          {/* PASOS DEL PEDIDO CON SCROLL HACIA LA DERECHA EN MÓVIL */}
           <div
             style={{
-              display: "flex",
-              justifyContent: "space-between",
+              display: "inline-flex",
               alignItems: "center",
-              gap: "16px",
-              marginTop: "35px",
-              marginBottom: "35px",
-              overflowX: "auto",
-              width: "100%",
-              paddingBottom: "10px",
-              WebkitOverflowScrolling: "touch"
+              justifyContent: "center",
+              padding: "14px 20px",
+              borderRadius: "18px",
+              background:
+                "linear-gradient(135deg, rgba(249,115,22,.10), rgba(249,115,22,.025))",
+              border: "1px solid rgba(249,115,22,.18)",
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,.05), 0 12px 34px rgba(249,115,22,.06)",
             }}
           >
-            {[
-              "Recibido",
-              "Preparando",
-              "En camino",
-              "Entregado",
-            ].map((step, index) => (
-              <div
-                key={step}
-                style={{
-                  flex: "1 0 75px",
-                  textAlign: "center",
-                }}
-              >
-                <div
-                  style={{
-                    width: "46px",
-                    height: "46px",
-                    borderRadius: "50%",
-                    background: index === 0 ? "#f97316" : "#222",
-                    boxShadow: index === 0 ? "0 0 15px rgba(249,115,22,0.4)" : "none",
-                    margin: "0 auto 8px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: index === 0 ? "#fff" : "#71717a",
-                    fontWeight: "700",
-                    fontSize: "15px",
-                    border: index === 0 ? "none" : "1px solid #2d2d2d"
-                  }}
-                >
-                  {index + 1}
-                </div>
-
-                <div
-                  style={{
-                    color: index === 0 ? "#fff" : "#71717a",
-                    fontSize: "12px",
-                    fontWeight: index === 0 ? "600" : "400",
-                    whiteSpace: "nowrap"
-                  }}
-                >
-                  {step}
-                </div>
-              </div>
-            ))}
+            <h2
+              style={{
+                fontSize: "clamp(30px, 8vw, 44px)",
+                letterSpacing: "4px",
+                color: "#f97316",
+                fontWeight: "900",
+                margin: 0,
+                textShadow:
+                  "0 0 30px rgba(249,115,22,.22)",
+              }}
+            >
+              {orderData.tracking_code}
+            </h2>
           </div>
 
           {/* TIEMPO ESTIMADO */}
@@ -450,12 +426,14 @@ const estimatedTime =
             style={{
               maxWidth: "100%",
               margin: "0 auto 30px auto",
-              background: "linear-gradient(180deg, #161616, #111111)",
-              border: "1px solid rgba(249,115,22,0.12)",
-              borderRadius: "20px",
-              padding: "24px 16px",
+              background:
+                "linear-gradient(135deg, rgba(249,115,22,.10), rgba(18,18,18,.94) 42%)",
+              border: "1px solid rgba(249,115,22,.16)",
+              borderRadius: "22px",
+              padding: "26px 18px",
               textAlign: "center",
-              boxShadow: "0 12px 40px rgba(249,115,22,0.04)",
+              boxShadow:
+                "0 18px 48px rgba(249,115,22,.07), inset 0 1px 0 rgba(255,255,255,.04)",
             }}
           >
             <div
@@ -885,11 +863,14 @@ function SummaryRow({
 }
 
 const cardStyle = {
-  background: "rgba(255,255,255,0.02)",
-  border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: "16px",
-  padding: "14px",
+  background:
+    "linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.015))",
+  border: "1px solid rgba(255,255,255,.07)",
+  borderRadius: "18px",
+  padding: "16px 14px",
   textAlign: "center" as const,
+  boxShadow:
+    "inset 0 1px 0 rgba(255,255,255,.035), 0 10px 26px rgba(0,0,0,.16)",
 };
 
 const cardTitleStyle = {

@@ -479,27 +479,13 @@ export default function Sidebar() {
             </Link>
 
             {/* SALIR */}
-            <button
-              type="button"
-              onClick={handleLogout}
-              style={{
-                width: "100%",
-                marginTop: 6,
-                padding: 0,
-                border: 0,
-                background: "transparent",
-                color: "inherit",
-                cursor: "pointer",
-                textAlign: "left",
-              }}
-            >
-              <SidebarItem
-                icon={LogOut}
-                label="Salir"
-                active={false}
-                collapsed={collapsed}
-              />
-            </button>
+<SidebarItem
+  icon={LogOut}
+  label="Salir"
+  active={false}
+  collapsed={collapsed}
+  onClick={handleLogout}
+/>
           </div>
         </div>
       </aside>

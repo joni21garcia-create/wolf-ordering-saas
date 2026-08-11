@@ -413,10 +413,14 @@ if (payload.eventType === "INSERT") {
             }
           )
           .subscribe((status) => {
-            setConnected(
-              status ===
-                "SUBSCRIBED"
-            );
+            const isSubscribed =
+              status === "SUBSCRIBED";
+
+            setConnected(isSubscribed);
+
+            if (isSubscribed) {
+              refreshOrders();
+            }
           });
 
       return () => {
@@ -446,7 +450,7 @@ if (payload.eventType === "INSERT") {
           orderId: string,
           status: string
         ) => {
-          await fetch(
+          const response = await fetch(
             "/api/orders/update-status",
             {
               method: "POST",
@@ -460,8 +464,24 @@ if (payload.eventType === "INSERT") {
                 orderId,
                 status,
               }),
+              cache: "no-store",
             }
           );
+
+          let result: any = null;
+
+          try {
+            result = await response.json();
+          } catch {
+            // Keep the HTTP status as the source of truth.
+          }
+
+          if (!response.ok || result?.success === false) {
+            throw new Error(
+              result?.error ||
+                "No fue posible actualizar el estado del pedido."
+            );
+          }
 
           await refreshOrders();
         },
@@ -474,7 +494,7 @@ if (payload.eventType === "INSERT") {
           orderId: string,
           paymentStatus: string
         ) => {
-          await fetch(
+          const response = await fetch(
             "/api/orders/update-payment-status",
             {
               method: "POST",
@@ -488,9 +508,29 @@ if (payload.eventType === "INSERT") {
                 orderId,
                 paymentStatus,
               }),
+              cache: "no-store",
             }
           );
 
+          let result: any = null;
+
+          try {
+            result = await response.json();
+          } catch {
+            // Keep the HTTP status as the source of truth if the
+            // endpoint does not return JSON.
+          }
+
+          if (!response.ok || result?.success === false) {
+            throw new Error(
+              result?.error ||
+                "No fue posible actualizar el estado de pago."
+            );
+          }
+
+          // Supabase/Reatime will normally refresh this automatically,
+          // but we also refresh once here so the board cannot remain
+          // visually stale after the action succeeds.
           await refreshOrders();
         },
         [refreshOrders]

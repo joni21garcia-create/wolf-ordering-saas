@@ -179,6 +179,37 @@ export default function OrderHeader({
           border-radius: 50%;
 
           background: #f97316;
+
+          animation:
+            orderStatusPulse 1.6s ease-in-out infinite;
+        }
+
+        .status-dot.completed {
+          background: #16a34a;
+          animation: none;
+        }
+
+        .status-dot.cancelled {
+          background: #ef4444;
+          animation: none;
+        }
+
+        @keyframes orderStatusPulse {
+          0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(249,115,22,.18);
+          }
+
+          50% {
+            transform: scale(1.18);
+            box-shadow: 0 0 0 5px rgba(249,115,22,.10);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .status-dot {
+            animation: none;
+          }
         }
 
         .status-text {
@@ -318,7 +349,15 @@ export default function OrderHeader({
         </div>
 
         <div className="order-status">
-          <span className="status-dot" />
+          <span
+            className={`status-dot ${
+              order.status === "completed"
+                ? "completed"
+                : order.status === "cancelled"
+                ? "cancelled"
+                : ""
+            }`}
+          />
 
           <span className="status-text">
             {status}
@@ -365,6 +404,7 @@ function formatStatus(
     accepted: "Aceptado",
     preparing: "En preparación",
     ready: "Listo",
+    out_for_delivery: "En camino",
     completed: "Entregado",
     cancelled: "Cancelado",
   };

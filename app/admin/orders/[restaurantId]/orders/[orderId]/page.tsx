@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
 
 import OrderHeader from "./components/OrderHeader";
 import OrderActionCenter from "./components/OrderActionCenter";
@@ -99,6 +100,112 @@ export default async function OrderPage({
     );
   }
 
+  async function updatePayment(
+    targetOrderId: string,
+    paymentStatus: string
+  ) {
+    "use server";
+
+    const actionSupabase =
+      await createSupabaseServerClient();
+
+    const {
+      data: { user: actionUser },
+      error: actionAuthError,
+    } = await actionSupabase.auth.getUser();
+
+    if (actionAuthError || !actionUser) {
+      throw new Error("No existe una sesión activa.");
+    }
+
+    const { data: actionRestaurantUser } =
+      await actionSupabase
+        .from("restaurant_users")
+        .select("restaurant_id")
+        .eq("auth_user_id", actionUser.id)
+        .eq("restaurant_id", restaurantId)
+        .maybeSingle();
+
+    if (!actionRestaurantUser) {
+      throw new Error(
+        "No tienes acceso a este restaurante."
+      );
+    }
+
+    const allowedPaymentStatuses = [
+      "pending",
+      "paid",
+    ];
+
+    if (
+      !allowedPaymentStatuses.includes(
+        paymentStatus
+      )
+    ) {
+      throw new Error(
+        "Estado de pago no válido."
+      );
+    }
+
+    const {
+      data: updatedOrder,
+      error: updateError,
+    } = await actionSupabase
+      .from("orders")
+      .update({
+        payment_status: paymentStatus,
+      })
+      .eq("id", targetOrderId)
+      .eq("restaurant_id", restaurantId)
+      .select("id, payment_status")
+      .maybeSingle();
+
+    if (updateError) {
+      console.error(
+        "Error actualizando pago:",
+        updateError
+      );
+      throw new Error(
+        `No fue posible actualizar el pago: ${updateError.message}`
+      );
+    }
+
+    if (!updatedOrder) {
+      console.error(
+        "No se actualizó ningún pedido.",
+        {
+          targetOrderId,
+          restaurantId,
+          paymentStatus,
+        }
+      );
+      throw new Error(
+        "No se actualizó el pago. El pedido no existe o la política de Supabase/RLS bloqueó la actualización."
+      );
+    }
+
+    if (updatedOrder.payment_status !== paymentStatus) {
+      console.error(
+        "El pago no quedó con el estado solicitado.",
+        {
+          targetOrderId,
+          expected: paymentStatus,
+          received: updatedOrder.payment_status,
+        }
+      );
+      throw new Error(
+        "El pago no quedó guardado correctamente."
+      );
+    }
+
+    revalidatePath(
+      `/admin/orders/${restaurantId}/orders/${targetOrderId}`
+    );
+    revalidatePath(
+      `/admin/orders/${restaurantId}/orders`
+    );
+  }
+
   const hasDelivery =
     order.order_type === "delivery";
 
@@ -179,6 +286,7 @@ export default async function OrderPage({
 
           <ActionsCard
             order={order}
+            onUpdatePayment={updatePayment}
           />
 
           <OrderDetailsSheet
