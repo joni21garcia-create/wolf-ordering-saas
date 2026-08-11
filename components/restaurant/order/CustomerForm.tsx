@@ -45,10 +45,10 @@ export default function CustomerForm({
     customerData.zone &&
     customerData.zone.trim().length < 2;
 
-  const [openContact, setOpenContact] = useState(true);
-  const [openDelivery, setOpenDelivery] = useState(
-    orderType === "delivery"
-  );
+  // CAMBIO ÚNICO:
+  // Ambos formularios empiezan cerrados.
+  const [openContact, setOpenContact] = useState(false);
+  const [openDelivery, setOpenDelivery] = useState(false);
 
   if (!orderType) return null;
 
@@ -88,6 +88,7 @@ export default function CustomerForm({
           gap: 16px;
           width: 100%;
         }
+
         @media (min-width: 640px) {
           .wolf-form-container {
             gap: 20px;
@@ -209,7 +210,7 @@ export default function CustomerForm({
           fontSize: "clamp(20px, 4vw, 24px)",
           fontWeight: "700",
           marginBottom: "8px",
-          marginTop: 0
+          marginTop: 0,
         }}
       >
         {orderType === "delivery"
@@ -223,7 +224,7 @@ export default function CustomerForm({
           fontSize: "14px",
           lineHeight: "1.5",
           marginBottom: "24px",
-          marginTop: 0
+          marginTop: 0,
         }}
       >
         {orderType === "delivery"
@@ -243,10 +244,12 @@ export default function CustomerForm({
               <span className="wolf-form-section-icon">
                 👤
               </span>
+
               <span>
                 <strong style={{ display: "block", fontSize: 14 }}>
                   Datos personales
                 </strong>
+
                 <span style={{ color: "#71717a", fontSize: 11 }}>
                   Nombre, teléfono y correo
                 </span>
@@ -269,6 +272,7 @@ export default function CustomerForm({
                   <label className="wolf-form-label">
                     Nombre completo *
                   </label>
+
                   <input
                     placeholder="Ej. Juan Pérez"
                     value={customerData.name || ""}
@@ -285,13 +289,16 @@ export default function CustomerForm({
                         : "1px solid rgba(255,255,255,.08)",
                     }}
                   />
+
                   {nameError && (
-                    <div style={{
-                      color: "#ef4444",
-                      fontSize: 12,
-                      marginTop: 6,
-                      paddingLeft: 4,
-                    }}>
+                    <div
+                      style={{
+                        color: "#ef4444",
+                        fontSize: 12,
+                        marginTop: 6,
+                        paddingLeft: 4,
+                      }}
+                    >
                       ❌ Ingresa un nombre válido
                     </div>
                   )}
@@ -301,6 +308,7 @@ export default function CustomerForm({
                   <label className="wolf-form-label">
                     Teléfono *
                   </label>
+
                   <input
                     type="tel"
                     inputMode="tel"
@@ -319,13 +327,16 @@ export default function CustomerForm({
                         : "1px solid rgba(255,255,255,.08)",
                     }}
                   />
+
                   {phoneError && (
-                    <div style={{
-                      color: "#ef4444",
-                      fontSize: 12,
-                      marginTop: 6,
-                      paddingLeft: 4,
-                    }}>
+                    <div
+                      style={{
+                        color: "#ef4444",
+                        fontSize: 12,
+                        marginTop: 6,
+                        paddingLeft: 4,
+                      }}
+                    >
                       ❌ Teléfono inválido
                     </div>
                   )}
@@ -335,6 +346,7 @@ export default function CustomerForm({
                   <label className="wolf-form-label">
                     Correo electrónico
                   </label>
+
                   <input
                     type="email"
                     inputMode="email"
@@ -369,10 +381,12 @@ export default function CustomerForm({
                 <span className="wolf-form-section-icon">
                   🚚
                 </span>
+
                 <span>
                   <strong style={{ display: "block", fontSize: 14 }}>
                     Datos de entrega
                   </strong>
+
                   <span style={{ color: "#71717a", fontSize: 11 }}>
                     Dirección e indicaciones
                   </span>
@@ -395,6 +409,7 @@ export default function CustomerForm({
                     <label className="wolf-form-label">
                       Dirección *
                     </label>
+
                     <input
                       placeholder="Calle, número, edificio..."
                       value={customerData.address || ""}
@@ -411,13 +426,16 @@ export default function CustomerForm({
                           : "1px solid rgba(255,255,255,.08)",
                       }}
                     />
+
                     {addressError && (
-                      <div style={{
-                        color: "#ef4444",
-                        fontSize: 12,
-                        marginTop: 6,
-                        paddingLeft: 4,
-                      }}>
+                      <div
+                        style={{
+                          color: "#ef4444",
+                          fontSize: 12,
+                          marginTop: 6,
+                          paddingLeft: 4,
+                        }}
+                      >
                         ❌ Ingresa una dirección válida
                       </div>
                     )}
@@ -427,6 +445,7 @@ export default function CustomerForm({
                     <label className="wolf-form-label">
                       Sector *
                     </label>
+
                     <input
                       placeholder="Ej. Centro, Norte..."
                       value={customerData.zone || ""}
@@ -443,13 +462,16 @@ export default function CustomerForm({
                           : "1px solid rgba(255,255,255,.08)",
                       }}
                     />
+
                     {zoneError && (
-                      <div style={{
-                        color: "#ef4444",
-                        fontSize: 12,
-                        marginTop: 6,
-                        paddingLeft: 4,
-                      }}>
+                      <div
+                        style={{
+                          color: "#ef4444",
+                          fontSize: 12,
+                          marginTop: 6,
+                          paddingLeft: 4,
+                        }}
+                      >
                         ❌ Ingresa un sector válido
                       </div>
                     )}
@@ -459,6 +481,7 @@ export default function CustomerForm({
                     <label className="wolf-form-label">
                       Referencia
                     </label>
+
                     <textarea
                       placeholder="Casa blanca junto a la farmacia..."
                       value={customerData.reference || ""}
@@ -482,6 +505,7 @@ export default function CustomerForm({
                     <label className="wolf-form-label">
                       Instrucciones
                     </label>
+
                     <textarea
                       placeholder="Tocar timbre, entregar en portería..."
                       value={customerData.instructions || ""}
@@ -521,7 +545,7 @@ export default function CustomerForm({
             🛍️ Para retiro solo necesitamos tus datos personales.
           </div>
         )}
-      </div>  
+      </div>
     </div>
   );
 }

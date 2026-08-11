@@ -135,30 +135,62 @@ const [ringBell, setRingBell] =
     ==========================================================
     */
 
+    const refreshPromiseRef =
+      useRef<Promise<void> | null>(null);
+
     const refreshOrders = useCallback(async () => {
-      try {
-        setLoading(true);
+      // Evita dos refresh simultáneos cuando una acción y
+      // Supabase Realtime ocurren prácticamente al mismo tiempo.
+      if (refreshPromiseRef.current) {
+        return refreshPromiseRef.current;
+      }
 
-        const response = await fetch(
-          "/api/orders/get-orders",
-          {
-            cache: "no-store",
+      const promise = (async () => {
+        try {
+          setLoading(true);
+
+          const response = await fetch(
+            "/api/orders/get-orders",
+            {
+              cache: "no-store",
+            }
+          );
+
+          const json = await response.json();
+
+          if (!response.ok || !json.success) {
+            console.error(
+              "No fue posible actualizar los pedidos:",
+              json?.error
+            );
+            return;
           }
-        );
 
-        const json = await response.json();
-
-        if (!json.success) {
-          return;
+          setOrders(
+            Array.isArray(json.orders)
+              ? json.orders
+              : []
+          );
+        } catch (error) {
+          console.error(
+            "Error actualizando pedidos:",
+            error
+          );
+        } finally {
+          setLoading(false);
         }
+      })();
 
-        setOrders(json.orders ?? []);
+      refreshPromiseRef.current = promise;
 
-
-      } catch (error) {
-        console.error(error);
+      try {
+        await promise;
       } finally {
-        setLoading(false);
+        if (
+          refreshPromiseRef.current === promise
+        ) {
+          refreshPromiseRef.current = null;
+        }
       }
     }, []);
 
@@ -255,19 +287,31 @@ const [ringBell, setRingBell] =
 
     const filteredBoard =
       useMemo(() => {
+        const normalizedSearch =
+          search.trim().toLowerCase();
+
         const apply = (
           list: Order[]
         ) =>
           list.filter((order) => {
+            const customerName =
+              String(
+                order.customer_name ?? ""
+              ).toLowerCase();
+
+            const customerPhone =
+              String(
+                order.customer_phone ?? ""
+              );
+
             const matchesSearch =
-              search === "" ||
-              order.customer_name
-                .toLowerCase()
-                .includes(
-                  search.toLowerCase()
-                ) ||
-              order.customer_phone
-                ?.includes(search);
+              normalizedSearch === "" ||
+              customerName.includes(
+                normalizedSearch
+              ) ||
+              customerPhone.includes(
+                search.trim()
+              );
 
             const matchesPayment =
               paymentFilter === "all"
@@ -339,6 +383,14 @@ const [ringBell, setRingBell] =
       }
     }, []);
 
+    const soundEnabledRef =
+      useRef(soundEnabled);
+
+    useEffect(() => {
+      soundEnabledRef.current =
+        soundEnabled;
+    }, [soundEnabled]);
+
     const toggleSound = () => {
       const next =
         !soundEnabled;
@@ -388,7 +440,10 @@ if (payload.eventType === "INSERT") {
     setRingBell(false);
   }, 700);
 
-  if (soundEnabled && audioRef.current) {
+  if (
+    soundEnabledRef.current &&
+    audioRef.current
+  ) {
     audioRef.current.currentTime = 0;
     audioRef.current.play().catch(() => {});
   }
@@ -435,7 +490,6 @@ if (payload.eventType === "INSERT") {
     }, [
       restaurantId,
       refreshOrders,
-      soundEnabled,
     ]);
 
     /*
@@ -483,7 +537,18 @@ if (payload.eventType === "INSERT") {
             );
           }
 
-          await refreshOrders();
+          // Actualización inmediata del tablero.
+          // Supabase Realtime queda como reconciliación con la BD.
+          setOrders((currentOrders) =>
+            currentOrders.map((order) =>
+              order.id === orderId
+                ? {
+                    ...order,
+                    status: status as Order["status"],
+                  }
+                : order
+            )
+          );
         },
         [refreshOrders]
       );
@@ -504,10 +569,10 @@ if (payload.eventType === "INSERT") {
                   "application/json",
               },
 
-              body: JSON.stringify({
-                orderId,
-                paymentStatus,
-              }),
+                 body: JSON.stringify({
+                  orderId,
+                  status: paymentStatus,
+                  }),
               cache: "no-store",
             }
           );
@@ -528,10 +593,20 @@ if (payload.eventType === "INSERT") {
             );
           }
 
-          // Supabase/Reatime will normally refresh this automatically,
-          // but we also refresh once here so the board cannot remain
-          // visually stale after the action succeeds.
-          await refreshOrders();
+          // Actualización inmediata del pago.
+          // No hacemos otro GET aquí: Realtime reconciliará
+          // el objeto con el valor real de Supabase.
+          setOrders((currentOrders) =>
+            currentOrders.map((order) =>
+              order.id === orderId
+                ? {
+                    ...order,
+                    payment_status:
+                      paymentStatus as Order["payment_status"],
+                  }
+                : order
+            )
+          );
         },
         [refreshOrders]
       );
@@ -542,7 +617,7 @@ if (payload.eventType === "INSERT") {
     );
   };
 
-return (
+  return (
   <AppShell>
 <div
   style={{

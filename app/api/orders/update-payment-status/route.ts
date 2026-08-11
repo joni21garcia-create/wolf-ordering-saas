@@ -139,12 +139,7 @@ export async function POST(request: NextRequest) {
 
     const validStatuses = [
       "pending",
-      "accepted",
-      "preparing",
-      "ready",
-      "out_for_delivery",
-      "completed",
-      "cancelled",
+      "paid",
     ];
 
     if (!validStatuses.includes(status)) {
@@ -225,37 +220,8 @@ console.log({
 });
 
 const updateData: Record<string, unknown> = {
-  status,
+  payment_status: status,
 };
-
-switch (status) {
-
-  case "accepted":
-    updateData.accepted_at =
-      new Date().toISOString();
-    break;
-
-  case "preparing":
-    updateData.preparing_at =
-      new Date().toISOString();
-    break;
-
-  case "ready":
-    updateData.ready_at =
-      new Date().toISOString();
-    break;
-
-  case "out_for_delivery":
-    updateData.out_for_delivery_at =
-      new Date().toISOString();
-    break;
-
-  case "completed":
-    updateData.completed_at =
-      new Date().toISOString();
-    break;
-
-}
 
 console.log(
   "[UPDATE STATUS] UpdateData:",
@@ -540,6 +506,7 @@ await sendCustomer({
     return NextResponse.json({
       success: true,
       status,
+      paymentStatus: status,
     });
 
   } catch (error) {
