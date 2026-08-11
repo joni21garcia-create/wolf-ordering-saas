@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 interface Props {
   order: any;
 }
@@ -7,10 +9,33 @@ interface Props {
 export default function ActionsCard({
   order,
 }: Props) {
-  function copy(text?: string) {
+  const [copyLabel, setCopyLabel] = useState("Copiar tracking");
+
+  async function copy(text?: string) {
     if (!text) return;
 
-    navigator.clipboard.writeText(text);
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand("copy");
+        textarea.remove();
+      }
+
+      setCopyLabel("✓ Tracking copiado");
+      window.setTimeout(() => setCopyLabel("Copiar tracking"), 1800);
+    } catch (error) {
+      console.error("Error copiando tracking:", error);
+      setCopyLabel("No se pudo copiar");
+      window.setTimeout(() => setCopyLabel("Copiar tracking"), 1800);
+    }
   }
 
   function callCustomer() {
@@ -553,73 +578,80 @@ const blob = new Blob(
         ).matches;
 
       /*
-       * Android/iOS and installed PWA:
-       * keep the user inside the app and open
-       * the native share sheet with the real PDF.
-       *
-       * From Android the user can choose the
-       * installed printer/print service.
+       * Android / PWA:
+       * Use the native file share sheet when available.
+       * This keeps the PDF in the device/system flow and does
+       * not navigate back to the Wolf order page.
        */
       if (
-        (isMobileDevice ||
-          isStandalonePwa) &&
-        typeof navigator !==
-          "undefined" &&
-        "share" in navigator &&
-        typeof navigator.share ===
-          "function"
+        (isMobileDevice || isStandalonePwa) &&
+        typeof navigator !== "undefined" &&
+        typeof navigator.share === "function"
       ) {
         const canShareFiles =
-          "canShare" in navigator
-            ? navigator.canShare({
-                files: [file],
-              })
-            : true;
+          typeof navigator.canShare === "function"
+            ? navigator.canShare({ files: [file] })
+            : false;
 
         if (canShareFiles) {
           await navigator.share({
-            title: "Pedido Wolf",
-            text: `Pedido #${String(
-              order.tracking_code ??
-                ""
-            )}`,
+            title: "Imprimir pedido",
+            text: `Pedido #${String(order.tracking_code ?? "")}`,
             files: [file],
           });
-
           return;
         }
       }
 
+      const url = URL.createObjectURL(blob);
+
       /*
-       * Browser fallback:
-       * open the generated PDF in the current
-       * browser PDF viewer. The browser/OS can
-       * then print or save it.
+       * Mobile/PWA fallback:
+       * Open only the generated PDF, never the order page.
+       * Android's PDF viewer can expose the system Print action.
        */
-      const url =
-        URL.createObjectURL(blob);
+      if (isMobileDevice || isStandalonePwa) {
+        const opened = window.open(url, "_blank", "noopener,noreferrer");
 
-      const link =
-        document.createElement("a");
+        if (!opened) {
+          window.location.href = url;
+        }
 
-      link.href = url;
-      link.target = "_blank";
-      link.rel =
-        "noopener noreferrer";
-      link.download =
-        file.name;
+        window.setTimeout(() => URL.revokeObjectURL(url), 120000);
+        return;
+      }
 
-      document.body.appendChild(
-        link
-      );
+      /*
+       * Desktop fallback:
+       * Print the generated PDF without navigating away from the order.
+       */
+      const iframe = document.createElement("iframe");
+      iframe.style.position = "fixed";
+      iframe.style.width = "1px";
+      iframe.style.height = "1px";
+      iframe.style.border = "0";
+      iframe.style.opacity = "0";
+      iframe.src = url;
 
-      link.click();
+      document.body.appendChild(iframe);
 
-      link.remove();
+      iframe.onload = () => {
+        window.setTimeout(() => {
+          try {
+            iframe.contentWindow?.focus();
+            iframe.contentWindow?.print();
+          } catch (error) {
+            console.error("No fue posible abrir la impresión:", error);
+            window.open(url, "_blank", "noopener,noreferrer");
+          }
 
-      window.setTimeout(() => {
-        URL.revokeObjectURL(url);
-      }, 60000);
+          window.setTimeout(() => {
+            iframe.remove();
+            URL.revokeObjectURL(url);
+          }, 3000);
+        }, 250);
+      };
+
     } catch (error) {
       /*
        * Closing/canceling Android's share sheet
@@ -995,7 +1027,7 @@ const blob = new Blob(
             </span>
 
             <span className="action-label">
-              Copiar tracking
+              {copyLabel}
             </span>
           </span>
 
