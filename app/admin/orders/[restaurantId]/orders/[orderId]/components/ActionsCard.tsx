@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Printer } from "@capgo/capacitor-printer";
 
 interface Props {
   order: any;
@@ -106,17 +107,6 @@ export default function ActionsCard({
   }
 
   async function printOrder() {
-    /*
-     * Android/PWA: window.print() and window.open() are not reliable
-     * inside installed PWAs. We therefore create the order as a real PDF
-     * in the browser and hand that PDF to the Android share sheet.
-     *
-     * On Android the user can choose "Imprimir" from the system share/open
-     * flow, without leaving Wolf and navigating back to the order.
-     *
-     * Desktop / browsers without Web Share fall back to the native
-     * browser print dialog.
-     */
     try {
       const { PDFDocument, StandardFonts, rgb } =
         await import("pdf-lib");
@@ -129,10 +119,8 @@ export default function ActionsCard({
         StandardFonts.HelveticaBold
       );
 
-      const pageWidth = 226.77; // 80 mm in points
+      const pageWidth = 226.77;
       const margin = 18;
-      const contentWidth =
-        pageWidth - margin * 2;
 
       const escapeText = (value: unknown) =>
         String(value ?? "")
@@ -164,17 +152,53 @@ export default function ActionsCard({
         }
 
         if (line) lines.push(line);
-
-        return lines.length
-          ? lines
-          : [""];
+        return lines.length ? lines : [""];
       };
 
-      const products = Array.isArray(
-        order.order_items
-      )
+      const products = Array.isArray(order.order_items)
         ? order.order_items
         : [];
+
+      /*
+       * El pedido puede traer el restaurante como relación anidada,
+       * como restaurant_info, o como campos planos. Usamos el primer
+       * valor disponible sin cambiar el contrato actual de ActionsCard.
+       */
+      const restaurant =
+        order.restaurant ??
+        order.restaurants ??
+        order.restaurant_info ??
+        {};
+
+      const restaurantName =
+        restaurant.name ??
+        order.restaurant_name ??
+        order.restaurant?.name ??
+        "WOLF";
+
+      const restaurantPhone =
+        restaurant.phone ??
+        restaurant.phone_number ??
+        order.restaurant_phone ??
+        null;
+
+      const restaurantEmail =
+        restaurant.email ??
+        order.restaurant_email ??
+        null;
+
+      const restaurantAddress =
+        restaurant.address ??
+        restaurant.address_line ??
+        order.restaurant_address ??
+        null;
+
+      const restaurantLogo =
+        restaurant.logo_url ??
+        restaurant.logo ??
+        restaurant.image_url ??
+        order.restaurant_logo_url ??
+        null;
 
       const created = order.created_at
         ? new Date(order.created_at)
@@ -187,8 +211,7 @@ export default function ActionsCard({
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
-              timeZone:
-                "America/Bogota",
+              timeZone: "America/Bogota",
             }
           )
         : "—";
@@ -199,67 +222,47 @@ export default function ActionsCard({
             {
               hour: "2-digit",
               minute: "2-digit",
-              timeZone:
-                "America/Bogota",
+              timeZone: "America/Bogota",
             }
           )
         : "—";
 
       const orderType =
-        order.order_type ===
-        "delivery"
+        order.order_type === "delivery"
           ? "Delivery"
-          : order.order_type ===
-              "pickup"
+          : order.order_type === "pickup"
             ? "Pick-up"
-            : order.order_type ===
-                "dine_in"
+            : order.order_type === "dine_in"
               ? "Restaurante"
-              : order.order_type ||
-                "—";
+              : order.order_type || "—";
 
       const paymentMethod =
-        order.payment_method ===
-        "cash"
+        order.payment_method === "cash"
           ? "Efectivo"
-          : order.payment_method ===
-              "qr"
+          : order.payment_method === "qr"
             ? "QR"
-            : order.payment_method ===
-                  "transfer" ||
-                order.payment_method ===
-                  "bank_transfer"
+            : order.payment_method === "transfer" ||
+                order.payment_method === "bank_transfer"
               ? "Transferencia"
-              : order.payment_method ===
-                  "card"
+              : order.payment_method === "card"
                 ? "Tarjeta"
-                : order.payment_method ||
-                  "Sin método";
+                : order.payment_method || "Sin método";
 
-      const subtotal = Number(
-        order.subtotal ?? 0
-      );
-
-      const commission = Number(
-        order.commission_amount ?? 0
-      );
-
+      const subtotal = Number(order.subtotal ?? 0);
+      const commission = Number(order.commission_amount ?? 0);
       const total = Number(
-        order.total ??
-          subtotal + commission
+        order.total ?? subtotal + commission
       );
-
-      const lineHeight = 12;
 
       const estimateHeight =
-        240 +
+        315 +
         products.length * 30 +
-        (order.delivery_address
-          ? 35
-          : 0) +
-        (order.delivery_instructions
-          ? 35
-          : 0) +
+        (restaurantAddress ? 35 : 0) +
+        (restaurantPhone ? 16 : 0) +
+        (restaurantEmail ? 16 : 0) +
+        (restaurantLogo ? 42 : 0) +
+        (order.delivery_address ? 35 : 0) +
+        (order.delivery_instructions ? 35 : 0) +
         (order.notes ? 45 : 0);
 
       const page = pdf.addPage([
@@ -267,39 +270,28 @@ export default function ActionsCard({
         estimateHeight,
       ]);
 
-      let y =
-        estimateHeight - margin;
+      let y = estimateHeight - margin;
 
       const textColor = rgb(0, 0, 0);
-      const gray = rgb(
-        0.35,
-        0.35,
-        0.35
-      );
+      const gray = rgb(0.35, 0.35, 0.35);
 
       const draw = (
         value: string,
         options: {
           size?: number;
           font?: typeof font;
-          color?: ReturnType<
-            typeof rgb
-          >;
+          color?: ReturnType<typeof rgb>;
           x?: number;
         } = {}
       ) => {
-        const size =
-          options.size ?? 9;
+        const size = options.size ?? 9;
 
         page.drawText(value, {
           x: options.x ?? margin,
           y,
           size,
-          font:
-            options.font ?? font,
-          color:
-            options.color ??
-            textColor,
+          font: options.font ?? font,
+          color: options.color ?? textColor,
         });
 
         y -= size + 5;
@@ -307,14 +299,8 @@ export default function ActionsCard({
 
       const divider = () => {
         page.drawLine({
-          start: {
-            x: margin,
-            y,
-          },
-          end: {
-            x: pageWidth - margin,
-            y,
-          },
+          start: { x: margin, y },
+          end: { x: pageWidth - margin, y },
           thickness: 0.6,
           color: gray,
         });
@@ -322,12 +308,100 @@ export default function ActionsCard({
         y -= 10;
       };
 
-      draw("WOLF", {
-        size: 16,
-        font: bold,
-      });
+      /*
+       * Logo del restaurante.
+       * Si la URL es pública y permite CORS, se incrusta en el PDF.
+       * Si no, el ticket continúa normalmente con el nombre.
+       */
+      if (restaurantLogo) {
+        try {
+          const response = await fetch(
+            String(restaurantLogo)
+          );
 
-      y -= 2;
+          if (response.ok) {
+            const imageBytes =
+              new Uint8Array(
+                await response.arrayBuffer()
+              );
+
+            const contentType =
+              response.headers.get("content-type") ?? "";
+
+            const image = contentType.includes(
+              "png"
+            )
+              ? await pdf.embedPng(imageBytes)
+              : await pdf.embedJpg(imageBytes);
+
+            const scale = Math.min(
+              1,
+              42 / image.width,
+              42 / image.height
+            );
+
+            const width = image.width * scale;
+            const height = image.height * scale;
+
+            page.drawImage(image, {
+              x: (pageWidth - width) / 2,
+              y: y - height + 4,
+              width,
+              height,
+            });
+
+            y -= height + 10;
+          }
+        } catch (logoError) {
+          console.warn(
+            "No se pudo incrustar el logo del restaurante:",
+            logoError
+          );
+        }
+      }
+
+      draw(
+        escapeText(restaurantName),
+        {
+          size: 15,
+          font: bold,
+          x: margin,
+        }
+      );
+
+      if (restaurantAddress) {
+        for (const line of wrapText(
+          escapeText(restaurantAddress),
+          42
+        )) {
+          draw(line, {
+            size: 7,
+            color: gray,
+          });
+        }
+      }
+
+      if (restaurantPhone) {
+        draw(
+          `Tel: ${escapeText(restaurantPhone)}`,
+          {
+            size: 7,
+            color: gray,
+          }
+        );
+      }
+
+      if (restaurantEmail) {
+        draw(
+          escapeText(restaurantEmail),
+          {
+            size: 7,
+            color: gray,
+          }
+        );
+      }
+
+      y -= 3;
 
       draw("PEDIDO", {
         size: 12,
@@ -351,7 +425,7 @@ export default function ActionsCard({
 
       divider();
 
-      draw("CLIENTE", {
+      draw("DATOS DEL CLIENTE", {
         size: 8,
         font: bold,
       });
@@ -372,28 +446,19 @@ export default function ActionsCard({
           order.customer_phone ??
             "Sin teléfono"
         ),
-        {
-          size: 8,
-        }
+        { size: 8 }
       );
 
       if (order.customer_email) {
         draw(
-          escapeText(
-            order.customer_email
-          ),
-          {
-            size: 8,
-          }
+          escapeText(order.customer_email),
+          { size: 8 }
         );
       }
 
-      draw(
-        `Tipo: ${orderType}`,
-        {
-          size: 8,
-        }
-      );
+      draw(`Tipo: ${orderType}`, {
+        size: 8,
+      });
 
       if (order.delivery_address) {
         draw("DIRECCIÓN", {
@@ -407,15 +472,11 @@ export default function ActionsCard({
           ),
           42
         )) {
-          draw(line, {
-            size: 8,
-          });
+          draw(line, { size: 8 });
         }
       }
 
-      if (
-        order.delivery_instructions
-      ) {
+      if (order.delivery_instructions) {
         draw("INSTRUCCIONES", {
           size: 8,
           font: bold,
@@ -427,9 +488,7 @@ export default function ActionsCard({
           ),
           42
         )) {
-          draw(line, {
-            size: 8,
-          });
+          draw(line, { size: 8 });
         }
       }
 
@@ -449,12 +508,10 @@ export default function ActionsCard({
           item.unit_price ?? 0
         );
 
-        const itemSubtotal =
-          Number(
-            item.subtotal ??
-              quantity *
-                unitPrice
-          );
+        const itemSubtotal = Number(
+          item.subtotal ??
+            quantity * unitPrice
+        );
 
         draw(
           escapeText(
@@ -470,24 +527,16 @@ export default function ActionsCard({
         draw(
           `${quantity} × ${money(
             unitPrice
-          )}     ${money(
-            itemSubtotal
-          )}`,
-          {
-            size: 8,
-          }
+          )}     ${money(itemSubtotal)}`,
+          { size: 8 }
         );
       }
 
       y -= 2;
 
       draw(
-        `Productos: ${money(
-          subtotal
-        )}`,
-        {
-          size: 8,
-        }
+        `Productos: ${money(subtotal)}`,
+        { size: 8 }
       );
 
       if (commission > 0) {
@@ -495,9 +544,7 @@ export default function ActionsCard({
           `Comisión: ${money(
             commission
           )}`,
-          {
-            size: 8,
-          }
+          { size: 8 }
         );
       }
 
@@ -518,43 +565,31 @@ export default function ActionsCard({
 
       draw(
         `Método: ${paymentMethod}`,
-        {
-          size: 8,
-        }
+        { size: 8 }
       );
 
       draw(
         `Estado: ${
-          order.payment_status ===
-          "paid"
+          order.payment_status === "paid"
             ? "Pagado"
             : "Pendiente"
         }`,
-        {
-          size: 8,
-        }
+        { size: 8 }
       );
 
-      if (
-        order.payment_method ===
-        "cash"
-      ) {
+      if (order.payment_method === "cash") {
         draw(
           `Recibido: ${money(
             order.cash_amount
           )}`,
-          {
-            size: 8,
-          }
+          { size: 8 }
         );
 
         draw(
           `Cambio: ${money(
             order.change_amount
           )}`,
-          {
-            size: 8,
-          }
+          { size: 8 }
         );
       }
 
@@ -570,9 +605,7 @@ export default function ActionsCard({
           escapeText(order.notes),
           42
         )) {
-          draw(line, {
-            size: 8,
-          });
+          draw(line, { size: 8 });
         }
       }
 
@@ -586,28 +619,68 @@ export default function ActionsCard({
         }
       );
 
-      const pdfBytes =
-        await pdf.save();
+      const pdfBytes = await pdf.save();
 
-const blob = new Blob(
-  [new Uint8Array(pdfBytes)],
-  {
-    type: "application/pdf",
-  }
-);
+      const isNativeAndroid =
+        typeof window !== "undefined" &&
+        Boolean(
+          (window as any).Capacitor?.isNativePlatform?.()
+        ) &&
+        (window as any).Capacitor?.getPlatform?.() ===
+          "android";
 
-      const file = new File(
-        [blob],
-        `pedido-${String(
-          order.tracking_code ??
-            order.id ??
-            "wolf"
-        )}.pdf`,
-        {
-          type:
-            "application/pdf",
+      if (isNativeAndroid) {
+        /*
+         * Capacitor Android:
+         * enviamos el PDF directamente al PrintManager
+         * mediante @capgo/capacitor-printer.
+         */
+        let binary = "";
+        const bytes = new Uint8Array(pdfBytes);
+        const chunkSize = 0x8000;
+
+        for (
+          let i = 0;
+          i < bytes.length;
+          i += chunkSize
+        ) {
+          binary += String.fromCharCode(
+            ...bytes.subarray(
+              i,
+              Math.min(
+                i + chunkSize,
+                bytes.length
+              )
+            )
+          );
         }
+
+        const base64 = btoa(binary);
+
+        await Printer.printBase64({
+          name: `Pedido ${String(
+            order.tracking_code ??
+              order.id ??
+              "Wolf"
+          )}`,
+          data: base64,
+          mimeType: "application/pdf",
+        });
+
+        return;
+      }
+
+      /*
+       * PWA / navegador:
+       * conservamos la impresión web.
+       */
+      const blob = new Blob(
+        [new Uint8Array(pdfBytes)],
+        { type: "application/pdf" }
       );
+
+      const url =
+        URL.createObjectURL(blob);
 
       const isMobileDevice =
         typeof navigator !== "undefined" &&
@@ -621,36 +694,28 @@ const blob = new Blob(
           "(display-mode: standalone)"
         ).matches;
 
-      /*
-       * Android / PWA:
-       * Open the generated PDF directly.
-       *
-       * We intentionally do NOT use navigator.share() first:
-       * the requested flow is Wolf -> PDF viewer -> Android "Imprimir".
-       */
-      const url = URL.createObjectURL(blob);
-
-      /*
-       * Mobile/PWA fallback:
-       * Open only the generated PDF, never the order page.
-       * Android's PDF viewer can expose the system Print action.
-       */
       if (isMobileDevice || isStandalonePwa) {
-        const opened = window.open(url, "_blank", "noopener,noreferrer");
+        const opened = window.open(
+          url,
+          "_blank",
+          "noopener,noreferrer"
+        );
 
         if (!opened) {
           window.location.href = url;
         }
 
-        window.setTimeout(() => URL.revokeObjectURL(url), 120000);
+        window.setTimeout(
+          () => URL.revokeObjectURL(url),
+          120000
+        );
+
         return;
       }
 
-      /*
-       * Desktop fallback:
-       * Print the generated PDF without navigating away from the order.
-       */
-      const iframe = document.createElement("iframe");
+      const iframe =
+        document.createElement("iframe");
+
       iframe.style.position = "fixed";
       iframe.style.width = "1px";
       iframe.style.height = "1px";
@@ -666,8 +731,16 @@ const blob = new Blob(
             iframe.contentWindow?.focus();
             iframe.contentWindow?.print();
           } catch (error) {
-            console.error("No fue posible abrir la impresión:", error);
-            window.open(url, "_blank", "noopener,noreferrer");
+            console.error(
+              "No fue posible abrir la impresión:",
+              error
+            );
+
+            window.open(
+              url,
+              "_blank",
+              "noopener,noreferrer"
+            );
           }
 
           window.setTimeout(() => {
@@ -676,29 +749,19 @@ const blob = new Blob(
           }, 3000);
         }, 250);
       };
-
     } catch (error) {
-      /*
-       * Closing/canceling Android's share sheet
-       * is not an application error.
-       */
+      console.error(
+        "Error generando/imprimiendo pedido:",
+        error
+      );
+
       if (
         error instanceof DOMException &&
-        error.name ===
-          "AbortError"
+        error.name === "AbortError"
       ) {
         return;
       }
 
-      console.error(
-        "Error generando PDF del pedido:",
-        error
-      );
-
-      /*
-       * Last-resort fallback for desktop
-       * browsers with native printing.
-       */
       window.print();
     }
   }
@@ -811,6 +874,30 @@ const blob = new Blob(
             rgba(255,255,255,.11);
 
           color: #fff;
+        }
+
+        .action-item:first-child {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .action-item:first-child::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          transform: translateX(-120%);
+          background: linear-gradient(
+            105deg,
+            transparent 35%,
+            rgba(255,255,255,.07) 50%,
+            transparent 65%
+          );
+          transition: transform .45s ease;
+          pointer-events: none;
+        }
+
+        .action-item:first-child:hover::after {
+          transform: translateX(120%);
         }
 
         .action-item:active:not(:disabled) {
