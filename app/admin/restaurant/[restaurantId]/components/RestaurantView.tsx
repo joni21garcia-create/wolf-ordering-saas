@@ -218,6 +218,12 @@ export default function RestaurantView({
       restaurant={restaurant}
     />
   )}
+
+        {activeSection === "payments" && (
+          <PaymentsSection
+            restaurantId={restaurantId}
+          />
+        )}
       </section>
     </main>
   );
@@ -248,15 +254,21 @@ function RestaurantToolbar({
     roleCode === "cocina" ||
     roleCode === "kitchen"
       ? ["products", "hours"]
-      : roleCode === "manager" ||
-        roleCode === "owner" ||
-        roleCode === "super-user"
+      : roleCode === "manager"
         ? [
             "products",
             "hours",
             "marketing",
           ]
-        : [];
+        : roleCode === "owner" ||
+          roleCode === "super-user"
+          ? [
+              "products",
+              "hours",
+              "marketing",
+              "payments",
+            ]
+          : [];
 
 
   const allTabs: {

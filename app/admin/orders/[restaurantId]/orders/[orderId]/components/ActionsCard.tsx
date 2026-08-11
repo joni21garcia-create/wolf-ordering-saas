@@ -36,412 +36,614 @@ export default function ActionsCard({
     );
   }
 
-  function printOrder() {
+  async function printOrder() {
     /*
-     * Impresión compatible con Android, PWA y navegador.
-     * No dependemos de window.open(url) ni de ?print=order:
-     * construimos un documento de impresión independiente.
+     * Android/PWA: window.print() and window.open() are not reliable
+     * inside installed PWAs. We therefore create the order as a real PDF
+     * in the browser and hand that PDF to the Android share sheet.
+     *
+     * On Android the user can choose "Imprimir" from the system share/open
+     * flow, without leaving Wolf and navigating back to the order.
+     *
+     * Desktop / browsers without Web Share fall back to the native
+     * browser print dialog.
      */
-    const printWindow = window.open("", "_blank");
+    try {
+      const { PDFDocument, StandardFonts, rgb } =
+        await import("pdf-lib");
 
-    if (!printWindow) {
-      window.print();
-      return;
-    }
+      const pdf = await PDFDocument.create();
+      const font = await pdf.embedFont(
+        StandardFonts.Helvetica
+      );
+      const bold = await pdf.embedFont(
+        StandardFonts.HelveticaBold
+      );
 
-    const products = Array.isArray(order.order_items)
-      ? order.order_items
-      : [];
+      const pageWidth = 226.77; // 80 mm in points
+      const margin = 18;
+      const contentWidth =
+        pageWidth - margin * 2;
 
-    const money = (value: unknown) =>
-      `$${Number(value ?? 0).toFixed(2)}`;
+      const escapeText = (value: unknown) =>
+        String(value ?? "")
+          .replace(/\r?\n/g, " ")
+          .trim();
 
-    const escapeHtml = (value: unknown) =>
-      String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+      const money = (value: unknown) =>
+        `$${Number(value ?? 0).toFixed(2)}`;
 
-    const created = order.created_at
-      ? new Date(order.created_at)
-      : null;
+      const wrapText = (
+        value: string,
+        maxChars: number
+      ) => {
+        const words = value.split(/\s+/);
+        const lines: string[] = [];
+        let line = "";
 
-    const date = created
-      ? created.toLocaleDateString("es-CO", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-          timeZone: "America/Bogota",
-        })
-      : "—";
+        for (const word of words) {
+          const next = line
+            ? `${line} ${word}`
+            : word;
 
-    const time = created
-      ? created.toLocaleTimeString("es-CO", {
-          hour: "2-digit",
-          minute: "2-digit",
-          timeZone: "America/Bogota",
-        })
-      : "—";
+          if (next.length > maxChars && line) {
+            lines.push(line);
+            line = word;
+          } else {
+            line = next;
+          }
+        }
 
-    const orderType =
-      order.order_type === "delivery"
-        ? "Delivery"
-        : order.order_type === "pickup"
-          ? "Pick-up"
-          : order.order_type === "dine_in"
-            ? "Restaurante"
-            : order.order_type || "—";
+        if (line) lines.push(line);
 
-    const paymentMethod =
-      order.payment_method === "cash"
-        ? "Efectivo"
-        : order.payment_method === "qr"
-          ? "QR"
-          : order.payment_method === "transfer" ||
-              order.payment_method === "bank_transfer"
-            ? "Transferencia"
-            : order.payment_method === "card"
-              ? "Tarjeta"
-              : order.payment_method || "Sin método";
+        return lines.length
+          ? lines
+          : [""];
+      };
 
-    const subtotal = Number(order.subtotal ?? 0);
-    const commission = Number(order.commission_amount ?? 0);
-    const total = Number(
-      order.total ?? subtotal + commission
-    );
+      const products = Array.isArray(
+        order.order_items
+      )
+        ? order.order_items
+        : [];
 
-    const productsHtml = products
-      .map((item: any) => {
-        const quantity = Number(item.quantity ?? 0);
-        const unitPrice = Number(item.unit_price ?? 0);
-        const itemSubtotal = Number(
-          item.subtotal ?? quantity * unitPrice
+      const created = order.created_at
+        ? new Date(order.created_at)
+        : null;
+
+      const date = created
+        ? created.toLocaleDateString(
+            "es-CO",
+            {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              timeZone:
+                "America/Bogota",
+            }
+          )
+        : "—";
+
+      const time = created
+        ? created.toLocaleTimeString(
+            "es-CO",
+            {
+              hour: "2-digit",
+              minute: "2-digit",
+              timeZone:
+                "America/Bogota",
+            }
+          )
+        : "—";
+
+      const orderType =
+        order.order_type ===
+        "delivery"
+          ? "Delivery"
+          : order.order_type ===
+              "pickup"
+            ? "Pick-up"
+            : order.order_type ===
+                "dine_in"
+              ? "Restaurante"
+              : order.order_type ||
+                "—";
+
+      const paymentMethod =
+        order.payment_method ===
+        "cash"
+          ? "Efectivo"
+          : order.payment_method ===
+              "qr"
+            ? "QR"
+            : order.payment_method ===
+                  "transfer" ||
+                order.payment_method ===
+                  "bank_transfer"
+              ? "Transferencia"
+              : order.payment_method ===
+                  "card"
+                ? "Tarjeta"
+                : order.payment_method ||
+                  "Sin método";
+
+      const subtotal = Number(
+        order.subtotal ?? 0
+      );
+
+      const commission = Number(
+        order.commission_amount ?? 0
+      );
+
+      const total = Number(
+        order.total ??
+          subtotal + commission
+      );
+
+      const lineHeight = 12;
+
+      const estimateHeight =
+        240 +
+        products.length * 30 +
+        (order.delivery_address
+          ? 35
+          : 0) +
+        (order.delivery_instructions
+          ? 35
+          : 0) +
+        (order.notes ? 45 : 0);
+
+      const page = pdf.addPage([
+        pageWidth,
+        estimateHeight,
+      ]);
+
+      let y =
+        estimateHeight - margin;
+
+      const textColor = rgb(0, 0, 0);
+      const gray = rgb(
+        0.35,
+        0.35,
+        0.35
+      );
+
+      const draw = (
+        value: string,
+        options: {
+          size?: number;
+          font?: typeof font;
+          color?: ReturnType<
+            typeof rgb
+          >;
+          x?: number;
+        } = {}
+      ) => {
+        const size =
+          options.size ?? 9;
+
+        page.drawText(value, {
+          x: options.x ?? margin,
+          y,
+          size,
+          font:
+            options.font ?? font,
+          color:
+            options.color ??
+            textColor,
+        });
+
+        y -= size + 5;
+      };
+
+      const divider = () => {
+        page.drawLine({
+          start: {
+            x: margin,
+            y,
+          },
+          end: {
+            x: pageWidth - margin,
+            y,
+          },
+          thickness: 0.6,
+          color: gray,
+        });
+
+        y -= 10;
+      };
+
+      draw("WOLF", {
+        size: 16,
+        font: bold,
+      });
+
+      y -= 2;
+
+      draw("PEDIDO", {
+        size: 12,
+        font: bold,
+      });
+
+      draw(
+        `#${escapeText(
+          order.tracking_code ?? "—"
+        )}`,
+        {
+          size: 9,
+          font: bold,
+        }
+      );
+
+      draw(`${date} · ${time}`, {
+        size: 8,
+        color: gray,
+      });
+
+      divider();
+
+      draw("CLIENTE", {
+        size: 8,
+        font: bold,
+      });
+
+      draw(
+        escapeText(
+          order.customer_name ??
+            "No registrado"
+        ),
+        {
+          size: 9,
+          font: bold,
+        }
+      );
+
+      draw(
+        escapeText(
+          order.customer_phone ??
+            "Sin teléfono"
+        ),
+        {
+          size: 8,
+        }
+      );
+
+      if (order.customer_email) {
+        draw(
+          escapeText(
+            order.customer_email
+          ),
+          {
+            size: 8,
+          }
+        );
+      }
+
+      draw(
+        `Tipo: ${orderType}`,
+        {
+          size: 8,
+        }
+      );
+
+      if (order.delivery_address) {
+        draw("DIRECCIÓN", {
+          size: 8,
+          font: bold,
+        });
+
+        for (const line of wrapText(
+          escapeText(
+            order.delivery_address
+          ),
+          42
+        )) {
+          draw(line, {
+            size: 8,
+          });
+        }
+      }
+
+      if (
+        order.delivery_instructions
+      ) {
+        draw("INSTRUCCIONES", {
+          size: 8,
+          font: bold,
+        });
+
+        for (const line of wrapText(
+          escapeText(
+            order.delivery_instructions
+          ),
+          42
+        )) {
+          draw(line, {
+            size: 8,
+          });
+        }
+      }
+
+      divider();
+
+      draw("PRODUCTOS", {
+        size: 8,
+        font: bold,
+      });
+
+      for (const item of products) {
+        const quantity = Number(
+          item.quantity ?? 0
         );
 
-        return `
-          <div class="product">
-            <div>
-              <div class="product-name">
-                ${escapeHtml(item.products?.name ?? "Producto")}
-              </div>
-              <div class="product-meta">
-                ${quantity} × ${money(unitPrice)}
-              </div>
-            </div>
-            <strong>${money(itemSubtotal)}</strong>
-          </div>
-        `;
-      })
-      .join("");
+        const unitPrice = Number(
+          item.unit_price ?? 0
+        );
 
-    printWindow.document.open();
-    printWindow.document.write(`
-      <!doctype html>
-      <html lang="es">
-        <head>
-          <meta charset="utf-8" />
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1"
-          />
-          <title>Pedido #${escapeHtml(
-            order.tracking_code ?? ""
-          )}</title>
+        const itemSubtotal =
+          Number(
+            item.subtotal ??
+              quantity *
+                unitPrice
+          );
 
-          <style>
-            * { box-sizing: border-box; }
+        draw(
+          escapeText(
+            item.products?.name ??
+              "Producto"
+          ),
+          {
+            size: 8,
+            font: bold,
+          }
+        );
 
-            html, body {
-              margin: 0;
-              padding: 0;
-              background: #fff;
-              color: #000;
-              font-family: Arial, Helvetica, sans-serif;
-            }
+        draw(
+          `${quantity} × ${money(
+            unitPrice
+          )}     ${money(
+            itemSubtotal
+          )}`,
+          {
+            size: 8,
+          }
+        );
+      }
 
-            body { padding: 18px; }
+      y -= 2;
 
-            .ticket {
-              width: 100%;
-              max-width: 420px;
-              margin: 0 auto;
-            }
+      draw(
+        `Productos: ${money(
+          subtotal
+        )}`,
+        {
+          size: 8,
+        }
+      );
 
-            .brand {
-              margin-bottom: 16px;
-              text-align: center;
-              font-size: 20px;
-              font-weight: 800;
-            }
+      if (commission > 0) {
+        draw(
+          `Comisión: ${money(
+            commission
+          )}`,
+          {
+            size: 8,
+          }
+        );
+      }
 
-            h1 {
-              margin: 0;
-              text-align: center;
-              font-size: 18px;
-            }
+      draw(
+        `TOTAL: ${money(total)}`,
+        {
+          size: 11,
+          font: bold,
+        }
+      );
 
-            .tracking {
-              margin-top: 5px;
-              text-align: center;
-              font-size: 13px;
-              font-weight: 700;
-            }
+      divider();
 
-            .meta {
-              margin-top: 5px;
-              text-align: center;
-              color: #555;
-              font-size: 10px;
-            }
+      draw("PAGO", {
+        size: 8,
+        font: bold,
+      });
 
-            .divider {
-              margin: 15px 0;
-              border: 0;
-              border-top: 1px dashed #999;
-            }
+      draw(
+        `Método: ${paymentMethod}`,
+        {
+          size: 8,
+        }
+      );
 
-            .section-title {
-              margin-bottom: 7px;
-              font-size: 10px;
-              font-weight: 800;
-              text-transform: uppercase;
-            }
+      draw(
+        `Estado: ${
+          order.payment_status ===
+          "paid"
+            ? "Pagado"
+            : "Pendiente"
+        }`,
+        {
+          size: 8,
+        }
+      );
 
-            .customer, .note {
-              margin-bottom: 12px;
-              font-size: 11px;
-              line-height: 1.5;
-            }
+      if (
+        order.payment_method ===
+        "cash"
+      ) {
+        draw(
+          `Recibido: ${money(
+            order.cash_amount
+          )}`,
+          {
+            size: 8,
+          }
+        );
 
-            .row, .product, .total {
-              display: flex;
-              justify-content: space-between;
-              gap: 15px;
-            }
+        draw(
+          `Cambio: ${money(
+            order.change_amount
+          )}`,
+          {
+            size: 8,
+          }
+        );
+      }
 
-            .row {
-              padding: 5px 0;
-              font-size: 11px;
-            }
+      if (order.notes) {
+        divider();
 
-            .product {
-              padding: 7px 0;
-              border-bottom: 1px solid #eee;
-              font-size: 11px;
-            }
+        draw("NOTAS", {
+          size: 8,
+          font: bold,
+        });
 
-            .product-name { font-weight: 700; }
+        for (const line of wrapText(
+          escapeText(order.notes),
+          42
+        )) {
+          draw(line, {
+            size: 8,
+          });
+        }
+      }
 
-            .product-meta {
-              margin-top: 2px;
-              color: #555;
-              font-size: 9px;
-            }
+      y -= 8;
 
-            .total {
-              margin-top: 9px;
-              padding-top: 10px;
-              border-top: 1px solid #000;
-              font-size: 14px;
-              font-weight: 800;
-            }
+      draw(
+        "Pedido generado desde Wolf",
+        {
+          size: 7,
+          color: gray,
+        }
+      );
 
-            .footer {
-              margin-top: 22px;
-              color: #666;
-              text-align: center;
-              font-size: 9px;
-            }
+      const pdfBytes =
+        await pdf.save();
 
-            .print-actions {
-              display: flex;
-              justify-content: center;
-              gap: 8px;
-              margin: 18px auto 0;
-              max-width: 420px;
-            }
+const blob = new Blob(
+  [new Uint8Array(pdfBytes)],
+  {
+    type: "application/pdf",
+  }
+);
 
-            .print-actions button {
-              min-height: 42px;
-              padding: 0 18px;
-              border: 0;
-              border-radius: 10px;
-              background: #111;
-              color: #fff;
-              font-weight: 700;
-              cursor: pointer;
-            }
+      const file = new File(
+        [blob],
+        `pedido-${String(
+          order.tracking_code ??
+            order.id ??
+            "wolf"
+        )}.pdf`,
+        {
+          type:
+            "application/pdf",
+        }
+      );
 
-            @media print {
-              body { padding: 0; }
-              .print-actions { display: none !important; }
-              .ticket { max-width: none; }
-            }
-          </style>
-        </head>
+      const isMobileDevice =
+        typeof navigator !== "undefined" &&
+        /Android|iPhone|iPad|iPod/i.test(
+          navigator.userAgent
+        );
 
-        <body>
-          <main class="ticket">
-            <div class="brand">WOLF</div>
-            <h1>Pedido</h1>
+      const isStandalonePwa =
+        typeof window !== "undefined" &&
+        window.matchMedia(
+          "(display-mode: standalone)"
+        ).matches;
 
-            <div class="tracking">
-              #${escapeHtml(order.tracking_code ?? "—")}
-            </div>
+      /*
+       * Android/iOS and installed PWA:
+       * keep the user inside the app and open
+       * the native share sheet with the real PDF.
+       *
+       * From Android the user can choose the
+       * installed printer/print service.
+       */
+      if (
+        (isMobileDevice ||
+          isStandalonePwa) &&
+        typeof navigator !==
+          "undefined" &&
+        "share" in navigator &&
+        typeof navigator.share ===
+          "function"
+      ) {
+        const canShareFiles =
+          "canShare" in navigator
+            ? navigator.canShare({
+                files: [file],
+              })
+            : true;
 
-            <div class="meta">
-              ${escapeHtml(date)} · ${escapeHtml(time)}
-            </div>
+        if (canShareFiles) {
+          await navigator.share({
+            title: "Pedido Wolf",
+            text: `Pedido #${String(
+              order.tracking_code ??
+                ""
+            )}`,
+            files: [file],
+          });
 
-            <hr class="divider" />
+          return;
+        }
+      }
 
-            <div class="section-title">Cliente</div>
+      /*
+       * Browser fallback:
+       * open the generated PDF in the current
+       * browser PDF viewer. The browser/OS can
+       * then print or save it.
+       */
+      const url =
+        URL.createObjectURL(blob);
 
-            <div class="customer">
-              <strong>
-                ${escapeHtml(order.customer_name ?? "No registrado")}
-              </strong>
-              <br />
-              ${escapeHtml(order.customer_phone ?? "Sin teléfono")}
-              ${
-                order.customer_email
-                  ? `<br />${escapeHtml(order.customer_email)}`
-                  : ""
-              }
-            </div>
+      const link =
+        document.createElement("a");
 
-            <div class="row">
-              <span>Tipo</span>
-              <strong>${escapeHtml(orderType)}</strong>
-            </div>
+      link.href = url;
+      link.target = "_blank";
+      link.rel =
+        "noopener noreferrer";
+      link.download =
+        file.name;
 
-            ${
-              order.delivery_address
-                ? `
-                  <div class="note">
-                    <strong>Dirección</strong><br />
-                    ${escapeHtml(order.delivery_address)}
-                  </div>
-                `
-                : ""
-            }
+      document.body.appendChild(
+        link
+      );
 
-            ${
-              order.delivery_instructions
-                ? `
-                  <div class="note">
-                    <strong>Instrucciones</strong><br />
-                    ${escapeHtml(order.delivery_instructions)}
-                  </div>
-                `
-                : ""
-            }
+      link.click();
 
-            <hr class="divider" />
+      link.remove();
 
-            <div class="section-title">Productos</div>
-
-            ${productsHtml}
-
-            <div class="row">
-              <span>Productos</span>
-              <strong>${money(subtotal)}</strong>
-            </div>
-
-            ${
-              commission > 0
-                ? `
-                  <div class="row">
-                    <span>Comisión</span>
-                    <strong>${money(commission)}</strong>
-                  </div>
-                `
-                : ""
-            }
-
-            <div class="total">
-              <span>Total</span>
-              <span>${money(total)}</span>
-            </div>
-
-            <hr class="divider" />
-
-            <div class="section-title">Pago</div>
-
-            <div class="row">
-              <span>Método</span>
-              <strong>${escapeHtml(paymentMethod)}</strong>
-            </div>
-
-            <div class="row">
-              <span>Estado</span>
-              <strong>
-                ${
-                  order.payment_status === "paid"
-                    ? "Pagado"
-                    : "Pendiente"
-                }
-              </strong>
-            </div>
-
-            ${
-              order.payment_method === "cash"
-                ? `
-                  <div class="row">
-                    <span>Recibido</span>
-                    <strong>${money(order.cash_amount)}</strong>
-                  </div>
-
-                  <div class="row">
-                    <span>Cambio</span>
-                    <strong>${money(order.change_amount)}</strong>
-                  </div>
-                `
-                : ""
-            }
-
-            ${
-              order.notes
-                ? `
-                  <hr class="divider" />
-
-                  <div class="section-title">Notas</div>
-
-                  <div class="note">
-                    ${escapeHtml(order.notes)}
-                  </div>
-                `
-                : ""
-            }
-
-            <div class="footer">
-              Pedido generado desde Wolf
-            </div>
-          </main>
-
-          <div class="print-actions">
-            <button type="button" onclick="window.print()">
-              🖨 Imprimir
-            </button>
-
-            <button type="button" onclick="window.close()">
-              Cerrar
-            </button>
-          </div>
-        </body>
-      </html>
-    `);
-
-    printWindow.document.close();
-
-    printWindow.onload = () => {
       window.setTimeout(() => {
-        printWindow.focus();
-        printWindow.print();
-      }, 350);
-    };
+        URL.revokeObjectURL(url);
+      }, 60000);
+    } catch (error) {
+      /*
+       * Closing/canceling Android's share sheet
+       * is not an application error.
+       */
+      if (
+        error instanceof DOMException &&
+        error.name ===
+          "AbortError"
+      ) {
+        return;
+      }
+
+      console.error(
+        "Error generando PDF del pedido:",
+        error
+      );
+
+      /*
+       * Last-resort fallback for desktop
+       * browsers with native printing.
+       */
+      window.print();
+    }
   }
 
   function openMap() {
