@@ -107,534 +107,503 @@ export default function ActionsCard({
   }
 
   async function printOrder() {
-    try {
-      const { PDFDocument, StandardFonts, rgb } =
-        await import("pdf-lib");
+    /*
+     * ANDROID:
+     * No se toca el flujo nativo que ya funciona.
+     * Solo Android genera el PDF y lo entrega al PrintManager.
+     */
+    const isNativeAndroid =
+      typeof window !== "undefined" &&
+      Boolean((window as any).Capacitor?.isNativePlatform?.()) &&
+      (window as any).Capacitor?.getPlatform?.() === "android";
 
-      const pdf = await PDFDocument.create();
-      const font = await pdf.embedFont(
-        StandardFonts.Helvetica
-      );
-      const bold = await pdf.embedFont(
-        StandardFonts.HelveticaBold
-      );
+    if (isNativeAndroid) {
+      try {
+        const { PDFDocument, StandardFonts, rgb } =
+          await import("pdf-lib");
 
-      const pageWidth = 226.77;
-      const margin = 18;
+        const pdf = await PDFDocument.create();
+        const font = await pdf.embedFont(
+          StandardFonts.Helvetica
+        );
+        const bold = await pdf.embedFont(
+          StandardFonts.HelveticaBold
+        );
 
-      const escapeText = (value: unknown) =>
-        String(value ?? "")
-          .replace(/\r?\n/g, " ")
-          .trim();
+        const pageWidth = 226.77;
+        const margin = 18;
 
-      const money = (value: unknown) =>
-        `$${Number(value ?? 0).toFixed(2)}`;
+        const escapeText = (value: unknown) =>
+          String(value ?? "")
+            .replace(/\r?\n/g, " ")
+            .trim();
 
-      const wrapText = (
-        value: string,
-        maxChars: number
-      ) => {
-        const words = value.split(/\s+/);
-        const lines: string[] = [];
-        let line = "";
+        const money = (value: unknown) =>
+          `$${Number(value ?? 0).toFixed(2)}`;
 
-        for (const word of words) {
-          const next = line
-            ? `${line} ${word}`
-            : word;
+        const wrapText = (
+          value: string,
+          maxChars: number
+        ) => {
+          const words = value.split(/\s+/);
+          const lines: string[] = [];
+          let line = "";
 
-          if (next.length > maxChars && line) {
-            lines.push(line);
-            line = word;
-          } else {
-            line = next;
+          for (const word of words) {
+            const next = line
+              ? `${line} ${word}`
+              : word;
+
+            if (next.length > maxChars && line) {
+              lines.push(line);
+              line = word;
+            } else {
+              line = next;
+            }
           }
-        }
 
-        if (line) lines.push(line);
-        return lines.length ? lines : [""];
-      };
+          if (line) lines.push(line);
+          return lines.length ? lines : [""];
+        };
 
-      const products = Array.isArray(order.order_items)
-        ? order.order_items
-        : [];
+        const products = Array.isArray(order.order_items)
+          ? order.order_items
+          : [];
 
-      /*
-       * El pedido puede traer el restaurante como relación anidada,
-       * como restaurant_info, o como campos planos. Usamos el primer
-       * valor disponible sin cambiar el contrato actual de ActionsCard.
-       */
-      const restaurant =
-        order.restaurant ??
-        order.restaurants ??
-        order.restaurant_info ??
-        {};
+        const restaurant =
+          order.restaurant ??
+          order.restaurants ??
+          order.restaurant_info ??
+          {};
 
-      const restaurantName =
-        restaurant.name ??
-        order.restaurant_name ??
-        order.restaurant?.name ??
-        "WOLF";
+        const restaurantName =
+          restaurant.name ??
+          order.restaurant_name ??
+          order.restaurant?.name ??
+          "WOLF";
 
-      const restaurantPhone =
-        restaurant.phone ??
-        restaurant.phone_number ??
-        order.restaurant_phone ??
-        null;
+        const restaurantPhone =
+          restaurant.phone ??
+          restaurant.phone_number ??
+          order.restaurant_phone ??
+          null;
 
-      const restaurantEmail =
-        restaurant.email ??
-        order.restaurant_email ??
-        null;
+        const restaurantEmail =
+          restaurant.email ??
+          order.restaurant_email ??
+          null;
 
-      const restaurantAddress =
-        restaurant.address ??
-        restaurant.address_line ??
-        order.restaurant_address ??
-        null;
+        const restaurantAddress =
+          restaurant.address ??
+          restaurant.address_line ??
+          order.restaurant_address ??
+          null;
 
-      const restaurantLogo =
-        restaurant.logo_url ??
-        restaurant.logo ??
-        restaurant.image_url ??
-        order.restaurant_logo_url ??
-        null;
+        const restaurantLogo =
+          restaurant.logo_url ??
+          restaurant.logo ??
+          restaurant.image_url ??
+          order.restaurant_logo_url ??
+          null;
 
-      const created = order.created_at
-        ? new Date(order.created_at)
-        : null;
+        const created = order.created_at
+          ? new Date(order.created_at)
+          : null;
 
-      const date = created
-        ? created.toLocaleDateString(
-            "es-CO",
-            {
+        const date = created
+          ? created.toLocaleDateString("es-CO", {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
               timeZone: "America/Bogota",
-            }
-          )
-        : "—";
+            })
+          : "—";
 
-      const time = created
-        ? created.toLocaleTimeString(
-            "es-CO",
-            {
+        const time = created
+          ? created.toLocaleTimeString("es-CO", {
               hour: "2-digit",
               minute: "2-digit",
               timeZone: "America/Bogota",
-            }
-          )
-        : "—";
+            })
+          : "—";
 
-      const orderType =
-        order.order_type === "delivery"
-          ? "Delivery"
-          : order.order_type === "pickup"
-            ? "Pick-up"
-            : order.order_type === "dine_in"
-              ? "Restaurante"
-              : order.order_type || "—";
+        const orderType =
+          order.order_type === "delivery"
+            ? "Delivery"
+            : order.order_type === "pickup"
+              ? "Pick-up"
+              : order.order_type === "dine_in"
+                ? "Restaurante"
+                : order.order_type || "—";
 
-      const paymentMethod =
-        order.payment_method === "cash"
-          ? "Efectivo"
-          : order.payment_method === "qr"
-            ? "QR"
-            : order.payment_method === "transfer" ||
-                order.payment_method === "bank_transfer"
-              ? "Transferencia"
-              : order.payment_method === "card"
-                ? "Tarjeta"
-                : order.payment_method || "Sin método";
+        const paymentMethod =
+          order.payment_method === "cash"
+            ? "Efectivo"
+            : order.payment_method === "qr"
+              ? "QR"
+              : order.payment_method === "transfer" ||
+                  order.payment_method === "bank_transfer"
+                ? "Transferencia"
+                : order.payment_method === "card"
+                  ? "Tarjeta"
+                  : order.payment_method || "Sin método";
 
-      const subtotal = Number(order.subtotal ?? 0);
-      const commission = Number(order.commission_amount ?? 0);
-      const total = Number(
-        order.total ?? subtotal + commission
-      );
+        const subtotal = Number(order.subtotal ?? 0);
+        const commission = Number(
+          order.commission_amount ?? 0
+        );
+        const deliveryFee = Number(
+          order.delivery_fee ?? 0
+        );
+        const total = Number(
+          order.total ?? subtotal + deliveryFee + commission
+        );
 
-      const estimateHeight =
-        315 +
-        products.length * 30 +
-        (restaurantAddress ? 35 : 0) +
-        (restaurantPhone ? 16 : 0) +
-        (restaurantEmail ? 16 : 0) +
-        (restaurantLogo ? 42 : 0) +
-        (order.delivery_address ? 35 : 0) +
-        (order.delivery_instructions ? 35 : 0) +
-        (order.notes ? 45 : 0);
+        const estimateHeight =
+          315 +
+          products.length * 30 +
+          (restaurantAddress ? 35 : 0) +
+          (restaurantPhone ? 16 : 0) +
+          (restaurantEmail ? 16 : 0) +
+          (restaurantLogo ? 42 : 0) +
+          (order.delivery_address ? 35 : 0) +
+          (order.delivery_instructions ? 35 : 0) +
+          (order.notes ? 45 : 0);
 
-      const page = pdf.addPage([
-        pageWidth,
-        estimateHeight,
-      ]);
+        const page = pdf.addPage([
+          pageWidth,
+          estimateHeight,
+        ]);
 
-      let y = estimateHeight - margin;
+        let y = estimateHeight - margin;
 
-      const textColor = rgb(0, 0, 0);
-      const gray = rgb(0.35, 0.35, 0.35);
+        const textColor = rgb(0, 0, 0);
+        const gray = rgb(0.35, 0.35, 0.35);
 
-      const draw = (
-        value: string,
-        options: {
-          size?: number;
-          font?: typeof font;
-          color?: ReturnType<typeof rgb>;
-          x?: number;
-        } = {}
-      ) => {
-        const size = options.size ?? 9;
+        const draw = (
+          value: string,
+          options: {
+            size?: number;
+            font?: typeof font;
+            color?: ReturnType<typeof rgb>;
+            x?: number;
+          } = {}
+        ) => {
+          const size = options.size ?? 9;
 
-        page.drawText(value, {
-          x: options.x ?? margin,
-          y,
-          size,
-          font: options.font ?? font,
-          color: options.color ?? textColor,
-        });
+          page.drawText(value, {
+            x: options.x ?? margin,
+            y,
+            size,
+            font: options.font ?? font,
+            color: options.color ?? textColor,
+          });
 
-        y -= size + 5;
-      };
+          y -= size + 5;
+        };
 
-      const divider = () => {
-        page.drawLine({
-          start: { x: margin, y },
-          end: { x: pageWidth - margin, y },
-          thickness: 0.6,
-          color: gray,
-        });
+        const divider = () => {
+          page.drawLine({
+            start: { x: margin, y },
+            end: { x: pageWidth - margin, y },
+            thickness: 0.6,
+            color: gray,
+          });
 
-        y -= 10;
-      };
+          y -= 10;
+        };
 
-      /*
-       * Logo del restaurante.
-       * Si la URL es pública y permite CORS, se incrusta en el PDF.
-       * Si no, el ticket continúa normalmente con el nombre.
-       */
-      if (restaurantLogo) {
-        try {
-          const response = await fetch(
-            String(restaurantLogo)
-          );
-
-          if (response.ok) {
-            const imageBytes =
-              new Uint8Array(
-                await response.arrayBuffer()
-              );
-
-            const contentType =
-              response.headers.get("content-type") ?? "";
-
-            const image = contentType.includes(
-              "png"
-            )
-              ? await pdf.embedPng(imageBytes)
-              : await pdf.embedJpg(imageBytes);
-
-            const scale = Math.min(
-              1,
-              42 / image.width,
-              42 / image.height
+        if (restaurantLogo) {
+          try {
+            const response = await fetch(
+              String(restaurantLogo)
             );
 
-            const width = image.width * scale;
-            const height = image.height * scale;
+            if (response.ok) {
+              const imageBytes =
+                new Uint8Array(
+                  await response.arrayBuffer()
+                );
 
-            page.drawImage(image, {
-              x: (pageWidth - width) / 2,
-              y: y - height + 4,
-              width,
-              height,
-            });
+              const contentType =
+                response.headers.get("content-type") ?? "";
 
-            y -= height + 10;
+              const image = contentType.includes("png")
+                ? await pdf.embedPng(imageBytes)
+                : await pdf.embedJpg(imageBytes);
+
+              const scale = Math.min(
+                1,
+                42 / image.width,
+                42 / image.height
+              );
+
+              const width = image.width * scale;
+              const height = image.height * scale;
+
+              page.drawImage(image, {
+                x: (pageWidth - width) / 2,
+                y: y - height + 4,
+                width,
+                height,
+              });
+
+              y -= height + 10;
+            }
+          } catch (logoError) {
+            console.warn(
+              "No se pudo incrustar el logo del restaurante:",
+              logoError
+            );
           }
-        } catch (logoError) {
-          console.warn(
-            "No se pudo incrustar el logo del restaurante:",
-            logoError
-          );
         }
-      }
 
-      draw(
-        escapeText(restaurantName),
-        {
+        draw(escapeText(restaurantName), {
           size: 15,
           font: bold,
-          x: margin,
-        }
-      );
+        });
 
-      if (restaurantAddress) {
-        for (const line of wrapText(
-          escapeText(restaurantAddress),
-          42
-        )) {
-          draw(line, {
+        if (restaurantAddress) {
+          for (const line of wrapText(
+            escapeText(restaurantAddress),
+            42
+          )) {
+            draw(line, {
+              size: 7,
+              color: gray,
+            });
+          }
+        }
+
+        if (restaurantPhone) {
+          draw(`Tel: ${escapeText(restaurantPhone)}`, {
             size: 7,
             color: gray,
           });
         }
-      }
 
-      if (restaurantPhone) {
-        draw(
-          `Tel: ${escapeText(restaurantPhone)}`,
-          {
+        if (restaurantEmail) {
+          draw(escapeText(restaurantEmail), {
             size: 7,
             color: gray,
-          }
-        );
-      }
+          });
+        }
 
-      if (restaurantEmail) {
+        y -= 3;
+
+        draw("PEDIDO", {
+          size: 12,
+          font: bold,
+        });
+
         draw(
-          escapeText(restaurantEmail),
+          `#${escapeText(
+            order.tracking_code ?? "—"
+          )}`,
           {
-            size: 7,
-            color: gray,
+            size: 9,
+            font: bold,
           }
         );
-      }
 
-      y -= 3;
+        draw(`${date} · ${time}`, {
+          size: 8,
+          color: gray,
+        });
 
-      draw("PEDIDO", {
-        size: 12,
-        font: bold,
-      });
+        divider();
 
-      draw(
-        `#${escapeText(
-          order.tracking_code ?? "—"
-        )}`,
-        {
-          size: 9,
-          font: bold,
-        }
-      );
-
-      draw(`${date} · ${time}`, {
-        size: 8,
-        color: gray,
-      });
-
-      divider();
-
-      draw("DATOS DEL CLIENTE", {
-        size: 8,
-        font: bold,
-      });
-
-      draw(
-        escapeText(
-          order.customer_name ??
-            "No registrado"
-        ),
-        {
-          size: 9,
-          font: bold,
-        }
-      );
-
-      draw(
-        escapeText(
-          order.customer_phone ??
-            "Sin teléfono"
-        ),
-        { size: 8 }
-      );
-
-      if (order.customer_email) {
-        draw(
-          escapeText(order.customer_email),
-          { size: 8 }
-        );
-      }
-
-      draw(`Tipo: ${orderType}`, {
-        size: 8,
-      });
-
-      if (order.delivery_address) {
-        draw("DIRECCIÓN", {
+        draw("DATOS DEL CLIENTE", {
           size: 8,
           font: bold,
         });
 
-        for (const line of wrapText(
-          escapeText(
-            order.delivery_address
-          ),
-          42
-        )) {
-          draw(line, { size: 8 });
-        }
-      }
-
-      if (order.delivery_instructions) {
-        draw("INSTRUCCIONES", {
-          size: 8,
-          font: bold,
-        });
-
-        for (const line of wrapText(
-          escapeText(
-            order.delivery_instructions
-          ),
-          42
-        )) {
-          draw(line, { size: 8 });
-        }
-      }
-
-      divider();
-
-      draw("PRODUCTOS", {
-        size: 8,
-        font: bold,
-      });
-
-      for (const item of products) {
-        const quantity = Number(
-          item.quantity ?? 0
-        );
-
-        const unitPrice = Number(
-          item.unit_price ?? 0
-        );
-
-        const itemSubtotal = Number(
-          item.subtotal ??
-            quantity * unitPrice
-        );
-
         draw(
           escapeText(
-            item.products?.name ??
-              "Producto"
+            order.customer_name ?? "No registrado"
           ),
           {
-            size: 8,
+            size: 9,
             font: bold,
           }
         );
 
         draw(
-          `${quantity} × ${money(
-            unitPrice
-          )}     ${money(itemSubtotal)}`,
+          escapeText(
+            order.customer_phone ?? "Sin teléfono"
+          ),
           { size: 8 }
         );
-      }
 
-      y -= 2;
-
-      draw(
-        `Productos: ${money(subtotal)}`,
-        { size: 8 }
-      );
-
-      if (commission > 0) {
-        draw(
-          `Comisión: ${money(
-            commission
-          )}`,
-          { size: 8 }
-        );
-      }
-
-      draw(
-        `TOTAL: ${money(total)}`,
-        {
-          size: 11,
-          font: bold,
+        if (order.customer_email) {
+          draw(
+            escapeText(order.customer_email),
+            { size: 8 }
+          );
         }
-      );
 
-      divider();
+        draw(`Tipo: ${orderType}`, {
+          size: 8,
+        });
 
-      draw("PAGO", {
-        size: 8,
-        font: bold,
-      });
+        if (order.delivery_address) {
+          draw("DIRECCIÓN", {
+            size: 8,
+            font: bold,
+          });
 
-      draw(
-        `Método: ${paymentMethod}`,
-        { size: 8 }
-      );
+          for (const line of wrapText(
+            escapeText(order.delivery_address),
+            42
+          )) {
+            draw(line, { size: 8 });
+          }
+        }
 
-      draw(
-        `Estado: ${
-          order.payment_status === "paid"
-            ? "Pagado"
-            : "Pendiente"
-        }`,
-        { size: 8 }
-      );
+        if (order.delivery_instructions) {
+          draw("INSTRUCCIONES", {
+            size: 8,
+            font: bold,
+          });
 
-      if (order.payment_method === "cash") {
-        draw(
-          `Recibido: ${money(
-            order.cash_amount
-          )}`,
-          { size: 8 }
-        );
+          for (const line of wrapText(
+            escapeText(order.delivery_instructions),
+            42
+          )) {
+            draw(line, { size: 8 });
+          }
+        }
 
-        draw(
-          `Cambio: ${money(
-            order.change_amount
-          )}`,
-          { size: 8 }
-        );
-      }
-
-      if (order.notes) {
         divider();
 
-        draw("NOTAS", {
+        draw("PRODUCTOS", {
           size: 8,
           font: bold,
         });
 
-        for (const line of wrapText(
-          escapeText(order.notes),
-          42
-        )) {
-          draw(line, { size: 8 });
+        for (const item of products) {
+          const quantity = Number(
+            item.quantity ?? 0
+          );
+
+          const unitPrice = Number(
+            item.unit_price ?? 0
+          );
+
+          const itemSubtotal = Number(
+            item.subtotal ??
+              quantity * unitPrice
+          );
+
+          draw(
+            escapeText(
+              item.products?.name ?? "Producto"
+            ),
+            {
+              size: 8,
+              font: bold,
+            }
+          );
+
+          draw(
+            `${quantity} × ${money(
+              unitPrice
+            )}     ${money(itemSubtotal)}`,
+            { size: 8 }
+          );
         }
-      }
 
-      y -= 8;
+        y -= 2;
 
-      draw(
-        "Pedido generado desde Wolf",
-        {
+        draw(
+          `Productos: ${money(subtotal)}`,
+          { size: 8 }
+        );
+
+        if (deliveryFee > 0) {
+          draw(
+            `Domicilio: ${money(deliveryFee)}`,
+            { size: 8 }
+          );
+        }
+
+        if (commission > 0) {
+          draw(
+            `Comisión: ${money(commission)}`,
+            { size: 8 }
+          );
+        }
+
+        draw(
+          `TOTAL: ${money(total)}`,
+          {
+            size: 11,
+            font: bold,
+          }
+        );
+
+        divider();
+
+        draw("PAGO", {
+          size: 8,
+          font: bold,
+        });
+
+        draw(
+          `Método: ${paymentMethod}`,
+          { size: 8 }
+        );
+
+        draw(
+          `Estado: ${
+            order.payment_status === "paid"
+              ? "Pagado"
+              : "Pendiente"
+          }`,
+          { size: 8 }
+        );
+
+        if (order.payment_method === "cash") {
+          draw(
+            `Recibido: ${money(
+              order.cash_amount
+            )}`,
+            { size: 8 }
+          );
+
+          draw(
+            `Cambio: ${money(
+              order.change_amount
+            )}`,
+            { size: 8 }
+          );
+        }
+
+        if (order.notes) {
+          divider();
+
+          draw("NOTAS", {
+            size: 8,
+            font: bold,
+          });
+
+          for (const line of wrapText(
+            escapeText(order.notes),
+            42
+          )) {
+            draw(line, { size: 8 });
+          }
+        }
+
+        y -= 8;
+
+        draw("Pedido generado desde Wolf", {
           size: 7,
           color: gray,
-        }
-      );
+        });
 
-      const pdfBytes = await pdf.save();
+        const pdfBytes = await pdf.save();
 
-      const isNativeAndroid =
-        typeof window !== "undefined" &&
-        Boolean(
-          (window as any).Capacitor?.isNativePlatform?.()
-        ) &&
-        (window as any).Capacitor?.getPlatform?.() ===
-          "android";
-
-      if (isNativeAndroid) {
-        /*
-         * Capacitor Android:
-         * enviamos el PDF directamente al PrintManager
-         * mediante @capgo/capacitor-printer.
-         */
         let binary = "";
         const bytes = new Uint8Array(pdfBytes);
         const chunkSize = 0x8000;
@@ -668,99 +637,56 @@ export default function ActionsCard({
         });
 
         return;
-      }
-
-      /*
-       * PWA / navegador:
-       * conservamos la impresión web.
-       */
-      const blob = new Blob(
-        [new Uint8Array(pdfBytes)],
-        { type: "application/pdf" }
-      );
-
-      const url =
-        URL.createObjectURL(blob);
-
-      const isMobileDevice =
-        typeof navigator !== "undefined" &&
-        /Android|iPhone|iPad|iPod/i.test(
-          navigator.userAgent
+      } catch (error) {
+        console.error(
+          "Error generando/imprimiendo pedido Android:",
+          error
         );
-
-      const isStandalonePwa =
-        typeof window !== "undefined" &&
-        window.matchMedia(
-          "(display-mode: standalone)"
-        ).matches;
-
-      if (isMobileDevice || isStandalonePwa) {
-        const opened = window.open(
-          url,
-          "_blank",
-          "noopener,noreferrer"
-        );
-
-        if (!opened) {
-          window.location.href = url;
-        }
-
-        window.setTimeout(
-          () => URL.revokeObjectURL(url),
-          120000
-        );
-
         return;
       }
+    }
 
-      const iframe =
-        document.createElement("iframe");
+    /*
+     * PWA / navegador:
+     * NO generamos un PDF ni abrimos una pestaña intermedia.
+     * Abrimos directamente el diálogo de impresión del navegador.
+     *
+     * La hoja .wolf-pwa-print-sheet es visible únicamente durante print,
+     * por lo que el usuario imprime el comprobante y puede elegir
+     * impresora o "Guardar como PDF".
+     */
+    try {
+      document.body.setAttribute(
+        "data-wolf-pwa-print",
+        "true"
+      );
 
-      iframe.style.position = "fixed";
-      iframe.style.width = "1px";
-      iframe.style.height = "1px";
-      iframe.style.border = "0";
-      iframe.style.opacity = "0";
-      iframe.src = url;
+      window.setTimeout(() => {
+        window.print();
+      }, 30);
 
-      document.body.appendChild(iframe);
-
-      iframe.onload = () => {
-        window.setTimeout(() => {
-          try {
-            iframe.contentWindow?.focus();
-            iframe.contentWindow?.print();
-          } catch (error) {
-            console.error(
-              "No fue posible abrir la impresión:",
-              error
-            );
-
-            window.open(
-              url,
-              "_blank",
-              "noopener,noreferrer"
-            );
-          }
-
-          window.setTimeout(() => {
-            iframe.remove();
-            URL.revokeObjectURL(url);
-          }, 3000);
-        }, 250);
+      const cleanup = () => {
+        document.body.removeAttribute(
+          "data-wolf-pwa-print"
+        );
       };
+
+      window.addEventListener(
+        "afterprint",
+        cleanup,
+        { once: true }
+      );
+
+      window.setTimeout(cleanup, 120000);
     } catch (error) {
       console.error(
-        "Error generando/imprimiendo pedido:",
+        "No fue posible abrir la impresión PWA:",
         error
       );
 
-      if (
-        error instanceof DOMException &&
-        error.name === "AbortError"
-      ) {
-        return;
-      }
+      document.body.removeAttribute(
+        "data-wolf-pwa-print"
+      );
 
       window.print();
     }
@@ -1191,6 +1117,223 @@ export default function ActionsCard({
         ============================================
         */
 
+
+        .wolf-pwa-print-sheet {
+          display: none;
+        }
+
+        @media print {
+          body[data-wolf-pwa-print] {
+            background: #fff !important;
+          }
+
+          body[data-wolf-pwa-print] * {
+            visibility: hidden !important;
+          }
+
+          body[data-wolf-pwa-print]
+            .wolf-pwa-print-sheet,
+          body[data-wolf-pwa-print]
+            .wolf-pwa-print-sheet * {
+            visibility: visible !important;
+          }
+
+          body[data-wolf-pwa-print]
+            .wolf-pwa-print-sheet {
+            display: block !important;
+            position: absolute !important;
+            inset: 0 !important;
+            width: 100% !important;
+            background: #fff !important;
+            color: #111 !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+          }
+
+          body[data-wolf-pwa-print]
+            .wolf-pwa-print-page {
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 28px;
+            box-sizing: border-box;
+            background: #fff;
+          }
+
+          .wolf-pwa-print-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #e8e8e8;
+          }
+
+          .wolf-pwa-print-logo {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 48px;
+            border-radius: 13px;
+            background: #111;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 900;
+          }
+
+          .wolf-pwa-print-restaurant {
+            font-size: 17px;
+            font-weight: 900;
+          }
+
+          .wolf-pwa-print-muted {
+            margin-top: 2px;
+            color: #777;
+            font-size: 9px;
+          }
+
+          .wolf-pwa-print-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+            padding: 20px 0 14px;
+          }
+
+          .wolf-pwa-print-kicker {
+            margin-bottom: 4px;
+            color: #777;
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: 1.3px;
+          }
+
+          .wolf-pwa-print-title {
+            font-size: 22px;
+            font-weight: 900;
+          }
+
+          .wolf-pwa-print-date {
+            color: #666;
+            font-size: 9px;
+            white-space: nowrap;
+          }
+
+          .wolf-pwa-print-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+          }
+
+          .wolf-pwa-print-grid > div {
+            min-width: 0;
+            padding: 10px;
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+          }
+
+          .wolf-pwa-print-grid span {
+            display: block;
+            margin-bottom: 4px;
+            color: #777;
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+          }
+
+          .wolf-pwa-print-grid strong {
+            display: block;
+            font-size: 10px;
+          }
+
+          .wolf-pwa-print-box {
+            margin-top: 10px;
+            padding: 12px;
+            border: 1px solid #e8e8e8;
+            border-radius: 11px;
+            font-size: 9px;
+            line-height: 1.55;
+          }
+
+          .wolf-pwa-print-box-title {
+            margin-bottom: 7px;
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: 1px;
+          }
+
+          .wolf-pwa-print-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 9px 0;
+            border-bottom: 1px solid #eee;
+          }
+
+          .wolf-pwa-print-item:last-child {
+            border-bottom: 0;
+          }
+
+          .wolf-pwa-print-item strong {
+            display: block;
+            font-size: 10px;
+          }
+
+          .wolf-pwa-print-item span {
+            display: block;
+            margin-top: 2px;
+            color: #777;
+            font-size: 8px;
+          }
+
+          .wolf-pwa-print-totals {
+            width: 290px;
+            margin: 14px 0 0 auto;
+          }
+
+          .wolf-pwa-print-totals > div {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 9px;
+          }
+
+          .wolf-pwa-print-total {
+            margin-top: 5px;
+            padding-top: 9px !important;
+            border-top: 1.5px solid #111;
+            font-size: 15px !important;
+            font-weight: 900;
+          }
+
+          .wolf-pwa-print-footer-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 18px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            color: #555;
+            font-size: 8px;
+          }
+
+          .wolf-pwa-print-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-top: 18px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            color: #777;
+            font-size: 8px;
+          }
+
+          @page {
+            margin: 10mm;
+          }
+        }
+
         @media print {
           .order-actions {
             display: none !important;
@@ -1438,6 +1581,268 @@ export default function ActionsCard({
           </span>
         </a>
       )}
+      <div className="wolf-pwa-print-sheet" aria-hidden="true">
+        <div className="wolf-pwa-print-page">
+          <div className="wolf-pwa-print-brand">
+            <div className="wolf-pwa-print-logo">
+              {String(
+                order.restaurant?.name ??
+                  order.restaurant_name ??
+                  "W"
+              ).slice(0, 1).toUpperCase()}
+            </div>
+
+            <div>
+              <div className="wolf-pwa-print-restaurant">
+                {order.restaurant?.name ??
+                  order.restaurant_name ??
+                  "WOLF"}
+              </div>
+
+              {(order.restaurant?.address ??
+                order.restaurant_address) && (
+                <div className="wolf-pwa-print-muted">
+                  {order.restaurant?.address ??
+                    order.restaurant_address}
+                </div>
+              )}
+
+              {(order.restaurant?.phone ??
+                order.restaurant_phone) && (
+                <div className="wolf-pwa-print-muted">
+                  Tel.{" "}
+                  {order.restaurant?.phone ??
+                    order.restaurant_phone}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="wolf-pwa-print-heading">
+            <div>
+              <div className="wolf-pwa-print-kicker">
+                COMPROBANTE DE PEDIDO
+              </div>
+              <div className="wolf-pwa-print-title">
+                Pedido #
+                {order.tracking_code ?? "—"}
+              </div>
+            </div>
+
+            <div className="wolf-pwa-print-date">
+              {order.created_at
+                ? new Date(
+                    order.created_at
+                  ).toLocaleString("es-CO", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })
+                : "—"}
+            </div>
+          </div>
+
+          <div className="wolf-pwa-print-grid">
+            <div>
+              <span>Cliente</span>
+              <strong>
+                {order.customer_name ??
+                  "No registrado"}
+              </strong>
+            </div>
+
+            <div>
+              <span>Teléfono</span>
+              <strong>
+                {order.customer_phone ??
+                  "—"}
+              </strong>
+            </div>
+
+            <div>
+              <span>Tipo</span>
+              <strong>
+                {order.order_type ===
+                "delivery"
+                  ? "Delivery"
+                  : order.order_type ===
+                      "pickup"
+                    ? "Pick-up"
+                    : "Restaurante"}
+              </strong>
+            </div>
+
+            <div>
+              <span>Pago</span>
+              <strong>
+                {paymentStatus === "paid"
+                  ? "Pagado"
+                  : "Pendiente"}
+              </strong>
+            </div>
+          </div>
+
+          {(order.delivery_address ||
+            order.delivery_sector ||
+            order.delivery_instructions) && (
+            <div className="wolf-pwa-print-box">
+              <div className="wolf-pwa-print-box-title">
+                ENTREGA
+              </div>
+
+              {order.delivery_address && (
+                <div>
+                  <strong>Dirección:</strong>{" "}
+                  {order.delivery_address}
+                </div>
+              )}
+
+              {order.delivery_sector && (
+                <div>
+                  <strong>Sector:</strong>{" "}
+                  {order.delivery_sector}
+                </div>
+              )}
+
+              {order.delivery_instructions && (
+                <div>
+                  <strong>Instrucciones:</strong>{" "}
+                  {order.delivery_instructions}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="wolf-pwa-print-box">
+            <div className="wolf-pwa-print-box-title">
+              PRODUCTOS
+            </div>
+
+            {(
+              Array.isArray(order.order_items)
+                ? order.order_items
+                : []
+            ).map(
+              (
+                item: any,
+                index: number
+              ) => (
+                <div
+                  className="wolf-pwa-print-item"
+                  key={
+                    item.id ??
+                    `${item.products?.name}-${index}`
+                  }
+                >
+                  <div>
+                    <strong>
+                      {item.products?.name ??
+                        "Producto"}
+                    </strong>
+                    <span>
+                      {Number(
+                        item.quantity ?? 0
+                      )}{" "}
+                      × $
+                      {Number(
+                        item.unit_price ?? 0
+                      ).toFixed(2)}
+                    </span>
+                  </div>
+
+                  <strong>
+                    $
+                    {Number(
+                      item.subtotal ??
+                        Number(
+                          item.quantity ?? 0
+                        ) *
+                          Number(
+                            item.unit_price ?? 0
+                          )
+                    ).toFixed(2)}
+                  </strong>
+                </div>
+              )
+            )}
+          </div>
+
+          <div className="wolf-pwa-print-totals">
+            <div>
+              <span>Subtotal</span>
+              <strong>
+                $
+                {Number(
+                  order.subtotal ?? 0
+                ).toFixed(2)}
+              </strong>
+            </div>
+
+            {Number(
+              order.delivery_fee ?? 0
+            ) > 0 && (
+              <div>
+                <span>Domicilio</span>
+                <strong>
+                  $
+                  {Number(
+                    order.delivery_fee
+                  ).toFixed(2)}
+                </strong>
+              </div>
+            )}
+
+            <div className="wolf-pwa-print-total">
+              <span>Total</span>
+              <strong>
+                $
+                {Number(
+                  order.total ?? 0
+                ).toFixed(2)}
+              </strong>
+            </div>
+          </div>
+
+          {(order.payment_method ||
+            order.notes) && (
+            <div className="wolf-pwa-print-footer-info">
+              {order.payment_method && (
+                <span>
+                  Método:{" "}
+                  {order.payment_method ===
+                  "cash"
+                    ? "Efectivo"
+                    : order.payment_method ===
+                        "qr"
+                      ? "QR"
+                      : order.payment_method ===
+                          "card"
+                        ? "Tarjeta"
+                        : "Transferencia"}
+                </span>
+              )}
+
+              {order.notes && (
+                <span>
+                  Nota: {order.notes}
+                </span>
+              )}
+            </div>
+          )}
+
+          <div className="wolf-pwa-print-footer">
+            <strong>
+              {order.restaurant?.name ??
+                order.restaurant_name ??
+                "WOLF"}
+            </strong>
+            <span>
+              Pedido generado desde Wolf ·{" "}
+              {order.tracking_code ?? ""}
+            </span>
+          </div>
+        </div>
+      </div>
+
     </section>
   );
 }
