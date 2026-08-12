@@ -66,6 +66,7 @@ console.log(
 
     const {
 restaurant_id,
+customer_id,
 
 push_subscription_id,
 
@@ -97,6 +98,18 @@ delivery_instructions,
 
   items,
  } = body;
+
+if (typeof customer_id !== "string" || !customer_id.trim()) {
+  return NextResponse.json(
+    {
+      success: false,
+      error: "customer_id requerido",
+    },
+    { status: 400 }
+  );
+}
+
+const normalizedCustomerId = customer_id.trim();
 
 
 /*
@@ -416,8 +429,7 @@ for (const item of items) {
     const { data: order, error: orderError } =
       await supabase
         .from("orders")
-        .insert({
-
+.insert({
   restaurant_id,
 
   push_subscription_id,
@@ -495,6 +507,31 @@ if (orderError) {
     }
   );
 }
+
+    // Registrar el pedido en el historial global de Discover.
+const { error: historyError } = await supabase
+  .from("discover_order_history")
+  .insert({
+    customer_id: normalizedCustomerId,
+    order_id: order.id,
+    restaurant_id,
+  });
+
+    if (historyError) {
+      console.error(
+        "[CREATE ORDER] Error guardando historial de Discover:",
+        historyError
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: "El pedido fue creado, pero no se pudo registrar en el historial de Discover.",
+          details: historyError,
+        },
+        { status: 500 }
+      );
+    }
 
     // Guardar productos
 

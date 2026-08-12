@@ -13,8 +13,10 @@ import {
   useEffect,
 } from "react";
 import { useRouter } from "next/navigation";
-import { supabase }
-from "@/lib/supabase/client";
+import {
+  supabase,
+  getOrCreateWolfCustomerId,
+} from "@/lib/supabase/client";
 
 import { Capacitor } from "@capacitor/core";
 import { Preferences } from "@capacitor/preferences";
@@ -24,6 +26,10 @@ export default function CheckoutForm() {
 
   const [loading, setLoading] =
     useState(false);
+
+  // Stable anonymous customer identity shared across restaurants.
+  const [wolfCustomerId, setWolfCustomerId] =
+    useState("");
 
   const [acceptedTerms, setAcceptedTerms] =
     useState(false);
@@ -95,64 +101,135 @@ const [products, setProducts] =
   setDeliverySettings,
 ] = useState<any>(null);
 
+type CheckoutAddress = {
+  id: string;
+  customer_id: string;
+  label: string;
+  recipient_name: string | null;
+  recipient_phone: string | null;
+  email: string | null;
+  address: string;
+  zone: string | null;
+  reference: string | null;
+  instructions: string | null;
+  is_default: boolean;
+};
+
+const [customerAddresses, setCustomerAddresses] =
+  useState<CheckoutAddress[]>([]);
+
+const [selectedAddressId, setSelectedAddressId] =
+  useState<string | null>(null);
+
+const applyCheckoutAddress = (address: CheckoutAddress) => {
+  setSelectedAddressId(address.id);
+  setCustomerAddress(address.address || "");
+  setCustomerZone(address.zone || "");
+  setCustomerReference(address.reference || "");
+  setDeliveryInstructions(address.instructions || "");
+
+  if (address.recipient_name) {
+    setCustomerName(address.recipient_name);
+  }
+
+  if (address.recipient_phone) {
+    setCustomerPhone(address.recipient_phone);
+  }
+
+  if (address.email) {
+    setCustomerEmail(address.email);
+  }
+
+  console.log("[CHECKOUT] Dirección seleccionada:", address);
+};
+
 useEffect(() => {
-  const savedCart =
-    localStorage.getItem(
-      "wolf_cart"
-    );
+  let cancelled = false;
 
-if (savedCart) {
-  const cart = JSON.parse(savedCart);
+  const initializeCheckoutCustomer = async () => {
+    const customerId = getOrCreateWolfCustomerId();
+    if (cancelled) return;
 
-  console.log("CARRITO CHECKOUT:", cart);
+    setWolfCustomerId(customerId ?? "");
 
-  setProducts(cart);
-}
+    const savedCart = localStorage.getItem("wolf_cart");
 
-  const savedCustomer =
-    localStorage.getItem(
-      "wolf_customer"
-    );
+    if (savedCart) {
+      try {
+        const cart = JSON.parse(savedCart);
+        console.log("CARRITO CHECKOUT:", cart);
+        if (!cancelled) {
+          setProducts(Array.isArray(cart) ? cart : []);
+        }
+      } catch (error) {
+        console.error("[CHECKOUT] Error leyendo carrito:", error);
+        if (!cancelled) setProducts([]);
+      }
+    }
 
-    console.log(
-  "CUSTOMER:",
-  localStorage.getItem(
-    "wolf_customer"
-  )
-);
+    // wolf_customer queda únicamente como perfil básico/fallback.
+    // La dirección SIEMPRE se obtiene desde customer_addresses
+    // usando el mismo wolf_customer_id que Discover.
+    const savedCustomer = localStorage.getItem("wolf_customer");
 
-if (savedCustomer) {
-  const customer =
-    JSON.parse(savedCustomer);
+    if (savedCustomer) {
+      try {
+        const customer = JSON.parse(savedCustomer);
 
-  setCustomerName(
-    customer.name || ""
-  );
+        setCustomerName(customer.name || "");
+        setCustomerPhone(customer.phone || "");
+        setCustomerEmail(customer.email || "");
+      } catch (error) {
+        console.error("[CHECKOUT] Error leyendo wolf_customer:", error);
+      }
+    }
 
-  setCustomerPhone(
-    customer.phone || ""
-  );
+    if (!customerId) {
+      console.warn("[CHECKOUT] No existe wolf_customer_id");
+      return;
+    }
 
-  setCustomerAddress(
-    customer.address || ""
-  );
+    const { data: addresses, error: addressesError } = await supabase
+      .from("customer_addresses")
+      .select("*")
+      .eq("customer_id", customerId)
+      .order("is_default", { ascending: false })
+      .order("created_at", { ascending: false });
 
-  setCustomerEmail(
-    customer.email || ""
-  );
+    if (addressesError) {
+      console.error(
+        "[CHECKOUT] Error cargando customer_addresses:",
+        addressesError
+      );
+      return;
+    }
 
-  setCustomerZone(
-    customer.zone || ""
-  );
+    if (cancelled) return;
 
-  setCustomerReference(
-    customer.reference || ""
-  );
+    const normalizedAddresses = (addresses || []) as CheckoutAddress[];
 
-  setDeliveryInstructions(
-    customer.instructions || ""
-  );
-}
+    setCustomerAddresses(normalizedAddresses);
+
+    const defaultAddress =
+      normalizedAddresses.find((address) => address.is_default) ??
+      normalizedAddresses[0] ??
+      null;
+
+    if (defaultAddress) {
+      applyCheckoutAddress(defaultAddress);
+    } else {
+      console.log(
+        "[CHECKOUT] No hay direcciones guardadas para:",
+        customerId
+      );
+    }
+  };
+
+  void initializeCheckoutCustomer();
+
+  return () => {
+    cancelled = true;
+  };
 }, []);
 
 const loadRestaurant =
@@ -427,6 +504,43 @@ console.log(
   pushSubscriptionId
 );
 
+// Si el cliente está usando una dirección guardada, mantenemos sus datos
+// sincronizados (incluido el correo) para que Discover y Checkout compartan
+// la misma información.
+if (selectedAddressId && customerAddresses.length > 0) {
+  const selectedAddress = customerAddresses.find(
+    (address) => address.id === selectedAddressId
+  );
+
+  if (selectedAddress) {
+    const { error: addressUpdateError } = await supabase
+      .from("customer_addresses")
+      .update({
+        recipient_name: customerName || null,
+        recipient_phone: customerPhone || null,
+        email: customerEmail.trim() || null,
+        address: customerAddress.trim(),
+        zone: customerZone.trim() || null,
+        reference: customerReference.trim() || null,
+        instructions: deliveryInstructions.trim() || null,
+      })
+      .eq("id", selectedAddress.id)
+      .eq("customer_id", wolfCustomerId);
+
+    if (addressUpdateError) {
+      console.error(
+        "[CHECKOUT] No se pudo sincronizar la dirección:",
+        addressUpdateError
+      );
+    } else {
+      console.log(
+        "[CHECKOUT] Dirección sincronizada:",
+        selectedAddress.id
+      );
+    }
+  }
+}
+
 if (!products || products.length === 0) {
   alert("El carrito está vacío.");
   return;
@@ -448,6 +562,13 @@ if (!products || products.length === 0) {
           localStorage.getItem(
             "restaurant_id"
           ),
+
+          // Stable anonymous customer identity.
+          // Independent from the current restaurant.
+          customer_id:
+            wolfCustomerId ||
+            getOrCreateWolfCustomerId() ||
+            "",
 
           push_subscription_id:
             pushSubscriptionId,
@@ -812,6 +933,55 @@ router.push(
           }
           style={{ width: "100%", padding: "14px 16px", borderRadius: "12px", boxSizing: "border-box" }}
         />
+
+        {orderType === "delivery" && customerAddresses.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+            }}
+          >
+            <div
+              style={{
+                color: "rgba(255,255,255,.72)",
+                fontSize: "13px",
+                fontWeight: 700,
+              }}
+            >
+              Dirección guardada
+            </div>
+
+            <select
+              value={selectedAddressId ?? ""}
+              onChange={(e) => {
+                const address = customerAddresses.find(
+                  (item) => item.id === e.target.value
+                );
+
+                if (address) {
+                  applyCheckoutAddress(address);
+                }
+              }}
+              className="wolf-input"
+              style={{
+                width: "100%",
+                padding: "14px 16px",
+                borderRadius: "12px",
+                boxSizing: "border-box",
+                color: "#fff",
+                background: "rgba(255,255,255,.04)",
+              }}
+            >
+              {customerAddresses.map((address) => (
+                <option key={address.id} value={address.id}>
+                  {address.label}
+                  {address.is_default ? " · Principal" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <input
           placeholder="Dirección"
