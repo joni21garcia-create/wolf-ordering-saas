@@ -129,6 +129,12 @@ const [ringBell, setRingBell] =
     const channelRef =
       useRef<any>(null);
 
+    // IDs received through Realtime are protected during the next
+    // server reconciliation so a stale GET cannot make a new order
+    // disappear from the board.
+    const realtimePendingIdsRef =
+      useRef<Set<string>>(new Set());
+
     /*
     ==========================================================
     REFRESH
@@ -139,8 +145,9 @@ const [ringBell, setRingBell] =
       useRef<Promise<void> | null>(null);
 
     const refreshOrders = useCallback(async () => {
-      // Evita dos refresh simultáneos cuando una acción y
-      // Supabase Realtime ocurren prácticamente al mismo tiempo.
+      // Evita GET simultáneos. El resultado se reconcilia con
+      // los pedidos que Realtime recibió mientras el GET estaba
+      // en vuelo, para que una respuesta atrasada no los borre.
       if (refreshPromiseRef.current) {
         return refreshPromiseRef.current;
       }
@@ -166,11 +173,44 @@ const [ringBell, setRingBell] =
             return;
           }
 
-          setOrders(
+          const serverOrders: Order[] =
             Array.isArray(json.orders)
-              ? json.orders
-              : []
-          );
+              ? (json.orders as Order[])
+              : [];
+
+          setOrders((currentOrders) => {
+            const serverById = new Map(
+              serverOrders.map((order) => [
+                order.id,
+                order,
+              ])
+            );
+
+            const protectedIds =
+              realtimePendingIdsRef.current;
+
+            // El servidor manda sobre lo que ya conoce.
+            // Si Realtime acaba de entregar una orden que este
+            // GET todavía no ve, la conservamos temporalmente.
+            const reconciled = [
+              ...serverOrders,
+              ...currentOrders.filter(
+                (order) =>
+                  protectedIds.has(order.id) &&
+                  !serverById.has(order.id)
+              ),
+            ];
+
+            // Una vez que el servidor confirma el INSERT,
+            // dejamos de proteger ese ID.
+            for (const id of protectedIds) {
+              if (serverById.has(id)) {
+                protectedIds.delete(id);
+              }
+            }
+
+            return reconciled;
+          });
         } catch (error) {
           console.error(
             "Error actualizando pedidos:",
@@ -430,28 +470,67 @@ const [ringBell, setRingBell] =
               filter: `restaurant_id=eq.${restaurantId}`,
             },
             async (payload) => {
-              await refreshOrders();
+              const realtimeOrder =
+                (payload.new ?? null) as Partial<Order> & {
+                  id?: string;
+                };
 
-if (payload.eventType === "INSERT") {
+              const realtimeId =
+                realtimeOrder.id;
 
-  setRingBell(true);
-
-  setTimeout(() => {
-    setRingBell(false);
-  }, 700);
-
-  if (
-    soundEnabledRef.current &&
-    audioRef.current
-  ) {
-    audioRef.current.currentTime = 0;
-    audioRef.current.play().catch(() => {});
-  }
-
-
-                setToastTitle(
-                  "Nuevo pedido"
+              // Aplicar Realtime inmediatamente. No esperamos al GET.
+              // Esto evita que un GET atrasado haga desaparecer un
+              // pedido recién recibido.
+              if (
+                payload.eventType === "INSERT" &&
+                realtimeId
+              ) {
+                realtimePendingIdsRef.current.add(
+                  realtimeId
                 );
+
+                setOrders((currentOrders) => {
+                  const existing =
+                    currentOrders.find(
+                      (order) =>
+                        order.id === realtimeId
+                    );
+
+                  if (existing) {
+                    return currentOrders.map(
+                      (order) =>
+                        order.id === realtimeId
+                          ? {
+                              ...order,
+                              ...(realtimeOrder as Order),
+                            }
+                          : order
+                    );
+                  }
+
+                  return [
+                    realtimeOrder as Order,
+                    ...currentOrders,
+                  ];
+                });
+
+                setRingBell(true);
+
+                setTimeout(() => {
+                  setRingBell(false);
+                }, 700);
+
+                if (
+                  soundEnabledRef.current &&
+                  audioRef.current
+                ) {
+                  audioRef.current.currentTime = 0;
+                  audioRef.current
+                    .play()
+                    .catch(() => {});
+                }
+
+                setToastTitle("Nuevo pedido");
 
                 setToastMessage(
                   "Ha llegado un nuevo pedido."
@@ -460,11 +539,47 @@ if (payload.eventType === "INSERT") {
                 setToastOpen(true);
 
                 setTimeout(() => {
-                  setToastOpen(
-                    false
-                  );
+                  setToastOpen(false);
                 }, 4000);
               }
+
+              if (
+                payload.eventType === "UPDATE" &&
+                realtimeId
+              ) {
+                setOrders((currentOrders) =>
+                  currentOrders.map((order) =>
+                    order.id === realtimeId
+                      ? {
+                          ...order,
+                          ...(realtimeOrder as Order),
+                        }
+                      : order
+                  )
+                );
+              }
+
+              if (
+                payload.eventType === "DELETE" &&
+                realtimeId
+              ) {
+                realtimePendingIdsRef.current.delete(
+                  realtimeId
+                );
+
+                setOrders((currentOrders) =>
+                  currentOrders.filter(
+                    (order) =>
+                      order.id !== realtimeId
+                  )
+                );
+              }
+
+              // Después de aplicar el evento, reconciliamos con el
+              // servidor para recuperar order_items/products y demás
+              // datos completos. Los INSERT recientes están protegidos
+              // contra respuestas GET atrasadas.
+              await refreshOrders();
             }
           )
           .subscribe((status) => {

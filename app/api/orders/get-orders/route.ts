@@ -1,187 +1,179 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { checkPermission } from "@/lib/auth/checkPermission";
 
 export async function GET() {
   try {
     const supabase = await createSupabaseServerClient();
 
-    // Validar sesión SSR
+    // 1. Validar sesión SSR
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error("[AUTH]", authError);
+      console.error("[GET ORDERS][AUTH]", authError);
 
       return NextResponse.json(
         {
           success: false,
           error: "Unauthorized",
         },
-        {
-          status: 401,
-        }
+        { status: 401 }
       );
     }
 
-    // Obtener restaurante del usuario autenticado
-    const {
-      data: restaurantUser,
-      error: restaurantError,
-    } = await supabase
-      .from("restaurant_users")
-      .select(`
-        restaurant_id,
-        auth_user_id,
-        role_id
-      `)
-      .eq("auth_user_id", user.id)
-      .maybeSingle();
+    // 2. Arquitectura nueva:
+    //    el restaurante se obtiene desde la función centralizada
+    //    current_restaurant_id(), que respeta active = true.
+    const { data: restaurantId, error: restaurantIdError } =
+      await supabase.rpc("current_restaurant_id");
 
-      if (!restaurantUser?.restaurant_id) {
-  return NextResponse.json(
-    {
-      success: false,
-      error: "Restaurant not assigned",
-    },
-    {
-      status: 403,
-    }
-  );
-}
-
-    if (restaurantError) {
-      console.error("[RESTAURANT]", restaurantError);
+    if (restaurantIdError) {
+      console.error(
+        "[GET ORDERS][RESTAURANT ID]",
+        restaurantIdError
+      );
 
       return NextResponse.json(
         {
           success: false,
           error: "Restaurant lookup failed",
         },
-        {
-          status: 500,
-        }
+        { status: 500 }
       );
     }
 
-    if (!restaurantUser) {
+    if (!restaurantId) {
       return NextResponse.json(
         {
           success: false,
           error: "Restaurant not assigned",
         },
-        {
-          status: 403,
-        }
+        { status: 403 }
       );
     }
 
-    // Validar permisos
-    const hasPermission = await checkPermission(
-      restaurantUser.auth_user_id,
-      "orders"
-    );
+    // 3. Arquitectura nueva de permisos.
+    //    can_view_orders() es la fuente única de autorización.
+    const { data: canViewOrders, error: permissionError } =
+      await supabase.rpc("can_view_orders");
 
-    if (!hasPermission) {
+    if (permissionError) {
+      console.error(
+        "[GET ORDERS][PERMISSION]",
+        permissionError
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Permission check failed",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!canViewOrders) {
       return NextResponse.json(
         {
           success: false,
           error: "Forbidden",
         },
-        {
-          status: 403,
-        }
+        { status: 403 }
       );
     }
 
-    const { data: deliverySettings } =
-  await supabaseAdmin
-    .from("restaurant_delivery_settings")
-    .select("delivery_mode")
-    .eq(
-      "restaurant_id",
-      restaurantUser.restaurant_id
-    )
-    .maybeSingle();
+    // 4. Configuración de delivery del restaurante actual.
+    const { data: deliverySettings, error: deliveryError } =
+      await supabaseAdmin
+        .from("restaurant_delivery_settings")
+        .select("delivery_mode")
+        .eq("restaurant_id", restaurantId)
+        .maybeSingle();
 
-    // Consultar órdenes con Service Role
+    if (deliveryError) {
+      console.error(
+        "[GET ORDERS][DELIVERY SETTINGS]",
+        deliveryError
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: deliveryError.message,
+        },
+        { status: 500 }
+      );
+    }
+
+    // 5. Obtener únicamente las órdenes del restaurante autenticado.
+    //    Service Role se usa aquí solamente para la lectura controlada.
     const {
       data: orders,
       error: ordersError,
     } = await supabaseAdmin
       .from("orders")
-.select(`
-  id,
-  tracking_code,
-  customer_name,
-  customer_phone,
-  order_type,
-  subtotal,
-  delivery_fee,
-  total,
-  commission_amount,
-  restaurant_amount,
-  wolf_amount,
-  payment_method,
-  payment_status,
-  status,
-  created_at,
-  order_items (
-    id,
-    quantity,
-    unit_price,
-    subtotal,
-    products (
-      id,
-      name
-    )
-  )
-`)
-      .eq("restaurant_id", restaurantUser.restaurant_id)
+      .select(`
+        id,
+        tracking_code,
+        customer_name,
+        customer_phone,
+        order_type,
+        subtotal,
+        delivery_fee,
+        total,
+        commission_amount,
+        restaurant_amount,
+        wolf_amount,
+        payment_method,
+        payment_status,
+        status,
+        created_at,
+        order_items (
+          id,
+          quantity,
+          unit_price,
+          subtotal,
+          products (
+            id,
+            name
+          )
+        )
+      `)
+      .eq("restaurant_id", restaurantId)
       .order("created_at", {
         ascending: false,
       });
 
     if (ordersError) {
-      console.error("[ORDERS]", ordersError);
+      console.error("[GET ORDERS][ORDERS]", ordersError);
 
       return NextResponse.json(
         {
           success: false,
           error: ordersError.message,
         },
-        {
-          status: 500,
-        }
+        { status: 500 }
       );
     }
-    
-console.log(
-  JSON.stringify(orders?.[0], null, 2)
-);
 
-return NextResponse.json({
-  success: true,
-  orders: orders ?? [],
-  deliveryMode:
-    deliverySettings?.delivery_mode ?? "fixed",
-});
+    return NextResponse.json({
+      success: true,
+      orders: orders ?? [],
+      deliveryMode:
+        deliverySettings?.delivery_mode ?? "fixed",
+    });
   } catch (error) {
-    console.error("[GET ORDERS]", error);
+    console.error("[GET ORDERS][UNHANDLED]", error);
 
     return NextResponse.json(
       {
         success: false,
         error: "Internal server error",
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
-
-
