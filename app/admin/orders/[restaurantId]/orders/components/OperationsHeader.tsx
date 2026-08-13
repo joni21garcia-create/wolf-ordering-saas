@@ -261,19 +261,56 @@ export default function OperationsHeader({
             )}
           </div>
 
-          <WolfButton
-            variant="primary"
-            size="md"
-            loading={refreshing}
-            leftIcon={
-              <RefreshCw
-                size={18}
-              />
-            }
+          <button
+            type="button"
             onClick={onRefresh}
+            disabled={refreshing}
+            aria-label={
+              refreshing
+                ? "Actualizando pedidos"
+                : "Actualizar pedidos"
+            }
+            title="Actualizar pedidos"
+            style={{
+              width: 44,
+              height: 44,
+              flexShrink: 0,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "1px solid rgba(255,255,255,.10)",
+              borderRadius: "50%",
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.045))",
+              color: "#F4F4F5",
+              cursor: refreshing
+                ? "wait"
+                : "pointer",
+              opacity: refreshing ? 0.72 : 1,
+              boxShadow:
+                "0 8px 22px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.07)",
+              WebkitTapHighlightColor: "transparent",
+              transition:
+                "transform 140ms ease, background 140ms ease, border-color 140ms ease, box-shadow 140ms ease",
+            }}
           >
-            Actualizar
-          </WolfButton>
+            <RefreshCw
+              size={18}
+              strokeWidth={2.2}
+              style={{
+                animation: refreshing
+                  ? "wolf-refresh-spin .8s linear infinite"
+                  : "none",
+              }}
+            />
+          </button>
+
+          <style>{`
+            @keyframes wolf-refresh-spin {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
 
         </WolfFlex>
 

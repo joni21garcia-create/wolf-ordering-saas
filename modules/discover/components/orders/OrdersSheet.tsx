@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import type { CustomerOrder } from "../../types/customerOrder";
 import { getCustomerOrders } from "../../services/customerOrders";
@@ -53,6 +57,17 @@ export function OrdersSheet({
 
   const [loading, setLoading] = useState(false);
 
+  // Native-feeling sheet gesture:
+  // drag down from the sheet to dismiss, while keeping the content
+  // vertically scrollable. Only a downward gesture that starts at the
+  // top of the content can take over the sheet.
+  const sheetRef = useRef<HTMLElement | null>(null);
+  const dragStartYRef = useRef<number | null>(null);
+  const dragStartTimeRef = useRef<number>(0);
+  const draggingRef = useRef(false);
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
   useEffect(() => {
     if (!open) {
       setSelectedOrder(null);
@@ -92,6 +107,90 @@ export function OrdersSheet({
       cancelled = true;
     };
   }, [open]);
+
+  const handleSheetPointerDown = (
+    event: React.PointerEvent<HTMLElement>
+  ) => {
+    if (event.pointerType === "mouse") return;
+
+    const content = event.currentTarget.querySelector(
+      "[data-orders-sheet-content]"
+    ) as HTMLElement | null;
+
+    // If the content is scrolled, let the native content scroll instead
+    // of stealing the downward gesture.
+    if (content && content.scrollTop > 0) return;
+
+    dragStartYRef.current = event.clientY;
+    dragStartTimeRef.current = performance.now();
+    draggingRef.current = false;
+  };
+
+  const handleSheetPointerMove = (
+    event: React.PointerEvent<HTMLElement>
+  ) => {
+    const startY = dragStartYRef.current;
+    if (startY === null) return;
+
+    const deltaY = event.clientY - startY;
+
+    // Only downward drags dismiss the sheet. Upward movement belongs
+    // to the normal sheet/content interaction.
+    if (deltaY <= 0) return;
+
+    if (!draggingRef.current && deltaY < 6) return;
+
+    draggingRef.current = true;
+    setIsDragging(true);
+
+    // Rubber-band resistance: the farther you pull, the heavier it feels.
+    const resisted = Math.min(
+      420,
+      deltaY * (deltaY < 120 ? 0.82 : 0.58)
+    );
+
+    setDragY(resisted);
+  };
+
+  const finishSheetGesture = (
+    event: React.PointerEvent<HTMLElement>
+  ) => {
+    const startY = dragStartYRef.current;
+    if (startY === null) return;
+
+    const deltaY = Math.max(
+      0,
+      event.clientY - startY
+    );
+
+    const elapsed = Math.max(
+      1,
+      performance.now() - dragStartTimeRef.current
+    );
+
+    const velocity = deltaY / elapsed;
+
+    dragStartYRef.current = null;
+    draggingRef.current = false;
+    setIsDragging(false);
+
+    // Distance OR velocity makes dismissal feel like a native sheet.
+    if (deltaY > 110 || velocity > 0.65) {
+      setDragY(0);
+      onClose();
+      return;
+    }
+
+    // Snap back if the gesture was not strong enough.
+    setDragY(0);
+  };
+
+  const cancelSheetGesture = () => {
+    dragStartYRef.current = null;
+    draggingRef.current = false;
+    setIsDragging(false);
+    setDragY(0);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -142,6 +241,11 @@ export function OrdersSheet({
 
       {/* Sheet */}
       <aside
+        ref={sheetRef}
+        onPointerDown={handleSheetPointerDown}
+        onPointerMove={handleSheetPointerMove}
+        onPointerUp={finishSheetGesture}
+        onPointerCancel={cancelSheetGesture}
         className="
           absolute
           right-0
@@ -157,7 +261,37 @@ export function OrdersSheet({
           slide-in-from-right
           duration-300
         "
+        style={{
+          transform: `translate3d(0, ${dragY}px, 0)`,
+          transition: isDragging
+            ? "none"
+            : "transform 260ms cubic-bezier(.22,1,.36,1)",
+          touchAction: "pan-y",
+          willChange: "transform",
+        }}
       >
+        {/* Native-style drag handle */}
+        <div
+          aria-hidden="true"
+          className="
+            flex
+            h-6
+            shrink-0
+            items-center
+            justify-center
+            md:hidden
+          "
+        >
+          <div
+            className="
+              h-1
+              w-10
+              rounded-full
+              bg-neutral-200
+            "
+          />
+        </div>
+
         {/* Header */}
         <div
           className="
@@ -234,7 +368,15 @@ export function OrdersSheet({
         </div>
 
         {/* Content */}
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div
+          data-orders-sheet-content
+          className="min-h-0 flex-1 overflow-y-auto"
+          style={{
+            WebkitOverflowScrolling: "touch",
+            overscrollBehaviorY: "contain",
+            touchAction: "pan-y",
+          }}
+        >
           {selectedOrder ? (
             <OrderDetail order={selectedOrder} />
           ) : loading ? (
