@@ -1,5 +1,5 @@
 "use client";
-
+import { useRouter } from "next/navigation";
 import { useState, type CSSProperties } from "react";
 import {
   ArrowRight,
@@ -315,10 +315,11 @@ export default function DiscoverBusinessCTA({
   onGetStarted,
   defaultExpanded = true,
 }: DiscoverBusinessCTAProps) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   const handleGetStarted = () => {
-    onGetStarted?.();
+    router.push("/restaurant/onboarding");
   };
 
   return (
@@ -386,7 +387,7 @@ export default function DiscoverBusinessCTA({
                 className="wolf-business-cta-button"
                 style={buttonStyle}
               >
-                <span>Hazte cliente</span>
+                <span>Activa tu App</span>
                 <ArrowRight
                   size={14}
                   strokeWidth={2.1}
