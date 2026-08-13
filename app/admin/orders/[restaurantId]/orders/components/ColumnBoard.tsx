@@ -301,24 +301,23 @@ export default function ColumnBoard({
       </div>
 
       <div
-
+        className="wolf-orders-column-scroll"
         style={{
-
           flex: 1,
-
+          minHeight: 0,
+          minWidth: 0,
           overflowY: "auto",
-
+          overflowX: "hidden",
+          WebkitOverflowScrolling: "touch",
+          overscrollBehaviorY: "contain",
+          overscrollBehaviorX: "none",
+          touchAction: "pan-y",
           padding: 20,
-
           display: "flex",
-
-          flexDirection:
-            "column",
-
+          flexDirection: "column",
           gap: 18,
-
+          boxSizing: "border-box",
         }}
-
       >
               {orders.length === 0 && (
 
@@ -443,6 +442,9 @@ export default function ColumnBoard({
               transition={{
                 duration: .22,
                 ease: "easeOut",
+              }}
+              style={{
+                touchAction: "pan-y",
               }}
 
             >

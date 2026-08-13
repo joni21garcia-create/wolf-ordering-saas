@@ -121,16 +121,12 @@ export default function OrdersBoard({
     width: "100%",
     minWidth: 0,
     paddingBottom: 20,
-
-    /*
-     * El scroll horizontal pertenece al tablero,
-     * no a cada columna.
-     */
-    WebkitOverflowScrolling:
-      "touch",
-
-    overscrollBehaviorX:
-      "contain",
+    overflowY: "hidden",
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch",
+    overscrollBehaviorX: "contain",
+    overscrollBehaviorY: "none",
+    touchAction: "pan-x",
   }}
 >
   <WolfFlex
@@ -207,6 +203,9 @@ export default function OrdersBoard({
         className="orders-mobile"
         style={{
           display: "none",
+          minHeight: 0,
+          overflow: "hidden",
+          touchAction: "pan-y",
         }}
       >
 
