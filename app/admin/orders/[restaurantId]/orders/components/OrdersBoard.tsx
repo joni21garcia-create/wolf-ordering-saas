@@ -114,20 +114,21 @@ export default function OrdersBoard({
           DESKTOP
           =================================================== */}
 
-<WolfScrollArea
-  horizontal
+<div
   className="orders-desktop"
   style={{
     width: "100%",
     minWidth: 0,
-    paddingBottom: 20,
-    overflowY: "hidden",
+    height: "calc(100dvh - 220px)",
+    minHeight: 0,
     overflowX: "auto",
+    overflowY: "auto",
     WebkitOverflowScrolling: "touch",
-    overscrollBehaviorX: "contain",
-    overscrollBehaviorY: "none",
+    overscrollBehavior: "contain",
     scrollBehavior: "auto",
     touchAction: "auto",
+    boxSizing: "border-box",
+    paddingBottom: 20,
   }}
 >
   <WolfFlex
@@ -193,7 +194,7 @@ export default function OrdersBoard({
             )
           )}
         </WolfFlex>
-      </WolfScrollArea>
+</div>
 
 
       {/* ===================================================
@@ -204,9 +205,6 @@ export default function OrdersBoard({
         className="orders-mobile"
         style={{
           display: "none",
-          minHeight: 0,
-          overflow: "hidden",
-          touchAction: "pan-y",
         }}
       >
 

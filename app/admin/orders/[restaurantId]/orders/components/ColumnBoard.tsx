@@ -157,17 +157,16 @@ export default function ColumnBoard({
     maxWidth:
       "380px",
 
-    height:
-      "calc(100dvh - 220px)",
-
     display:
       "flex",
 
     flexDirection:
       "column",
 
+    // The board owns scrolling. Columns must grow naturally so a
+    // finger gesture over a card is handled by one native scroll surface.
     overflow:
-      "hidden",
+      "visible",
 
     boxSizing:
       "border-box",
@@ -301,18 +300,7 @@ export default function ColumnBoard({
       </div>
 
       <div
-        className="wolf-orders-column-scroll"
         style={{
-          flex: 1,
-          minHeight: 0,
-          minWidth: 0,
-          overflowY: "auto",
-          overflowX: "hidden",
-          WebkitOverflowScrolling: "touch",
-          overscrollBehaviorY: "contain",
-          overscrollBehaviorX: "none",
-          scrollBehavior: "auto",
-          touchAction: "pan-y",
           padding: 20,
           display: "flex",
           flexDirection: "column",
@@ -443,9 +431,6 @@ export default function ColumnBoard({
               transition={{
                 duration: .22,
                 ease: "easeOut",
-              }}
-              style={{
-                touchAction: "auto",
               }}
 
             >
