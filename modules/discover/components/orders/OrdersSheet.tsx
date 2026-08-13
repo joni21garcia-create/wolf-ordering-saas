@@ -1,10 +1,8 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
+
+import { WolfSheet } from "@/lib/wolf-ui";
 
 import type { CustomerOrder } from "../../types/customerOrder";
 import { getCustomerOrders } from "../../services/customerOrders";
@@ -57,17 +55,6 @@ export function OrdersSheet({
 
   const [loading, setLoading] = useState(false);
 
-  // Native-feeling sheet gesture:
-  // drag down from the sheet to dismiss, while keeping the content
-  // vertically scrollable. Only a downward gesture that starts at the
-  // top of the content can take over the sheet.
-  const sheetRef = useRef<HTMLElement | null>(null);
-  const dragStartYRef = useRef<number | null>(null);
-  const dragStartTimeRef = useRef<number>(0);
-  const draggingRef = useRef(false);
-  const [dragY, setDragY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-
   useEffect(() => {
     if (!open) {
       setSelectedOrder(null);
@@ -108,109 +95,6 @@ export function OrdersSheet({
     };
   }, [open]);
 
-  const handleSheetPointerDown = (
-    event: React.PointerEvent<HTMLElement>
-  ) => {
-    if (event.pointerType === "mouse") return;
-
-    const content = event.currentTarget.querySelector(
-      "[data-orders-sheet-content]"
-    ) as HTMLElement | null;
-
-    // If the content is scrolled, let the native content scroll instead
-    // of stealing the downward gesture.
-    if (content && content.scrollTop > 0) return;
-
-    dragStartYRef.current = event.clientY;
-    dragStartTimeRef.current = performance.now();
-    draggingRef.current = false;
-  };
-
-  const handleSheetPointerMove = (
-    event: React.PointerEvent<HTMLElement>
-  ) => {
-    const startY = dragStartYRef.current;
-    if (startY === null) return;
-
-    const deltaY = event.clientY - startY;
-
-    // Only downward drags dismiss the sheet. Upward movement belongs
-    // to the normal sheet/content interaction.
-    if (deltaY <= 0) return;
-
-    if (!draggingRef.current && deltaY < 6) return;
-
-    draggingRef.current = true;
-    setIsDragging(true);
-
-    // Rubber-band resistance: the farther you pull, the heavier it feels.
-    const resisted = Math.min(
-      420,
-      deltaY * (deltaY < 120 ? 0.82 : 0.58)
-    );
-
-    setDragY(resisted);
-  };
-
-  const finishSheetGesture = (
-    event: React.PointerEvent<HTMLElement>
-  ) => {
-    const startY = dragStartYRef.current;
-    if (startY === null) return;
-
-    const deltaY = Math.max(
-      0,
-      event.clientY - startY
-    );
-
-    const elapsed = Math.max(
-      1,
-      performance.now() - dragStartTimeRef.current
-    );
-
-    const velocity = deltaY / elapsed;
-
-    dragStartYRef.current = null;
-    draggingRef.current = false;
-    setIsDragging(false);
-
-    // Distance OR velocity makes dismissal feel like a native sheet.
-    if (deltaY > 110 || velocity > 0.65) {
-      setDragY(0);
-      onClose();
-      return;
-    }
-
-    // Snap back if the gesture was not strong enough.
-    setDragY(0);
-  };
-
-  const cancelSheetGesture = () => {
-    dragStartYRef.current = null;
-    draggingRef.current = false;
-    setIsDragging(false);
-    setDragY(0);
-  };
-
-  useEffect(() => {
-    if (!open) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
-    };
-  }, [open, onClose]);
-
   if (!open) {
     return null;
   }
@@ -226,165 +110,87 @@ export function OrdersSheet({
       aria-modal="true"
       aria-label="Mis pedidos"
     >
-      {/* Overlay */}
-      <button
-        type="button"
-        aria-label="Cerrar pedidos"
-        onClick={onClose}
-        className="
-          absolute
-          inset-0
-          bg-black/30
-          backdrop-blur-[2px]
-        "
-      />
-
-      {/* Sheet */}
-      <aside
-        ref={sheetRef}
-        onPointerDown={handleSheetPointerDown}
-        onPointerMove={handleSheetPointerMove}
-        onPointerUp={finishSheetGesture}
-        onPointerCancel={cancelSheetGesture}
-        className="
-          absolute
-          right-0
-          top-0
-          flex
-          h-full
-          w-full
-          max-w-md
-          flex-col
-          bg-white
-          shadow-2xl
-          animate-in
-          slide-in-from-right
-          duration-300
-        "
-        style={{
-          transform: `translate3d(0, ${dragY}px, 0)`,
-          transition: isDragging
-            ? "none"
-            : "transform 260ms cubic-bezier(.22,1,.36,1)",
-          touchAction: "pan-y",
-          willChange: "transform",
-        }}
+      <WolfSheet
+        open={open}
+        onClose={onClose}
+        title={
+          selectedOrder
+            ? "Mis pedidos"
+            : "Mis pedidos"
+        }
+        ariaLabel="Mis pedidos"
+        dismissible
+        showCloseButton
+        maxWidth={520}
       >
-        {/* Native-style drag handle */}
-        <div
-          aria-hidden="true"
-          className="
-            flex
-            h-6
-            shrink-0
-            items-center
-            justify-center
-            md:hidden
-          "
-        >
+        {/* Volver desde el detalle */}
+        {selectedOrder && (
           <div
-            className="
-              h-1
-              w-10
-              rounded-full
-              bg-neutral-200
-            "
-          />
-        </div>
-
-        {/* Header */}
-        <div
-          className="
-            flex
-            shrink-0
-            items-center
-            justify-between
-            border-b
-            border-neutral-100
-            px-5
-            py-4
-          "
-        >
-          <div className="min-w-0">
-            {selectedOrder ? (
-              <button
-                type="button"
-                onClick={() =>
-                  setSelectedOrder(null)
-                }
-                className="
-                  flex
-                  items-center
-                  gap-2
-                  text-sm
-                  font-medium
-                  text-neutral-500
-                  transition
-                  hover:text-neutral-900
-                "
-              >
-                <span
-                  className="text-lg leading-none"
-                  aria-hidden="true"
-                >
-                  ←
-                </span>
-
-                <span>Mis pedidos</span>
-              </button>
-            ) : (
-              <>
-                <h2 className="text-lg font-semibold tracking-tight text-neutral-950">
-                  Mis pedidos
-                </h2>
-
-                <p className="mt-0.5 text-xs text-neutral-400">
-                  Tu historial de pedidos
-                </p>
-              </>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Cerrar"
-            className="
-              flex
-              h-9
-              w-9
-              items-center
-              justify-center
-              rounded-full
-              text-xl
-              text-neutral-400
-              transition
-              hover:bg-neutral-100
-              hover:text-neutral-900
-            "
+            style={{
+              position: "absolute",
+              top: 28,
+              left: 18,
+              zIndex: 2,
+            }}
           >
-            ×
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() =>
+                setSelectedOrder(null)
+              }
+              aria-label="Volver a mis pedidos"
+              style={{
+                height: 40,
+                padding: "0 12px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                border: "1px solid rgba(255,255,255,.08)",
+                borderRadius: 999,
+                background: "rgba(255,255,255,.06)",
+                color: "#A1A1AA",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                WebkitTapHighlightColor:
+                  "transparent",
+              }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  fontSize: 18,
+                  lineHeight: 1,
+                }}
+              >
+                ←
+              </span>
+              <span>Mis pedidos</span>
+            </button>
+          </div>
+        )}
 
-        {/* Content */}
         <div
-          data-orders-sheet-content
-          className="min-h-0 flex-1 overflow-y-auto"
           style={{
-            WebkitOverflowScrolling: "touch",
-            overscrollBehaviorY: "contain",
-            touchAction: "pan-y",
+            minHeight: "100%",
+            background: "#0D0D0F",
           }}
         >
           {selectedOrder ? (
-            <OrderDetail order={selectedOrder} />
+            <OrderDetail
+              order={selectedOrder}
+            />
           ) : loading ? (
             <OrdersLoading />
           ) : orders.length === 0 ? (
             <OrdersEmpty />
           ) : (
-            <div className="space-y-3 p-4">
+            <div
+              className="space-y-3 p-4"
+              style={{
+                paddingTop: 20,
+              }}
+            >
               {orders.map((order) => (
                 <OrderCard
                   key={order.id}
@@ -395,7 +201,7 @@ export function OrdersSheet({
             </div>
           )}
         </div>
-      </aside>
+      </WolfSheet>
     </div>
   );
 }
@@ -408,7 +214,13 @@ function OrderDetail({
   order,
 }: OrderDetailProps) {
   return (
-    <div className="space-y-7 p-5">
+    <div
+      className="space-y-7 p-5"
+      style={{
+        minHeight: "100%",
+        background: "#FFFFFF",
+      }}
+    >
       {/* Restaurante */}
       <section>
         <div className="flex items-center gap-3">
