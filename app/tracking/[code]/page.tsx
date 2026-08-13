@@ -10,9 +10,7 @@ Tracking Page
 
 import { createClient } from "@supabase/supabase-js";
 
-import TrackingRealtime from "@/components/tracking/TrackingRealtime";
-import TrackingStatus from "@/components/tracking/TrackingStatus";
-import TrackingInfo from "@/components/tracking/TrackingInfo";
+import TrackingLive from "@/components/tracking/TrackingLive";
 import TrackingOrderItems from "@/components/tracking/TrackingOrderItems";
 
 const supabase = createClient(
@@ -170,8 +168,10 @@ export default async function TrackingPage({
       }}
     >
 
-      <TrackingRealtime
-        orderId={order.id}
+      <TrackingLive
+        initialOrder={order}
+        restaurantSlug={restaurant?.slug}
+        deliverySettings={deliverySettings}
       />
 
       <h1
@@ -187,20 +187,10 @@ export default async function TrackingPage({
         Seguimiento del pedido
       </h1>
 
-<TrackingStatus
-  order={order}
-/>
-
-<TrackingOrderItems
-  items={items ?? []}
-  order={order}
-/>
-
-<TrackingInfo
-  order={order}
-  restaurantSlug={restaurant?.slug}
-  deliverySettings={deliverySettings}
-/>
+      <TrackingOrderItems
+        items={items ?? []}
+        order={order}
+      />
 
     </main>
 

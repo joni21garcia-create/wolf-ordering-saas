@@ -877,26 +877,13 @@ const restaurantAmount =
      ======================================================= */
 
   return (
-    <motion.article
-
-      className="
-        wolf-order-card
-      "
-
-      data-status-theme={
-        statusTheme
-      }
-
-      layout
-
-      layoutId={
-        `wolf-order-${order.id}`
-      }
-
-      initial={{
-        opacity: 0,
-        y: 6,
-      }}
+<motion.article
+  className="wolf-order-card"
+  data-status-theme={statusTheme}
+  initial={{
+    opacity: 0,
+    y: 6,
+  }}
 
       animate={{
         opacity: 1,

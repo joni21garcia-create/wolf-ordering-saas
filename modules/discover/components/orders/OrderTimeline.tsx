@@ -40,64 +40,82 @@ export function OrderTimeline({
             key={`${event.status}-${index}`}
             className="relative flex gap-3"
           >
-            {/* Línea vertical */}
+            {/* =====================================================
+                LÍNEA — base + relleno animado
+                ===================================================== */}
             {!isLast && (
               <span
-                className={`
-                  absolute
-                  left-[5px]
-                  top-3
-                  h-[calc(100%-4px)]
-                  w-px
-                  ${
-                    event.completed
-                      ? "bg-orange-300"
-                      : "bg-neutral-200"
-                  }
-                `}
+                className="absolute left-[5px] top-3 h-[calc(100%-4px)] w-px overflow-hidden rounded-full bg-neutral-200"
                 aria-hidden="true"
-              />
+              >
+                <span
+                  className={`
+                    absolute inset-x-0 top-0 w-full origin-top rounded-full
+                    transition-transform duration-700 ease-out
+                    ${
+                      event.completed
+                        ? "scale-y-100 bg-orange-300"
+                        : "scale-y-0 bg-orange-300"
+                    }
+                  `}
+                />
+              </span>
             )}
 
-            {/* Punto */}
+            {/* =====================================================
+                PUNTO
+                ===================================================== */}
             <div className="relative z-10 flex h-3 w-3 shrink-0 items-center justify-center">
+              {event.current && (
+                <span
+                  className="
+                    absolute h-5 w-5 rounded-full
+                    bg-orange-400/20
+                    animate-ping
+                  "
+                  aria-hidden="true"
+                />
+              )}
+
               <span
                 className={`
-                  h-2.5
-                  w-2.5
-                  rounded-full
-                  border-2
+                  relative h-2.5 w-2.5 rounded-full border-2
+                  transition-all duration-500
+                  ease-out
                   ${
                     event.current
-                      ? "border-orange-500 bg-orange-500"
+                      ? "scale-110 border-orange-500 bg-orange-500 shadow-[0_0_0_3px_rgba(249,115,22,0.12)]"
                       : event.completed
-                        ? "border-orange-500 bg-orange-500"
-                        : "border-neutral-300 bg-white"
+                        ? "scale-100 border-orange-500 bg-orange-500"
+                        : "scale-100 border-neutral-300 bg-white"
                   }
                 `}
                 aria-hidden="true"
               />
             </div>
 
-            {/* Contenido */}
+            {/* =====================================================
+                CONTENIDO
+                ===================================================== */}
             <div
               className={`
-                min-w-0
-                flex-1
-                pb-5
+                min-w-0 flex-1 pb-5
+                transition-all duration-700
+                ease-out
                 ${
                   event.current
-                    ? "opacity-100"
+                    ? "translate-x-0 opacity-100"
                     : event.completed
-                      ? "opacity-80"
-                      : "opacity-45"
+                      ? "translate-x-0 opacity-80"
+                      : "translate-x-0 opacity-45"
                 }
               `}
             >
               <div className="flex items-center justify-between gap-3">
                 <p
                   className={`
-                    text-sm
+                    text-sm transition-all duration-500
+                    ease-out
                     ${
                       event.current
                         ? "font-semibold text-neutral-900"
@@ -109,7 +127,12 @@ export function OrderTimeline({
                 </p>
 
                 {time && (
-                  <span className="shrink-0 text-[11px] text-neutral-400">
+                  <span
+                    className="
+                      shrink-0 text-[11px] text-neutral-400
+                      transition-opacity duration-500
+                    "
+                  >
                     {time}
                   </span>
                 )}
@@ -118,6 +141,8 @@ export function OrderTimeline({
           </div>
         );
       })}
+
+
     </div>
   );
 }

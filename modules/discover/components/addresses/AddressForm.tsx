@@ -146,18 +146,146 @@ export default function AddressForm({
     setLocating(true);
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        updateField(
-          "latitude",
-          String(position.coords.latitude),
-        );
+      async (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
 
-        updateField(
-          "longitude",
-          String(position.coords.longitude),
-        );
+        updateField("latitude", String(latitude));
+        updateField("longitude", String(longitude));
 
-        setLocating(false);
+        try {
+          /*
+           * Obtener GPS solo nos da coordenadas.
+           * El segundo paso es reverse geocoding para convertir
+           * esas coordenadas en una dirección legible.
+           *
+           * Usamos Nominatim/OpenStreetMap porque devuelve
+           * componentes de calle, número, barrio y ciudad sin
+           * necesitar una API key del navegador.
+           */
+          const url = new URL(
+            "https://nominatim.openstreetmap.org/reverse",
+          );
+
+          url.searchParams.set("format", "jsonv2");
+          url.searchParams.set("lat", String(latitude));
+          url.searchParams.set("lon", String(longitude));
+          url.searchParams.set("addressdetails", "1");
+          url.searchParams.set("accept-language", "es");
+
+          const response = await fetch(url.toString(), {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              "No se pudo convertir la ubicación en una dirección.",
+            );
+          }
+
+          const data = (await response.json()) as {
+            display_name?: string;
+            address?: {
+              house_number?: string;
+              road?: string;
+              pedestrian?: string;
+              footway?: string;
+              neighbourhood?: string;
+              suburb?: string;
+              quarter?: string;
+              city_district?: string;
+              city?: string;
+              town?: string;
+              village?: string;
+              municipality?: string;
+              state?: string;
+            };
+          };
+
+          const address = data.address ?? {};
+
+          /*
+           * Dirección principal:
+           * preferimos calle + número porque es lo más útil
+           * para Delivery.
+           */
+          const street =
+            address.road?.trim() ||
+            address.pedestrian?.trim() ||
+            address.footway?.trim();
+
+          const houseNumber =
+            address.house_number?.trim();
+
+          const streetAddress = [
+            street,
+            houseNumber,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .trim();
+
+          /*
+           * Si el proveedor no devuelve calle, usamos
+           * display_name como respaldo para no dejar el
+           * formulario vacío.
+           */
+          const resolvedAddress =
+            streetAddress ||
+            data.display_name?.trim() ||
+            "";
+
+          const zone =
+            address.neighbourhood?.trim() ||
+            address.quarter?.trim() ||
+            address.suburb?.trim() ||
+            address.city_district?.trim() ||
+            "";
+
+          const city =
+            address.city?.trim() ||
+            address.town?.trim() ||
+            address.village?.trim() ||
+            address.municipality?.trim() ||
+            "";
+
+          if (resolvedAddress) {
+            updateField(
+              "address",
+              resolvedAddress,
+            );
+          }
+
+          if (zone) {
+            updateField("zone", zone);
+          }
+
+          /*
+           * Si no conseguimos calle, pero sí ciudad/zona,
+           * avisamos sin borrar las coordenadas.
+           */
+          if (!resolvedAddress) {
+            setError(
+              city
+                ? `Encontramos tu ubicación en ${city}, pero no pudimos obtener la calle. Escríbela manualmente.`
+                : "Encontramos tu ubicación, pero no pudimos obtener la dirección. Escríbela manualmente.",
+            );
+          }
+        } catch {
+          /*
+           * El GPS sí funcionó. Si falla el reverse geocoding,
+           * conservamos lat/lng para Delivery y permitimos
+           * que el usuario escriba la dirección.
+           */
+          setError(
+            "Obtuvimos tu ubicación, pero no pudimos convertirla en una dirección. Escríbela manualmente.",
+          );
+        } finally {
+          setLocating(false);
+        }
       },
       () => {
         setError(

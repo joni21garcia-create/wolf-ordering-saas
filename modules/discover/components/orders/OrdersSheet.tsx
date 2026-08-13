@@ -1,16 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase/client";
 
 import { WolfSheet } from "@/lib/wolf-ui";
 
 import type { CustomerOrder } from "../../types/customerOrder";
-import { getCustomerOrders } from "../../services/customerOrders";
+import {
+  buildTimeline,
+  getCustomerOrders,
+  normalizeOrderStatus,
+} from "../../services/customerOrders";
 
 import OrderCard from "./OrderCard";
 import OrderItems from "./OrderItems";
 import OrderStatusBadge from "./OrderStatusBadge";
 import OrderTimeline from "./OrderTimeline";
+
+const discoverRealtime = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  }
+);
 
 interface OrdersSheetProps {
   open: boolean;
@@ -63,15 +81,38 @@ export function OrdersSheet({
 
     let cancelled = false;
 
+    async function refreshOrders() {
+      try {
+        const data = await getCustomerOrders();
+
+        if (cancelled) return;
+
+        setOrders(data);
+
+        // Si estamos viendo un pedido, reemplazamos su detalle
+        // por la versión más reciente reconstruida desde Supabase.
+        setSelectedOrder((current) => {
+          if (!current) return null;
+
+          return (
+            data.find(
+              (order) => order.id === current.id
+            ) ?? null
+          );
+        });
+      } catch (error) {
+        console.error(
+          "[DISCOVER ORDERS] Error actualizando pedidos:",
+          error
+        );
+      }
+    }
+
     async function loadOrders() {
       setLoading(true);
 
       try {
-        const data = await getCustomerOrders();
-
-        if (!cancelled) {
-          setOrders(data);
-        }
+        await refreshOrders();
       } catch (error) {
         console.error(
           "[DISCOVER ORDERS] Error cargando pedidos:",
@@ -88,12 +129,134 @@ export function OrdersSheet({
       }
     }
 
-    loadOrders();
+    void loadOrders();
 
     return () => {
       cancelled = true;
     };
   }, [open]);
+
+  /*
+   * =========================================================
+   * REALTIME — SOLO EL PEDIDO ABIERTO
+   * =========================================================
+   *
+   * No escuchamos toda la tabla `orders` desde Discover.
+   * El cliente solo necesita recibir cambios del pedido
+   * que está viendo en este momento.
+   */
+  useEffect(() => {
+    if (!open || !selectedOrder?.id) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const orderId = selectedOrder.id;
+
+    console.log(
+      "[DISCOVER ORDERS] Realtime conectando:",
+      orderId
+    );
+
+    const channel = discoverRealtime
+      .channel(`discover-order-${orderId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "orders",
+          filter: `id=eq.${orderId}`,
+        },
+        (payload) => {
+          if (cancelled) return;
+
+          console.log(
+            "[DISCOVER ORDERS] Realtime UPDATE recibido:",
+            payload.new
+          );
+
+          // Realtime ya entrega la fila actualizada. No esperamos
+          // otro GET: actualizamos el pedido abierto inmediatamente.
+          const next = payload.new as {
+            id?: string;
+            status?: string | null;
+            created_at?: string | null;
+            accepted_at?: string | null;
+            preparing_at?: string | null;
+            ready_at?: string | null;
+            out_for_delivery_at?: string | null;
+            completed_at?: string | null;
+          };
+
+          if (next.id !== orderId) return;
+
+          setSelectedOrder((current) => {
+            if (!current || current.id !== orderId) {
+              return current;
+            }
+
+            const rawOrder = {
+              status: next.status ?? current.status,
+              created_at: next.created_at ?? current.created_at,
+              accepted_at: next.accepted_at ?? null,
+              preparing_at: next.preparing_at ?? null,
+              ready_at: next.ready_at ?? null,
+              out_for_delivery_at: next.out_for_delivery_at ?? null,
+              completed_at: next.completed_at ?? null,
+            };
+
+            return {
+              ...current,
+              status: normalizeOrderStatus(rawOrder.status),
+              timeline: buildTimeline(rawOrder),
+            };
+          });
+
+          setOrders((currentOrders) =>
+            currentOrders.map((order) => {
+              if (order.id !== orderId) return order;
+
+              const rawOrder = {
+                status: next.status ?? order.status,
+                created_at: next.created_at ?? order.created_at,
+                accepted_at: next.accepted_at ?? null,
+                preparing_at: next.preparing_at ?? null,
+                ready_at: next.ready_at ?? null,
+                out_for_delivery_at: next.out_for_delivery_at ?? null,
+                completed_at: next.completed_at ?? null,
+              };
+
+              return {
+                ...order,
+                status: normalizeOrderStatus(rawOrder.status),
+                timeline: buildTimeline(rawOrder),
+              };
+            })
+          );
+        }
+      )
+      .subscribe((status) => {
+        if (cancelled) return;
+
+        console.log(
+          "[DISCOVER ORDERS] Realtime status:",
+          status
+        );
+      });
+
+    return () => {
+      cancelled = true;
+
+      console.log(
+        "[DISCOVER ORDERS] Realtime desconectando:",
+        orderId
+      );
+
+      void discoverRealtime.removeChannel(channel);
+    };
+  }, [open, selectedOrder?.id]);
 
   if (!open) {
     return null;

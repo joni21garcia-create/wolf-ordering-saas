@@ -16,12 +16,13 @@ import type {
  * Convierte los estados reales de orders a los estados
  * que consume la interfaz de Discover.
  */
-function normalizeOrderStatus(
+export function normalizeOrderStatus(
   status: string | null
 ): CustomerOrderStatus {
   switch (status) {
-    case "confirmed":
-      return "confirmed";
+    case "accepted":
+         case "confirmed":
+          return "confirmed";
 
     case "preparing":
       return "preparing";
@@ -50,7 +51,7 @@ function normalizeOrderStatus(
  * Construye la línea de tiempo usando las fechas reales
  * almacenadas en orders.
  */
-function buildTimeline(order: {
+export function buildTimeline(order: {
   status: string | null;
   created_at: string | null;
   accepted_at: string | null;
@@ -274,14 +275,33 @@ export async function getCustomerOrders(): Promise<CustomerOrder[]> {
       );
 
       /*
-       * Usamos exactamente el motor de pricing del sistema.
+       * ==========================================================
+       * PRICING OFICIAL DE WOLF
+       * ==========================================================
        *
-       * El unit_price guardado en order_items representa el precio
-       * base del producto. El precio mostrado al cliente debe pasar
-       * por getFinalPrice(), igual que en el resto de Discover.
+       * El unit_price almacenado en order_items es el precio
+       * base del producto, es decir, el precio del restaurante.
        *
-       * Si la comisión está inactiva, getFinalPrice() devuelve
-       * simplemente el precio base.
+       * Ese precio NUNCA se muestra directamente al cliente.
+       *
+       * Para Discover usamos exactamente el mismo motor oficial
+       * que utiliza el menú y la creación del pedido:
+       *
+       *     getCommissionConfig()
+       *     getFinalPrice()
+       *
+       * De esta manera:
+       *
+       * - commission inactive
+       *     -> cliente ve precio base
+       *
+       * - commission_type = "customer"
+       *     -> cliente ve precio + comisión Wolf
+       *
+       * - commission_type = "restaurant"
+       *     -> cliente ve precio base
+       *
+       * No duplicamos la fórmula aquí.
        */
       const commissionConfig =
         getCommissionConfig(restaurant);
@@ -293,9 +313,21 @@ export async function getCustomerOrders(): Promise<CustomerOrder[]> {
             (product) => product.id === item.product_id
           );
 
+          /*
+           * Precio BASE:
+           *
+           * Este es el precio que estaba guardado en el pedido.
+           * NO se entrega directamente a la UI.
+           */
           const baseUnitPrice =
             Number(item.unit_price) || 0;
 
+          /*
+           * Precio FINAL visible para el cliente.
+           *
+           * Esta es la misma función utilizada por
+           * el resto del sistema.
+           */
           const displayUnitPrice =
             getFinalPrice(
               baseUnitPrice,
@@ -305,6 +337,9 @@ export async function getCustomerOrders(): Promise<CustomerOrder[]> {
           const quantity =
             Number(item.quantity) || 0;
 
+          /*
+           * Total visible de esta línea.
+           */
           const displayTotal =
             Number(
               (
@@ -325,15 +360,27 @@ export async function getCustomerOrders(): Promise<CustomerOrder[]> {
         id: order.id,
         order_number:
           order.tracking_code ?? order.id.slice(0, 8),
+
         restaurant: {
           id: restaurant?.id ?? order.restaurant_id,
           name: restaurant?.name ?? "Restaurante",
           logo_url: restaurant?.logo_url ?? null,
         },
+
         created_at: order.created_at,
+
         status: normalizeOrderStatus(order.status),
+
         items,
+
+        /*
+         * El total real del pedido ya viene calculado
+         * por el motor al momento de crear la orden.
+         *
+         * No lo recalculamos aquí.
+         */
         total: Number(order.total),
+
         timeline: buildTimeline(order),
       };
     })
