@@ -28,7 +28,6 @@ interface FormState {
   label: CustomerAddressLabel;
   recipient_name: string;
   recipient_phone: string;
-  email: string;
   address: string;
   zone: string;
   reference: string;
@@ -72,7 +71,6 @@ function getInitialState(
     label: address?.label ?? "Casa",
     recipient_name: address?.recipient_name ?? "",
     recipient_phone: address?.recipient_phone ?? "",
-    email: address?.email ?? "",
     address: address?.address ?? "",
     zone: address?.zone ?? "",
     reference: address?.reference ?? "",
@@ -103,6 +101,7 @@ export default function AddressForm({
 
   const [error, setError] = useState<string | null>(null);
   const [showLabelOptions, setShowLabelOptions] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   const isEditing = Boolean(address);
 
@@ -144,6 +143,7 @@ export default function AddressForm({
     }
 
     setError(null);
+    setLocating(true);
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -156,11 +156,14 @@ export default function AddressForm({
           "longitude",
           String(position.coords.longitude),
         );
+
+        setLocating(false);
       },
       () => {
         setError(
           "No pudimos obtener tu ubicación. Revisa los permisos de ubicación.",
         );
+        setLocating(false);
       },
       {
         enableHighAccuracy: true,
@@ -209,7 +212,6 @@ export default function AddressForm({
           form.recipient_name.trim() || null,
         recipient_phone:
           form.recipient_phone.trim() || null,
-        email: form.email.trim() || null,
         address: addressValue,
         zone: form.zone.trim() || null,
         reference: form.reference.trim() || null,
@@ -380,25 +382,6 @@ export default function AddressForm({
         </div>
 
         <div className="address-form__field">
-          <label htmlFor="address-email">
-            Correo electrónico
-          </label>
-
-          <input
-            id="address-email"
-            type="email"
-            value={form.email}
-            onChange={(event) =>
-              updateField("email", event.target.value)
-            }
-            placeholder="Ej. correo@ejemplo.com"
-            autoComplete="email"
-            inputMode="email"
-            disabled={isSaving}
-          />
-        </div>
-
-        <div className="address-form__field">
           <div className="address-form__field-heading">
             <label htmlFor="customer-address">
               Dirección
@@ -408,10 +391,20 @@ export default function AddressForm({
               type="button"
               className="address-form__location-button"
               onClick={handleUseCurrentLocation}
-              disabled={isSaving}
+              disabled={isSaving || locating}
+              aria-busy={locating}
             >
-              <Navigation size={13} strokeWidth={2} />
-              Usar ubicación
+              {locating ? (
+                <span
+                  className="address-form__location-spinner"
+                  aria-hidden="true"
+                />
+              ) : (
+                <Navigation size={13} strokeWidth={2} />
+              )}
+              {locating
+                ? "Obteniendo ubicación..."
+                : "Usar ubicación"}
             </button>
           </div>
 
@@ -754,19 +747,46 @@ export default function AddressForm({
         .address-form__location-button {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          padding: 0;
-          border: 0;
-          background: transparent;
+          justify-content: center;
+          gap: 6px;
+          min-height: 34px;
+          padding: 0 10px;
+          border: 1px solid rgba(255, 145, 0, 0.22);
+          border-radius: 10px;
+          background: rgba(255, 145, 0, 0.06);
           color: #ffad3d;
           font: inherit;
           font-size: 10px;
           font-weight: 700;
           cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          transition:
+            transform 140ms ease,
+            background 140ms ease,
+            border-color 140ms ease;
         }
 
         .address-form__location-button:hover {
-          color: #ffc16b;
+          border-color: rgba(255, 145, 0, 0.42);
+          background: rgba(255, 145, 0, 0.10);
+        }
+
+        .address-form__location-button:active {
+          transform: scale(.97);
+        }
+
+        .address-form__location-button:disabled {
+          opacity: .65;
+          cursor: wait;
+        }
+
+        .address-form__location-spinner {
+          width: 12px;
+          height: 12px;
+          border: 1.5px solid rgba(255, 173, 61, .25);
+          border-top-color: #ffad3d;
+          border-radius: 50%;
+          animation: address-location-spin .7s linear infinite;
         }
 
         .address-form__field input,
@@ -889,8 +909,9 @@ export default function AddressForm({
         }
 
         .address-form__footer {
-          position: static;
-          z-index: auto;
+          position: sticky;
+          bottom: 0;
+          z-index: 5;
           display: grid;
           grid-template-columns: auto minmax(0, 1fr);
           align-items: center;
@@ -898,12 +919,10 @@ export default function AddressForm({
           flex: 0 0 auto;
           width: 100%;
           box-sizing: border-box;
-          margin-top: 14px;
-          padding: 12px 0 calc(8px + env(safe-area-inset-bottom));
-          border-top: 1px solid rgba(255, 255, 255, 0.055);
-          background: rgba(12, 12, 12, 0.96);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
+          margin-top: 10px;
+          padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+          border-top: 0;
+          background: transparent;
         }
 
         .address-form__cancel,
@@ -1005,6 +1024,12 @@ export default function AddressForm({
 
         .address-form__submit-copy small {
           display: none;
+        }
+
+        @keyframes address-location-spin {
+          to {
+            transform: rotate(360deg);
+          }
         }
 
         .address-form__spinner {

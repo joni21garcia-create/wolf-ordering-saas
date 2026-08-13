@@ -9,32 +9,17 @@ import {
   type ReactNode,
 } from "react";
 
-interface WolfSheetProps {
+export interface WolfSheetProps {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
-
   title?: string;
+  subtitle?: string;
   ariaLabel?: string;
-
-  /**
-   * Si está activo:
-   * - tocar fuera cierra
-   * - gesto hacia abajo cierra
-   * - botón Back de Android cierra
-   * - Escape cierra en navegador
-   */
   dismissible?: boolean;
-
-  /**
-   * Mostrar el botón X del header.
-   */
   showCloseButton?: boolean;
-
-  /**
-   * Ancho máximo en desktop.
-   */
   maxWidth?: number;
+  tone?: "dark" | "light";
 }
 
 export default function WolfSheet({
@@ -42,57 +27,33 @@ export default function WolfSheet({
   onClose,
   children,
   title,
+  subtitle,
   ariaLabel = "Panel",
   dismissible = true,
   showCloseButton = true,
   maxWidth = 520,
+  tone = "dark",
 }: WolfSheetProps) {
-  const sheetRef =
-    useRef<HTMLElement | null>(null);
+  const dragStartY = useRef<number | null>(null);
+  const dragStartTime = useRef(0);
+  const dragging = useRef(false);
+  const historyPushed = useRef(false);
 
-  const dragStartY =
-    useRef<number | null>(null);
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const dragStartTime =
-    useRef(0);
-
-  const dragging =
-    useRef(false);
-
-  const historyPushed =
-    useRef(false);
-
-  const [dragY, setDragY] =
-    useState(0);
-
-  const [isDragging, setIsDragging] =
-    useState(false);
-
-  /*
-  ==========================================================
-  ANDROID / BROWSER BACK
-  ==========================================================
-  */
+  const light = tone === "light";
 
   useEffect(() => {
     if (!open || !dismissible) return;
 
-    /*
-     * Creamos una entrada temporal en el historial.
-     *
-     * Así, cuando Android pulsa "Atrás", recibimos popstate
-     * y cerramos primero el Sheet en lugar de abandonar la
-     * pantalla actual.
-     */
-    const state = {
-      ...(window.history.state ?? {}),
-      wolfSheet: true,
-    };
-
     window.history.pushState(
-      state,
+      {
+        ...(window.history.state ?? {}),
+        wolfSheet: true,
+      },
       "",
-      window.location.href
+      window.location.href,
     );
 
     historyPushed.current = true;
@@ -102,94 +63,48 @@ export default function WolfSheet({
       onClose();
     };
 
-    window.addEventListener(
-      "popstate",
-      handlePopState
-    );
+    window.addEventListener("popstate", handlePopState);
 
     return () => {
-      window.removeEventListener(
-        "popstate",
-        handlePopState
-      );
+      window.removeEventListener("popstate", handlePopState);
     };
   }, [open, dismissible, onClose]);
-
-  /*
-  ==========================================================
-  ESCAPE
-  ==========================================================
-  */
 
   useEffect(() => {
     if (!open || !dismissible) return;
 
-    const handleKeyDown = (
-      event: KeyboardEvent
-    ) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        event.preventDefault();
         onClose();
       }
     };
 
-    window.addEventListener(
-      "keydown",
-      handleKeyDown
-    );
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener(
-        "keydown",
-        handleKeyDown
-      );
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [open, dismissible, onClose]);
-
-  /*
-  ==========================================================
-  BODY SCROLL LOCK
-  ==========================================================
-  */
 
   useEffect(() => {
     if (!open) return;
 
-    const previousOverflow =
-      document.body.style.overflow;
+    const previousOverflow = document.body.style.overflow;
+    const previousTouchAction = document.body.style.touchAction;
 
-    const previousTouchAction =
-      document.body.style.touchAction;
-
-    document.body.style.overflow =
-      "hidden";
-
-    document.body.style.touchAction =
-      "none";
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
 
     return () => {
-      document.body.style.overflow =
-        previousOverflow;
-
-      document.body.style.touchAction =
-        previousTouchAction;
+      document.body.style.overflow = previousOverflow;
+      document.body.style.touchAction = previousTouchAction;
     };
   }, [open]);
-
-  /*
-  ==========================================================
-  CLOSE
-  ==========================================================
-  */
 
   const closeSheet = useCallback(() => {
     if (!dismissible) return;
 
-    /*
-     * Si nosotros agregamos una entrada al historial,
-     * usamos history.back() para eliminarla.
-     *
-     * El popstate se encargará de llamar onClose().
-     */
     if (historyPushed.current) {
       historyPushed.current = false;
       window.history.back();
@@ -199,21 +114,11 @@ export default function WolfSheet({
     onClose();
   }, [dismissible, onClose]);
 
-  /*
-  ==========================================================
-  DRAG START
-  ==========================================================
-  */
-
   const handlePointerDown = (
-    event: PointerEvent<HTMLDivElement>
+    event: PointerEvent<HTMLDivElement>,
   ) => {
     if (!dismissible) return;
 
-    /*
-     * Solo táctil / stylus.
-     * Mouse conserva el comportamiento normal de desktop.
-     */
     if (
       event.pointerType !== "touch" &&
       event.pointerType !== "pen"
@@ -221,151 +126,70 @@ export default function WolfSheet({
       return;
     }
 
-    dragStartY.current =
-      event.clientY;
-
-    dragStartTime.current =
-      performance.now();
-
+    dragStartY.current = event.clientY;
+    dragStartTime.current = performance.now();
     dragging.current = false;
 
-    event.currentTarget.setPointerCapture?.(
-      event.pointerId
-    );
+    event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
-  /*
-  ==========================================================
-  DRAG MOVE
-  ==========================================================
-  */
-
   const handlePointerMove = (
-    event: PointerEvent<HTMLDivElement>
+    event: PointerEvent<HTMLDivElement>,
   ) => {
-    const start =
-      dragStartY.current;
+    const start = dragStartY.current;
 
     if (start === null) return;
 
-    const delta =
-      event.clientY - start;
+    const delta = event.clientY - start;
 
-    /*
-     * Solo permitimos swipe hacia abajo.
-     */
     if (delta <= 0) return;
 
-    if (
-      !dragging.current &&
-      delta < 6
-    ) {
-      return;
-    }
+    if (!dragging.current && delta < 6) return;
 
     dragging.current = true;
     setIsDragging(true);
 
-    /*
-     * Resistencia progresiva.
-     *
-     * Esto evita que parezca que estamos simplemente
-     * moviendo un div.
-     */
-    const resistance =
-      delta < 120
-        ? 0.82
-        : 0.55;
-
-    const next =
-      Math.min(
-        420,
-        delta * resistance
-      );
-
-    setDragY(next);
+    const resistance = delta < 120 ? 0.82 : 0.55;
+    setDragY(Math.min(420, delta * resistance));
   };
 
-  /*
-  ==========================================================
-  DRAG END
-  ==========================================================
-  */
-
   const handlePointerUp = (
-    event: PointerEvent<HTMLDivElement>
+    event: PointerEvent<HTMLDivElement>,
   ) => {
-    const start =
-      dragStartY.current;
+    const start = dragStartY.current;
 
     if (start === null) return;
 
-    const delta =
-      Math.max(
-        0,
-        event.clientY - start
-      );
-
-    const elapsed =
-      Math.max(
-        1,
-        performance.now() -
-          dragStartTime.current
-      );
-
-    const velocity =
-      delta / elapsed;
+    const delta = Math.max(0, event.clientY - start);
+    const elapsed = Math.max(
+      1,
+      performance.now() - dragStartTime.current,
+    );
+    const velocity = delta / elapsed;
 
     dragStartY.current = null;
     dragging.current = false;
-
     setIsDragging(false);
 
-    /*
-     * Distancia o velocidad.
-     *
-     * Esto hace que un gesto corto pero rápido
-     * también cierre el Sheet.
-     */
-    if (
-      delta > 110 ||
-      velocity > 0.65
-    ) {
+    if (delta > 110 || velocity > 0.65) {
       setDragY(0);
       closeSheet();
       return;
     }
 
-    /*
-     * No alcanzó el umbral:
-     * vuelve suavemente a su posición.
-     */
     setDragY(0);
   };
 
   const handlePointerCancel = () => {
     dragStartY.current = null;
     dragging.current = false;
-
     setIsDragging(false);
     setDragY(0);
   };
 
-  /*
-  ==========================================================
-  RENDER
-  ==========================================================
-  */
+  if (!open) return null;
 
-  if (!open) {
-    return null;
-  }
-
-  const backdropOpacity =
-    Math.max(
-      0.08,
-      1 - dragY / 520
-    );
+  const backdropOpacity = Math.max(0.08, 1 - dragY / 520);
 
   return (
     <div
@@ -374,33 +198,19 @@ export default function WolfSheet({
       aria-modal="true"
       aria-label={ariaLabel}
     >
-      {/* ==================================================
-          BACKDROP
-          ================================================== */}
-
       <button
         type="button"
         aria-label="Cerrar"
         onClick={closeSheet}
-        className="absolute inset-0 border-0"
+        className="absolute inset-0 border-0 p-0"
         style={{
-          background:
-            `rgba(0,0,0,${0.32 * backdropOpacity})`,
-          backdropFilter:
-            "blur(3px)",
-          WebkitBackdropFilter:
-            "blur(3px)",
-          padding: 0,
-          margin: 0,
+          background: `rgba(0,0,0,${0.32 * backdropOpacity})`,
+          backdropFilter: "blur(3px)",
+          WebkitBackdropFilter: "blur(3px)",
         }}
       />
 
-      {/* ==================================================
-          SHEET
-          ================================================== */}
-
       <aside
-        ref={sheetRef}
         style={{
           position: "absolute",
           top: 0,
@@ -408,91 +218,40 @@ export default function WolfSheet({
           width: "100%",
           maxWidth,
           height: "100dvh",
-
           display: "flex",
           flexDirection: "column",
-
-          background:
-            "#0D0D0F",
-
-          color: "#FFFFFF",
-
-          boxShadow:
-            "-18px 0 60px rgba(0,0,0,.28)",
-
-          transform:
-            `translate3d(0, ${dragY}px, 0)`,
-
-          transition:
-            isDragging
-              ? "none"
-              : "transform 260ms cubic-bezier(.22,1,.36,1)",
-
-          willChange:
-            "transform",
-
-          overflow:
-            "hidden",
-
-          /*
-           * El contenido interno controla su propio scroll.
-           * El gesto de cerrar se inicia en el handle/header.
-           */
-          touchAction:
-            "pan-y",
-
-          paddingTop:
-            "env(safe-area-inset-top)",
-
-          paddingBottom:
-            "env(safe-area-inset-bottom)",
+          background: light ? "#FFFFFF" : "#0D0D0F",
+          color: light ? "#18181B" : "#FFFFFF",
+          boxShadow: light
+            ? "-18px 0 60px rgba(0,0,0,.16)"
+            : "-18px 0 60px rgba(0,0,0,.28)",
+          transform: `translate3d(0, ${dragY}px, 0)`,
+          transition: isDragging
+            ? "none"
+            : "transform 260ms cubic-bezier(.22,1,.36,1)",
+          willChange: "transform",
+          overflow: "hidden",
+          touchAction: "pan-y",
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
         }}
       >
-        {/* ==================================================
-            DRAG HANDLE + HEADER
-            ================================================== */}
-
         <div
-          onPointerDown={
-            handlePointerDown
-          }
-          onPointerMove={
-            handlePointerMove
-          }
-          onPointerUp={
-            handlePointerUp
-          }
-          onPointerCancel={
-            handlePointerCancel
-          }
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerCancel}
           style={{
             flexShrink: 0,
-
-            /*
-             * IMPORTANTE:
-             * aquí sí permitimos el gesto personalizado.
-             * El contenido no se pelea con él.
-             */
-            touchAction:
-              "none",
-
-            cursor:
-              "grab",
-
-            userSelect:
-              "none",
-
-            WebkitUserSelect:
-              "none",
+            touchAction: "none",
+            userSelect: "none",
+            WebkitUserSelect: "none",
           }}
         >
-          {/* Handle móvil */}
-
           <div
             aria-hidden="true"
             style={{
               height: 28,
-
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -503,40 +262,53 @@ export default function WolfSheet({
                 width: 42,
                 height: 4,
                 borderRadius: 999,
-                background:
-                  "rgba(255,255,255,.22)",
+                background: light
+                  ? "rgba(24,24,27,.18)"
+                  : "rgba(255,255,255,.22)",
               }}
             />
           </div>
 
-          {/* Header */}
-
           <div
             style={{
               minHeight: 64,
-
-              padding:
-                "0 18px",
-
+              padding: "0 18px",
               display: "flex",
               alignItems: "center",
-              justifyContent:
-                "space-between",
-
-              borderBottom:
-                "1px solid rgba(255,255,255,.07)",
+              justifyContent: "space-between",
+              gap: 14,
+              borderBottom: light
+                ? "1px solid rgba(24,24,27,.07)"
+                : "1px solid rgba(255,255,255,.07)",
             }}
           >
-            <div
-              style={{
-                minWidth: 0,
-                fontSize: 18,
-                fontWeight: 700,
-                letterSpacing:
-                  "-.02em",
-              }}
-            >
-              {title}
+            <div style={{ minWidth: 0 }}>
+              {title && (
+                <div
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 700,
+                    letterSpacing: "-.02em",
+                    color: light ? "#18181B" : "#FFFFFF",
+                  }}
+                >
+                  {title}
+                </div>
+              )}
+
+              {subtitle && (
+                <div
+                  style={{
+                    marginTop: 2,
+                    fontSize: 11,
+                    color: light
+                      ? "#A1A1AA"
+                      : "rgba(255,255,255,.42)",
+                  }}
+                >
+                  {subtitle}
+                </div>
+              )}
             </div>
 
             {showCloseButton && (
@@ -547,32 +319,24 @@ export default function WolfSheet({
                 style={{
                   width: 44,
                   height: 44,
-
                   flexShrink: 0,
-
                   display: "inline-flex",
                   alignItems: "center",
-                  justifyContent:
-                    "center",
-
-                  border: 0,
-                  borderRadius:
-                    "50%",
-
-                  background:
-                    "rgba(255,255,255,.07)",
-
-                  color:
-                    "#FFFFFF",
-
+                  justifyContent: "center",
+                  border: light
+                    ? "1px solid rgba(24,24,27,.08)"
+                    : "1px solid rgba(255,255,255,.08)",
+                  borderRadius: "50%",
+                  background: light
+                    ? "#F4F4F5"
+                    : "rgba(255,255,255,.07)",
+                  color: light
+                    ? "#52525B"
+                    : "#FFFFFF",
                   fontSize: 25,
                   lineHeight: 1,
-
-                  cursor:
-                    "pointer",
-
-                  WebkitTapHighlightColor:
-                    "transparent",
+                  cursor: "pointer",
+                  WebkitTapHighlightColor: "transparent",
                 }}
               >
                 ×
@@ -581,29 +345,16 @@ export default function WolfSheet({
           </div>
         </div>
 
-        {/* ==================================================
-            CONTENT
-            ================================================== */}
-
         <div
           style={{
             flex: 1,
             minHeight: 0,
-
             overflowY: "auto",
             overflowX: "hidden",
-
-            WebkitOverflowScrolling:
-              "touch",
-
-            overscrollBehaviorY:
-              "contain",
-
-            touchAction:
-              "pan-y",
-
-            paddingBottom:
-              "env(safe-area-inset-bottom)",
+            WebkitOverflowScrolling: "touch",
+            overscrollBehaviorY: "contain",
+            touchAction: "pan-y",
+            paddingBottom: "env(safe-area-inset-bottom)",
           }}
         >
           {children}
