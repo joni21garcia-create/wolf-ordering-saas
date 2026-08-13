@@ -122,7 +122,7 @@ export async function isFavorite(
     data,
     error,
   } = await supabase
-    .from("favorites")
+    .from("restaurant_favorites")
     .select("id")
     .eq("auth_user_id", userId)
     .eq("restaurant_id", restaurantId)
@@ -156,7 +156,7 @@ export async function addFavorite(
     data: existing,
     error: existingError,
   } = await supabase
-    .from("favorites")
+    .from("restaurant_favorites")
     .select("id")
     .eq("auth_user_id", userId)
     .eq("restaurant_id", restaurantId)
@@ -178,7 +178,7 @@ export async function addFavorite(
   const {
     error,
   } = await supabase
-    .from("favorites")
+    .from("restaurant_favorites")
     .insert({
       auth_user_id: userId,
       restaurant_id: restaurantId,
@@ -211,7 +211,7 @@ export async function removeFavorite(
   const {
     error,
   } = await supabase
-    .from("favorites")
+    .from("restaurant_favorites")
     .delete()
     .eq("auth_user_id", userId)
     .eq("restaurant_id", restaurantId);
