@@ -311,6 +311,7 @@ export default function ColumnBoard({
           WebkitOverflowScrolling: "touch",
           overscrollBehaviorY: "contain",
           overscrollBehaviorX: "none",
+          scrollBehavior: "auto",
           touchAction: "pan-y",
           padding: 20,
           display: "flex",
@@ -444,7 +445,7 @@ export default function ColumnBoard({
                 ease: "easeOut",
               }}
               style={{
-                touchAction: "pan-y",
+                touchAction: "auto",
               }}
 
             >

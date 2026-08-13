@@ -126,7 +126,8 @@ export default function OrdersBoard({
     WebkitOverflowScrolling: "touch",
     overscrollBehaviorX: "contain",
     overscrollBehaviorY: "none",
-    touchAction: "pan-x",
+    scrollBehavior: "auto",
+    touchAction: "auto",
   }}
 >
   <WolfFlex
