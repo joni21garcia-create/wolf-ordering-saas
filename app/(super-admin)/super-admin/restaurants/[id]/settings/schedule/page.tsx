@@ -83,162 +83,373 @@ export default function SchedulePage() {
 
   return (
     <PermissionGuard permission="schedule">
-      <main style={{ minHeight: "100vh", padding: "clamp(16px, 4vw, 50px)", background: "#060606", color: "#fff", fontFamily: "system-ui, sans-serif", boxSizing: "border-box" }}>
-        <div style={{ maxWidth: "750px", margin: "0 auto" }}>
-          
-          <header style={{ marginBottom: "30px" }}>
+      <main className="schedule-page">
+        <div className="schedule-wrap">
+          <header className="schedule-header">
             <BackToSettings restaurantId={restaurantId} />
-            <h1 style={{ fontSize: "clamp(26px, 5vw, 42px)", fontWeight: "900", margin: "16px 0 8px", letterSpacing: "-1px" }}>
-              Horarios de Atención
-            </h1>
-            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "14px", margin: 0 }}>
-              Define los bloques de apertura y cierre para los pedidos digitales de tu local.
-            </p>
+            <div className="eyebrow">Configuración · Operación</div>
+            <div className="title-line">
+              <div>
+                <h1>Horarios</h1>
+                <p>Define cuándo tu restaurante recibe pedidos.</p>
+              </div>
+              <span className="day-count">{days.length} días</span>
+            </div>
           </header>
 
           {loading ? (
-            <div style={{ padding: "60px 0", textAlign: "center" }}>
-              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "15px", letterSpacing: "0.5px" }}>Cargando configuración de la plataforma...</p>
-            </div>
+            <div className="loading-state">Cargando horarios...</div>
           ) : (
-            <section style={{ 
-              background: "rgba(15, 15, 15, 0.6)", 
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              border: "1px solid rgba(255,255,255,0.06)", 
-              borderRadius: "24px", 
-              padding: "clamp(12px, 3vw, 28px)",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.3)"
-            }}>
-              
-              {/* Encabezado de Columnas (Solo visible en pantallas medianas hacia arriba) */}
-              <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1fr 1fr 1fr", gap: "12px", marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid rgba(255,255,255,0.06)", opacity: 0.4, fontSize: "11px", fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase" }} className="desktop-header">
-                <span>Día</span>
-                <span>Apertura</span>
-                <span>Cierre</span>
-                <span style={{ textAlign: "right" }}>Estado</span>
-              </div>
+            <>
+              <section className="schedule-list">
+                {days.map((day, index) => {
+                  const key = dayKeys[index];
+                  const openVal =
+                    schedule[`${key}_open` as keyof typeof schedule];
+                  const closeVal =
+                    schedule[`${key}_close` as keyof typeof schedule];
+                  const isClosed = !openVal && !closeVal;
 
-              {days.map((day, index) => {
-                const key = dayKeys[index];
-                const openVal = schedule[`${key}_open` as keyof typeof schedule];
-                const closeVal = schedule[`${key}_close` as keyof typeof schedule];
-                const isClosed = !openVal && !closeVal;
+                  return (
+                    <article
+                      key={day}
+                      className={`day-row ${isClosed ? "closed" : "open"}`}
+                    >
+                      <div className="day-main">
+                        <div className="day-dot" />
+                        <div>
+                          <strong>{day}</strong>
+                          <small>
+                            {isClosed
+                              ? "Cerrado"
+                              : `${openVal} — ${closeVal}`}
+                          </small>
+                        </div>
+                      </div>
 
-                return (
-                  <div 
-                    key={day} 
-                    className="schedule-row"
-                    style={{ 
-                      display: "grid", 
-                      gridTemplateColumns: "1.1fr 1fr 1fr 1fr", 
-                      gap: "12px", 
-                      alignItems: "center", 
-                      padding: "14px 0", 
-                      borderBottom: index !== days.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
-                    }}
-                  >
-                    <strong style={{ fontSize: "14px", fontWeight: "600", color: isClosed ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.95)" }}>
-                      {day}
-                    </strong>
-                    
-                    {/* Apertura */}
-                    <div style={{ position: "relative", opacity: isClosed ? 0.2 : 1, transition: "opacity 0.2s" }}>
-                      <input 
-                        type="time" 
-                        disabled={isClosed}
-                        value={openVal} 
-                        onChange={(e) => setSchedule({...schedule, [`${key}_open`]: e.target.value})} 
-                        style={inputStyle} 
-                      />
-                    </div>
+                      <div className="day-controls">
+                        <div className="time-fields">
+                          <label>
+                            <span>Abre</span>
+                            <input
+                              type="time"
+                              disabled={isClosed}
+                              value={openVal}
+                              onChange={(e) =>
+                                setSchedule({
+                                  ...schedule,
+                                  [`${key}_open`]: e.target.value,
+                                })
+                              }
+                            />
+                          </label>
 
-                    {/* Cierre */}
-                    <div style={{ position: "relative", opacity: isClosed ? 0.2 : 1, transition: "opacity 0.2s" }}>
-                      <input 
-                        type="time" 
-                        disabled={isClosed}
-                        value={closeVal} 
-                        onChange={(e) => setSchedule({...schedule, [`${key}_close`]: e.target.value})} 
-                        style={inputStyle} 
-                      />
-                    </div>
+                          <label>
+                            <span>Cierra</span>
+                            <input
+                              type="time"
+                              disabled={isClosed}
+                              value={closeVal}
+                              onChange={(e) =>
+                                setSchedule({
+                                  ...schedule,
+                                  [`${key}_close`]: e.target.value,
+                                })
+                              }
+                            />
+                          </label>
+                        </div>
 
-                    {/* Botón de Cerrado / Abierto */}
-                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                      <button
-                        type="button"
-                        onClick={() => toggleDayClosed(key, isClosed)}
-                        style={{
-                          background: isClosed ? "rgba(239, 68, 68, 0.15)" : "rgba(255,255,255,0.05)",
-                          border: isClosed ? "1px solid rgba(239, 68, 68, 0.3)" : "1px solid rgba(255,255,255,0.08)",
-                          color: isClosed ? "#f87171" : "rgba(255,255,255,0.6)",
-                          padding: "8px 12px",
-                          borderRadius: "10px",
-                          fontSize: "11px",
-                          fontWeight: "700",
-                          cursor: "pointer",
-                          transition: "all 0.2s ease",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "4px",
-                          whiteSpace: "nowrap"
-                        }}
-                      >
-                        {isClosed ? "🔒 Cerrado" : "🔓 Abierto"}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </section>
+                        <button
+                          type="button"
+                          className={`day-switch ${isClosed ? "" : "active"}`}
+                          onClick={() => toggleDayClosed(key, isClosed)}
+                          aria-label={
+                            isClosed
+                              ? `Abrir ${day}`
+                              : `Cerrar ${day}`
+                          }
+                        >
+                          <span />
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </section>
+
+              <button
+                onClick={saveSchedule}
+                disabled={saving || loading}
+                className="save-button"
+              >
+                {saving ? "Guardando..." : "Guardar horarios"}
+              </button>
+            </>
           )}
-
-          <button 
-            onClick={saveSchedule} 
-            disabled={saving || loading} 
-            style={{
-              ...saveBtn,
-              background: saving ? "rgba(255,255,255,0.1)" : "#f97316",
-              color: saving ? "rgba(255,255,255,0.4)" : "#fff",
-              boxShadow: saving ? "none" : "0 10px 25px rgba(249, 115, 22, 0.25)"
-            }}
-          >
-            {saving ? "Actualizando base de datos..." : "Guardar Horarios de Operación"}
-          </button>
         </div>
 
-        {/* Estilos CSS responsivos para asegurar que en móviles se adapte sin desbordarse */}
         <style jsx global>{`
-          @media (max-width: 768px) {
-            .desktop-header {
-              display: none !important;
+          .schedule-page {
+            min-height:100vh;
+            width:100%;
+            box-sizing:border-box;
+            padding:16px 12px 36px;
+            background:#050505;
+            color:#fff;
+            font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+          }
+
+          .schedule-wrap {
+            width:100%;
+            max-width:650px;
+            margin:0 auto;
+          }
+
+          .schedule-header {
+            margin-bottom:11px;
+          }
+
+          .eyebrow {
+            margin-top:8px;
+            color:#f97316;
+            font-size:8px;
+            font-weight:800;
+            letter-spacing:1px;
+            text-transform:uppercase;
+          }
+
+          .title-line {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+            margin-top:3px;
+          }
+
+          .title-line h1 {
+            margin:0;
+            font-size:23px;
+            line-height:1.1;
+            letter-spacing:-.5px;
+            font-weight:850;
+          }
+
+          .title-line p {
+            margin:4px 0 0;
+            color:rgba(255,255,255,.35);
+            font-size:9px;
+            line-height:1.4;
+          }
+
+          .day-count {
+            flex-shrink:0;
+            padding:5px 7px;
+            border:1px solid rgba(255,255,255,.06);
+            border-radius:999px;
+            color:rgba(255,255,255,.35);
+            background:rgba(255,255,255,.025);
+            font-size:7px;
+            font-weight:800;
+          }
+
+          .loading-state {
+            padding:30px 10px;
+            text-align:center;
+            color:rgba(255,255,255,.3);
+            font-size:9px;
+          }
+
+          .schedule-list {
+            display:flex;
+            flex-direction:column;
+            gap:5px;
+          }
+
+          .day-row {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:9px;
+            min-width:0;
+            padding:8px 9px;
+            border:1px solid rgba(255,255,255,.055);
+            border-radius:9px;
+            background:rgba(17,24,39,.58);
+          }
+
+          .day-row.closed {
+            background:rgba(17,17,17,.48);
+          }
+
+          .day-main {
+            display:flex;
+            align-items:center;
+            gap:7px;
+            min-width:82px;
+          }
+
+          .day-dot {
+            width:5px;
+            height:5px;
+            border-radius:50%;
+            flex-shrink:0;
+            background:#22c55e;
+            box-shadow:0 0 7px rgba(34,197,94,.25);
+          }
+
+          .closed .day-dot {
+            background:#555;
+            box-shadow:none;
+          }
+
+          .day-main strong {
+            display:block;
+            font-size:9px;
+            font-weight:800;
+            white-space:nowrap;
+          }
+
+          .day-main small {
+            display:block;
+            margin-top:2px;
+            color:rgba(255,255,255,.25);
+            font-size:7px;
+            white-space:nowrap;
+          }
+
+          .day-controls {
+            display:flex;
+            align-items:center;
+            justify-content:flex-end;
+            gap:6px;
+            min-width:0;
+            flex:1;
+          }
+
+          .time-fields {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:4px;
+            min-width:0;
+            width:min(210px,100%);
+          }
+
+          .time-fields label {
+            min-width:0;
+          }
+
+          .time-fields label span {
+            display:block;
+            margin:0 0 2px 2px;
+            color:rgba(255,255,255,.22);
+            font-size:6px;
+            font-weight:700;
+            text-transform:uppercase;
+          }
+
+          .time-fields input {
+            width:100%;
+            min-width:0;
+            height:29px;
+            box-sizing:border-box;
+            padding:4px 5px;
+            border:1px solid rgba(255,255,255,.06);
+            border-radius:6px;
+            background:#0b0f16;
+            color:#fff;
+            outline:none;
+            font:700 8px system-ui,sans-serif;
+            color-scheme:dark;
+          }
+
+          .time-fields input:focus {
+            border-color:rgba(249,115,22,.4);
+            box-shadow:0 0 0 2px rgba(249,115,22,.06);
+          }
+
+          .time-fields input:disabled {
+            opacity:.22;
+          }
+
+          .day-switch {
+            position:relative;
+            width:31px;
+            height:18px;
+            padding:0;
+            border:0;
+            border-radius:999px;
+            background:#30343a;
+            flex-shrink:0;
+            cursor:pointer;
+            transition:.18s;
+          }
+
+          .day-switch span {
+            position:absolute;
+            width:14px;
+            height:14px;
+            top:2px;
+            left:2px;
+            border-radius:50%;
+            background:#fff;
+            transition:.18s;
+            box-shadow:0 1px 3px rgba(0,0,0,.35);
+          }
+
+          .day-switch.active {
+            background:#22c55e;
+          }
+
+          .day-switch.active span {
+            transform:translateX(13px);
+          }
+
+          .save-button {
+            width:100%;
+            min-height:38px;
+            margin-top:7px;
+            border:0;
+            border-radius:8px;
+            background:#f97316;
+            color:#fff;
+            font:800 9px system-ui,sans-serif;
+            cursor:pointer;
+          }
+
+          .save-button:disabled {
+            opacity:.5;
+            cursor:not-allowed;
+          }
+
+          @media (max-width:480px) {
+            .schedule-page {
+              padding-left:9px;
+              padding-right:9px;
             }
-            .schedule-row {
-              grid-template-columns: 1fr 1fr !important;
-              gap: 10px !important;
-              padding: 16px 0 !important;
-              background: rgba(255, 255, 255, 0.015);
-              border-radius: 12px;
-              margin-bottom: 8px;
-              padding: 12px !important;
-              border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+
+            .day-row {
+              align-items:flex-start;
+              padding:9px;
             }
-            .schedule-row > strong {
-              grid-column: span 2;
-              font-size: 15px !important;
-              border-bottom: 1px solid rgba(255,255,255,0.04);
-              padding-bottom: 6px;
-              margin-bottom: 2px;
+
+            .day-main {
+              min-width:72px;
+              padding-top:8px;
             }
-            .schedule-row > div:last-child {
-              grid-column: span 2;
-              justify-content: flex-start !important;
+
+            .day-controls {
+              flex-direction:column;
+              align-items:stretch;
+              gap:5px;
             }
-            .schedule-row button {
-              width: 100%;
-              justify-content: center;
-              padding: 10px !important;
+
+            .time-fields {
+              width:100%;
+            }
+
+            .day-switch {
+              align-self:flex-end;
             }
           }
         `}</style>
@@ -246,31 +457,3 @@ export default function SchedulePage() {
     </PermissionGuard>
   );
 }
-
-const inputStyle = { 
-  background: "#0b0b0b", 
-  color: "#fff", 
-  border: "1px solid rgba(255,255,255,0.08)", 
-  borderRadius: "12px", 
-  padding: "10px 12px", 
-  width: "100%", 
-  fontSize: "13px",
-  fontWeight: "500",
-  outline: "none",
-  transition: "all 0.2s ease",
-  boxSizing: "border-box" as const,
-  colorScheme: "dark"
-};
-
-const saveBtn = { 
-  width: "100%", 
-  marginTop: "24px", 
-  border: "none", 
-  padding: "16px", 
-  borderRadius: "16px", 
-  fontWeight: "700" as const, 
-  fontSize: "15px", 
-  cursor: "pointer",
-  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-  letterSpacing: "0.3px"
-};

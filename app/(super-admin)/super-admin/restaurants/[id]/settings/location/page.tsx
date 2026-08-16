@@ -41,177 +41,408 @@ export default function LocationPage() {
 
   if (loading || !location) {
     return (
-      <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#060606", color: "rgba(255,255,255,0.4)" }}>
-        Cargando interfaz de geolocalización...
-      </main>
+      <PermissionGuard permission="location">
+        <main className="location-page">
+          <div className="location-wrap">
+            <div className="loading-state">Cargando ubicación...</div>
+          </div>
+        </main>
+      </PermissionGuard>
     );
   }
 
-  const mapsUrl = location.google_maps_url?.trim() || `https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`;
+  const mapsUrl =
+    location.google_maps_url ||
+    (location.latitude && location.longitude
+      ? `https://www.google.com/maps?q=${location.latitude},${location.longitude}`
+      : "https://www.google.com/maps");
 
   return (
     <PermissionGuard permission="location">
-      <main style={{ minHeight: "100vh", background: "#060606", color: "#fff", padding: "clamp(24px, 5vw, 50px)", fontFamily: "system-ui, sans-serif" }}>
-        <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-          
-          {/* HEADER */}
-          <header style={{ marginBottom: "40px" }}>
+      <main className="location-page">
+        <div className="location-wrap">
+          <header className="location-header">
             <BackToSettings restaurantId={restaurantId} />
-            <h1 style={{ fontSize: "clamp(32px, 6vw, 46px)", fontWeight: "900", margin: "16px 0 8px", letterSpacing: "-1px" }}>
-              Ubicación del Local
-            </h1>
-            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "15px", maxWidth: "600px", margin: 0 }}>
-              Configura las coordenadas y enlaces de mapas para que tus clientes y repartidores lleguen sin problemas.
-            </p>
+            <div className="eyebrow">Configuración · Local</div>
+            <div className="title-line">
+              <div>
+                <h1>Ubicación</h1>
+                <p>Configura dónde está tu restaurante.</p>
+              </div>
+              <span className="pin-badge">⌖</span>
+            </div>
           </header>
 
-          {/* CONTENIDO PRINCIPAL: DOS COLUMNAS ASIMÉTRICAS EN ESCRITORIO */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 450px), 1fr))", gap: "30px", alignItems: "start" }}>
-            
-            {/* FORMULARIO */}
-            <section style={sectionStyle}>
-              <h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "24px", color: "rgba(255,255,255,0.95)", display: "flex", alignItems: "center", gap: "10px" }}>
-                <span>📍</span> Datos Geográficos
-              </h2>
-              
-              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                <TextCard label="Dirección Comercial" value={location.address} onChange={(v: string) => setLocation({...location, address: v})} />
-                
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-                  <TextCard label="Latitud" value={location.latitude} onChange={(v: string) => setLocation({...location, latitude: v})} />
-                  <TextCard label="Longitud" value={location.longitude} onChange={(v: string) => setLocation({...location, longitude: v})} />
-                </div>
-
-                <TextCard label="URL de Google Maps (Opcional)" value={location.google_maps_url} onChange={(v: string) => setLocation({...location, google_maps_url: v})} />
+          <section className="location-section">
+            <div className="section-title">
+              <span>📍</span>
+              <div>
+                <strong>Datos de ubicación</strong>
+                <small>Información que usarán clientes y repartidores.</small>
               </div>
-            </section>
+            </div>
 
-            {/* VISTA PREVIA DEL MAPA */}
-            <section style={sectionStyle}>
-              <h2 style={{ fontSize: "18px", fontWeight: "700", marginBottom: "20px", color: "rgba(255,255,255,0.95)", display: "flex", alignItems: "center", gap: "10px" }}>
-                <span>🗺️</span> Vista Previa Satelital
-              </h2>
-              
-              {location.latitude && location.longitude ? (
-                <div style={{ borderRadius: "20px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 10px 30px rgba(0,0,0,0.5)", background: "#111" }}>
-                  <iframe 
-                    src={`https://maps.google.com/maps?q=${location.latitude},${location.longitude}&z=15&output=embed`} 
-                    width="100%" height="280" style={{ border: "none", filter: "invert(90%) hue-rotate(180deg) grayscale(10%)", opacity: 0.85 }} loading="lazy" 
-                  />
-                </div>
-              ) : (
-                <div style={{ padding: "60px 20px", textAlign: "center", color: "rgba(255,255,255,0.3)", border: "1px dashed rgba(255,255,255,0.1)", borderRadius: "20px", fontSize: "14px" }}>
-                  Ingresa coordenadas válidas para generar el mapa.
-                </div>
-              )}
-              
-              <div style={{ display: "flex", gap: "12px", marginTop: "24px", flexWrap: "wrap" }}>
-                <a href={mapsUrl} target="_blank" style={btnPrimary}>
-                  Abrir en Google Maps
-                </a>
-                <button onClick={() => { navigator.clipboard.writeText(`${location.latitude}, ${location.longitude}`); alert("Copiado"); }} style={btnSecondary}>
-                  Copiar Coordenadas
-                </button>
+            <div className="fields">
+              <TextCard
+                label="Dirección"
+                value={location.address}
+                onChange={(v: string) =>
+                  setLocation({ ...location, address: v })
+                }
+              />
+
+              <div className="coordinates">
+                <TextCard
+                  label="Latitud"
+                  value={location.latitude}
+                  onChange={(v: string) =>
+                    setLocation({ ...location, latitude: v })
+                  }
+                />
+
+                <TextCard
+                  label="Longitud"
+                  value={location.longitude}
+                  onChange={(v: string) =>
+                    setLocation({ ...location, longitude: v })
+                  }
+                />
               </div>
-            </section>
 
-          </div>
+              <TextCard
+                label="Google Maps · opcional"
+                value={location.google_maps_url}
+                onChange={(v: string) =>
+                  setLocation({ ...location, google_maps_url: v })
+                }
+              />
+            </div>
+          </section>
 
-          {/* BOTÓN DE ACCIÓN GLOBAL */}
-          <button 
-            onClick={saveLocation} 
-            disabled={saving} 
-            style={{
-              ...saveBtn,
-              background: saving ? "rgba(255,255,255,0.1)" : "#f97316",
-              color: saving ? "rgba(255,255,255,0.3)" : "#fff",
-              boxShadow: saving ? "none" : "0 10px 25px rgba(249, 115, 22, 0.25)"
-            }}
+          <section className="map-section">
+            <div className="section-title">
+              <span>⌖</span>
+              <div>
+                <strong>Mapa</strong>
+                <small>Vista previa de la ubicación.</small>
+              </div>
+            </div>
+
+            {location.latitude && location.longitude ? (
+              <div className="map-container">
+                <iframe
+                  src={`https://maps.google.com/maps?q=${location.latitude},${location.longitude}&z=15&output=embed`}
+                  width="100%"
+                  height="220"
+                  style={{
+                    border: "none",
+                    filter: "invert(90%) hue-rotate(180deg) grayscale(10%)",
+                    opacity: 0.88,
+                  }}
+                  loading="lazy"
+                />
+              </div>
+            ) : (
+              <div className="map-empty">
+                <span>⌖</span>
+                <strong>Sin ubicación</strong>
+                <small>Ingresa latitud y longitud para mostrar el mapa.</small>
+              </div>
+            )}
+
+            <div className="map-actions">
+              <a href={mapsUrl} target="_blank" rel="noreferrer">
+                Abrir Maps
+              </a>
+
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `${location.latitude}, ${location.longitude}`
+                  );
+                  alert("Copiado");
+                }}
+              >
+                Copiar coordenadas
+              </button>
+            </div>
+          </section>
+
+          <button
+            onClick={saveLocation}
+            disabled={saving}
+            className="save-button"
           >
-            {saving ? "Guardando cambios en servidor..." : "Guardar Configuración Geográfica"}
+            {saving ? "Guardando..." : "Guardar ubicación"}
           </button>
-
         </div>
+
+        <style jsx global>{`
+          .location-page {
+            min-height:100vh;
+            width:100%;
+            box-sizing:border-box;
+            padding:16px 12px 36px;
+            background:#050505;
+            color:#fff;
+            font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+          }
+
+          .location-wrap {
+            width:100%;
+            max-width:650px;
+            margin:0 auto;
+          }
+
+          .loading-state {
+            padding:32px 12px;
+            text-align:center;
+            color:rgba(255,255,255,.3);
+            font-size:9px;
+          }
+
+          .location-header {
+            margin-bottom:11px;
+          }
+
+          .eyebrow {
+            margin-top:8px;
+            color:#f97316;
+            font-size:8px;
+            font-weight:800;
+            letter-spacing:1px;
+            text-transform:uppercase;
+          }
+
+          .title-line {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+            margin-top:3px;
+          }
+
+          .title-line h1 {
+            margin:0;
+            font-size:23px;
+            line-height:1.1;
+            letter-spacing:-.5px;
+            font-weight:850;
+          }
+
+          .title-line p {
+            margin:4px 0 0;
+            color:rgba(255,255,255,.35);
+            font-size:9px;
+          }
+
+          .pin-badge {
+            width:29px;
+            height:29px;
+            display:grid;
+            place-items:center;
+            flex-shrink:0;
+            border:1px solid rgba(249,115,22,.2);
+            border-radius:8px;
+            background:rgba(249,115,22,.07);
+            color:#f97316;
+            font-size:16px;
+          }
+
+          .location-section,
+          .map-section {
+            padding:11px;
+            margin-bottom:6px;
+            border:1px solid rgba(255,255,255,.055);
+            border-radius:10px;
+            background:rgba(17,24,39,.58);
+          }
+
+          .section-title {
+            display:flex;
+            align-items:center;
+            gap:7px;
+            margin-bottom:10px;
+          }
+
+          .section-title > span {
+            width:27px;
+            height:27px;
+            display:grid;
+            place-items:center;
+            flex-shrink:0;
+            border-radius:7px;
+            background:rgba(249,115,22,.07);
+            color:#f97316;
+            font-size:12px;
+          }
+
+          .section-title strong {
+            display:block;
+            font-size:9px;
+            font-weight:800;
+          }
+
+          .section-title small {
+            display:block;
+            margin-top:2px;
+            color:rgba(255,255,255,.22);
+            font-size:7px;
+          }
+
+          .fields {
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+          }
+
+          .coordinates {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:6px;
+          }
+
+          .field-label {
+            display:block;
+            margin-bottom:4px;
+            color:rgba(255,255,255,.38);
+            font-size:7px;
+            font-weight:700;
+          }
+
+          .field-input {
+            width:100%;
+            height:34px;
+            box-sizing:border-box;
+            padding:7px 8px;
+            border:1px solid rgba(255,255,255,.06);
+            border-radius:7px;
+            background:#0b0f16;
+            color:#fff;
+            outline:none;
+            font:500 9px system-ui,sans-serif;
+          }
+
+          .field-input:focus {
+            border-color:rgba(249,115,22,.4);
+            box-shadow:0 0 0 3px rgba(249,115,22,.05);
+          }
+
+          .map-container {
+            overflow:hidden;
+            height:220px;
+            border:1px solid rgba(255,255,255,.06);
+            border-radius:8px;
+            background:#0b0b0b;
+          }
+
+          .map-empty {
+            min-height:130px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            border:1px dashed rgba(255,255,255,.07);
+            border-radius:8px;
+            color:rgba(255,255,255,.28);
+            text-align:center;
+          }
+
+          .map-empty span {
+            margin-bottom:5px;
+            color:#f97316;
+            font-size:20px;
+          }
+
+          .map-empty strong {
+            color:rgba(255,255,255,.52);
+            font-size:9px;
+          }
+
+          .map-empty small {
+            margin-top:3px;
+            font-size:7px;
+          }
+
+          .map-actions {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:5px;
+            margin-top:6px;
+          }
+
+          .map-actions a,
+          .map-actions button {
+            min-height:31px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            box-sizing:border-box;
+            padding:5px 7px;
+            border-radius:7px;
+            text-decoration:none;
+            font:800 8px system-ui,sans-serif;
+            cursor:pointer;
+          }
+
+          .map-actions a {
+            border:1px solid rgba(249,115,22,.16);
+            background:rgba(249,115,22,.07);
+            color:#f97316;
+          }
+
+          .map-actions button {
+            border:1px solid rgba(255,255,255,.06);
+            background:rgba(255,255,255,.025);
+            color:rgba(255,255,255,.48);
+          }
+
+          .save-button {
+            width:100%;
+            min-height:38px;
+            margin-top:1px;
+            border:0;
+            border-radius:8px;
+            background:#f97316;
+            color:#fff;
+            font:800 9px system-ui,sans-serif;
+            cursor:pointer;
+          }
+
+          .save-button:disabled {
+            opacity:.5;
+            cursor:not-allowed;
+          }
+
+          @media(max-width:390px) {
+            .location-page {
+              padding-left:9px;
+              padding-right:9px;
+            }
+
+            .coordinates {
+              grid-template-columns:1fr;
+            }
+
+            .map-actions {
+              grid-template-columns:1fr;
+            }
+          }
+        `}</style>
       </main>
     </PermissionGuard>
   );
 }
 
-// ESTILOS PREMIUM INTEGRADOS
-const sectionStyle = { 
-  background: "rgba(15, 15, 15, 0.6)", 
-  backdropFilter: "blur(20px)",
-  WebkitBackdropFilter: "blur(20px)",
-  border: "1px solid rgba(255,255,255,0.06)", 
-  borderRadius: "28px", 
-  padding: "clamp(20px, 4vw, 32px)",
-  boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
-  boxSizing: "border-box" as const
-};
-
-const saveBtn = { 
-  width: "100%", 
-  marginTop: "35px", 
-  border: "none", 
-  padding: "18px", 
-  borderRadius: "20px", 
-  fontWeight: "700" as const, 
-  fontSize: "16px", 
-  cursor: "pointer",
-  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-  letterSpacing: "0.2px"
-};
-
-const btnPrimary = { 
-  background: "rgba(255, 255, 255, 0.08)", 
-  color: "#fff", 
-  border: "1px solid rgba(255, 255, 255, 0.12)",
-  padding: "14px 22px", 
-  borderRadius: "14px", 
-  textDecoration: "none", 
-  fontWeight: "600" as const, 
-  fontSize: "14px",
-  flex: 1,
-  textAlign: "center" as const,
-  transition: "background 0.2s ease"
-};
-
-const btnSecondary = { 
-  background: "transparent", 
-  border: "1px solid rgba(255,255,255,0.06)", 
-  color: "rgba(255,255,255,0.6)", 
-  padding: "14px 22px", 
-  borderRadius: "14px", 
-  cursor: "pointer", 
-  fontWeight: "600" as const, 
-  fontSize: "14px",
-  flex: 1,
-  transition: "all 0.2s ease"
-};
-
 function TextCard({ label, value, onChange }: any) {
   return (
-    <div style={{ width: "100%" }}>
-      <label style={{ display: "block", marginBottom: "8px", color: "rgba(255,255,255,0.4)", fontSize: "13px", fontWeight: "600", letterSpacing: "0.3px" }}>
-        {label}
-      </label>
-      <input 
-        type="text" 
-        value={value || ""} 
-        onChange={(e) => onChange(e.target.value)} 
-        style={{ 
-          width: "100%", 
-          background: "#0b0b0b", 
-          border: "1px solid rgba(255,255,255,0.08)", 
-          color: "#fff", 
-          padding: "14px 16px", 
-          borderRadius: "14px",
-          fontSize: "14px",
-          fontWeight: "500",
-          outline: "none",
-          boxSizing: "border-box" as const,
-          transition: "border 0.2s ease"
-        }} 
+    <div>
+      <label className="field-label">{label}</label>
+      <input
+        className="field-input"
+        type="text"
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
       />
     </div>
   );

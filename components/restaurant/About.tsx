@@ -179,5 +179,3 @@ const theme =
     </section>
   );
 }
-
-

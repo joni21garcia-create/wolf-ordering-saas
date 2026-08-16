@@ -18,30 +18,8 @@ export default function DeliverySection({
         gap: 28,
       }}
     >
-      <div>
-        <h2
-          style={{
-            color: "#fff",
-            fontSize: 30,
-            fontWeight: 900,
-            marginBottom: 8,
-          }}
-        >
-          Delivery y Pedidos
-        </h2>
-
-        <p
-          style={{
-            color: "#8b8b8b",
-            lineHeight: 1.8,
-          }}
-        >
-          Configuración inicial del servicio
-          de pedidos del restaurante.
-        </p>
-      </div>
-
       <div
+        className="delivery-fields-grid"
         style={{
           display: "grid",
           gridTemplateColumns:
@@ -115,6 +93,7 @@ export default function DeliverySection({
       </div>
 
       <div
+        className="delivery-switches"
         style={{
           display: "flex",
           gap: 30,
@@ -175,6 +154,28 @@ export default function DeliverySection({
           Aceptando pedidos
         </label>
       </div>
+      <style jsx>{`
+        @media (max-width: 640px) {
+          .delivery-fields-grid {
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 16px !important;
+          }
+
+          .delivery-switches {
+            flex-direction: column;
+            gap: 14px !important;
+          }
+
+          .delivery-switches label {
+            min-height: 44px;
+          }
+
+          input[type="number"] {
+            box-sizing: border-box;
+            min-width: 0;
+          }
+        }
+      `}</style>
     </section>
   );
 }
@@ -204,5 +205,3 @@ const switchRow = {
   color: "#fff",
   fontWeight: 600,
 };
-
-

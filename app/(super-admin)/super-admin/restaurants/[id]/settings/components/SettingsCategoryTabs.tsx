@@ -1,9 +1,6 @@
 "use client";
 
-import type {
-  CategoryTab,
-  SettingsModule,
-} from "./types";
+import type { CategoryTab, SettingsModule } from "./types";
 
 interface Props {
   tabs: CategoryTab[];
@@ -19,94 +16,108 @@ export default function SettingsCategoryTabs({
   onChange,
 }: Props) {
   function getTotal(tab: string) {
-    if (tab === "Todos") {
-      return modules.length;
-    }
+    if (tab === "Todos") return modules.length;
 
-    return modules.filter(
-      (module) => module.category === tab
-    ).length;
+    return modules.filter((module) => module.category === tab).length;
   }
 
   return (
-    <section
-      style={{
-        marginBottom: 24,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          gap: 10,
-          overflowX: "auto",
-          paddingBottom: 6,
-          scrollbarWidth: "none", // Ocultar scroll en Firefox
-          msOverflowStyle: "none",  // Ocultar scroll en IE/Edge
-        }}
-        className="no-scrollbar"
-      >
+    <section className="categories" aria-label="Categorías de configuración">
+      <div className="tabs" role="tablist">
         {tabs.map((tab) => {
           const active = value === tab.id;
+          const total = getTotal(tab.id);
 
           return (
             <button
               key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              className={active ? "tab active" : "tab"}
               onClick={() => onChange(tab.id)}
-              style={{
-                flexShrink: 0,
-                cursor: "pointer",
-                borderRadius: 999,
-                padding: "10px 18px",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                fontWeight: 700,
-                fontSize: 13,
-                transition: "all 0.2s ease",
-                background: active
-                  ? "#f97316"
-                  : "rgba(255, 255, 255, 0.03)",
-                color: active ? "#fff" : "#a1a1aa",
-                border: active
-                  ? "1px solid #f97316"
-                  : "1px solid rgba(255, 255, 255, 0.07)",
-                boxShadow: active
-                  ? "0 4px 12px rgba(249, 115, 22, 0.3)"
-                  : "none",
-              }}
-              onMouseEnter={(e) => {
-                if (!active) {
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
-                  e.currentTarget.style.color = "#fff";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!active) {
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)";
-                  e.currentTarget.style.color = "#a1a1aa";
-                }
-              }}
             >
               <span>{tab.label}</span>
-
-              <span
-                style={{
-                  background: active
-                    ? "rgba(255, 255, 255, 0.25)"
-                    : "rgba(255, 255, 255, 0.06)",
-                  color: active ? "#fff" : "#71717a",
-                  borderRadius: 999,
-                  padding: "2px 8px",
-                  fontSize: 11,
-                  fontWeight: 800,
-                }}
-              >
-                {getTotal(tab.id)}
-              </span>
+              <span className="count">{total}</span>
             </button>
           );
         })}
       </div>
+
+      <style jsx>{`
+        .categories {
+          width: 100%;
+          margin: 0;
+          overflow: hidden;
+        }
+
+        .tabs {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          overflow-x: auto;
+          padding: 2px 1px 5px;
+          scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .tabs::-webkit-scrollbar {
+          display: none;
+        }
+
+        .tab {
+          min-height: 31px;
+          flex: 0 0 auto;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 0 9px;
+          border: 1px solid rgba(255, 255, 255, 0.055);
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.018);
+          color: #777;
+          font: inherit;
+          font-size: 9px;
+          font-weight: 700;
+          white-space: nowrap;
+          cursor: pointer;
+          transition:
+            background 0.16s ease,
+            border-color 0.16s ease,
+            color 0.16s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .tab:hover {
+          background: rgba(255, 255, 255, 0.045);
+          color: #bbb;
+        }
+
+        .tab.active {
+          border-color: rgba(255, 145, 75, 0.22);
+          background: rgba(255, 106, 0, 0.09);
+          color: #ff914b;
+        }
+
+        .count {
+          min-width: 15px;
+          height: 15px;
+          display: grid;
+          place-items: center;
+          padding: 0 3px;
+          box-sizing: border-box;
+          border-radius: 5px;
+          background: rgba(255, 255, 255, 0.045);
+          color: #555;
+          font-size: 7px;
+          font-weight: 800;
+        }
+
+        .active .count {
+          background: rgba(255, 145, 75, 0.12);
+          color: #ff914b;
+        }
+      `}</style>
     </section>
   );
 }

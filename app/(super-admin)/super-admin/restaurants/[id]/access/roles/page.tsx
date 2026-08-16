@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import PermissionGuard from "@/components/auth/PermissionGuard";
@@ -15,6 +15,7 @@ type Role = {
 
 export default function RolesPage() {
   const params = useParams();
+  const router = useRouter();
   const restaurantId = params.id as string;
 
   const [roles, setRoles] = useState<Role[]>([]);
@@ -94,32 +95,72 @@ export default function RolesPage() {
     <PermissionGuard permission="roles">
       <main
         style={{
-          maxWidth: "1000px",
+          width: "100%",
+          maxWidth: "760px",
           margin: "0 auto",
-          padding: "24px 20px 60px",
+          padding: "16px 12px 42px",
           color: "#fff",
+          boxSizing: "border-box",
+          fontFamily:
+            "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         }}
       >
-        {/* HEADER */}
         <header
+          className="roles-header"
           style={{
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "flex-end",
-            gap: "20px",
-            marginBottom: "22px",
+            justifyContent: "space-between",
+            gap: "12px",
+            marginBottom: "12px",
             flexWrap: "wrap",
           }}
         >
-          <div>
+          <div style={{ minWidth: 0 }}>
+            <button
+              type="button"
+              onClick={() => router.back()}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                border: "1px solid rgba(255,255,255,.07)",
+                background: "rgba(255,255,255,.035)",
+                color: "rgba(255,255,255,.62)",
+                borderRadius: "999px",
+                padding: "6px 10px 6px 7px",
+                marginBottom: "10px",
+                cursor: "pointer",
+                fontSize: "9px",
+                fontWeight: 750,
+              }}
+            >
+              <span
+                style={{
+                  display: "grid",
+                  placeItems: "center",
+                  width: "18px",
+                  height: "18px",
+                  borderRadius: "50%",
+                  background: "rgba(249,115,22,.12)",
+                  color: "#f97316",
+                  fontSize: "17px",
+                  lineHeight: 1,
+                }}
+              >
+                ‹
+              </span>
+              Volver
+            </button>
+
             <div
               style={{
                 color: "#f97316",
-                fontSize: "11px",
+                fontSize: "8px",
                 fontWeight: 800,
-                letterSpacing: "1.6px",
+                letterSpacing: "1.2px",
                 textTransform: "uppercase",
-                marginBottom: "7px",
+                marginBottom: "3px",
               }}
             >
               Equipo
@@ -128,9 +169,10 @@ export default function RolesPage() {
             <h1
               style={{
                 margin: 0,
-                fontSize: "28px",
-                lineHeight: 1.15,
+                fontSize: "22px",
+                lineHeight: 1.1,
                 fontWeight: 800,
+                letterSpacing: "-0.4px",
               }}
             >
               Roles operativos
@@ -138,9 +180,9 @@ export default function RolesPage() {
 
             <p
               style={{
-                margin: "7px 0 0",
-                color: "rgba(255,255,255,.45)",
-                fontSize: "13px",
+                margin: "4px 0 0",
+                color: "rgba(255,255,255,.38)",
+                fontSize: "10px",
               }}
             >
               Roles utilizados por el equipo del restaurante.
@@ -152,42 +194,43 @@ export default function RolesPage() {
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: "7px",
+              gap: "5px",
+              flexShrink: 0,
               background: "#f97316",
               color: "#fff",
-              padding: "10px 14px",
-              borderRadius: "10px",
+              padding: "8px 10px",
+              borderRadius: "8px",
               textDecoration: "none",
-              fontSize: "13px",
-              fontWeight: 750,
-              whiteSpace: "nowrap",
+              fontSize: "10px",
+              fontWeight: 800,
             }}
           >
-            <span style={{ fontSize: "16px" }}>+</span>
+            <span style={{ fontSize: "14px", lineHeight: 1 }}>+</span>
             Nuevo rol
           </Link>
         </header>
 
-        {/* TABS */}
-        <div
+        <nav
+          aria-label="Acceso"
           style={{
             display: "flex",
-            gap: "7px",
-            borderBottom: "1px solid rgba(255,255,255,.07)",
-            paddingBottom: "11px",
-            marginBottom: "16px",
+            gap: "5px",
+            overflowX: "auto",
+            marginBottom: "9px",
+            paddingBottom: "1px",
           }}
         >
           <Link
             href={`/super-admin/restaurants/${restaurantId}/access/users`}
             style={{
+              flexShrink: 0,
               textDecoration: "none",
-              color: "rgba(255,255,255,.52)",
-              background: "rgba(255,255,255,.035)",
-              border: "1px solid rgba(255,255,255,.06)",
-              borderRadius: "9px",
-              padding: "8px 13px",
-              fontSize: "12px",
+              color: "rgba(255,255,255,.48)",
+              background: "rgba(255,255,255,.025)",
+              border: "1px solid rgba(255,255,255,.05)",
+              borderRadius: "7px",
+              padding: "6px 9px",
+              fontSize: "9px",
               fontWeight: 700,
             }}
           >
@@ -197,69 +240,54 @@ export default function RolesPage() {
           <Link
             href={`/super-admin/restaurants/${restaurantId}/access/roles`}
             style={{
+              flexShrink: 0,
               textDecoration: "none",
               color: "#fff",
-              background: "rgba(249,115,22,.14)",
-              border: "1px solid rgba(249,115,22,.28)",
-              borderRadius: "9px",
-              padding: "8px 13px",
-              fontSize: "12px",
-              fontWeight: 750,
+              background: "rgba(249,115,22,.12)",
+              border: "1px solid rgba(249,115,22,.24)",
+              borderRadius: "7px",
+              padding: "6px 9px",
+              fontSize: "9px",
+              fontWeight: 800,
             }}
           >
             Roles operativos
           </Link>
-        </div>
+        </nav>
 
-        {/* RESUMEN */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "18px",
-            marginBottom: "15px",
-            color: "rgba(255,255,255,.42)",
-            fontSize: "12px",
+            gap: "7px",
+            marginBottom: "8px",
+            color: "rgba(255,255,255,.34)",
+            fontSize: "9px",
           }}
         >
-          <span>
-            <strong style={{ color: "#fff" }}>
-              {roles.length}
-            </strong>{" "}
-            roles
-          </span>
-
-          <span
-            style={{
-              width: "4px",
-              height: "4px",
-              borderRadius: "50%",
-              background: "#f97316",
-            }}
-          />
-
-          <span>
-            {roles.reduce((total, role) => total + role.users, 0)}{" "}
-            usuarios asignados
-          </span>
+          <strong style={{ color: "#ddd", fontSize: "11px" }}>
+            {roles.length}
+          </strong>
+          <span>roles</span>
+          <span style={{ color: "#f97316" }}>●</span>
+          <span>{roles.reduce((total, role) => total + role.users, 0)} usuarios asignados</span>
         </div>
 
-        {/* LISTA */}
         <section
           style={{
-            background: "#111827",
-            border: "1px solid rgba(255,255,255,.07)",
-            borderRadius: "15px",
+            border: "1px solid rgba(255,255,255,.06)",
+            borderRadius: "11px",
             overflow: "hidden",
+            background: "rgba(17,24,39,.72)",
           }}
         >
           {loading ? (
             <div
               style={{
-                padding: "40px 20px",
+                padding: "30px 15px",
                 textAlign: "center",
                 color: "rgba(255,255,255,.4)",
-                fontSize: "13px",
+                fontSize: "10px",
               }}
             >
               Cargando roles...
@@ -267,25 +295,31 @@ export default function RolesPage() {
           ) : roles.length === 0 ? (
             <div
               style={{
-                padding: "45px 20px",
+                padding: "35px 15px",
                 textAlign: "center",
               }}
             >
               <div
                 style={{
-                  fontSize: "26px",
-                  marginBottom: "10px",
-                  opacity: 0.7,
+                  width: "34px",
+                  height: "34px",
+                  margin: "0 auto 8px",
+                  display: "grid",
+                  placeItems: "center",
+                  borderRadius: "9px",
+                  background: "rgba(249,115,22,.07)",
+                  color: "#f97316",
+                  fontSize: "15px",
                 }}
               >
-                {"\uD83D\uDEE1"}
+                🛡
               </div>
 
               <div
                 style={{
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  marginBottom: "5px",
+                  fontSize: "11px",
+                  fontWeight: 750,
+                  marginBottom: "3px",
                 }}
               >
                 No hay roles operativos
@@ -293,141 +327,141 @@ export default function RolesPage() {
 
               <div
                 style={{
-                  color: "rgba(255,255,255,.4)",
-                  fontSize: "12px",
+                  color: "rgba(255,255,255,.35)",
+                  fontSize: "9px",
                 }}
               >
                 Crea el primer rol operativo del restaurante.
               </div>
             </div>
           ) : (
-            roles.map((role, index) => {
-
-              return (
+            roles.map((role, index) => (
+              <article
+                key={role.id}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "minmax(0,1fr) auto",
+                  gap: "8px",
+                  padding: "9px 10px",
+                  borderBottom:
+                    index === roles.length - 1
+                      ? "none"
+                      : "1px solid rgba(255,255,255,.045)",
+                }}
+              >
                 <div
-                  key={role.id}
                   style={{
+                    minWidth: 0,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: "15px",
-                    padding: "15px 16px",
-                    borderBottom:
-                      index === roles.length - 1
-                        ? "none"
-                        : "1px solid rgba(255,255,255,.055)",
+                    gap: "8px",
                   }}
                 >
-                  {/* ICONO + NOMBRE */}
                   <div
                     style={{
-                      minWidth: 0,
-                      flex: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
+                      width: "29px",
+                      height: "29px",
+                      minWidth: "29px",
+                      display: "grid",
+                      placeItems: "center",
+                      borderRadius: "8px",
+                      background: "rgba(249,115,22,.09)",
+                      color: "#f97316",
+                      fontSize: "12px",
                     }}
                   >
+                    🛡
+                  </div>
+
+                  <div style={{ minWidth: 0 }}>
                     <div
                       style={{
-                        width: "36px",
-                        height: "36px",
-                        minWidth: "36px",
-                        borderRadius: "10px",
-                        background: "rgba(249,115,22,.11)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "15px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        color: "#ddd",
+                        fontSize: "10px",
+                        fontWeight: 750,
                       }}
                     >
-                      {"\uD83D\uDEE1"}
+                      {role.name}
                     </div>
 
-                    <div
-                      style={{
-                        minWidth: 0,
-                      }}
-                    >
+                    {role.code && (
                       <div
                         style={{
-                          fontSize: "13px",
-                          fontWeight: 750,
-                          color: "#fff",
+                          marginTop: "2px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          color: "rgba(255,255,255,.27)",
+                          fontSize: "8px",
                         }}
                       >
-                        {role.name}
+                        {role.code}
                       </div>
+                    )}
 
-                      {role.code && (
-                        <div
-                          style={{
-                            marginTop: "3px",
-                            color: "rgba(255,255,255,.32)",
-                            fontSize: "10px",
-                          }}
-                        >
-                          {role.code}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* USUARIOS */}
-                  <div
-                    style={{
-                      minWidth: "90px",
-                      color: "rgba(255,255,255,.48)",
-                      fontSize: "11px",
-                    }}
-                  >
-                    <strong
+                    <div
                       style={{
-                        color: "#fff",
-                        fontSize: "13px",
+                        marginTop: "3px",
+                        color: "rgba(255,255,255,.36)",
+                        fontSize: "8px",
                       }}
                     >
-                      {role.users}
-                    </strong>{" "}
-                    {role.users === 1 ? "usuario" : "usuarios"}
+                      <strong style={{ color: "#f97316" }}>{role.users}</strong>{" "}
+                      {role.users === 1 ? "usuario" : "usuarios"}
+                    </div>
                   </div>
-                  {/* EDITAR */}
-                  <Link
-                    href={`/super-admin/restaurants/${restaurantId}/access/roles/edit/${role.id}`}
-                    style={{
-                      textDecoration: "none",
-                      color: "rgba(255,255,255,.62)",
-                      background: "rgba(255,255,255,.045)",
-                      border: "1px solid rgba(255,255,255,.06)",
-                      borderRadius: "8px",
-                      padding: "7px 10px",
-                      fontSize: "11px",
-                      fontWeight: 700,
-                    }}
-                  >
-                    Editar
-                  </Link>
                 </div>
-              );
-            })
+
+                <Link
+                  href={`/super-admin/restaurants/${restaurantId}/access/roles/edit/${role.id}`}
+                  aria-label={`Editar ${role.name}`}
+                  style={{
+                    alignSelf: "center",
+                    display: "grid",
+                    placeItems: "center",
+                    minWidth: "42px",
+                    height: "28px",
+                    boxSizing: "border-box",
+                    padding: "0 8px",
+                    textDecoration: "none",
+                    color: "rgba(255,255,255,.58)",
+                    background: "rgba(255,255,255,.035)",
+                    border: "1px solid rgba(255,255,255,.055)",
+                    borderRadius: "7px",
+                    fontSize: "8px",
+                    fontWeight: 750,
+                  }}
+                >
+                  Editar
+                </Link>
+              </article>
+            ))
           )}
         </section>
 
-        {/* NOTA */}
         <div
           style={{
-            marginTop: "14px",
-            color: "rgba(255,255,255,.3)",
-            fontSize: "11px",
+            marginTop: "9px",
+            color: "rgba(255,255,255,.25)",
+            fontSize: "8px",
             lineHeight: 1.5,
           }}
         >
-          Los permisos de los roles son administrados desde Wolf.
-          El restaurante trabaja únicamente con roles operativos.
+          Los permisos de cada rol se administran desde la sección de permisos.
+          Los restaurantes trabajan únicamente con roles operativos.
         </div>
+
+        <style jsx>{`
+          @media (max-width: 430px) {
+            .roles-header {
+              align-items: flex-start !important;
+            }
+          }
+        `}</style>
       </main>
     </PermissionGuard>
   );
 }
-
-

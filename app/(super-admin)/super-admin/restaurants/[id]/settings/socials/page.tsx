@@ -92,218 +92,463 @@ export default function SocialsPage() {
 
   if (loading) {
     return (
-      <main style={{ padding: "40px", color: "#fff", background: "#0a0a0a", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        Cargando...
+      <main className="social-page loading-page">
+        <div className="loading">Cargando configuración...</div>
       </main>
     );
   }
 
   return (
     <PermissionGuard permission="socials">
-      <main style={{ maxWidth: "1100px", margin: "0 auto", padding: "clamp(16px, 4vw, 40px) 16px", color: "#fff", background: "#0a0a0a", minHeight: "100vh", fontFamily: "system-ui, -apple-system, sans-serif", boxSizing: "border-box" }}>
-        
-        {/* ENCABEZADO */}
-        <div style={{ marginBottom: "24px" }}>
-          <BackToSettings restaurantId={restaurantId} />
-          <h1 style={{ fontSize: "clamp(22px, 5vw, 32px)", fontWeight: "800", marginTop: "12px", letterSpacing: "-0.5px", lineHeight: 1.2 }}>
-            Centro de Contacto y Redes
-          </h1>
-          <p style={{ color: "#a1a1aa", marginTop: "6px", fontSize: "14px", lineHeight: 1.5 }}>
-            Controla la información comercial externa y la visibilidad de tu marca de cara al cliente final.
-          </p>
-        </div>
+      <main className="social-page">
+        <div className="social-shell">
+          <header className="social-header">
+            <BackToSettings restaurantId={restaurantId} />
 
-        {/* CONTENEDOR GRID */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px", marginBottom: "30px" }}>
-          
-          {/* TARJETA 1: Información de Contacto */}
-          <div style={{ background: "#121212", border: "1px solid #222", borderRadius: "20px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "20px" }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-                <div style={{ padding: "10px", background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: "12px", color: "#3b82f6", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  📞
-                </div>
-                <div>
-                  <h3 style={{ fontSize: "15px", fontWeight: "600", margin: 0 }}>Información de Contacto</h3>
-                  <p style={{ fontSize: "12px", color: "#666", margin: "2px 0 0 0" }}>Canales de soporte directo</p>
-                </div>
+            <div className="header-row">
+              <div>
+                <span className="eyebrow">EXPERIENCIA · CONTACTO</span>
+                <h1>Contacto y redes</h1>
+                <p>Controla cómo tus clientes encuentran y contactan tu restaurante.</p>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <span className="live-dot" />
+            </div>
+          </header>
+
+          <section className="summary">
+            <div>
+              <span>Canales</span>
+              <strong>
+                {[socials.whatsapp_url, socials.contact_email].filter(Boolean).length}
+              </strong>
+            </div>
+            <div>
+              <span>Redes</span>
+              <strong>
+                {[socials.instagram, socials.facebook, socials.tiktok].filter(Boolean).length}
+              </strong>
+            </div>
+            <div>
+              <span>Visibilidad</span>
+              <strong className="green">
+                {[socials.show_contact, socials.show_socials, socials.show_whatsapp].filter(Boolean).length}
+              </strong>
+            </div>
+          </section>
+
+          <div className="accordion-list">
+            <section className="accordion open">
+              <button type="button" className="accordion-head">
+                <span className="section-icon">⌕</span>
+                <span className="section-copy">
+                  <strong>Contacto directo</strong>
+                  <small>WhatsApp y correo electrónico</small>
+                </span>
+                <span className="section-count">
+                  {[socials.whatsapp_url, socials.contact_email].filter(Boolean).length}/2
+                </span>
+              </button>
+
+              <div className="accordion-body">
                 <SocialInput
-                  label="Número de WhatsApp"
+                  label="WhatsApp"
                   placeholder="0991234567"
                   value={socials.whatsapp_url}
-                  onChange={(v: string) => setSocials({ ...socials, whatsapp_url: v })}
+                  onChange={(v: string) =>
+                    setSocials({ ...socials, whatsapp_url: v })
+                  }
                 />
+
                 <SocialInput
-                  label="Correo Electrónico"
+                  label="Correo"
                   placeholder="contacto@restaurante.com"
                   value={socials.contact_email}
-                  onChange={(v: string) => setSocials({ ...socials, contact_email: v })}
+                  onChange={(v: string) =>
+                    setSocials({ ...socials, contact_email: v })
+                  }
                 />
-              </div>
-            </div>
 
-            <div style={{ padding: "12px", background: "rgba(59,130,246,0.05)", border: "1px solid rgba(59,130,246,0.1)", borderRadius: "12px", fontSize: "12.5px", color: "#93c5fd", lineHeight: "1.4" }}>
-              El número de WhatsApp será utilizado para confirmar pedidos después del checkout.
-            </div>
-          </div>
-
-          {/* TARJETA 2: Redes Sociales */}
-          <div style={{ background: "#121212", border: "1px solid #222", borderRadius: "20px", padding: "20px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-              <div style={{ padding: "10px", background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.2)", borderRadius: "12px", color: "#a855f7", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                🌐
+                <div className="micro-note">
+                  WhatsApp se utilizará para confirmar pedidos después del checkout.
+                </div>
               </div>
-              <div>
-                <h3 style={{ fontSize: "15px", fontWeight: "600", margin: 0 }}>Redes Sociales</h3>
-                <p style={{ fontSize: "12px", color: "#666", margin: "2px 0 0 0" }}>Enlaces hacia tus comunidades</p>
-              </div>
-            </div>
+            </section>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <SocialAccordion
+              title="Redes sociales"
+              subtitle="Instagram, Facebook y TikTok"
+              icon="◎"
+              count={[socials.instagram, socials.facebook, socials.tiktok].filter(Boolean).length}
+            >
               <SocialInput
                 label="Instagram"
                 placeholder="https://instagram.com/tu_usuario"
                 value={socials.instagram}
-                onChange={(v: string) => setSocials({ ...socials, instagram: v })}
+                onChange={(v: string) =>
+                  setSocials({ ...socials, instagram: v })
+                }
               />
+
               <SocialInput
                 label="Facebook"
                 placeholder="https://facebook.com/tu_pagina"
                 value={socials.facebook}
-                onChange={(v: string) => setSocials({ ...socials, facebook: v })}
+                onChange={(v: string) =>
+                  setSocials({ ...socials, facebook: v })
+                }
               />
+
               <SocialInput
                 label="TikTok"
                 placeholder="https://tiktok.com/@tu_usuario"
                 value={socials.tiktok}
-                onChange={(v: string) => setSocials({ ...socials, tiktok: v })}
+                onChange={(v: string) =>
+                  setSocials({ ...socials, tiktok: v })
+                }
               />
-            </div>
-          </div>
+            </SocialAccordion>
 
-          {/* TARJETA 3: Visibilidad en la Web */}
-          <div style={{ background: "#121212", border: "1px solid #222", borderRadius: "20px", padding: "20px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-              <div style={{ padding: "10px", background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.2)", borderRadius: "12px", color: "#eab308", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                👁
-              </div>
-              <div>
-                <h3 style={{ fontSize: "15px", fontWeight: "600", margin: 0 }}>Visibilidad en la Web</h3>
-                <p style={{ fontSize: "12px", color: "#666", margin: "2px 0 0 0" }}>Habilitar u ocultar componentes</p>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <SocialAccordion
+              title="Visibilidad"
+              subtitle="Decide qué información aparece públicamente"
+              icon="◉"
+              count={[
+                socials.show_contact,
+                socials.show_contact_email,
+                socials.show_socials,
+                socials.show_whatsapp,
+              ].filter(Boolean).length}
+            >
               <VisibilitySwitch
-                label="Mostrar Dirección"
+                label="Mostrar dirección"
                 active={socials.show_contact}
                 onToggle={() => toggleSwitch("show_contact")}
               />
+
               <VisibilitySwitch
-                label="Mostrar Correo"
+                label="Mostrar correo"
                 active={socials.show_contact_email}
                 onToggle={() => toggleSwitch("show_contact_email")}
               />
+
               <VisibilitySwitch
-                label="Mostrar Redes Sociales"
+                label="Mostrar redes sociales"
                 active={socials.show_socials}
                 onToggle={() => toggleSwitch("show_socials")}
               />
+
               <VisibilitySwitch
                 label="Mostrar WhatsApp"
                 active={socials.show_whatsapp}
                 onToggle={() => toggleSwitch("show_whatsapp")}
               />
-            </div>
+            </SocialAccordion>
+
+            <SocialAccordion
+              title="Vista pública"
+              subtitle="Resumen de lo que está configurado"
+              icon="◌"
+              count={0}
+            >
+              <div className="preview-list">
+                <PreviewItem label="WhatsApp" active={!!socials.whatsapp_url} />
+                <PreviewItem label="Correo" active={!!socials.contact_email} />
+                <PreviewItem label="Instagram" active={!!socials.instagram} />
+                <PreviewItem label="Facebook" active={!!socials.facebook} />
+                <PreviewItem label="TikTok" active={!!socials.tiktok} />
+              </div>
+            </SocialAccordion>
           </div>
 
-          {/* TARJETA 4: Estado de la Configuración (¡CON DESPLAZAMIENTO HORIZONTAL EN MÓVIL!) */}
-          <div style={{ background: "#121212", border: "1px solid #222", borderRadius: "20px", padding: "20px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-              <div style={{ padding: "10px", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "12px", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                📊
-              </div>
-              <div>
-                <h3 style={{ fontSize: "15px", fontWeight: "600", margin: 0 }}>Estado público</h3>
-                <p style={{ fontSize: "12px", color: "#666", margin: "2px 0 0 0" }}>Desliza para auditar el despliegue PWA</p>
-              </div>
-            </div>
-
-            {/* Contenedor que permite mover hacia la derecha en pantallas pequeñas */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px", overflowX: "auto", width: "100%", WebkitOverflowScrolling: "touch" }}>
-              <div style={{ minWidth: "260px" }}>
-                {/* Sección Contacto */}
-                <div>
-                  <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "#555", letterSpacing: "0.5px", display: "block", marginBottom: "8px" }}>Contacto</span>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <PreviewItem label="WhatsApp" active={!!socials.whatsapp_url} />
-                    <PreviewItem label="Correo" active={!!socials.contact_email} />
-                  </div>
-                </div>
-
-                <div style={{ height: "1px", background: "#222", margin: "14px 0" }} />
-
-                {/* Sección Redes */}
-                <div>
-                  <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "#555", letterSpacing: "0.5px", display: "block", marginBottom: "8px" }}>Redes</span>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <PreviewItem label="Instagram" active={!!socials.instagram} />
-                    <PreviewItem label="Facebook" active={!!socials.facebook} />
-                    <PreviewItem label="TikTok" active={!!socials.tiktok} />
-                  </div>
-                </div>
-
-                <div style={{ height: "1px", background: "#222", margin: "14px 0" }} />
-
-                {/* Sección Visibilidad con Scroll Horizontal propio de Badges */}
-                <div>
-                  <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: "#555", letterSpacing: "0.5px", display: "block", marginBottom: "8px" }}>Visibilidad</span>
-                  <div style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px", whiteSpace: "nowrap" }}>
-                    <BadgeVisibility label="Dirección" visible={socials.show_contact} />
-                    <BadgeVisibility label="Correo" visible={socials.show_contact_email} />
-                    <BadgeVisibility label="Redes" visible={socials.show_socials} />
-                    <BadgeVisibility label="WhatsApp" visible={socials.show_whatsapp} />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
+          <button
+            type="button"
+            onClick={saveSocials}
+            disabled={saving}
+            className="save-button"
+          >
+            {saving ? "Guardando..." : "Guardar cambios"}
+          </button>
         </div>
 
-        {/* BOTÓN GLOBAL DE ACCIÓN */}
-        <button
-          onClick={saveSocials}
-          disabled={saving}
-          style={{
-            width: "100%",
-            background: "#fff",
-            color: "#000",
-            border: "none",
-            padding: "16px",
-            borderRadius: "14px",
-            fontWeight: "600",
-            fontSize: "15px",
-            cursor: saving ? "not-allowed" : "pointer",
-            opacity: saving ? 0.7 : 1,
-            transition: "0.2s ease",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-            boxShadow: "0 4px 20px rgba(255,255,255,0.05)",
-            boxSizing: "border-box"
-          }}
-        >
-          {saving ? "Guardando..." : "💾 Guardar Configuración"}
-        </button>
+        <style jsx global>{`
+          .social-page {
+            min-height:100dvh;
+            width:100%;
+            box-sizing:border-box;
+            padding:14px 10px 34px;
+            background:#080808;
+            color:#fff;
+            font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+          }
 
+          .social-shell {
+            width:100%;
+            max-width:650px;
+            margin:0 auto;
+          }
+
+          .social-header {
+            margin-bottom:8px;
+          }
+
+          .header-row {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+            margin-top:8px;
+          }
+
+          .eyebrow {
+            display:block;
+            color:#f97316;
+            font-size:7px;
+            font-weight:900;
+            letter-spacing:1.2px;
+          }
+
+          .header-row h1 {
+            margin:2px 0 0;
+            font-size:23px;
+            line-height:1.05;
+            letter-spacing:-.55px;
+            font-weight:900;
+          }
+
+          .header-row p {
+            max-width:430px;
+            margin:4px 0 0;
+            color:rgba(255,255,255,.32);
+            font-size:8px;
+            line-height:1.4;
+          }
+
+          .live-dot {
+            width:7px;
+            height:7px;
+            flex-shrink:0;
+            border-radius:50%;
+            background:#22c55e;
+            box-shadow:0 0 0 4px rgba(34,197,94,.07);
+          }
+
+          .summary {
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:5px;
+            margin-bottom:7px;
+          }
+
+          .summary > div {
+            min-width:0;
+            padding:8px 6px;
+            border:1px solid rgba(255,255,255,.05);
+            border-radius:9px;
+            background:#101010;
+            text-align:center;
+          }
+
+          .summary span {
+            display:block;
+            color:rgba(255,255,255,.24);
+            font-size:6px;
+            font-weight:800;
+            text-transform:uppercase;
+            letter-spacing:.4px;
+          }
+
+          .summary strong {
+            display:block;
+            margin-top:3px;
+            color:#f97316;
+            font-size:13px;
+            line-height:1;
+          }
+
+          .summary strong.green {
+            color:#22c55e;
+          }
+
+          .accordion-list {
+            display:flex;
+            flex-direction:column;
+            gap:5px;
+          }
+
+          .accordion {
+            overflow:hidden;
+            border:1px solid rgba(255,255,255,.055);
+            border-radius:10px;
+            background:#101010;
+          }
+
+          .accordion.open {
+            border-color:rgba(249,115,22,.17);
+          }
+
+          .accordion-head {
+            width:100%;
+            min-height:51px;
+            display:flex;
+            align-items:center;
+            gap:8px;
+            padding:7px 9px;
+            border:0;
+            background:transparent;
+            color:#fff;
+            text-align:left;
+          }
+
+          .section-icon {
+            width:29px;
+            height:29px;
+            display:grid;
+            place-items:center;
+            flex-shrink:0;
+            border-radius:8px;
+            background:rgba(249,115,22,.07);
+            color:#f97316;
+            font-size:12px;
+          }
+
+          .section-copy {
+            min-width:0;
+            flex:1;
+          }
+
+          .section-copy strong {
+            display:block;
+            font-size:9px;
+            font-weight:850;
+          }
+
+          .section-copy small {
+            display:block;
+            margin-top:2px;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+            color:rgba(255,255,255,.25);
+            font-size:7px;
+          }
+
+          .section-count {
+            padding:4px 6px;
+            border-radius:999px;
+            background:rgba(249,115,22,.06);
+            color:#f97316;
+            font-size:6px;
+            font-weight:850;
+          }
+
+          .accordion-body {
+            padding:0 8px 8px;
+            border-top:1px solid rgba(255,255,255,.045);
+          }
+
+          .accordion:not(.open) .accordion-body {
+            display:none;
+          }
+
+          .micro-note {
+            margin-top:6px;
+            padding:7px 8px;
+            border-left:2px solid rgba(249,115,22,.35);
+            color:rgba(255,255,255,.25);
+            background:rgba(249,115,22,.025);
+            border-radius:0 6px 6px 0;
+            font-size:6.5px;
+            line-height:1.4;
+          }
+
+          .preview-list {
+            display:flex;
+            flex-direction:column;
+          }
+
+          .preview-list > div + div {
+            border-top:1px solid rgba(255,255,255,.045);
+          }
+
+          .save-button {
+            width:100%;
+            min-height:39px;
+            margin-top:7px;
+            border:0;
+            border-radius:8px;
+            background:#f97316;
+            color:#fff;
+            font:850 8px system-ui,sans-serif;
+            cursor:pointer;
+          }
+
+          .save-button:disabled {
+            opacity:.55;
+            cursor:not-allowed;
+          }
+
+          .loading-page {
+            display:grid;
+            place-items:center;
+          }
+
+          .loading {
+            color:rgba(255,255,255,.3);
+            font-size:9px;
+          }
+
+          @media(max-width:390px) {
+            .social-page {
+              padding-left:8px;
+              padding-right:8px;
+            }
+
+            .summary > div {
+              padding-left:4px;
+              padding-right:4px;
+            }
+          }
+        `}</style>
       </main>
     </PermissionGuard>
+  );
+}
+
+function SocialAccordion({
+  title,
+  subtitle,
+  icon,
+  count,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  icon: string;
+  count: number;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <section className={open ? "accordion open" : "accordion"}>
+      <button
+        type="button"
+        className="accordion-head"
+        onClick={() => setOpen((value) => !value)}
+      >
+        <span className="section-icon">{icon}</span>
+        <span className="section-copy">
+          <strong>{title}</strong>
+          <small>{subtitle}</small>
+        </span>
+        <span className="section-count">
+          {count > 0 ? count : open ? "−" : "+"}
+        </span>
+      </button>
+
+      <div className="accordion-body">{children}</div>
+    </section>
   );
 }
 

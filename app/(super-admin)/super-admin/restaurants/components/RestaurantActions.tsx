@@ -30,216 +30,271 @@ export default function RestaurantActions({
     }
 
     document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleOutside);
   }, []);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        marginTop: 8,
-      }}
-    >
-      {/* Dashboard */}
+    <div className="actions">
       <Link
         href={`/super-admin/restaurants/${restaurantId}/finance`}
-        style={{
-          flex: 1,
-          textDecoration: "none",
-        }}
+        className="action action-primary"
       >
-        <button style={primaryButton}>Dashboard</button>
+        Dashboard
       </Link>
 
-      {/* Configuración */}
       <Link
         href={`/super-admin/restaurants/${restaurantId}/settings`}
-        style={{
-          flex: 1,
-          textDecoration: "none",
-        }}
+        className="action action-secondary"
       >
-        <button style={secondaryButton}>Configuración</button>
+        Configuración
       </Link>
 
-      {/* Menú de opciones */}
-      <div
-        ref={containerRef}
-        style={{
-          position: "relative",
-          flexShrink: 0,
-        }}
-      >
+      <div ref={containerRef} className="menu-wrap">
         <button
-          onClick={() => setOpen((v) => !v)}
-          style={menuButton}
-          title="Más opciones"
+          type="button"
+          className={`menu-button ${open ? "is-open" : ""}`}
+          onClick={() => setOpen((value) => !value)}
+          aria-label="Más opciones"
+          aria-expanded={open}
         >
-          ⋮
+          <span />
+          <span />
+          <span />
         </button>
 
         {open && (
-          <div style={dropdown}>
-            {/* Flecha */}
-            <div style={arrow} />
-
+          <div className="dropdown">
             <Link
               href={`/super-admin/restaurants/${restaurantId}/edit`}
-              style={menuLink}
+              className="menu-link"
               onClick={() => setOpen(false)}
             >
-              <span style={icon}>✏️</span>
-              Editar
+              <span className="menu-icon">✎</span>
+              <span>Editar</span>
             </Link>
 
             <button
-              style={menuItem}
+              type="button"
+              className="menu-item"
               onClick={() => {
                 setOpen(false);
                 onToggleStatus?.();
               }}
             >
-              <span style={icon}>{active ? "⏸" : "▶"}</span>
-              {active ? "Desactivar" : "Activar"}
+              <span className="menu-icon">
+                {active ? "Ⅱ" : "▶"}
+              </span>
+              <span>{active ? "Desactivar" : "Activar"}</span>
             </button>
 
-            <div style={divider} />
+            <div className="divider" />
 
             <button
-              style={{
-                ...menuItem,
-                color: "#ef4444",
-              }}
+              type="button"
+              className="menu-item danger"
               onClick={() => {
                 setOpen(false);
                 onDelete?.();
               }}
             >
-              <span style={icon}>🗑️</span>
-              Eliminar
+              <span className="menu-icon">×</span>
+              <span>Eliminar</span>
             </button>
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        .actions {
+          width: 100%;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 42px;
+          align-items: center;
+          gap: 7px;
+          margin-top: 4px;
+        }
+
+        .action {
+          height: 40px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          text-decoration: none;
+          font-size: 10px;
+          font-weight: 750;
+          transition:
+            background 0.16s ease,
+            border-color 0.16s ease,
+            transform 0.16s ease;
+        }
+
+        .action:hover {
+          transform: translateY(-1px);
+        }
+
+        .action-primary {
+          border: 1px solid rgba(255, 106, 0, 0.2);
+          background: rgba(255, 106, 0, 0.1);
+          color: #ff914b;
+        }
+
+        .action-primary:hover {
+          border-color: rgba(255, 106, 0, 0.34);
+          background: rgba(255, 106, 0, 0.15);
+        }
+
+        .action-secondary {
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          background: rgba(255, 255, 255, 0.035);
+          color: #c5c5c5;
+        }
+
+        .action-secondary:hover {
+          border-color: rgba(255, 255, 255, 0.13);
+          background: rgba(255, 255, 255, 0.055);
+        }
+
+        .menu-wrap {
+          position: relative;
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        .menu-button {
+          width: 42px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 3px;
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.035);
+          cursor: pointer;
+          transition:
+            background 0.16s ease,
+            border-color 0.16s ease;
+        }
+
+        .menu-button span {
+          width: 3px;
+          height: 3px;
+          border-radius: 50%;
+          background: #8d8d8d;
+        }
+
+        .menu-button:hover,
+        .menu-button.is-open {
+          border-color: rgba(255, 106, 0, 0.22);
+          background: rgba(255, 106, 0, 0.08);
+        }
+
+        .menu-button.is-open span {
+          background: #ff8a3d;
+        }
+
+        .dropdown {
+          position: absolute;
+          z-index: 100;
+          right: 0;
+          bottom: calc(100% + 8px);
+          width: 190px;
+          overflow: hidden;
+          padding: 5px;
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 13px;
+          background: #181818;
+          box-shadow: 0 18px 45px rgba(0, 0, 0, 0.4);
+          animation: menuOpen 0.14s ease-out;
+        }
+
+        .menu-link,
+        .menu-item {
+          width: 100%;
+          min-height: 37px;
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 0 9px;
+          border: 0;
+          border-radius: 8px;
+          background: transparent;
+          color: #cfcfcf;
+          font: inherit;
+          font-size: 10px;
+          font-weight: 600;
+          text-align: left;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        .menu-link:hover,
+        .menu-item:hover {
+          background: rgba(255, 255, 255, 0.045);
+          color: #fff;
+        }
+
+        .menu-icon {
+          width: 20px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #8a8a8a;
+          font-size: 12px;
+        }
+
+        .danger {
+          color: #f07878;
+        }
+
+        .danger .menu-icon {
+          color: #ef6666;
+        }
+
+        .divider {
+          height: 1px;
+          margin: 4px 5px;
+          background: rgba(255, 255, 255, 0.06);
+        }
+
+        @keyframes menuOpen {
+          from {
+            opacity: 0;
+            transform: translateY(4px) scale(0.98);
+          }
+
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @media (max-width: 430px) {
+          .actions {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 40px;
+            gap: 6px;
+          }
+
+          .action,
+          .menu-button {
+            height: 38px;
+          }
+
+          .action {
+            font-size: 9px;
+          }
+
+          .menu-button {
+            width: 40px;
+          }
+
+          .dropdown {
+            width: 180px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
-
-/* ===================================================== */
-/* ESTILOS                                               */
-/* ===================================================== */
-
-const primaryButton: React.CSSProperties = {
-  width: "100%",
-  height: 48,
-  border: "none",
-  borderRadius: 14,
-  background: "linear-gradient(135deg,#ff8a1f,#ff6200)",
-  color: "#fff",
-  cursor: "pointer",
-  fontWeight: 700,
-  fontSize: 14,
-  transition: ".25s",
-};
-
-const secondaryButton: React.CSSProperties = {
-  width: "100%",
-  height: 48,
-  borderRadius: 14,
-  border: "1px solid rgba(255,255,255,.08)",
-  background: "#1b1b1b",
-  color: "#fff",
-  cursor: "pointer",
-  fontWeight: 700,
-  fontSize: 14,
-  transition: ".25s",
-};
-
-const menuButton: React.CSSProperties = {
-  width: 48,
-  height: 48,
-  borderRadius: 14,
-  border: "1px solid rgba(255,255,255,.08)",
-  background: "#1b1b1b",
-  color: "#fff",
-  cursor: "pointer",
-  fontSize: 22,
-  fontWeight: 700,
-  transition: ".25s",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-};
-
-const dropdown: React.CSSProperties = {
-  position: "absolute",
-  bottom: 58,
-  right: 0,
-  width: 235,
-  overflow: "visible",
-  borderRadius: 18,
-  background: "linear-gradient(180deg,#1d1d1d,#171717)",
-  border: "1px solid rgba(255,255,255,.08)",
-  boxShadow: "0 30px 80px rgba(0,0,0,.45)",
-  zIndex: 999999,
-  animation: "menuOpen .18s ease-out",
-};
-
-const arrow: React.CSSProperties = {
-  position: "absolute",
-  right: 18,
-  bottom: -8,
-  width: 16,
-  height: 16,
-  transform: "rotate(45deg)",
-  background: "#181818",
-  borderRight: "1px solid rgba(255,255,255,.08)",
-  borderBottom: "1px solid rgba(255,255,255,.08)",
-};
-
-const menuLink: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 14,
-  padding: "15px 18px",
-  color: "#fff",
-  textDecoration: "none",
-  fontSize: 14,
-  fontWeight: 500,
-  position: "relative",
-  zIndex: 2,
-};
-
-const menuItem: React.CSSProperties = {
-  width: "100%",
-  display: "flex",
-  alignItems: "center",
-  gap: 14,
-  padding: "15px 18px",
-  border: "none",
-  background: "transparent",
-  color: "#fff",
-  cursor: "pointer",
-  fontSize: 14,
-  fontWeight: 500,
-  textAlign: "left",
-  position: "relative",
-  zIndex: 2,
-};
-
-const icon: React.CSSProperties = {
-  width: 20,
-  display: "flex",
-  justifyContent: "center",
-  flexShrink: 0,
-};
-
-const divider: React.CSSProperties = {
-  height: 1,
-  margin: "6px 0",
-  background: "rgba(255,255,255,.08)",
-};
-
-

@@ -15,6 +15,7 @@ import LocationSection from "./form/LocationSection";
 import BrandingSection from "./form/BrandingSection";
 import DeliverySection from "./form/DeliverySection";
 import SubmitSection from "./form/SubmitSection";
+import WolfMobileAccordion from "./form/WolfMobileAccordion";
 
 interface RestaurantFormProps {
   mode: "create" | "edit";
@@ -420,49 +421,62 @@ const sectionProps = {
   progress,
 };
     return (
-    <main
-      style={{
-        maxWidth: "1200px",
-        margin: "0 auto",
-        padding: "40px",
-      }}
-    >
-      <h1
-        style={{
-          color: "#fff",
-          marginBottom:
-            "30px",
-        }}
-      >
-        {mode === "create"
-          ? "Nuevo Restaurante"
-          : "Editar Restaurante"}
-      </h1>
+    <main className={`restaurant-form-shell ${isWizard ? "wizard-shell" : ""}`}>
+      {!isWizard && (
+        <h1
+          style={{
+            color: "#fff",
+            marginBottom: "30px",
+          }}
+        >
+          {mode === "create"
+            ? "Nuevo Restaurante"
+            : "Editar Restaurante"}
+        </h1>
+      )}
 
       <form
         onSubmit={
           handleSubmit
         }
       >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "1fr 1fr",
-            gap: "20px",
-          }}
+        <div className={`form-grid ${isWizard ? "wizard-form-grid" : ""}`}>
+
+{(!isWizard || showGeneral) && (
+  <>
+    {isWizard ? (
+      <>
+        <WolfMobileAccordion
+          index="01"
+          title="Información General"
+          description="Datos básicos del restaurante"
+          mobileOnly
         >
+          <GeneralSection
+            {...sectionProps}
+            embedded
+          />
+        </WolfMobileAccordion>
 
-{(!isWizard || showGeneral) && (
-  <GeneralSection
-    {...sectionProps}
-  />
-)}
-
-{(!isWizard || showGeneral) && (
-  <OwnerSection
-    {...sectionProps}
-  />
+        <WolfMobileAccordion
+          index="02"
+          title="Propietario"
+          description="Responsable del negocio"
+          mobileOnly
+        >
+          <OwnerSection
+            {...sectionProps}
+            embedded
+          />
+        </WolfMobileAccordion>
+      </>
+    ) : (
+      <>
+        <GeneralSection {...sectionProps} />
+        <OwnerSection {...sectionProps} />
+      </>
+    )}
+  </>
 )}
 
 {(!isWizard || showLocation) && (
@@ -523,8 +537,87 @@ const sectionProps = {
         )}
 
       </form>
+
+      <style jsx>{`
+        .restaurant-form-shell {
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 40px;
+          box-sizing: border-box;
+        }
+
+        /*
+         * El Wizard ya proporciona su propia superficie/card.
+         * No agregamos otra capa visual aquí.
+         */
+        .restaurant-form-shell.wizard-shell {
+          max-width: none;
+          margin: 0;
+          padding: 0;
+          background: transparent;
+          border: 0;
+          box-shadow: none;
+        }
+
+        .form-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 20px;
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+        }
+
+        /*
+         * En el Wizard cada paso ocupa todo el ancho.
+         * Así General/Owner/Location/Branding/Delivery no quedan
+         * comprimidos en columnas paralelas en pantallas pequeñas.
+         *
+         * No modifica estado, validaciones, callbacks ni persistencia.
+         */
+        .wizard-form-grid {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 12px;
+        }
+
+        .wizard-shell .wizard-form-grid {
+          padding: 0;
+          margin: 0;
+        }
+
+        .form-grid > * {
+          min-width: 0;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+
+        @media (max-width: 820px) {
+          .restaurant-form-shell {
+            padding: 24px;
+          }
+
+          .restaurant-form-shell.wizard-shell {
+            padding: 0;
+          }
+
+          .form-grid {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 14px;
+          }
+
+          .wizard-form-grid {
+            gap: 12px;
+          }
+        }
+
+        @media (max-width: 520px) {
+          .form-grid,
+          .wizard-form-grid {
+            gap: 10px;
+          }
+        }
+      `}</style>
     </main>
   );
 }
-
-

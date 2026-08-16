@@ -81,187 +81,646 @@ setForm((prev) => ({
   };
 
   return (
-    <main style={{ maxWidth: "1100px", margin: "0 auto", padding: "clamp(16px, 4vw, 40px) 16px", color: "#fff", background: "#0a0a0a", minHeight: "100vh", fontFamily: "system-ui, -apple-system, sans-serif", boxSizing: "border-box" }}>
-      
-      {/* ENCABEZADO */}
-      <div style={{ marginBottom: "28px" }}>
-        <p style={{ color: "#71717a", fontSize: "13px", marginBottom: "6px", fontWeight: "500" }}>
-          Configuración / Pagos / QRs / Nuevo
-        </p>
-        <h1 style={{ fontSize: "clamp(24px, 5vw, 36px)", fontWeight: "800", margin: 0, letterSpacing: "-0.5px" }}>
-          Crear Nuevo QR
-        </h1>
-      </div>
+    <main className="qr-page">
+      <div className="qr-shell">
+        <header className="qr-header">
+          <button
+            type="button"
+            className="back-button"
+            onClick={() => router.back()}
+            aria-label="Volver"
+          >
+            ←
+          </button>
 
-      {/* DISEÑO EN CUADRÍCULA AUTO-ADAPTATIVA CON SCROLL VERTICAL NATURAL */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))", gap: "24px" }}>
-        
-        {/* FORMULARIO */}
-        <section style={cardStyle}>
-          <h2 style={{ marginBottom: "20px", fontSize: "18px", fontWeight: "700", marginTop: 0 }}>Detalles del método</h2>
-          
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <input placeholder="Nombre (Ej: Banco Pichincha)" value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} style={inputStyle} />
-            <input placeholder="Titular de la cuenta" value={form.account_holder} onChange={(e) => setForm({...form, account_holder: e.target.value})} style={inputStyle} />
-            <input placeholder="Número de cuenta / Teléfono" value={form.account_number} onChange={(e) => setForm({...form, account_number: e.target.value})} style={inputStyle} />
+          <div className="header-copy">
+            <span className="eyebrow">PAGOS · QR</span>
+            <h1>Nuevo QR</h1>
+            <p>Configura un código QR para tus clientes.</p>
           </div>
-          
-          {/* SELECCIÓN DE IMAGEN PREMIUM TOTALMENTE RESPONSIVA */}
-          <div style={{ marginTop: "24px" }}>
-            <label style={{ color: "#a1a1aa", fontSize: "13.5px", fontWeight: "500", display: "block", marginBottom: "10px" }}>
-              Imagen del código QR
-            </label>
-            <label style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "24px 16px",
-              background: "#161616",
-              border: "2px dashed #262626",
-              borderRadius: "14px",
-              cursor: "pointer",
-              textAlign: "center",
-              transition: "border-color 0.2s ease"
-            }}>
-              <span style={{ fontSize: "24px", marginBottom: "6px" }}>📸</span>
-              <span style={{ fontSize: "13px", color: "#e4e4e7", fontWeight: "500" }}>Seleccionar o arrastrar imagen</span>
-              <span style={{ fontSize: "11px", color: "#71717a", marginTop: "4px" }}>Formatos permitidos: JPG, PNG</span>
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={(e) => e.target.files?.[0] && uploadQR(e.target.files[0])} 
-                style={{ display: "none" }} 
-              />
-            </label>
-            {uploading && <p style={{ fontSize: "13px", color: "#f97316", marginTop: "10px", fontWeight: "600", margin: "10px 0 0 0" }}>⏳ Subiendo archivo...</p>}
-          </div>
+        </header>
 
-          {/* SWITCH ACTIVO/INACTIVO */}
-          <div style={{ 
-            display: "flex", 
-            justifyContent: "space-between", 
-            alignItems: "center", 
-            padding: "14px", 
-            background: "#161616", 
-            border: "1px solid #262626", 
-            borderRadius: "12px",
-            marginTop: "24px"
-          }}>
-            <span style={{ fontSize: "13.5px", fontWeight: "500", color: "#e4e4e7" }}>QR Activo en el menú</span>
-            <div
-              onClick={() => setForm({...form, active: !form.active})}
-              style={{
-                width: "42px",
-                height: "22px",
-                background: form.active ? "#16a34a" : "#2d2d2d",
-                borderRadius: "11px",
-                position: "relative",
-                cursor: "pointer",
-                transition: "background-color 0.2s ease",
-                flexShrink: 0
-              }}
-            >
-              <div
-                style={{
-                  width: "16px",
-                  height: "16px",
-                  background: "#fff",
-                  borderRadius: "50%",
-                  position: "absolute",
-                  top: "3px",
-                  left: form.active ? "23px" : "3px",
-                  transition: "left 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-                }}
-              />
+        <form
+          className="qr-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            saveQR();
+          }}
+        >
+          <section className="section">
+            <div className="section-heading">
+              <span>01</span>
+              <div>
+                <strong>Información</strong>
+                <small>Identifica este método de pago.</small>
+              </div>
             </div>
-          </div>
 
-          {/* ACCIONES */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "30px" }}>
-            <button onClick={saveQR} disabled={saving} style={{ ...buttonPrimary, flex: "1 1 140px" }}>
-              {saving ? "Guardando..." : "Guardar QR"}
-            </button>
-            <button onClick={() => router.back()} style={{ ...buttonSecondary, flex: "1 1 100px" }}>
-              Cancelar
-            </button>
-          </div>
-        </section>
+            <label className="field">
+              <span>Nombre</span>
+              <input
+                placeholder="Ej. Banco Pichincha"
+                value={form.name}
+                onChange={(e) =>
+                  setForm({ ...form, name: e.target.value })
+                }
+                autoComplete="off"
+              />
+            </label>
 
-        {/* VISTA PREVIA */}
-        <section style={{ ...cardStyle, height: "fit-content" }}>
-          <h2 style={{ marginBottom: "20px", fontSize: "18px", fontWeight: "700", marginTop: 0 }}>Vista Previa</h2>
-          <div style={{ background: "#0a0a0a", padding: "20px", borderRadius: "16px", border: "1px solid #222", textAlign: "center" }}>
-            
-            <div style={{ maxWidth: "220px", margin: "0 auto", display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <label className="field">
+              <span>Titular de la cuenta</span>
+              <input
+                placeholder="Nombre del titular"
+                value={form.account_holder}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    account_holder: e.target.value,
+                  })
+                }
+                autoComplete="name"
+              />
+            </label>
+
+            <label className="field">
+              <span>Número de cuenta / teléfono</span>
+              <input
+                placeholder="Número o teléfono asociado"
+                value={form.account_number}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    account_number: e.target.value,
+                  })
+                }
+                inputMode="text"
+              />
+            </label>
+          </section>
+
+          <section className="section">
+            <div className="section-heading">
+              <span>02</span>
+              <div>
+                <strong>Imagen QR</strong>
+                <small>Sube una imagen clara y legible.</small>
+              </div>
+            </div>
+
+            <label className={`upload ${form.qr_image_url ? "has-image" : ""}`}>
               {form.qr_image_url ? (
-                <img src={form.qr_image_url} alt="Preview QR" style={{ width: "100%", height: "auto", borderRadius: "12px", boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }} />
+                <img src={form.qr_image_url} alt="Vista previa del QR" />
               ) : (
-                <div style={{ width: "100%", height: "200px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "#52525b", border: "2px dashed #262626", borderRadius: "12px", background: "#121212" }}>
-                  <span style={{ fontSize: "32px", marginBottom: "4px" }}>🖼️</span>
-                  <span style={{ fontSize: "13px" }}>Sin imagen seleccionada</span>
+                <div className="upload-empty">
+                  <span className="upload-icon">▦</span>
+                  <strong>Agregar código QR</strong>
+                  <small>Toca aquí para seleccionar una imagen</small>
+                  <small>JPG o PNG</small>
                 </div>
               )}
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) uploadQR(file);
+                  e.currentTarget.value = "";
+                }}
+              />
+
+              {uploading && (
+                <div className="uploading">Subiendo QR...</div>
+              )}
+
+              {form.qr_image_url && !uploading && (
+                <span className="change-image">Cambiar imagen</span>
+              )}
+            </label>
+          </section>
+
+          <section className="section">
+            <div className="section-heading">
+              <span>03</span>
+              <div>
+                <strong>Estado</strong>
+                <small>Controla si aparece disponible.</small>
+              </div>
             </div>
 
-            <div style={{ textAlign: "left", marginTop: "20px", borderTop: "1px solid #161616", paddingTop: "16px" }}>
-              <h3 style={{ marginTop: 0, marginBottom: "8px", fontSize: "16px", fontWeight: "700", color: "#f97316" }}>
-                {form.name || "Nombre del método"}
-              </h3>
-              <p style={{ color: "#a1a1aa", fontSize: "13.5px", margin: "4px 0" }}>
-                <strong style={{ color: "#71717a", fontWeight: "500" }}>Titular:</strong> {form.account_holder || "—"}
-              </p>
-              <p style={{ color: "#a1a1aa", fontSize: "13.5px", margin: "4px 0" }}>
-                <strong style={{ color: "#71717a", fontWeight: "500" }}>Detalle:</strong> {form.account_number || "—"}
-              </p>
+            <div className="setting-row">
+              <div>
+                <strong>QR activo</strong>
+                <small>Los clientes podrán utilizarlo.</small>
+              </div>
+
+              <button
+                type="button"
+                className={form.active ? "switch on" : "switch"}
+                aria-pressed={form.active}
+                onClick={() =>
+                  setForm({
+                    ...form,
+                    active: !form.active,
+                  })
+                }
+              >
+                <span />
+              </button>
+            </div>
+          </section>
+
+          <section className="preview">
+            <div className="preview-heading">
+              <div>
+                <span className="eyebrow">VISTA PREVIA</span>
+                <strong>Así lo verás</strong>
+              </div>
+              <span className={form.active ? "preview-status active" : "preview-status"}>
+                {form.active ? "Activo" : "Oculto"}
+              </span>
             </div>
 
+            <div className="preview-card">
+              <div className="preview-image">
+                {form.qr_image_url ? (
+                  <img src={form.qr_image_url} alt="Preview QR" />
+                ) : (
+                  <div className="preview-empty">
+                    <span>▦</span>
+                    <small>Sin imagen</small>
+                  </div>
+                )}
+              </div>
+
+              <div className="preview-copy">
+                <strong>{form.name || "Nombre del método"}</strong>
+                <span>
+                  {form.account_holder || "Titular de la cuenta"}
+                </span>
+                <small>
+                  {form.account_number || "Número de cuenta / teléfono"}
+                </small>
+              </div>
+            </div>
+          </section>
+
+          <div className="actions">
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() => router.back()}
+              disabled={saving || uploading}
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              className="primary-button"
+              disabled={saving || uploading}
+            >
+              {saving ? "Guardando..." : "Guardar QR"}
+            </button>
           </div>
-        </section>
+        </form>
       </div>
+
+      <style jsx>{`
+        .qr-page {
+          min-height:100dvh;
+          width:100%;
+          box-sizing:border-box;
+          padding:14px 10px 34px;
+          background:#080808;
+          color:#fff;
+          font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+        }
+
+        .qr-shell {
+          width:100%;
+          max-width:620px;
+          margin:0 auto;
+        }
+
+        .qr-header {
+          display:flex;
+          align-items:flex-start;
+          gap:8px;
+          margin-bottom:9px;
+        }
+
+        .back-button {
+          width:30px;
+          height:30px;
+          display:grid;
+          place-items:center;
+          flex-shrink:0;
+          margin-top:2px;
+          border:1px solid rgba(255,255,255,.06);
+          border-radius:8px;
+          background:#111;
+          color:rgba(255,255,255,.7);
+          font-size:15px;
+          cursor:pointer;
+        }
+
+        .header-copy {
+          min-width:0;
+        }
+
+        .eyebrow {
+          display:block;
+          color:#f97316;
+          font-size:7px;
+          font-weight:900;
+          letter-spacing:1.15px;
+        }
+
+        .header-copy h1 {
+          margin:2px 0 0;
+          font-size:23px;
+          line-height:1.05;
+          letter-spacing:-.55px;
+          font-weight:900;
+        }
+
+        .header-copy p {
+          margin:4px 0 0;
+          color:rgba(255,255,255,.34);
+          font-size:8px;
+        }
+
+        .qr-form {
+          display:flex;
+          flex-direction:column;
+          gap:6px;
+        }
+
+        .section,
+        .preview {
+          padding:10px;
+          border:1px solid rgba(255,255,255,.055);
+          border-radius:11px;
+          background:#101010;
+        }
+
+        .section-heading {
+          display:flex;
+          align-items:center;
+          gap:7px;
+          margin-bottom:9px;
+        }
+
+        .section-heading > span {
+          width:25px;
+          height:25px;
+          display:grid;
+          place-items:center;
+          flex-shrink:0;
+          border-radius:7px;
+          background:rgba(249,115,22,.07);
+          color:#f97316;
+          font-size:7px;
+          font-weight:900;
+        }
+
+        .section-heading strong {
+          display:block;
+          font-size:9px;
+          font-weight:850;
+        }
+
+        .section-heading small {
+          display:block;
+          margin-top:2px;
+          color:rgba(255,255,255,.23);
+          font-size:7px;
+        }
+
+        .field {
+          display:block;
+          margin-bottom:8px;
+        }
+
+        .field:last-child {
+          margin-bottom:0;
+        }
+
+        .field > span {
+          display:block;
+          margin-bottom:4px;
+          color:rgba(255,255,255,.48);
+          font-size:8px;
+          font-weight:750;
+        }
+
+        .field input {
+          width:100%;
+          height:35px;
+          box-sizing:border-box;
+          padding:7px 8px;
+          border:1px solid rgba(255,255,255,.06);
+          border-radius:7px;
+          background:#0a0e14;
+          color:#fff;
+          outline:none;
+          font:500 9px system-ui,sans-serif;
+        }
+
+        .field input:focus {
+          border-color:rgba(249,115,22,.38);
+          box-shadow:0 0 0 3px rgba(249,115,22,.05);
+        }
+
+        .upload {
+          position:relative;
+          display:block;
+          min-height:145px;
+          overflow:hidden;
+          border:1px dashed rgba(249,115,22,.2);
+          border-radius:9px;
+          background:rgba(249,115,22,.025);
+          cursor:pointer;
+        }
+
+        .upload input {
+          position:absolute;
+          inset:0;
+          z-index:4;
+          width:100%;
+          height:100%;
+          opacity:0;
+          cursor:pointer;
+        }
+
+        .upload-empty {
+          min-height:145px;
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          justify-content:center;
+          gap:4px;
+          text-align:center;
+        }
+
+        .upload-icon {
+          width:34px;
+          height:34px;
+          display:grid;
+          place-items:center;
+          margin-bottom:2px;
+          border-radius:9px;
+          background:rgba(249,115,22,.1);
+          color:#f97316;
+          font-size:19px;
+        }
+
+        .upload-empty strong {
+          color:rgba(255,255,255,.62);
+          font-size:9px;
+        }
+
+        .upload-empty small {
+          color:rgba(255,255,255,.23);
+          font-size:7px;
+        }
+
+        .upload.has-image {
+          min-height:185px;
+        }
+
+        .upload img {
+          display:block;
+          width:100%;
+          height:185px;
+          object-fit:contain;
+          background:#080808;
+        }
+
+        .change-image,
+        .uploading {
+          position:absolute;
+          left:7px;
+          right:7px;
+          bottom:7px;
+          z-index:5;
+          padding:6px 7px;
+          border-radius:6px;
+          background:rgba(0,0,0,.78);
+          color:#fff;
+          font-size:7px;
+          font-weight:750;
+          text-align:center;
+          pointer-events:none;
+        }
+
+        .setting-row {
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:10px;
+          padding:3px 1px;
+        }
+
+        .setting-row strong {
+          display:block;
+          color:rgba(255,255,255,.67);
+          font-size:9px;
+        }
+
+        .setting-row small {
+          display:block;
+          margin-top:2px;
+          color:rgba(255,255,255,.23);
+          font-size:7px;
+        }
+
+        .switch {
+          width:35px;
+          height:20px;
+          padding:2px;
+          border:0;
+          border-radius:999px;
+          background:#303030;
+          cursor:pointer;
+          box-sizing:border-box;
+          flex-shrink:0;
+        }
+
+        .switch span {
+          display:block;
+          width:16px;
+          height:16px;
+          border-radius:50%;
+          background:#fff;
+          box-shadow:0 1px 4px rgba(0,0,0,.35);
+          transition:.16s;
+        }
+
+        .switch.on {
+          background:#16a34a;
+        }
+
+        .switch.on span {
+          transform:translateX(15px);
+        }
+
+        .preview {
+          background:linear-gradient(145deg,#11100f,#0e0e0e);
+        }
+
+        .preview-heading {
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:8px;
+          margin-bottom:8px;
+        }
+
+        .preview-heading strong {
+          display:block;
+          margin-top:2px;
+          font-size:9px;
+          font-weight:850;
+        }
+
+        .preview-status {
+          padding:4px 6px;
+          border-radius:999px;
+          background:rgba(239,68,68,.07);
+          color:#ef4444;
+          font-size:6px;
+          font-weight:850;
+          text-transform:uppercase;
+        }
+
+        .preview-status.active {
+          background:rgba(34,197,94,.08);
+          color:#22c55e;
+        }
+
+        .preview-card {
+          display:flex;
+          align-items:center;
+          gap:9px;
+          padding:8px;
+          border:1px solid rgba(255,255,255,.05);
+          border-radius:8px;
+          background:#090909;
+        }
+
+        .preview-image {
+          width:72px;
+          height:72px;
+          display:grid;
+          place-items:center;
+          flex-shrink:0;
+          overflow:hidden;
+          border-radius:7px;
+          background:#111;
+        }
+
+        .preview-image img {
+          width:100%;
+          height:100%;
+          object-fit:contain;
+        }
+
+        .preview-empty {
+          display:flex;
+          flex-direction:column;
+          align-items:center;
+          gap:3px;
+          color:rgba(255,255,255,.2);
+        }
+
+        .preview-empty span {
+          color:#f97316;
+          font-size:20px;
+        }
+
+        .preview-empty small {
+          font-size:6px;
+        }
+
+        .preview-copy {
+          min-width:0;
+        }
+
+        .preview-copy strong {
+          display:block;
+          overflow:hidden;
+          text-overflow:ellipsis;
+          white-space:nowrap;
+          color:#f97316;
+          font-size:9px;
+          font-weight:850;
+        }
+
+        .preview-copy span,
+        .preview-copy small {
+          display:block;
+          overflow:hidden;
+          text-overflow:ellipsis;
+          white-space:nowrap;
+          margin-top:3px;
+          color:rgba(255,255,255,.38);
+          font-size:7px;
+        }
+
+        .preview-copy small {
+          color:rgba(255,255,255,.2);
+        }
+
+        .actions {
+          display:grid;
+          grid-template-columns:1fr 1.35fr;
+          gap:5px;
+        }
+
+        .actions button {
+          min-height:39px;
+          border-radius:8px;
+          font:850 8px system-ui,sans-serif;
+          cursor:pointer;
+        }
+
+        .primary-button {
+          border:0;
+          background:#f97316;
+          color:#fff;
+          box-shadow:0 6px 16px rgba(249,115,22,.12);
+        }
+
+        .secondary-button {
+          border:1px solid rgba(255,255,255,.06);
+          background:#111;
+          color:rgba(255,255,255,.5);
+        }
+
+        .actions button:disabled {
+          opacity:.5;
+          cursor:not-allowed;
+        }
+
+        @media(max-width:390px) {
+          .qr-page {
+            padding-left:8px;
+            padding-right:8px;
+          }
+
+          .section,
+          .preview {
+            padding:9px;
+          }
+
+          .preview-card {
+            align-items:flex-start;
+          }
+        }
+      `}</style>
     </main>
   );
 }
-
-const cardStyle = { 
-  background: "#121212", 
-  border: "1px solid #222", 
-  borderRadius: "20px", 
-  padding: "24px",
-  boxSizing: "border-box" as const
-};
-
-const inputStyle = { 
-  width: "100%", 
-  padding: "12px 14px", 
-  borderRadius: "12px", 
-  background: "#161616", 
-  border: "1px solid #262626", 
-  color: "#fff",
-  fontSize: "14px",
-  outline: "none",
-  boxSizing: "border-box" as const
-};
-
-const buttonPrimary = { 
-  padding: "14px 24px", 
-  borderRadius: "12px", 
-  background: "#f97316", 
-  color: "#fff", 
-  border: "none", 
-  cursor: "pointer", 
-  fontWeight: "700" as const,
-  fontSize: "14.5px",
-  boxShadow: "0 4px 14px rgba(249,115,22,0.2)"
-};
-
-const buttonSecondary = { 
-  padding: "14px 24px", 
-  borderRadius: "12px", 
-  background: "transparent", 
-  color: "#a1a1aa", 
-  border: "1px solid #262626", 
-  cursor: "pointer",
-  fontSize: "14.5px",
-  fontWeight: "500" as const
-};

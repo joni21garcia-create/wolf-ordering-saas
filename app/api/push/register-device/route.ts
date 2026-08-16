@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       .from("restaurant_users")
       .select("restaurant_id")
       .eq("auth_user_id", user.id)
-      .single();
+      .maybeSingle();
 
     if (!restaurantUser) {
 

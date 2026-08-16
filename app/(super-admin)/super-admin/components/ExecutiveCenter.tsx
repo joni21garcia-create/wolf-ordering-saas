@@ -16,213 +16,325 @@ interface Props {
   settingsModules: Module[];
 }
 
+/**
+ * UI ONLY
+ *
+ * No modifica:
+ * - permisos
+ * - autenticación
+ * - módulos recibidos
+ * - rutas
+ * - lógica de negocio
+ *
+ * Solo reorganiza la presentación de los módulos para desktop y móvil.
+ */
 export default function ExecutiveCenter({
   operationModules = [],
   settingsModules = [],
 }: Props) {
-  const totalModulesCount = operationModules.length + settingsModules.length;
+  const totalModulesCount =
+    operationModules.length + settingsModules.length;
 
   return (
-    <section style={{ marginBottom: 48 }}>
-      {/* HERO BANNER REDISEÑADO (SIN GIGANTISMO) */}
-      <div
-        style={{
-          marginBottom: 24,
-          padding: "24px 32px",
-          borderRadius: 20,
-          background: "linear-gradient(180deg, #141414, #0d0d0d)",
-          border: "1px solid rgba(255, 255, 255, 0.05)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 24,
-        }}
-      >
-        <div style={{ flex: 1, minWidth: 280 }}>
-          <span
-            style={{
-              color: "#f97316",
-              fontWeight: 700,
-              letterSpacing: "1.5px",
-              textTransform: "uppercase",
-              fontSize: 11,
-            }}
-          >
-            Executive Command Center
-          </span>
+    <section className="executive-center">
+      <div className="section-intro">
+        <div className="section-copy">
+          <span className="eyebrow">ACCESOS</span>
 
-          <h2
-            style={{
-              margin: "6px 0 0",
-              color: "#fff",
-              fontSize: 24,
-              fontWeight: 800,
-              letterSpacing: "-0.5px",
-            }}
-          >
-            Módulos Globales
-          </h2>
+          <h2>Módulos</h2>
 
-          <p
-            style={{
-              marginTop: 8,
-              color: "#666666",
-              fontSize: 13,
-              lineHeight: 1.5,
-              margin: "8px 0 0 0",
-              maxWidth: 680,
-            }}
-          >
-            Control centralizado para Wolf Ordering SaaS. Estos accesos administran parámetros 
-            globales del sistema, mientras que cada restaurante cuenta con su panel operativo independiente.
+          <p>
+            Accede a las herramientas globales disponibles para tu cuenta.
           </p>
         </div>
 
-        {/* CONTADOR DE MÓDULOS MINIATURIZADO */}
-        <div
-          style={{
-            padding: "16px 24px",
-            borderRadius: 14,
-            background: "rgba(255, 255, 255, 0.01)",
-            border: "1px solid rgba(255, 255, 255, 0.03)",
-            textAlign: "right",
-            minWidth: 180,
-          }}
-        >
-          <div
-            style={{
-              color: "#666666",
-              fontSize: 11,
-              fontWeight: 600,
-              textTransform: "uppercase",
-              letterSpacing: "1px",
-            }}
-          >
-            Módulos Activos
-          </div>
-
-          <div
-            style={{
-              color: "#fff",
-              fontWeight: 800,
-              fontSize: 32,
-              lineHeight: 1,
-              margin: "4px 0",
-            }}
-          >
-            {totalModulesCount}
-          </div>
-
-          <div
-            style={{
-              color: "#22c55e",
-              fontWeight: 600,
-              fontSize: 11,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              gap: 4,
-            }}
-          >
-            <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#22c55e" }} />
-            Sincronizado
-          </div>
+        <div className="module-count">
+          <strong>{totalModulesCount}</strong>
+          <span>módulos disponibles</span>
         </div>
       </div>
 
-      {/* SECCIÓN: OPERATIVOS */}
-      {operationModules.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <h4 style={{ color: "#404040", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 16 }}>
-            Operaciones Globales
-          </h4>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: 16,
-            }}
-          >
-            {operationModules.map((module) => (
-              <ExecutiveCard
-                key={module.code}
-                title={module.title}
-                description={module.description}
-                href={module.href}
-                color={module.color}
-                icon={module.icon}
-                badge="Operación"
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="groups">
+        {operationModules.length > 0 && (
+          <ModuleGroup
+            title="Operación"
+            modules={operationModules}
+          />
+        )}
 
-      {/* SECCIÓN: CONFIGURACIÓN (Por si añades de esta categoría en config/modules.tsx) */}
-      {settingsModules.length > 0 && (
-        <div>
-          <h4 style={{ color: "#404040", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 16 }}>
-            Configuración de Plataforma
-          </h4>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: 16,
-            }}
-          >
-            {settingsModules.map((module) => (
-              <ExecutiveCard
-                key={module.code}
-                title={module.title}
-                description={module.description}
-                href={module.href}
-                color={module.color}
-                icon={module.icon}
-                badge="Configuración"
-              />
-            ))}
-          </div>
-        </div>
-      )}
+        {settingsModules.length > 0 && (
+          <ModuleGroup
+            title="Configuración"
+            modules={settingsModules}
+          />
+        )}
+      </div>
 
-      {/* PANTALLA VACÍA */}
       {totalModulesCount === 0 && (
-        <div
-          style={{
-            padding: 40,
-            borderRadius: 14,
-            textAlign: "center",
-            background: "rgba(255, 255, 255, 0.01)",
-            border: "1px solid rgba(255, 255, 255, 0.03)",
-          }}
-        >
-          <h3
-            style={{
-              color: "#fff",
-              fontSize: 16,
-              fontWeight: 600,
-              marginBottom: 8,
-            }}
-          >
-            No tienes módulos asignados
-          </h3>
-
-          <p
-            style={{
-              color: "#666666",
-              margin: 0,
-              fontSize: 13,
-              lineHeight: 1.5,
-            }}
-          >
-            Los módulos autorizados para tu rol de Super Administrador aparecerán aquí automáticamente.
-          </p>
+        <div className="empty-state">
+          <strong>No tienes módulos asignados</strong>
+          <span>
+            Los módulos autorizados para tu cuenta aparecerán aquí
+            automáticamente.
+          </span>
         </div>
       )}
+
+      <style jsx>{`
+        .executive-center {
+          width: 100%;
+          margin-bottom: 34px;
+        }
+
+        .section-intro {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 20px;
+          margin-bottom: 14px;
+        }
+
+        .section-copy {
+          min-width: 0;
+        }
+
+        .eyebrow {
+          display: block;
+          margin-bottom: 5px;
+          color: #f97316;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 1.1px;
+          text-transform: uppercase;
+        }
+
+        h2 {
+          margin: 0;
+          color: #fff;
+          font-size: 20px;
+          line-height: 1.15;
+          font-weight: 800;
+          letter-spacing: -0.5px;
+        }
+
+        .section-copy p {
+          margin: 5px 0 0;
+          color: #666;
+          font-size: 12px;
+          line-height: 1.45;
+        }
+
+        .module-count {
+          display: flex;
+          align-items: baseline;
+          gap: 7px;
+          flex-shrink: 0;
+          color: #626262;
+        }
+
+        .module-count strong {
+          color: #fff;
+          font-size: 20px;
+          font-weight: 850;
+        }
+
+        .module-count span {
+          font-size: 10px;
+        }
+
+        .groups {
+          display: grid;
+          gap: 18px;
+        }
+
+        .group {
+          min-width: 0;
+        }
+
+        .group-title {
+          margin: 0 0 8px;
+          color: #4f4f4f;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.9px;
+          text-transform: uppercase;
+        }
+
+        .module-list {
+          display: grid;
+          gap: 8px;
+        }
+
+        .module {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          min-height: 60px;
+          padding: 10px 13px;
+          color: inherit;
+          text-decoration: none;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 13px;
+          background: #0e0e0e;
+          transition:
+            border-color 0.18s ease,
+            background 0.18s ease,
+            transform 0.18s ease;
+        }
+
+        .module:hover {
+          background: #111;
+          border-color: rgba(249, 115, 22, 0.18);
+          transform: translateY(-1px);
+        }
+
+        .module-icon {
+          width: 38px;
+          height: 38px;
+          flex: 0 0 38px;
+          display: grid;
+          place-items: center;
+          overflow: hidden;
+          border-radius: 10px;
+          background: rgba(249, 115, 22, 0.06);
+          border: 1px solid rgba(249, 115, 22, 0.1);
+          color: #f97316;
+        }
+
+        .module-icon :global(svg) {
+          width: 18px;
+          height: 18px;
+        }
+
+        .module-content {
+          min-width: 0;
+          flex: 1;
+        }
+
+        .module-title {
+          display: block;
+          color: #f2f2f2;
+          font-size: 13px;
+          font-weight: 750;
+        }
+
+        .module-description {
+          display: block;
+          margin-top: 3px;
+          overflow: hidden;
+          color: #626262;
+          font-size: 11px;
+          line-height: 1.35;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .module-arrow {
+          flex: 0 0 auto;
+          color: #4d4d4d;
+          font-size: 18px;
+        }
+
+        .empty-state {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          padding: 20px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 13px;
+          background: #0e0e0e;
+        }
+
+        .empty-state strong {
+          color: #f5f5f5;
+          font-size: 13px;
+        }
+
+        .empty-state span {
+          color: #666;
+          font-size: 11px;
+          line-height: 1.4;
+        }
+
+        /*
+         * ExecutiveCard se mantiene importado para no alterar dependencias
+         * existentes del proyecto. La presentación principal usa la lista
+         * compacta de abajo.
+         */
+        :global(.executive-card) {
+          display: none;
+        }
+
+        @media (min-width: 760px) {
+          .module-list {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (min-width: 1050px) {
+          .module-list {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 600px) {
+          .section-intro {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 8px;
+          }
+
+          .module-count {
+            padding: 6px 0;
+          }
+
+          .module-description {
+            white-space: normal;
+          }
+
+          .module {
+            min-height: 58px;
+          }
+        }
+      `}</style>
     </section>
   );
 }
 
+function ModuleGroup({
+  title,
+  modules,
+}: {
+  title: string;
+  modules: Module[];
+}) {
+  return (
+    <div className="group">
+      <h3 className="group-title">{title}</h3>
 
+      <div className="module-list">
+        {modules.map((module) => (
+          <a
+            key={module.code}
+            href={module.href}
+            className="module"
+            aria-label={`Abrir ${module.title}`}
+          >
+            <span className="module-icon">{module.icon}</span>
+
+            <span className="module-content">
+              <span className="module-title">{module.title}</span>
+              <span className="module-description">
+                {module.description}
+              </span>
+            </span>
+
+            <span className="module-arrow" aria-hidden="true">
+              ›
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}

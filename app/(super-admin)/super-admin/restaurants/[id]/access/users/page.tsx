@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import PermissionGuard from "@/components/auth/PermissionGuard";
@@ -22,6 +22,7 @@ type RestaurantUser = {
 
 export default function UsersPage() {
   const params = useParams();
+  const router = useRouter();
   const restaurantId = params.id as string;
 
   const [users, setUsers] = useState<RestaurantUser[]>([]);
@@ -88,57 +89,78 @@ export default function UsersPage() {
     <PermissionGuard permission="users">
       <main
         style={{
-          maxWidth: "1000px",
+          width: "100%",
+          maxWidth: "760px",
           margin: "0 auto",
-          padding: "24px 20px 60px",
+          padding: "16px 12px 42px",
           color: "#fff",
+          boxSizing: "border-box",
         }}
       >
-        {/* HEADER */}
         <header
           style={{
             display: "flex",
+            alignItems: "center",
             justifyContent: "space-between",
-            alignItems: "flex-end",
-            gap: "20px",
-            marginBottom: "22px",
-            flexWrap: "wrap",
+            gap: "10px",
+            marginBottom: "12px",
           }}
         >
-          <div>
+          <div style={{ minWidth: 0 }}>
+            <button
+              type="button"
+              onClick={() => router.back()}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                border: "1px solid rgba(255,255,255,.07)",
+                background: "rgba(255,255,255,.035)",
+                color: "rgba(255,255,255,.62)",
+                borderRadius: "999px",
+                padding: "6px 10px 6px 7px",
+                marginBottom: "10px",
+                cursor: "pointer",
+                fontSize: "9px",
+                fontWeight: 750,
+              }}
+              aria-label="Volver"
+            >
+              <span
+                style={{
+                  display: "grid",
+                  placeItems: "center",
+                  width: "18px",
+                  height: "18px",
+                  borderRadius: "50%",
+                  background: "rgba(249,115,22,.12)",
+                  color: "#f97316",
+                  fontSize: "17px",
+                  lineHeight: 1,
+                }}
+              >
+                ‹
+              </span>
+              Volver
+            </button>
+
             <div
               style={{
                 color: "#f97316",
-                fontSize: "11px",
+                fontSize: "8px",
                 fontWeight: 800,
-                letterSpacing: "1.6px",
+                letterSpacing: "1.2px",
                 textTransform: "uppercase",
-                marginBottom: "7px",
+                marginBottom: "3px",
               }}
             >
               Equipo
             </div>
-
-            <h1
-              style={{
-                margin: 0,
-                fontSize: "28px",
-                lineHeight: 1.15,
-                fontWeight: 800,
-                letterSpacing: "-0.4px",
-              }}
-            >
+            <h1 style={{ margin: 0, fontSize: "22px", lineHeight: 1.1, fontWeight: 800 }}>
               Usuarios
             </h1>
-
-            <p
-              style={{
-                margin: "7px 0 0",
-                color: "rgba(255,255,255,.45)",
-                fontSize: "13px",
-              }}
-            >
-              Personas con acceso a este restaurante.
+            <p style={{ margin: "4px 0 0", color: "rgba(255,255,255,.38)", fontSize: "10px" }}>
+              Accesos del restaurante.
             </p>
           </div>
 
@@ -147,58 +169,59 @@ export default function UsersPage() {
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: "7px",
+              gap: "5px",
+              flexShrink: 0,
               background: "#f97316",
               color: "#fff",
-              padding: "10px 14px",
-              borderRadius: "10px",
+              padding: "8px 10px",
+              borderRadius: "8px",
               textDecoration: "none",
-              fontSize: "13px",
-              fontWeight: 750,
-              whiteSpace: "nowrap",
+              fontSize: "10px",
+              fontWeight: 800,
             }}
           >
-            <span style={{ fontSize: "16px" }}>+</span>
-            Nuevo usuario
+            <span style={{ fontSize: "14px", lineHeight: 1 }}>+</span>
+            Nuevo
           </Link>
         </header>
 
-        {/* TABS */}
         <div
           style={{
             display: "flex",
-            gap: "7px",
-            borderBottom: "1px solid rgba(255,255,255,.07)",
-            paddingBottom: "11px",
-            marginBottom: "16px",
+            gap: "5px",
+            overflowX: "auto",
+            paddingBottom: "2px",
+            marginBottom: "10px",
+            scrollbarWidth: "none",
           }}
         >
           <Link
             href={`/super-admin/restaurants/${restaurantId}/access/users`}
             style={{
+              flexShrink: 0,
               textDecoration: "none",
               color: "#fff",
-              background: "rgba(249,115,22,.14)",
-              border: "1px solid rgba(249,115,22,.28)",
-              borderRadius: "9px",
-              padding: "8px 13px",
-              fontSize: "12px",
-              fontWeight: 750,
+              background: "rgba(249,115,22,.12)",
+              border: "1px solid rgba(249,115,22,.24)",
+              borderRadius: "7px",
+              padding: "6px 9px",
+              fontSize: "9px",
+              fontWeight: 800,
             }}
           >
             Usuarios
           </Link>
-
           <Link
             href={`/super-admin/restaurants/${restaurantId}/access/roles`}
             style={{
+              flexShrink: 0,
               textDecoration: "none",
-              color: "rgba(255,255,255,.52)",
-              background: "rgba(255,255,255,.035)",
-              border: "1px solid rgba(255,255,255,.06)",
-              borderRadius: "9px",
-              padding: "8px 13px",
-              fontSize: "12px",
+              color: "rgba(255,255,255,.5)",
+              background: "rgba(255,255,255,.025)",
+              border: "1px solid rgba(255,255,255,.05)",
+              borderRadius: "7px",
+              padding: "6px 9px",
+              fontSize: "9px",
               fontWeight: 700,
             }}
           >
@@ -206,275 +229,192 @@ export default function UsersPage() {
           </Link>
         </div>
 
-        {/* RESUMEN MINIMALISTA */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "18px",
-            marginBottom: "15px",
-            color: "rgba(255,255,255,.42)",
-            fontSize: "12px",
+            gap: "8px",
+            marginBottom: "8px",
+            color: "rgba(255,255,255,.38)",
+            fontSize: "9px",
           }}
         >
-          <span>
-            <strong style={{ color: "#fff" }}>{users.length}</strong>{" "}
-            usuarios
-          </span>
-
-          <span
-            style={{
-              width: "4px",
-              height: "4px",
-              borderRadius: "50%",
-              background: "#22c55e",
-            }}
-          />
-
+          <span><strong style={{ color: "#ddd", fontSize: "11px" }}>{users.length}</strong> usuarios</span>
+          <span style={{ color: "#22c55e" }}>●</span>
           <span>{activeUsers} activos</span>
-
           {inactiveUsers > 0 && (
             <>
-              <span
-                style={{
-                  width: "4px",
-                  height: "4px",
-                  borderRadius: "50%",
-                  background: "#facc15",
-                }}
-              />
-
+              <span style={{ color: "#facc15" }}>●</span>
               <span>{inactiveUsers} inactivos</span>
             </>
           )}
         </div>
 
-        {/* LISTA */}
         <section
           style={{
-            background: "#111827",
-            border: "1px solid rgba(255,255,255,.07)",
-            borderRadius: "15px",
+            border: "1px solid rgba(255,255,255,.06)",
+            borderRadius: "11px",
             overflow: "hidden",
+            background: "rgba(17,24,39,.72)",
           }}
         >
           {loading ? (
-            <div
-              style={{
-                padding: "40px 20px",
-                textAlign: "center",
-                color: "rgba(255,255,255,.4)",
-                fontSize: "13px",
-              }}
-            >
+            <div style={{ padding: "30px 15px", textAlign: "center", color: "rgba(255,255,255,.4)", fontSize: "10px" }}>
               Cargando usuarios...
             </div>
           ) : users.length === 0 ? (
-            <div
-              style={{
-                padding: "45px 20px",
-                textAlign: "center",
-              }}
-            >
+            <div style={{ padding: "35px 15px", textAlign: "center" }}>
               <div
                 style={{
-                  fontSize: "26px",
-                  marginBottom: "10px",
-                  opacity: 0.7,
+                  width: "34px",
+                  height: "34px",
+                  margin: "0 auto 8px",
+                  display: "grid",
+                  placeItems: "center",
+                  borderRadius: "9px",
+                  background: "rgba(255,255,255,.035)",
+                  color: "#777",
+                  fontSize: "15px",
                 }}
               >
                 👤
               </div>
-
-              <div
-                style={{
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  marginBottom: "5px",
-                }}
-              >
+              <div style={{ fontSize: "11px", fontWeight: 750, marginBottom: "3px" }}>
                 No hay usuarios
               </div>
-
-              <div
-                style={{
-                  color: "rgba(255,255,255,.4)",
-                  fontSize: "12px",
-                }}
-              >
+              <div style={{ color: "rgba(255,255,255,.35)", fontSize: "9px" }}>
                 Agrega el primer usuario del restaurante.
               </div>
             </div>
           ) : (
             users.map((user, index) => (
-              <div
+              <article
                 key={user.id}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "15px",
-                  padding: "15px 16px",
+                  display: "grid",
+                  gridTemplateColumns: "minmax(0,1fr) auto",
+                  gap: "8px",
+                  padding: "9px 10px",
                   borderBottom:
-                    index === users.length - 1
-                      ? "none"
-                      : "1px solid rgba(255,255,255,.055)",
+                    index === users.length - 1 ? "none" : "1px solid rgba(255,255,255,.045)",
                 }}
               >
-                {/* USUARIO */}
-                <div
-                  style={{
-                    minWidth: 0,
-                    flex: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                  }}
-                >
-                  {/* AVATAR */}
+                <div style={{ minWidth: 0, display: "flex", alignItems: "center", gap: "8px" }}>
                   <div
                     style={{
-                      width: "36px",
-                      height: "36px",
-                      minWidth: "36px",
-                      borderRadius: "10px",
-                      background: user.active
-                        ? "rgba(249,115,22,.12)"
-                        : "rgba(255,255,255,.045)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: user.active
-                        ? "#f97316"
-                        : "rgba(255,255,255,.35)",
-                      fontSize: "14px",
-                      fontWeight: 800,
+                      width: "29px",
+                      height: "29px",
+                      minWidth: "29px",
+                      display: "grid",
+                      placeItems: "center",
+                      borderRadius: "8px",
+                      background: user.active ? "rgba(249,115,22,.10)" : "rgba(255,255,255,.035)",
+                      color: user.active ? "#f97316" : "#666",
+                      fontSize: "11px",
+                      fontWeight: 850,
                     }}
                   >
-                    {(user.full_name || user.email || "?")
-                      .charAt(0)
-                      .toUpperCase()}
+                    {(user.full_name || user.email || "?").charAt(0).toUpperCase()}
                   </div>
 
-                  <div
-                    style={{
-                      minWidth: 0,
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        flexWrap: "wrap",
-                      }}
-                    >
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "5px", minWidth: 0 }}>
                       <span
                         style={{
-                          fontSize: "13px",
+                          minWidth: 0,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          color: "#ddd",
+                          fontSize: "10px",
                           fontWeight: 750,
-                          color: "#fff",
                         }}
                       >
                         {user.full_name || user.email}
                       </span>
-
                       <span
                         style={{
-                          width: "6px",
-                          height: "6px",
+                          width: "5px",
+                          height: "5px",
+                          flexShrink: 0,
                           borderRadius: "50%",
-                          background: user.active
-                            ? "#22c55e"
-                            : "#6b7280",
+                          background: user.active ? "#22c55e" : "#6b7280",
                         }}
                       />
                     </div>
 
                     <div
                       style={{
-                        marginTop: "3px",
-                        color: "rgba(255,255,255,.38)",
-                        fontSize: "11px",
+                        marginTop: "2px",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        maxWidth: "420px",
+                        color: "rgba(255,255,255,.34)",
+                        fontSize: "8px",
                       }}
                     >
                       {user.email}
                     </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "3px" }}>
+                      <span style={{ color: "#f97316", fontSize: "8px", fontWeight: 750 }}>
+                        {user.restaurant_roles?.name || "Sin rol"}
+                      </span>
+                      <span style={{ color: user.active ? "#22c55e" : "#777", fontSize: "8px", fontWeight: 700 }}>
+                        {user.active ? "Activo" : "Inactivo"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                {/* ROL */}
-                <div
-                  style={{
-                    minWidth: "110px",
-                    color: "#f97316",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                  }}
-                >
-                  {user.restaurant_roles?.name || "Sin rol"}
-                </div>
-
-                {/* ESTADO */}
-                <div
-                  style={{
-                    minWidth: "65px",
-                    color: user.active
-                      ? "#22c55e"
-                      : "rgba(255,255,255,.35)",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                  }}
-                >
-                  {user.active ? "Activo" : "Inactivo"}
-                </div>
-
-                {/* ACCIONES */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
+                <div style={{ display: "flex", alignItems: "center", gap: "4px", alignSelf: "center" }}>
                   <Link
                     href={`/super-admin/restaurants/${restaurantId}/access/users/edit/${user.id}`}
+                    aria-label={`Editar ${user.full_name || user.email}`}
                     style={{
+                      display: "grid",
+                      placeItems: "center",
+                      width: "28px",
+                      height: "28px",
+                      boxSizing: "border-box",
                       textDecoration: "none",
-                      color: "rgba(255,255,255,.62)",
-                      background: "rgba(255,255,255,.045)",
-                      border: "1px solid rgba(255,255,255,.06)",
-                      borderRadius: "8px",
-                      padding: "7px 9px",
-                      fontSize: "11px",
-                      fontWeight: 700,
+                      color: "rgba(255,255,255,.58)",
+                      background: "rgba(255,255,255,.035)",
+                      border: "1px solid rgba(255,255,255,.055)",
+                      borderRadius: "7px",
+                      fontSize: "8px",
+                      fontWeight: 750,
                     }}
                   >
-                    Editar
+                    Edit
                   </Link>
 
                   <button
+                    type="button"
                     onClick={() => toggleUser(user)}
+                    aria-label={
+                      user.active
+                        ? `Desactivar ${user.full_name || user.email}`
+                        : `Activar ${user.full_name || user.email}`
+                    }
                     style={{
-                      border: "none",
+                      width: "28px",
+                      height: "28px",
+                      boxSizing: "border-box",
+                      border: "1px solid rgba(255,255,255,.055)",
+                      borderRadius: "7px",
                       background: "transparent",
-                      color: user.active
-                        ? "rgba(255,255,255,.3)"
-                        : "#22c55e",
-                      padding: "7px 5px",
+                      color: user.active ? "#777" : "#22c55e",
+                      padding: 0,
                       cursor: "pointer",
                       fontSize: "11px",
-                      fontWeight: 700,
+                      fontWeight: 800,
                     }}
                   >
-                    {user.active ? "Desactivar" : "Activar"}
+                    {user.active ? "×" : "✓"}
                   </button>
                 </div>
-              </div>
+              </article>
             ))
           )}
         </section>

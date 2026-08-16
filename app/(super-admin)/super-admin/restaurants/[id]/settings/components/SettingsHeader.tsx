@@ -1,212 +1,96 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { darkButton, orangeButton } from "./styles";
 
-interface Props {
-  restaurantName?: string;
-  totalModules?: number;
-  configuredModules?: number;
-}
-
-export default function SettingsHeader({
-  restaurantName,
-  totalModules = 0,
-  configuredModules = 0,
-}: Props) {
+export default function SettingsHeader() {
   const router = useRouter();
 
-  const progress =
-    totalModules === 0
-      ? 0
-      : Math.round((configuredModules / totalModules) * 100);
-
   return (
-    <section
-      style={{
-        position: "relative",
-        overflow: "hidden",
-        marginBottom: 28,
-        borderRadius: 24,
-        padding: "28px 32px",
-        background: "linear-gradient(180deg,#171717 0%,#0b0b0b 100%)",
-        border: "1px solid rgba(255,255,255,.06)",
-        boxShadow: "0 15px 35px rgba(0,0,0,.15)",
-        boxSizing: "border-box",
-      }}
-    >
-      {/* Glow decorativo sutil */}
-      <div
-        style={{
-          position: "absolute",
-          top: -80,
-          right: -80,
-          width: 200,
-          height: 200,
-          borderRadius: "50%",
-          background: "rgba(249,115,22,.07)",
-          filter: "blur(50px)",
-          pointerEvents: "none",
-        }}
-      />
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 24,
-          flexWrap: "wrap",
-        }}
+    <nav className="actions" aria-label="Acciones de configuración">
+      <button
+        type="button"
+        className="action secondary"
+        onClick={() => router.push("/super-admin/restaurants")}
       >
-        {/* Información principal izquierda */}
-        <div style={{ flex: 1, minWidth: 280 }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "4px 12px",
-              borderRadius: 99,
-              background: "rgba(249,115,22,.1)",
-              border: "1px solid rgba(249,115,22,.2)",
-              color: "#f97316",
-              fontWeight: 800,
-              letterSpacing: 1,
-              fontSize: 12,
-              marginBottom: 10,
-            }}
-          >
-            ⚙ WOLF RESTAURANT OS
-          </div>
+        <span aria-hidden="true">🏪</span>
+        Lista
+      </button>
 
-          <h1
-            style={{
-              margin: 0,
-              color: "#fff",
-              fontSize: "clamp(26px, 4vw, 36px)",
-              fontWeight: 900,
-              lineHeight: 1.1,
-              letterSpacing: "-0.5px",
-            }}
-          >
-            Centro de Configuración
-          </h1>
+      <button
+        type="button"
+        className="action primary"
+        onClick={() => router.push("/super-admin")}
+      >
+        <span aria-hidden="true">⌂</span>
+        Dashboard
+      </button>
 
-          <p
-            style={{
-              marginTop: 8,
-              color: "#8b8b95",
-              maxWidth: 600,
-              fontSize: 14,
-              lineHeight: 1.5,
-            }}
-          >
-            Administra branding, menú, pedidos, marketing y parámetros avanzados del restaurante.
-          </p>
+      <style jsx>{`
+        .actions {
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+          gap: 7px;
+          margin: 0 0 16px;
+        }
 
-          {restaurantName && (
-            <div
-              style={{
-                marginTop: 14,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "6px 14px",
-                borderRadius: 99,
-                background: "rgba(34,197,94,.08)",
-                border: "1px solid rgba(34,197,94,.18)",
-                color: "#4ade80",
-                fontWeight: 700,
-                fontSize: 13,
-              }}
-            >
-              🏪 {restaurantName}
-            </div>
-          )}
-        </div>
+        .action {
+          min-height: 34px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 0 11px;
+          border-radius: 9px;
+          font: inherit;
+          font-size: 9px;
+          font-weight: 750;
+          cursor: pointer;
+          transition:
+            background 0.16s ease,
+            border-color 0.16s ease,
+            transform 0.16s ease;
+        }
 
-        {/* Panel lateral derecho compacto y fluido */}
-        <div
-          style={{
-            width: 340,
-            maxWidth: "100%",
-            padding: 20,
-            borderRadius: 20,
-            background: "rgba(255,255,255,.02)",
-            border: "1px solid rgba(255,255,255,.05)",
-            boxSizing: "border-box",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              color: "#fff",
-              fontWeight: 700,
-              marginBottom: 8,
-              fontSize: 13,
-            }}
-          >
-            <span style={{ color: "#8b8b95" }}>Estado de Configuración</span>
-            <span style={{ color: "#22c55e", fontWeight: 800 }}>
-              {configuredModules}/{totalModules} ({progress}%)
-            </span>
-          </div>
+        .action:hover {
+          transform: translateY(-1px);
+        }
 
-          {/* Barra de progreso unificada */}
-          <div
-            style={{
-              height: 6,
-              borderRadius: 99,
-              background: "rgba(255,255,255,.06)",
-              overflow: "hidden",
-              marginBottom: 16,
-            }}
-          >
-            <div
-              style={{
-                width: `${progress}%`,
-                height: "100%",
-                borderRadius: 99,
-                background: "linear-gradient(90deg,#22c55e,#16a34a)",
-                transition: "width 0.4s ease",
-              }}
-            />
-          </div>
+        .secondary {
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          background: rgba(255, 255, 255, 0.03);
+          color: #aaa;
+        }
 
-          {/* Botones de acción directos */}
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              flexWrap: "wrap",
-            }}
-          >
-            <button
-              style={{ ...darkButton, padding: "10px 14px", fontSize: 13, flex: 1 }}
-              onClick={() => router.back()}
-            >
-              ← Volver
-            </button>
-            <button
-              style={{ ...darkButton, padding: "10px 14px", fontSize: 13, flex: 1 }}
-              onClick={() => router.push("/super-admin/restaurants")}
-            >
-              🏪 Lista
-            </button>
-            <button
-              style={{ ...orangeButton, padding: "10px 14px", fontSize: 13, flex: 1.2 }}
-              onClick={() => router.push("/super-admin")}
-            >
-              🏛 Dashboard
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
+        .secondary:hover {
+          border-color: rgba(255, 255, 255, 0.13);
+          background: rgba(255, 255, 255, 0.055);
+          color: #eee;
+        }
+
+        .primary {
+          border: 1px solid rgba(255, 106, 0, 0.2);
+          background: rgba(255, 106, 0, 0.09);
+          color: #ff914b;
+        }
+
+        .primary:hover {
+          border-color: rgba(255, 106, 0, 0.32);
+          background: rgba(255, 106, 0, 0.14);
+        }
+
+        @media (max-width: 430px) {
+          .actions {
+            justify-content: stretch;
+            margin-bottom: 12px;
+          }
+
+          .action {
+            flex: 1;
+            min-height: 36px;
+          }
+        }
+      `}</style>
+    </nav>
   );
 }

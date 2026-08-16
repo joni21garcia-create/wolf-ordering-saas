@@ -99,22 +99,63 @@ export default function NewRolePage() {
   return (
     <main
       style={{
+        width: "100%",
         maxWidth: "620px",
         margin: "0 auto",
-        padding: "24px 20px 60px",
+        padding: "16px 12px 42px",
         color: "#fff",
+        boxSizing: "border-box",
+        fontFamily:
+          "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       }}
     >
-      {/* HEADER */}
-      <header style={{ marginBottom: "22px" }}>
+      <header style={{ marginBottom: "12px" }}>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          disabled={loading}
+          aria-label="Volver a roles"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "5px",
+            border: "1px solid rgba(255,255,255,.07)",
+            background: "rgba(255,255,255,.035)",
+            color: "rgba(255,255,255,.62)",
+            borderRadius: "999px",
+            padding: "6px 10px 6px 7px",
+            marginBottom: "10px",
+            cursor: loading ? "not-allowed" : "pointer",
+            fontSize: "9px",
+            fontWeight: 750,
+          }}
+        >
+          <span
+            style={{
+              display: "grid",
+              placeItems: "center",
+              width: "18px",
+              height: "18px",
+              borderRadius: "50%",
+              background: "rgba(249,115,22,.12)",
+              color: "#f97316",
+              fontSize: "17px",
+              lineHeight: 1,
+            }}
+          >
+            ‹
+          </span>
+          Volver
+        </button>
+
         <div
           style={{
             color: "#f97316",
-            fontSize: "11px",
+            fontSize: "8px",
             fontWeight: 800,
-            letterSpacing: "1.6px",
+            letterSpacing: "1.2px",
             textTransform: "uppercase",
-            marginBottom: "7px",
+            marginBottom: "3px",
           }}
         >
           Equipo
@@ -123,9 +164,10 @@ export default function NewRolePage() {
         <h1
           style={{
             margin: 0,
-            fontSize: "28px",
-            lineHeight: 1.15,
+            fontSize: "22px",
+            lineHeight: 1.1,
             fontWeight: 800,
+            letterSpacing: "-.4px",
           }}
         >
           Nuevo rol operativo
@@ -133,159 +175,213 @@ export default function NewRolePage() {
 
         <p
           style={{
-            margin: "7px 0 0",
-            color: "rgba(255,255,255,.45)",
-            fontSize: "13px",
-            lineHeight: 1.5,
+            margin: "4px 0 0",
+            color: "rgba(255,255,255,.38)",
+            fontSize: "10px",
+            lineHeight: 1.45,
           }}
         >
           Crea un rol para organizar el equipo del restaurante.
         </p>
       </header>
 
-      {/* FORMULARIO */}
       <section
         style={{
-          background: "#111827",
-          border: "1px solid rgba(255,255,255,.07)",
-          borderRadius: "16px",
-          padding: "20px",
+          border: "1px solid rgba(255,255,255,.06)",
+          borderRadius: "12px",
+          background: "rgba(17,24,39,.72)",
+          overflow: "hidden",
         }}
       >
-        {/* NOMBRE */}
-        <div style={{ marginBottom: "17px" }}>
-          <label style={labelStyle}>Nombre del rol</label>
-
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ej. Cajero"
-            style={inputStyle}
-            disabled={loading}
-          />
-        </div>
-
-        {/* CÃ“DIGO */}
-        <div style={{ marginBottom: "18px" }}>
-          <label style={labelStyle}>Código interno</label>
-
-          <input
-            value={code}
-            onChange={(e) =>
-              setCode(
-                e.target.value
-                  .toLowerCase()
-                  .replace(/\s+/g, "_")
-              )
-            }
-            placeholder="Ej. cashier"
-            style={inputStyle}
-            disabled={loading}
-          />
-
-          <p
-            style={{
-              margin: "7px 0 0",
-              color: "rgba(255,255,255,.3)",
-              fontSize: "11px",
-            }}
-          >
-            Usa un código corto y único, por ejemplo: cashier,
-            kitchen o waiter.
-          </p>
-        </div>
-
-        {/* INFORMACIÃ“N */}
         <div
           style={{
-            padding: "12px 13px",
-            borderRadius: "10px",
-            background: "rgba(249,115,22,.06)",
-            border: "1px solid rgba(249,115,22,.12)",
-            marginBottom: "20px",
+            padding: "11px 12px",
+            borderBottom: "1px solid rgba(255,255,255,.045)",
           }}
         >
+          <span
+            style={{
+              color: "rgba(255,255,255,.55)",
+              fontSize: "9px",
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: ".8px",
+            }}
+          >
+            Datos del rol
+          </span>
+        </div>
+
+        <div style={{ padding: "12px" }}>
+          <div style={{ marginBottom: "12px" }}>
+            <label style={labelStyle}>Nombre del rol</label>
+
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ej. Cajero"
+              autoComplete="off"
+              disabled={loading}
+              style={inputStyle}
+            />
+          </div>
+
+          <div style={{ marginBottom: "12px" }}>
+            <label style={labelStyle}>Código interno</label>
+
+            <input
+              value={code}
+              onChange={(e) =>
+                setCode(
+                  e.target.value
+                    .toLowerCase()
+                    .replace(/\s+/g, "_")
+                )
+              }
+              placeholder="Ej. cashier"
+              autoComplete="off"
+              spellCheck={false}
+              disabled={loading}
+              style={{
+                ...inputStyle,
+                fontFamily:
+                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              }}
+            />
+
+            <p
+              style={{
+                margin: "5px 0 0",
+                color: "rgba(255,255,255,.25)",
+                fontSize: "8px",
+                lineHeight: 1.4,
+              }}
+            >
+              Código corto y único. Ej.: cashier, kitchen o waiter.
+            </p>
+          </div>
+
           <div
             style={{
-              color: "rgba(255,255,255,.62)",
-              fontSize: "11px",
-              lineHeight: 1.55,
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "8px",
+              padding: "9px 10px",
+              borderRadius: "8px",
+              background: "rgba(249,115,22,.045)",
+              border: "1px solid rgba(249,115,22,.10)",
+              marginBottom: "12px",
             }}
           >
-            Este rol será operativo. Los permisos de los módulos
-            son administrados por Wolf.
+            <span
+              style={{
+                flexShrink: 0,
+                width: "18px",
+                height: "18px",
+                display: "grid",
+                placeItems: "center",
+                borderRadius: "6px",
+                background: "rgba(249,115,22,.10)",
+                color: "#f97316",
+                fontSize: "9px",
+                fontWeight: 800,
+              }}
+            >
+              i
+            </span>
+
+            <div
+              style={{
+                color: "rgba(255,255,255,.38)",
+                fontSize: "8px",
+                lineHeight: 1.45,
+              }}
+            >
+              Este rol será operativo. Sus permisos de módulos se
+              administran posteriormente desde Permisos.
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "6px",
+              paddingTop: "11px",
+              borderTop: "1px solid rgba(255,255,255,.045)",
+            }}
+          >
+            <button
+              type="button"
+              onClick={createRole}
+              disabled={loading}
+              style={{
+                flex: 1,
+                minHeight: "38px",
+                border: "none",
+                borderRadius: "8px",
+                background: loading ? "rgba(249,115,22,.3)" : "#f97316",
+                color: "#fff",
+                cursor: loading ? "not-allowed" : "pointer",
+                fontSize: "10px",
+                fontWeight: 800,
+              }}
+            >
+              {loading ? "Creando..." : "Crear rol"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => router.back()}
+              disabled={loading}
+              style={{
+                minHeight: "38px",
+                padding: "0 12px",
+                border: "1px solid rgba(255,255,255,.07)",
+                borderRadius: "8px",
+                background: "rgba(255,255,255,.035)",
+                color: "rgba(255,255,255,.58)",
+                cursor: loading ? "not-allowed" : "pointer",
+                fontSize: "10px",
+                fontWeight: 700,
+              }}
+            >
+              Cancelar
+            </button>
           </div>
         </div>
-
-        {/* ACCIONES */}
-        <div
-          style={{
-            display: "flex",
-            gap: "8px",
-          }}
-        >
-          <button
-            onClick={createRole}
-            disabled={loading}
-            style={{
-              flex: 1,
-              background: loading
-                ? "rgba(249,115,22,.4)"
-                : "#f97316",
-              color: "#fff",
-              border: "none",
-              padding: "11px 15px",
-              borderRadius: "10px",
-              cursor: loading
-                ? "not-allowed"
-                : "pointer",
-              fontSize: "13px",
-              fontWeight: 750,
-            }}
-          >
-            {loading ? "Creando..." : "Crear rol"}
-          </button>
-
-          <button
-            onClick={() => router.back()}
-            disabled={loading}
-            style={{
-              padding: "11px 15px",
-              background: "rgba(255,255,255,.05)",
-              border: "1px solid rgba(255,255,255,.07)",
-              borderRadius: "10px",
-              color: "rgba(255,255,255,.65)",
-              cursor: loading
-                ? "not-allowed"
-                : "pointer",
-              fontSize: "13px",
-              fontWeight: 700,
-            }}
-          >
-            Cancelar
-          </button>
-        </div>
       </section>
+
+      <style jsx>{`
+        input:focus {
+          border-color: rgba(249, 115, 22, 0.45) !important;
+          box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.07);
+        }
+
+        button {
+          -webkit-tap-highlight-color: transparent;
+        }
+      `}</style>
     </main>
   );
 }
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  color: "rgba(255,255,255,.62)",
-  fontSize: "12px",
-  fontWeight: 700,
+  color: "rgba(255,255,255,.58)",
+  fontSize: "9px",
+  fontWeight: 750,
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
+  minHeight: "39px",
   boxSizing: "border-box",
-  padding: "11px 12px",
-  marginTop: "7px",
+  padding: "9px 10px",
+  marginTop: "6px",
   background: "#0b0f16",
   color: "#fff",
-  border: "1px solid rgba(255,255,255,.08)",
-  borderRadius: "10px",
+  border: "1px solid rgba(255,255,255,.07)",
+  borderRadius: "8px",
   outline: "none",
-  fontSize: "13px",
+  fontSize: "10px",
 };

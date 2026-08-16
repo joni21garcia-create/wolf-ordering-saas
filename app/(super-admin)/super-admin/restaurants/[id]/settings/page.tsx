@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 
 
+import SettingsShell from "./components/SettingsShell";
 import SettingsHeader from "./components/SettingsHeader";
 import SettingsQuickActions from "./components/SettingsQuickActions";
 import SettingsSearch from "./components/SettingsSearch";
@@ -216,63 +217,37 @@ RENDER
 ====================================================
 */
 
+  const configuredCount = healthItems.filter(
+    (item) => item.status === "ok"
+  ).length;
+
+  const configurationProgress =
+    modules.length > 0
+      ? Math.round((configuredCount / modules.length) * 100)
+      : 0;
+
   return (
-      <main
-        style={{
-          minHeight: "100vh",
-          background:
-            "radial-gradient(circle at top right,#351400 0%,#050505 45%)",
-          color: "#fff",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1700,
-            margin: "0 auto",
-            padding: "40px 28px 60px",
-          }}
-        >
-<SettingsHeader
-  restaurantName={restaurant.name}
-  totalModules={modules.length}
-  configuredModules={
-    healthItems.filter(
-      x => x.status === "ok"
-    ).length
-  }
-/>
+    <SettingsShell
+      restaurantName={restaurant.name}
+      progress={configurationProgress}
+    >
+      <SettingsHeader />
 
-          <SettingsHealthCard
-            items={healthItems}
-          />
+      <SettingsHealthCard items={healthItems} />
 
-          <SettingsQuickActions
-            actions={quickActions}
-          />
+      <SettingsQuickActions actions={quickActions} />
 
-          <SettingsStats
-            modules={modules}
-            tabs={CATEGORY_TABS}
-            actions={quickActions}
-          />
+      <SettingsStats
+        modules={modules}
+        tabs={CATEGORY_TABS}
+        actions={quickActions}
+      />
 
-          {/*
-          ==========================================
-          DESDE AQUÍ ENTRA LA PARTE CLIENTE
-          ==========================================
-          */}
+      <SettingsClient modules={modules} />
 
-          <SettingsClient
-            modules={modules}
-          />
+      <SettingsRecentModules modules={modules} />
 
-          <SettingsRecentModules
-            modules={modules}
-          />
-
-          <SettingsFooter />
-        </div>
-      </main>
-    
+      <SettingsFooter />
+    </SettingsShell>
   );
 }

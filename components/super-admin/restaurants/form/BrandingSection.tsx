@@ -36,30 +36,6 @@ export default function BrandingSection({
         gap: 32,
       }}
     >
-      <div>
-        <h2
-          style={{
-            color: "#fff",
-            fontSize: 30,
-            fontWeight: 900,
-            marginBottom: 8,
-          }}
-        >
-          Branding
-        </h2>
-
-        <p
-          style={{
-            color: "#8b8b8b",
-            lineHeight: 1.8,
-          }}
-        >
-          Personaliza la identidad visual
-          del restaurante que verán los
-          clientes.
-        </p>
-      </div>
-
       {/* LOGO */}
 
       <div style={card}>
@@ -152,6 +128,7 @@ export default function BrandingSection({
       )}
 
       <div
+        className="branding-copy-grid"
         style={{
           display: "grid",
           gridTemplateColumns:
@@ -224,6 +201,32 @@ export default function BrandingSection({
           />
         </div>
       </div>
+
+      <style jsx>{`
+        @media (max-width: 640px) {
+          .branding-copy-grid {
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 16px !important;
+          }
+
+          .branding-copy-grid > div {
+            grid-column: auto !important;
+            min-width: 0;
+          }
+
+          input[type="file"] {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            font-size: 13px;
+          }
+
+          img {
+            max-width: 100%;
+            box-sizing: border-box;
+          }
+        }
+      `}</style>
     </section>
   );
 }
@@ -259,5 +262,3 @@ const input = {
   color: "#fff",
   outline: "none",
 } as const;
-
-

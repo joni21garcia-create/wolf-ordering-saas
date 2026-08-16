@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import BackToSettings from "@/components/admin/BackToSettings";
 
 interface PaymentQR {
   id: string;
@@ -21,6 +22,7 @@ export default function PaymentQRsPage() {
   const restaurantId = params.id as string;
   const [loading, setLoading] = useState(true);
   const [qrs, setQrs] = useState<PaymentQR[]>([]);
+  const [openQR, setOpenQR] = useState<string | null>(null);
 
   useEffect(() => {
     loadQRs();
@@ -66,152 +68,565 @@ export default function PaymentQRsPage() {
   };
 
   return (
-    <main style={{ maxWidth: "1100px", margin: "0 auto", padding: "clamp(16px, 4vw, 40px) 16px", color: "#fff", background: "#0a0a0a", minHeight: "100vh", fontFamily: "system-ui, -apple-system, sans-serif", boxSizing: "border-box" }}>
-      
-      {/* HEADER RESPONSIVO */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px", marginBottom: "32px" }}>
-        <div>
-          <p style={{ color: "#71717a", fontSize: "13px", marginBottom: "6px", fontWeight: "500" }}>Configuración / Pagos / QRs</p>
-          <h1 style={{ fontSize: "clamp(24px, 5vw, 36px)", fontWeight: "800", margin: 0, letterSpacing: "-0.5px" }}>QRs de Pago</h1>
-        </div>
-        <Link href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/new`} style={{ textDecoration: "none", width: "auto" }}>
-          <button style={buttonOrange}>✨ Nuevo QR</button>
-        </Link>
-      </div>
+    <main className="qr-page">
+      <div className="qr-shell">
+        <header className="qr-header">
+          <BackToSettings restaurantId={restaurantId} />
 
-      {/* STATS CON SCROLL VERTICAL CONTROLADO EN GRID */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "16px", marginBottom: "32px" }}>
-        <StatCard title="Total QRs" value={qrs.length} color="#fff" />
-        <StatCard title="Activos" value={qrs.filter(q => q.active).length} color="#22c55e" />
-        <StatCard title="Ocultos" value={qrs.filter(q => !q.active).length} color="#ef4444" />
-      </div>
-
-      {loading ? (
-        <div style={{ display: "flex", justifyContent: "center", padding: "40px", color: "#71717a" }}>Cargando QRs...</div>
-      ) : qrs.length === 0 ? (
-        <EmptyState restaurantId={restaurantId} />
-      ) : (
-        /* LISTADO DE TARJETAS FLUIDAS */
-        <div style={{ display: "grid", gap: "16px" }}>
-          {qrs.map((qr) => (
-            <div key={qr.id} style={{
-              ...cardStyle,
-              display: "flex",
-              flexWrap: "wrap", /* Permite romper fila a columna en móviles pequeños */
-              alignItems: "center",
-              gap: "20px"
-            }}>
-              
-              {/* IMAGEN DEL QR */}
-              <div style={{ display: "flex", justifyContent: "center", width: "100%", maxWidth: "100px", margin: "0 auto" }}>
-                <img src={qr.qr_image_url} alt={qr.name} style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "14px", border: "1px solid #262626" }} />
-              </div>
-              
-              {/* DATOS DE LA CUENTA */}
-              <div style={{ flex: "1 1 250px", textAlign: "left" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", marginBottom: "6px" }}>
-                  <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "700" }}>{qr.name}</h3>
-                  <span style={{ 
-                    padding: "3px 8px", 
-                    borderRadius: "99px", 
-                    fontSize: "10px", 
-                    fontWeight: "700", 
-                    letterSpacing: "0.5px",
-                    background: qr.active ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", 
-                    color: qr.active ? "#22c55e" : "#ef4444",
-                    border: qr.active ? "1px solid rgba(34,197,94,0.15)" : "1px solid rgba(239,68,68,0.15)"
-                  }}>
-                    {qr.active ? "ACTIVO" : "OCULTO"}
-                  </span>
-                </div>
-                <p style={{ color: "#a1a1aa", fontSize: "13.5px", margin: "4px 0" }}>
-                  <strong style={{ color: "#71717a", fontWeight: "500" }}>Titular:</strong> {qr.account_holder || "—"}
-                </p>
-                <p style={{ color: "#a1a1aa", fontSize: "13.5px", margin: "4px 0" }}>
-                  <strong style={{ color: "#71717a", fontWeight: "500" }}>Cuenta:</strong> {qr.account_number || "—"}
-                </p>
-              </div>
-
-              {/* ACCIONES (Se estiran al 100% en pantallas muy chicas) */}
-              <div style={{ display: "flex", gap: "10px", flex: "1 1 auto", width: "100%", maxWidth: "300px", justifyContent: "flex-end" }}>
-                <button onClick={() => toggleQR(qr.id, qr.active)} style={{ ...buttonSecondary, flex: 1 }}>
-                  {qr.active ? "👁️ Ocultar" : "👁️ Mostrar"}
-                </button>
-                <button onClick={() => deleteQR(qr.id)} style={{ ...buttonDelete, flex: 1 }}>
-                  🗑️ Eliminar
-                </button>
-              </div>
-
+          <div className="header-row">
+            <div>
+              <span className="eyebrow">PAGOS · QR</span>
+              <h1>QRs de Pago</h1>
+              <p>Administra tus códigos QR desde el móvil.</p>
             </div>
-          ))}
+
+            <Link
+              href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/new`}
+              className="new-qr"
+            >
+              <span>＋</span>
+              Nuevo
+            </Link>
+          </div>
+        </header>
+
+        <div className="summary">
+          <div>
+            <strong>{qrs.length}</strong>
+            <span>Total</span>
+          </div>
+          <div>
+            <strong>{qrs.filter((q) => q.active).length}</strong>
+            <span>Activos</span>
+          </div>
+          <div>
+            <strong>{qrs.filter((q) => !q.active).length}</strong>
+            <span>Ocultos</span>
+          </div>
         </div>
-      )}
+
+        {loading ? (
+          <div className="state">Cargando QRs...</div>
+        ) : qrs.length === 0 ? (
+          <div className="empty">
+            <div className="empty-icon">▦</div>
+            <strong>No hay QRs configurados</strong>
+            <small>
+              Agrega un código QR para facilitar el pago de tus clientes.
+            </small>
+            <Link
+              href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/new`}
+              className="empty-button"
+            >
+              Crear primer QR
+            </Link>
+          </div>
+        ) : (
+          <div className="qr-list">
+            {qrs.map((qr) => {
+              const isOpen = openQR === qr.id;
+
+              return (
+                <section
+                  key={qr.id}
+                  className={`qr-item ${isOpen ? "open" : ""}`}
+                >
+                  <button
+                    type="button"
+                    className="qr-head"
+                    onClick={() => setOpenQR(isOpen ? null : qr.id)}
+                    aria-expanded={isOpen}
+                  >
+                    <div className="qr-thumb">
+                      <img src={qr.qr_image_url} alt="" />
+                    </div>
+
+                    <div className="qr-copy">
+                      <div className="qr-title-row">
+                        <strong>{qr.name}</strong>
+                        <span className={qr.active ? "pill active" : "pill hidden"}>
+                          {qr.active ? "ACTIVO" : "OCULTO"}
+                        </span>
+                      </div>
+
+                      <small>
+                        {qr.account_holder || "Sin titular"}
+                        {qr.account_number
+                          ? ` · ••••${qr.account_number.slice(-4)}`
+                          : ""}
+                      </small>
+                    </div>
+
+                    <span className="chevron">
+                      {isOpen ? "−" : "+"}
+                    </span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="qr-body">
+                      <div className="qr-preview">
+                        <img src={qr.qr_image_url} alt={qr.name} />
+                      </div>
+
+                      <div className="details">
+                        <div>
+                          <span>Titular</span>
+                          <strong>{qr.account_holder || "—"}</strong>
+                        </div>
+                        <div>
+                          <span>Cuenta</span>
+                          <strong>{qr.account_number || "—"}</strong>
+                        </div>
+                      </div>
+
+                      <div className="qr-actions">
+                        <button
+                          type="button"
+                          className="toggle-action"
+                          onClick={() => toggleQR(qr.id, qr.active)}
+                        >
+                          <span className={qr.active ? "mini-switch on" : "mini-switch"}>
+                            <i />
+                          </span>
+                          {qr.active ? "Ocultar QR" : "Mostrar QR"}
+                        </button>
+
+                        <Link
+                          href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/${qr.id}/edit`}
+                          className="edit-action"
+                        >
+                          ✎ Editar
+                        </Link>
+
+                        <button
+                          type="button"
+                          className="delete-action"
+                          onClick={() => deleteQR(qr.id)}
+                        >
+                          🗑 Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </section>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      <style jsx global>{`
+        .qr-page {
+          min-height:100dvh;
+          width:100%;
+          box-sizing:border-box;
+          padding:14px 10px 34px;
+          background:#080808;
+          color:#fff;
+          font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+        }
+
+        .qr-shell {
+          width:100%;
+          max-width:720px;
+          margin:0 auto;
+        }
+
+        .qr-header {
+          margin-bottom:9px;
+        }
+
+        .header-row {
+          display:flex;
+          align-items:flex-end;
+          justify-content:space-between;
+          gap:8px;
+          margin-top:8px;
+        }
+
+        .eyebrow {
+          display:block;
+          color:#f97316;
+          font-size:7px;
+          font-weight:900;
+          letter-spacing:1.2px;
+        }
+
+        .header-row h1 {
+          margin:2px 0 0;
+          font-size:23px;
+          line-height:1.05;
+          letter-spacing:-.55px;
+          font-weight:900;
+        }
+
+        .header-row p {
+          margin:4px 0 0;
+          color:rgba(255,255,255,.34);
+          font-size:8px;
+        }
+
+        .new-qr {
+          min-height:31px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:3px;
+          padding:0 10px;
+          border:1px solid rgba(249,115,22,.2);
+          border-radius:8px;
+          background:#f97316;
+          color:#fff;
+          text-decoration:none;
+          font-size:8px;
+          font-weight:850;
+          white-space:nowrap;
+        }
+
+        .new-qr span {
+          font-size:13px;
+          line-height:1;
+        }
+
+        .summary {
+          display:grid;
+          grid-template-columns:repeat(3,1fr);
+          gap:5px;
+          margin:10px 0 7px;
+        }
+
+        .summary div {
+          padding:8px 5px;
+          border:1px solid rgba(255,255,255,.05);
+          border-radius:9px;
+          background:#101010;
+          text-align:center;
+        }
+
+        .summary strong {
+          display:block;
+          color:#f97316;
+          font-size:14px;
+          line-height:1;
+        }
+
+        .summary span {
+          display:block;
+          margin-top:3px;
+          color:rgba(255,255,255,.27);
+          font-size:6px;
+          font-weight:700;
+          letter-spacing:.4px;
+          text-transform:uppercase;
+        }
+
+        .qr-list {
+          display:flex;
+          flex-direction:column;
+          gap:5px;
+        }
+
+        .qr-item {
+          overflow:hidden;
+          border:1px solid rgba(255,255,255,.055);
+          border-radius:10px;
+          background:#101010;
+        }
+
+        .qr-item.open {
+          border-color:rgba(249,115,22,.18);
+        }
+
+        .qr-head {
+          width:100%;
+          min-height:58px;
+          display:flex;
+          align-items:center;
+          gap:8px;
+          padding:7px;
+          border:0;
+          background:transparent;
+          color:#fff;
+          text-align:left;
+          cursor:pointer;
+        }
+
+        .qr-thumb {
+          width:42px;
+          height:42px;
+          display:grid;
+          place-items:center;
+          flex-shrink:0;
+          overflow:hidden;
+          border-radius:7px;
+          background:#fff;
+        }
+
+        .qr-thumb img {
+          width:100%;
+          height:100%;
+          object-fit:cover;
+        }
+
+        .qr-copy {
+          min-width:0;
+          flex:1;
+        }
+
+        .qr-title-row {
+          display:flex;
+          align-items:center;
+          gap:5px;
+          min-width:0;
+        }
+
+        .qr-title-row strong {
+          overflow:hidden;
+          text-overflow:ellipsis;
+          white-space:nowrap;
+          font-size:9px;
+          font-weight:850;
+        }
+
+        .qr-copy > small {
+          display:block;
+          margin-top:3px;
+          overflow:hidden;
+          text-overflow:ellipsis;
+          white-space:nowrap;
+          color:rgba(255,255,255,.25);
+          font-size:6.5px;
+        }
+
+        .pill {
+          flex-shrink:0;
+          padding:2px 4px;
+          border-radius:999px;
+          font-size:5px;
+          font-weight:900;
+          letter-spacing:.3px;
+        }
+
+        .pill.active {
+          background:rgba(34,197,94,.08);
+          color:#22c55e;
+          border:1px solid rgba(34,197,94,.14);
+        }
+
+        .pill.hidden {
+          background:rgba(239,68,68,.07);
+          color:#ef4444;
+          border:1px solid rgba(239,68,68,.13);
+        }
+
+        .chevron {
+          width:24px;
+          height:24px;
+          display:grid;
+          place-items:center;
+          flex-shrink:0;
+          border-radius:7px;
+          background:rgba(255,255,255,.035);
+          color:rgba(255,255,255,.42);
+          font-size:13px;
+        }
+
+        .open .chevron {
+          color:#f97316;
+          background:rgba(249,115,22,.07);
+        }
+
+        .qr-body {
+          padding:8px;
+          border-top:1px solid rgba(255,255,255,.045);
+        }
+
+        .qr-preview {
+          width:100%;
+          height:160px;
+          display:grid;
+          place-items:center;
+          overflow:hidden;
+          border-radius:8px;
+          background:#fff;
+        }
+
+        .qr-preview img {
+          width:145px;
+          height:145px;
+          object-fit:contain;
+        }
+
+        .details {
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:5px;
+          margin-top:6px;
+        }
+
+        .details div {
+          min-width:0;
+          padding:7px;
+          border-radius:7px;
+          background:rgba(255,255,255,.025);
+        }
+
+        .details span {
+          display:block;
+          color:rgba(255,255,255,.2);
+          font-size:6px;
+          text-transform:uppercase;
+          letter-spacing:.35px;
+        }
+
+        .details strong {
+          display:block;
+          margin-top:3px;
+          overflow:hidden;
+          text-overflow:ellipsis;
+          white-space:nowrap;
+          color:rgba(255,255,255,.62);
+          font-size:7.5px;
+        }
+
+        .qr-actions {
+          display:grid;
+          grid-template-columns:1fr 1fr 1fr;
+          gap:4px;
+          margin-top:6px;
+        }
+
+        .qr-actions button,
+        .qr-actions a {
+          min-height:32px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:3px;
+          box-sizing:border-box;
+          border-radius:7px;
+          font:800 7px system-ui,sans-serif;
+          text-decoration:none;
+          cursor:pointer;
+        }
+
+        .toggle-action {
+          border:1px solid rgba(255,255,255,.06);
+          background:rgba(255,255,255,.025);
+          color:rgba(255,255,255,.56);
+        }
+
+        .edit-action {
+          border:1px solid rgba(249,115,22,.15);
+          background:rgba(249,115,22,.055);
+          color:#f97316;
+        }
+
+        .delete-action {
+          border:1px solid rgba(239,68,68,.13);
+          background:rgba(239,68,68,.045);
+          color:#ef4444;
+        }
+
+        .mini-switch {
+          width:25px;
+          height:14px;
+          display:inline-flex;
+          align-items:center;
+          padding:2px;
+          box-sizing:border-box;
+          border-radius:999px;
+          background:#303030;
+        }
+
+        .mini-switch i {
+          width:10px;
+          height:10px;
+          display:block;
+          border-radius:50%;
+          background:#fff;
+          transition:transform .15s;
+        }
+
+        .mini-switch.on {
+          background:#16a34a;
+        }
+
+        .mini-switch.on i {
+          transform:translateX(11px);
+        }
+
+        .empty {
+          padding:28px 15px;
+          border:1px dashed rgba(255,255,255,.07);
+          border-radius:10px;
+          background:#101010;
+          text-align:center;
+        }
+
+        .empty-icon {
+          width:38px;
+          height:38px;
+          display:grid;
+          place-items:center;
+          margin:0 auto 7px;
+          border-radius:10px;
+          background:rgba(249,115,22,.07);
+          color:#f97316;
+          font-size:17px;
+        }
+
+        .empty strong {
+          display:block;
+          color:rgba(255,255,255,.6);
+          font-size:9px;
+        }
+
+        .empty small {
+          display:block;
+          max-width:280px;
+          margin:4px auto 10px;
+          color:rgba(255,255,255,.25);
+          font-size:7px;
+          line-height:1.45;
+        }
+
+        .empty-button {
+          min-height:32px;
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          padding:0 11px;
+          border-radius:7px;
+          background:#f97316;
+          color:#fff;
+          text-decoration:none;
+          font-size:8px;
+          font-weight:850;
+        }
+
+        .state {
+          padding:35px 10px;
+          color:rgba(255,255,255,.28);
+          text-align:center;
+          font-size:8px;
+        }
+
+        @media(max-width:390px) {
+          .qr-page {
+            padding-left:8px;
+            padding-right:8px;
+          }
+
+          .qr-actions {
+            grid-template-columns:1fr;
+          }
+
+          .qr-preview {
+            height:145px;
+          }
+        }
+      `}</style>
     </main>
   );
-}
-
-function StatCard({ title, value, color }: any) {
-  return (
-    <div style={{ ...cardStyle, textAlign: "center", display: "block", padding: "16px" }}>
-      <h2 style={{ margin: 0, fontSize: "24px", fontWeight: "800", color: color }}>{value}</h2>
-      <p style={{ color: "#71717a", fontSize: "11px", textTransform: "uppercase", marginTop: "4px", fontWeight: "600", letterSpacing: "0.5px" }}>{title}</p>
-    </div>
-  );
-}
-
-function EmptyState({ restaurantId }: { restaurantId: string }) {
-  return (
-    <div style={{ ...cardStyle, textAlign: "center", padding: "48px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-      <span style={{ fontSize: "40px" }}>📲</span>
-      <h2 style={{ margin: 0, fontSize: "18px", fontWeight: "700" }}>No hay QRs configurados</h2>
-      <p style={{ color: "#a1a1aa", fontSize: "14px", maxWidth: "320px", margin: "0 0 8px 0", lineHeight: 1.4 }}>
-        Registra tus códigos QR de bancos preferidos para facilitarle el proceso de checkout a tus clientes.
-      </p>
-      <Link href={`/super-admin/restaurants/${restaurantId}/settings/payments/qrs/new`} style={{ textDecoration: "none" }}>
-        <button style={buttonOrange}>Crear Primer QR</button>
-      </Link>
-    </div>
-  );
-}
-
-const cardStyle = { 
-  background: "#121212", 
-  border: "1px solid #222", 
-  borderRadius: "20px", 
-  padding: "20px",
-  boxSizing: "border-box" as const
-};
-
-const buttonBase = { 
-  padding: "12px 20px", 
-  borderRadius: "12px", 
-  border: "none", 
-  cursor: "pointer", 
-  fontWeight: "600" as const,
-  fontSize: "13.5px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  transition: "0.2s ease"
-};
-
-const buttonOrange = { 
-  ...buttonBase, 
-  background: "#f97316", 
-  color: "#fff",
-  boxShadow: "0 4px 12px rgba(249,115,22,0.15)"
-};
-
-const buttonSecondary = { 
-  ...buttonBase, 
-  background: "#161616", 
-  color: "#e4e4e7", 
-  border: "1px solid #262626" 
-};
-
-const buttonDelete = { 
-  ...buttonBase, 
-  background: "rgba(239,68,68,0.07)", 
-  color: "#ef4444", 
-  border: "1px solid rgba(239,68,68,0.2)" 
-};
+  }

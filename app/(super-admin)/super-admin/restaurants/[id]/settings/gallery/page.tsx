@@ -35,77 +35,470 @@ export default function GalleryPage() {
 
   return (
     <PermissionGuard permission="gallery">
-      <main style={mainContainer}>
-        <div style={contentWrapper}>
-          
-          {/* HEADER */}
-          <header style={{ marginBottom: "40px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px", color: "#6b7280" }}>
-              <BackToSettings restaurantId={restaurantId} />
-              <span>Configuración / Galería</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
-              <h1 style={{ fontSize: "48px", fontWeight: "900", margin: 0 }}>🖼️ Galería</h1>
-              <label style={uploadBtn}>
-                {uploading ? "Subiendo..." : "+ Agregar Imagen"}
-                <input type="file" accept="image/*" hidden onChange={uploadImage} />
+      <main className="gallery-page">
+        <div className="gallery-shell">
+          <header className="gallery-header">
+            <BackToSettings restaurantId={restaurantId} />
+
+            <div className="header-row">
+              <div>
+                <span className="eyebrow">EXPERIENCIA · GALERÍA</span>
+                <h1>Galería</h1>
+                <p>Administra las imágenes que aparecen en tu restaurante.</p>
+              </div>
+
+              <label className="add-button">
+                <span>＋</span>
+                {uploading ? "Subiendo..." : "Agregar"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={uploadImage}
+                  disabled={uploading}
+                />
               </label>
             </div>
           </header>
 
-          {/* STATS */}
-          <div style={gridContainer}>
-            <StatCard title="Total Imágenes" value={images.length} />
-            <StatCard title="Visibles" value={images.filter(i => i.active).length} />
-          </div>
+          <section className="summary">
+            <div>
+              <span>Total</span>
+              <strong>{images.length}</strong>
+            </div>
+            <div>
+              <span>Visibles</span>
+              <strong>{images.filter((i) => i.active).length}</strong>
+            </div>
+            <div className="summary-hint">
+              <span>Galería</span>
+              <strong>Activa</strong>
+            </div>
+          </section>
 
-          {/* GRID */}
-          <div style={imageGrid}>
-            {images.map((img) => (
-              <div key={img.id} style={imageCard}>
-                <img src={img.image_url} alt="Galeria" style={imgStyle} />
-                <div style={{ padding: "20px" }}>
-                  <div style={{ display: "flex", gap: "10px" }}>
-                    <button onClick={async () => {
-                      await supabase.from("restaurant_gallery").update({ active: !img.active }).eq("id", img.id);
-                      loadGallery();
-                    }} style={actionBtn(img.active ? "#f59e0b" : "#22c55e")}>
-                      {img.active ? "Ocultar" : "Mostrar"}
-                    </button>
-                    <button onClick={async () => {
-                      if(confirm("¿Eliminar?")) {
-                        await supabase.from("restaurant_gallery").delete().eq("id", img.id);
-                        loadGallery();
-                      }
-                    }} style={actionBtn("#ef4444")}>Eliminar</button>
-                  </div>
-                </div>
+          <section className="gallery-section">
+            <div className="section-top">
+              <div>
+                <span className="eyebrow">IMÁGENES</span>
+                <h2>Tus fotos</h2>
               </div>
-            ))}
-          </div>
+              <span className="count">{images.length}</span>
+            </div>
+
+            {images.length === 0 ? (
+              <div className="empty">
+                <div className="empty-icon">＋</div>
+                <strong>Aún no tienes imágenes</strong>
+                <small>
+                  Agrega fotos para crear una galería más atractiva.
+                </small>
+                <label className="empty-button">
+                  Agregar primera imagen
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={uploadImage}
+                    disabled={uploading}
+                  />
+                </label>
+              </div>
+            ) : (
+              <div className="image-grid">
+                {images.map((img, index) => (
+                  <article
+                    key={img.id}
+                    className={img.active ? "image-item" : "image-item hidden"}
+                  >
+                    <div className="image-wrap">
+                      <img
+                        src={img.image_url}
+                        alt={`Galería ${index + 1}`}
+                      />
+
+                      <div className="image-top">
+                        <span className={img.active ? "status active" : "status"}>
+                          <i />
+                          {img.active ? "Visible" : "Oculta"}
+                        </span>
+                        <span className="image-number">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="image-actions">
+                      <button
+                        type="button"
+                        className={img.active ? "action muted" : "action green"}
+                        onClick={async () => {
+                          await supabase
+                            .from("restaurant_gallery")
+                            .update({ active: !img.active })
+                            .eq("id", img.id);
+                          loadGallery();
+                        }}
+                      >
+                        {img.active ? "Ocultar" : "Mostrar"}
+                      </button>
+
+                      <button
+                        type="button"
+                        className="action delete"
+                        onClick={async () => {
+                          if (confirm("¿Eliminar esta imagen?")) {
+                            await supabase
+                              .from("restaurant_gallery")
+                              .delete()
+                              .eq("id", img.id);
+                            loadGallery();
+                          }
+                        }}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
+
+        <style jsx global>{`
+          .gallery-page {
+            min-height:100dvh;
+            width:100%;
+            box-sizing:border-box;
+            padding:14px 10px 34px;
+            background:#080808;
+            color:#fff;
+            font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+          }
+
+          .gallery-shell {
+            width:100%;
+            max-width:760px;
+            margin:0 auto;
+          }
+
+          .gallery-header {
+            margin-bottom:8px;
+          }
+
+          .header-row {
+            display:flex;
+            align-items:flex-end;
+            justify-content:space-between;
+            gap:8px;
+            margin-top:8px;
+          }
+
+          .eyebrow {
+            display:block;
+            color:#f97316;
+            font-size:7px;
+            font-weight:900;
+            letter-spacing:1.2px;
+          }
+
+          .header-row h1 {
+            margin:2px 0 0;
+            font-size:23px;
+            line-height:1.05;
+            letter-spacing:-.55px;
+            font-weight:900;
+          }
+
+          .header-row p {
+            margin:4px 0 0;
+            color:rgba(255,255,255,.32);
+            font-size:8px;
+            line-height:1.4;
+          }
+
+          .add-button,
+          .empty-button {
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            gap:4px;
+            min-height:31px;
+            padding:0 10px;
+            box-sizing:border-box;
+            border:1px solid rgba(249,115,22,.18);
+            border-radius:8px;
+            background:rgba(249,115,22,.065);
+            color:#f97316;
+            font:850 8px system-ui,sans-serif;
+            cursor:pointer;
+            text-decoration:none;
+          }
+
+          .add-button {
+            flex-shrink:0;
+          }
+
+          .add-button span {
+            font-size:12px;
+          }
+
+          .add-button input,
+          .empty-button input {
+            display:none;
+          }
+
+          .summary {
+            display:grid;
+            grid-template-columns:1fr 1fr 1.2fr;
+            gap:5px;
+            margin-bottom:7px;
+          }
+
+          .summary > div {
+            min-width:0;
+            padding:8px;
+            border:1px solid rgba(255,255,255,.05);
+            border-radius:9px;
+            background:#101010;
+          }
+
+          .summary span {
+            display:block;
+            color:rgba(255,255,255,.24);
+            font-size:6px;
+            font-weight:800;
+            text-transform:uppercase;
+            letter-spacing:.5px;
+          }
+
+          .summary strong {
+            display:block;
+            margin-top:3px;
+            color:#f97316;
+            font-size:13px;
+            line-height:1;
+          }
+
+          .summary-hint strong {
+            color:#22c55e;
+            font-size:9px;
+            margin-top:4px;
+          }
+
+          .gallery-section {
+            padding:10px;
+            border:1px solid rgba(255,255,255,.055);
+            border-radius:11px;
+            background:#101010;
+          }
+
+          .section-top {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:8px;
+          }
+
+          .section-top h2 {
+            margin:2px 0 0;
+            font-size:11px;
+            line-height:1;
+            font-weight:900;
+          }
+
+          .count {
+            min-width:23px;
+            height:23px;
+            display:grid;
+            place-items:center;
+            border-radius:7px;
+            background:rgba(249,115,22,.07);
+            color:#f97316;
+            font-size:7px;
+            font-weight:900;
+          }
+
+          .image-grid {
+            display:grid;
+            grid-template-columns:repeat(2,minmax(0,1fr));
+            gap:5px;
+          }
+
+          .image-item {
+            min-width:0;
+            overflow:hidden;
+            border:1px solid rgba(255,255,255,.055);
+            border-radius:9px;
+            background:#0b0b0b;
+          }
+
+          .image-item.hidden {
+            opacity:.58;
+          }
+
+          .image-wrap {
+            position:relative;
+            aspect-ratio:1 / .78;
+            overflow:hidden;
+            background:#0b0b0b;
+          }
+
+          .image-wrap img {
+            width:100%;
+            height:100%;
+            display:block;
+            object-fit:cover;
+          }
+
+          .image-top {
+            position:absolute;
+            top:5px;
+            left:5px;
+            right:5px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:4px;
+          }
+
+          .status {
+            display:inline-flex;
+            align-items:center;
+            gap:3px;
+            padding:4px 5px;
+            border-radius:999px;
+            background:rgba(0,0,0,.68);
+            color:#ef4444;
+            font-size:5.5px;
+            font-weight:850;
+            text-transform:uppercase;
+            backdrop-filter:blur(5px);
+          }
+
+          .status.active {
+            color:#22c55e;
+          }
+
+          .status i {
+            width:4px;
+            height:4px;
+            border-radius:50%;
+            background:currentColor;
+          }
+
+          .image-number {
+            padding:4px 5px;
+            border-radius:999px;
+            background:rgba(0,0,0,.68);
+            color:rgba(255,255,255,.62);
+            font-size:5.5px;
+            font-weight:850;
+            backdrop-filter:blur(5px);
+          }
+
+          .image-actions {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:4px;
+            padding:5px;
+          }
+
+          .action {
+            min-height:27px;
+            padding:0 5px;
+            border:1px solid transparent;
+            border-radius:6px;
+            background:transparent;
+            font:800 6.5px system-ui,sans-serif;
+            cursor:pointer;
+          }
+
+          .action.muted {
+            border-color:rgba(255,255,255,.05);
+            background:rgba(255,255,255,.035);
+            color:rgba(255,255,255,.45);
+          }
+
+          .action.green {
+            border-color:rgba(34,197,94,.14);
+            background:rgba(34,197,94,.05);
+            color:#22c55e;
+          }
+
+          .action.delete {
+            border-color:rgba(239,68,68,.12);
+            background:rgba(239,68,68,.04);
+            color:#ef4444;
+          }
+
+          .empty {
+            min-height:220px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            padding:20px;
+            text-align:center;
+            border:1px dashed rgba(249,115,22,.15);
+            border-radius:9px;
+            background:rgba(249,115,22,.02);
+          }
+
+          .empty-icon {
+            width:38px;
+            height:38px;
+            display:grid;
+            place-items:center;
+            margin-bottom:8px;
+            border-radius:10px;
+            background:rgba(249,115,22,.08);
+            color:#f97316;
+            font-size:20px;
+          }
+
+          .empty strong {
+            font-size:9px;
+          }
+
+          .empty small {
+            max-width:220px;
+            margin-top:4px;
+            color:rgba(255,255,255,.24);
+            font-size:7px;
+            line-height:1.45;
+          }
+
+          .empty-button {
+            margin-top:10px;
+          }
+
+          @media(max-width:390px) {
+            .gallery-page {
+              padding-left:8px;
+              padding-right:8px;
+            }
+
+            .gallery-section {
+              padding:9px;
+            }
+
+            .summary-hint {
+              display:none;
+            }
+
+            .summary {
+              grid-template-columns:1fr 1fr;
+            }
+          }
+
+          @media(min-width:700px) {
+            .image-grid {
+              grid-template-columns:repeat(3,minmax(0,1fr));
+            }
+          }
+        `}</style>
       </main>
     </PermissionGuard>
-  );
-}
-
-// ESTILOS
-const mainContainer = { minHeight: "100vh", background: "radial-gradient(circle at top right, #1a0a00, #050505)", padding: "40px 20px", color: "#fff" };
-const contentWrapper = { maxWidth: "1200px", margin: "0 auto" };
-const gridContainer = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "30px" };
-const imageGrid = { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" };
-const imageCard = { background: "#0a0a0a", border: "1px solid #1f1f1f", borderRadius: "20px", overflow: "hidden" };
-const imgStyle = { width: "100%", height: "200px", objectFit: "cover" as const };
-const uploadBtn = { background: "#f97316", padding: "12px 24px", borderRadius: "12px", fontWeight: "700", cursor: "pointer" };
-const actionBtn = (color: string) => ({
-  flex: 1, background: `${color}15`, color: color, border: "none", padding: "10px", borderRadius: "8px", fontWeight: "600", cursor: "pointer"
-});
-
-function StatCard({ title, value }: any) {
-  return (
-    <div style={{ background: "#0a0a0a", border: "1px solid #1f1f1f", borderRadius: "20px", padding: "20px" }}>
-      <p style={{ color: "#777", fontSize: "12px", textTransform: "uppercase" }}>{title}</p>
-      <h2 style={{ margin: "5px 0 0 0" }}>{value}</h2>
-    </div>
   );
 }

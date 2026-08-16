@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 type Props = {
   open: boolean;
@@ -18,157 +18,217 @@ export default function DeleteRestaurantDialog({
   if (!open) return null;
 
   return (
-    <div style={overlay} onClick={onClose}>
-      <div style={modal} onClick={(e) => e.stopPropagation()}>
-        {/* Icono */}
-        <div style={iconContainer}>
-          <div style={iconCircle}>🗑️</div>
+    <div
+      className="overlay"
+      onClick={loading ? undefined : onClose}
+      role="presentation"
+    >
+      <div
+        className="dialog"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="delete-title"
+        aria-describedby="delete-description"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="warning-icon" aria-hidden="true">
+          !
         </div>
 
-        {/* Título */}
-        <h2
-          style={{
-            margin: 0,
-            color: "#fff",
-            fontSize: 30,
-            fontWeight: 800,
-            textAlign: "center",
-          }}
-        >
-          Eliminar restaurante
-        </h2>
+        <div className="copy">
+          <h2 id="delete-title">Eliminar restaurante</h2>
 
-        {/* Descripción */}
-        <p
-          style={{
-            margin: 0,
-            textAlign: "center",
-            color: "#9b9b9b",
-            lineHeight: 1.8,
-            fontSize: 15,
-          }}
-        >
-          Estás a punto de eliminar el restaurante
-          <br />
-          <strong
-            style={{
-              color: "#ffffff",
-              fontWeight: 700,
-            }}
-          >
-            {restaurantName}
-          </strong>
-          .
-          <br />
-          Esta acción no podrá deshacerse.
-        </p>
+          <p id="delete-description">
+            ¿Estás seguro de que quieres eliminar{" "}
+            <strong>{restaurantName || "este restaurante"}</strong>?
+          </p>
 
-        {/* Botones */}
-        <div style={buttons}>
+          <span>
+            Esta acción no se puede deshacer.
+          </span>
+        </div>
+
+        <div className="buttons">
           <button
             type="button"
+            className="cancel"
             onClick={onClose}
             disabled={loading}
-            style={cancelButton}
           >
             Cancelar
           </button>
 
           <button
             type="button"
+            className="confirm"
             onClick={onConfirm}
             disabled={loading}
-            style={deleteButton}
           >
-            {loading ? "Eliminando..." : "Eliminar restaurante"}
+            {loading ? "Eliminando..." : "Eliminar"}
           </button>
         </div>
       </div>
+
+      <style jsx>{`
+        .overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 999999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 18px;
+          background: rgba(0, 0, 0, 0.68);
+          backdrop-filter: blur(7px);
+          animation: fadeIn 0.16s ease-out;
+        }
+
+        .dialog {
+          width: min(100%, 390px);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 18px;
+          background: #151515;
+          box-shadow: 0 24px 65px rgba(0, 0, 0, 0.42);
+          animation: dialogIn 0.18s ease-out;
+        }
+
+        .warning-icon {
+          width: 38px;
+          height: 38px;
+          display: grid;
+          place-items: center;
+          margin-bottom: 15px;
+          border: 1px solid rgba(239, 68, 68, 0.22);
+          border-radius: 11px;
+          background: rgba(239, 68, 68, 0.08);
+          color: #ef7777;
+          font-size: 17px;
+          font-weight: 800;
+        }
+
+        .copy {
+          width: 100%;
+          text-align: center;
+        }
+
+        h2 {
+          margin: 0;
+          color: #f4f4f4;
+          font-size: 18px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+        }
+
+        p {
+          margin: 10px 0 0;
+          color: #aaa;
+          font-size: 12px;
+          line-height: 1.55;
+        }
+
+        p strong {
+          color: #f0f0f0;
+          font-weight: 700;
+        }
+
+        .copy > span {
+          display: block;
+          margin-top: 6px;
+          color: #666;
+          font-size: 10px;
+        }
+
+        .buttons {
+          width: 100%;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          margin-top: 22px;
+        }
+
+        button {
+          height: 40px;
+          border-radius: 10px;
+          font: inherit;
+          font-size: 10px;
+          font-weight: 750;
+          cursor: pointer;
+          transition:
+            background 0.16s ease,
+            border-color 0.16s ease,
+            opacity 0.16s ease;
+        }
+
+        button:disabled {
+          cursor: not-allowed;
+          opacity: 0.5;
+        }
+
+        .cancel {
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.035);
+          color: #c5c5c5;
+        }
+
+        .cancel:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.06);
+          border-color: rgba(255, 255, 255, 0.13);
+        }
+
+        .confirm {
+          border: 1px solid rgba(239, 68, 68, 0.22);
+          background: rgba(239, 68, 68, 0.1);
+          color: #f07878;
+        }
+
+        .confirm:hover:not(:disabled) {
+          background: rgba(239, 68, 68, 0.16);
+          border-color: rgba(239, 68, 68, 0.34);
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes dialogIn {
+          from {
+            opacity: 0;
+            transform: translateY(5px) scale(0.985);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @media (max-width: 430px) {
+          .overlay {
+            padding: 14px;
+          }
+
+          .dialog {
+            padding: 21px 17px;
+            border-radius: 16px;
+          }
+
+          .buttons {
+            grid-template-columns: 1fr;
+          }
+
+          .confirm {
+            order: -1;
+          }
+        }
+      `}</style>
     </div>
   );
-}
-
-/* ====================================================== */
-/* Estilos                                                */
-/* ====================================================== */
-
-const overlay: React.CSSProperties = {
-  position: "fixed",
-  inset: 0,
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  padding: 24,
-  background: "rgba(0,0,0,.72)",
-  backdropFilter: "blur(10px)",
-  zIndex: 999999,
-  animation: "fadeIn .18s ease",
-};
-
-const modal: React.CSSProperties = {
-  width: "100%",
-  maxWidth: 520,
-  display: "flex",
-  flexDirection: "column",
-  gap: 28,
-  padding: 34,
-  borderRadius: 28,
-  background: "linear-gradient(180deg,#191919,#141414)",
-  border: "1px solid rgba(255,255,255,.08)",
-  boxShadow: "0 35px 80px rgba(0,0,0,.45)",
-};
-
-const iconContainer: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "center",
-};
-
-const iconCircle: React.CSSProperties = {
-  width: 92,
-  height: 92,
-  borderRadius: "50%",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  fontSize: 38,
-  background: "linear-gradient(135deg,#ef444425,#dc262625)",
-  border: "1px solid rgba(239,68,68,.25)",
-  boxShadow: "0 18px 45px rgba(239,68,68,.18)",
-};
-
-const buttons: React.CSSProperties = {
-  display: "flex",
-  gap: 14,
-  flexWrap: "wrap",
-};
-
-const cancelButton: React.CSSProperties = {
-  flex: 1,
-  minWidth: 160,
-  height: 52,
-  borderRadius: 16,
-  border: "1px solid rgba(255,255,255,.08)",
-  background: "#202020",
-  color: "#fff",
-  cursor: "pointer",
-  fontWeight: 700,
-  fontSize: 14,
-  transition: ".25s",
-};
-
-const deleteButton: React.CSSProperties = {
-  flex: 1,
-  minWidth: 160,
-  height: 52,
-  border: "none",
-  borderRadius: 16,
-  cursor: "pointer",
-  fontWeight: 700,
-  fontSize: 14,
-  color: "#fff",
-  background: "linear-gradient(135deg,#ef4444,#dc2626)",
-  boxShadow: "0 15px 35px rgba(239,68,68,.25)",
-  transition: ".25s",
-};
-
-
+  }

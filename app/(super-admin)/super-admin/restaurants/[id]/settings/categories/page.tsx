@@ -105,264 +105,505 @@ export default function CategoriesPage() {
 
   return (
     <PermissionGuard permission="categories">
-      <main style={mainContainer}>
-        <div style={contentWrapper}>
-          
-          {/* ESTILOS CSS INYECTADOS PARA EL SWITCH ANDROID */}
-          <style jsx global>{`
-            /* Switch contenedor */
-            .android-switch {
-              position: relative;
-              display: inline-block;
-              width: 46px;
-              height: 24px;
-            }
-            /* Esconder checkbox */
-            .android-switch input {
-              opacity: 0;
-              width: 0;
-              height: 0;
-            }
-            /* El fondo del Switch (Track) */
-            .switch-slider {
-              position: absolute;
-              cursor: pointer;
-              top: 0; left: 0; right: 0; bottom: 0;
-              background-color: #3f3f46;
-              transition: 0.2s ease-in-out;
-              border-radius: 999px;
-            }
-            /* La bolita del Switch (Thumb) */
-            .switch-slider:before {
-              position: absolute;
-              content: "";
-              height: 18px;
-              width: 18px;
-              left: 3px;
-              bottom: 3px;
-              background-color: #ffffff;
-              transition: 0.2s ease-in-out;
-              border-radius: 50%;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-            }
-            /* Estado Activo (Verde Android) */
-            input:checked + .switch-slider {
-              background-color: #22c55e;
-            }
-            input:checked + .switch-slider:before {
-              transform: translateX(22px);
-            }
-          `}</style>
+      <main className="categories-page">
+        <div className="categories-wrap">
+          <header className="categories-header">
+            <BackToSettings restaurantId={restaurantId} />
+            <div className="eyebrow">Configuración · Menú</div>
 
-          {/* HEADER */}
-          <header style={{ marginBottom: "25px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px", color: "#777", fontSize: "14px" }}>
-              <BackToSettings restaurantId={restaurantId} />
-              <span>Configuración / Categorías</span>
+            <div className="title-line">
+              <div>
+                <h1>Categorías</h1>
+                <p>Organiza tu menú de forma rápida y limpia.</p>
+              </div>
+
+              <span className="count-badge">
+                {categories.length}
+              </span>
             </div>
-            <h1 style={{ fontSize: "clamp(24px, 4vw, 34px)", fontWeight: "800", margin: 0 }}>Categorías</h1>
           </header>
 
-          {/* ESTADÍSTICAS MÁS COMPACTAS */}
-          <div style={gridContainer}>
-            <StatCard title="Total" value={categories.length} color="#fff" />
-            <StatCard title="Activas" value={categories.filter(c => c.active).length} color="#22c55e" />
-            <StatCard title="Ocultas" value={categories.filter(c => !c.active).length} color="#ef4444" />
-          </div>
-
-          {/* CREAR NUEVA CATEGORÍA */}
-          <div style={formCard}>
-            <input 
-              placeholder="Nueva categoría (ej: Hamburguesas)" 
-              value={newCategory} 
+          <section className="create-bar">
+            <input
+              placeholder="Nueva categoría..."
+              value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
-              style={inputStyle}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") createCategory();
+              }}
+              disabled={loading}
             />
-            <button onClick={createCategory} disabled={loading} style={primaryBtn}>
-              {loading ? "..." : "+ Crear"}
+
+            <button
+              onClick={createCategory}
+              disabled={loading || !newCategory.trim()}
+              aria-label="Crear categoría"
+            >
+              {loading ? "..." : "+"}
             </button>
+          </section>
+
+          <div className="category-summary">
+            <span>{categories.length} categorías</span>
+            <span>
+              {categories.filter((c) => c.active).length} activas
+            </span>
           </div>
 
-          {loading && <p style={{ color: "#aaa", textAlign: "center", marginBottom: "15px", fontSize: "14px" }}>Procesando...</p>}
+          {loading && (
+            <div className="processing">Guardando...</div>
+          )}
 
-          {/* LISTADO ESTILO ANDROID COMPACTO */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {categories.map((cat) => (
-              <div key={cat.id} style={categoryItem}>
-                
-                {/* SECCIÓN IZQUIERDA: Avatar carpeta + Nombre o Input de Edición */}
-                <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1, minWidth: 0 }}>
-                  <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(255,255,255,0.05)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>
-                    📂
-                  </div>
-                  
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    {editingId === cat.id ? (
-                      <input 
-                        value={editingName} 
-                        onChange={(e) => setEditingName(e.target.value)} 
-                        style={{ ...inputStyle, padding: "8px 12px", fontSize: "15px" }} 
-                        autoFocus
-                      />
-                    ) : (
-                      <h3 style={{ 
-                        margin: 0, 
-                        fontSize: "15px", 
-                        fontWeight: "700", 
-                        color: cat.active ? "#fff" : "#666",
-                        overflow: "hidden", 
-                        textOverflow: "ellipsis", 
-                        whiteSpace: "nowrap" 
-                      }}>
-                        {cat.name} {!cat.active && <span style={{ color: "#ef4444", fontSize: "12px", fontWeight: "400" }}> (Oculta)</span>}
-                      </h3>
-                    )}
-                  </div>
-                </div>
+          <section className="category-list">
+            {categories.map((cat, index) => (
+              <article
+                key={cat.id}
+                className={`category-row ${cat.active ? "active" : "inactive"}`}
+              >
+                {editingId === cat.id ? (
+                  <div className="editing-row">
+                    <div className="category-number">{index + 1}</div>
 
-                {/* SECCIÓN DERECHA: Controles */}
-                <div style={{ display: "flex", alignItems: "center", gap: "14px", flexShrink: 0 }}>
-                  
-                  {editingId === cat.id ? (
-                    /* Botones al estar editando */
-                    <div style={{ display: "flex", gap: "6px" }}>
-                      <button onClick={() => saveEdit(cat.id)} disabled={loading} style={saveBtn}>Guardar</button>
-                      <button onClick={() => setEditingId(null)} style={cancelBtn}>X</button>
+                    <input
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") saveEdit(cat.id);
+                        if (e.key === "Escape") setEditingId(null);
+                      }}
+                    />
+
+                    <button
+                      className="confirm"
+                      onClick={() => saveEdit(cat.id)}
+                      disabled={loading || !editingName.trim()}
+                    >
+                      ✓
+                    </button>
+
+                    <button
+                      className="cancel"
+                      onClick={() => setEditingId(null)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="category-main">
+                      <div className="category-number">
+                        {String(index + 1).padStart(2, "0")}
+                      </div>
+
+                      <div className="category-copy">
+                        <strong>{cat.name}</strong>
+                        <small>
+                          {cat.active ? "Visible en el menú" : "Oculta del menú"}
+                        </small>
+                      </div>
                     </div>
-                  ) : (
-                    /* Vista normal con Switch Android + Botones de Acción */
-                    <>
-                      {/* Switch Deslizante para Activar/Desactivar */}
-                      <div style={{ display: "flex", alignItems: "center" }} title={cat.active ? "Activa" : "Oculta"}>
-                        <label className="android-switch">
-                          <input 
-                            type="checkbox" 
-                            checked={cat.active} 
-                            onChange={() => toggleActive(cat.id, cat.active)}
-                          />
-                          <span className="switch-slider"></span>
-                        </label>
-                      </div>
 
-                      {/* Botones de Editar y Eliminar */}
-                      <div style={{ display: "flex", gap: "6px" }}>
-                        <button 
-                          onClick={() => startEditing(cat)} 
-                          title="Editar"
-                          style={actionBtn}
-                        >
-                          ✏️
-                        </button>
-                        
-                        <button 
-                          onClick={() => deleteCategory(cat.id)} 
-                          title="Eliminar"
-                          style={deleteBtn}
-                          disabled={loading}
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </>
-                  )}
-                  
-                </div>
+                    <div className="category-actions">
+                      <label
+                        className="switch"
+                        title={cat.active ? "Ocultar" : "Mostrar"}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={cat.active}
+                          onChange={() => toggleActive(cat.id, cat.active)}
+                        />
+                        <span />
+                      </label>
 
-              </div>
+                      <button
+                        className="icon-button"
+                        onClick={() => startEditing(cat)}
+                        aria-label={`Editar ${cat.name}`}
+                      >
+                        ✎
+                      </button>
+
+                      <button
+                        className="icon-button delete"
+                        onClick={() => deleteCategory(cat.id)}
+                        disabled={loading}
+                        aria-label={`Eliminar ${cat.name}`}
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  </>
+                )}
+              </article>
             ))}
-          </div>
 
+            {categories.length === 0 && !loading && (
+              <div className="empty-state">
+                <span>＋</span>
+                <strong>Aún no tienes categorías</strong>
+                <small>
+                  Crea la primera para empezar a organizar tus productos.
+                </small>
+              </div>
+            )}
+          </section>
         </div>
+
+        <style jsx global>{`
+          .categories-page {
+            min-height:100vh;
+            width:100%;
+            box-sizing:border-box;
+            padding:16px 12px 36px;
+            background:#050505;
+            color:#fff;
+            font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+          }
+
+          .categories-wrap {
+            width:100%;
+            max-width:650px;
+            margin:0 auto;
+          }
+
+          .categories-header {
+            margin-bottom:11px;
+          }
+
+          .eyebrow {
+            margin-top:8px;
+            color:#f97316;
+            font-size:8px;
+            font-weight:800;
+            letter-spacing:1px;
+            text-transform:uppercase;
+          }
+
+          .title-line {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+            margin-top:3px;
+          }
+
+          .title-line h1 {
+            margin:0;
+            font-size:23px;
+            line-height:1.1;
+            letter-spacing:-.5px;
+            font-weight:850;
+          }
+
+          .title-line p {
+            margin:4px 0 0;
+            color:rgba(255,255,255,.35);
+            font-size:9px;
+          }
+
+          .count-badge {
+            display:grid;
+            place-items:center;
+            width:28px;
+            height:28px;
+            flex-shrink:0;
+            border:1px solid rgba(249,115,22,.2);
+            border-radius:8px;
+            background:rgba(249,115,22,.07);
+            color:#f97316;
+            font-size:10px;
+            font-weight:850;
+          }
+
+          .create-bar {
+            display:flex;
+            align-items:center;
+            gap:5px;
+            margin-bottom:6px;
+          }
+
+          .create-bar input {
+            flex:1;
+            min-width:0;
+            height:36px;
+            box-sizing:border-box;
+            padding:7px 9px;
+            border:1px solid rgba(255,255,255,.06);
+            border-radius:8px;
+            background:#0b0f16;
+            color:#fff;
+            outline:none;
+            font:500 9px system-ui,sans-serif;
+          }
+
+          .create-bar input:focus {
+            border-color:rgba(249,115,22,.4);
+            box-shadow:0 0 0 3px rgba(249,115,22,.05);
+          }
+
+          .create-bar button {
+            width:36px;
+            height:36px;
+            border:0;
+            border-radius:8px;
+            background:#f97316;
+            color:#fff;
+            font:800 17px system-ui,sans-serif;
+            cursor:pointer;
+          }
+
+          .create-bar button:disabled {
+            opacity:.4;
+            cursor:not-allowed;
+          }
+
+          .category-summary {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:2px 1px 6px;
+            color:rgba(255,255,255,.25);
+            font-size:7px;
+            text-transform:uppercase;
+            letter-spacing:.5px;
+          }
+
+          .processing {
+            margin-bottom:5px;
+            color:#f97316;
+            font-size:8px;
+            text-align:center;
+          }
+
+          .category-list {
+            display:flex;
+            flex-direction:column;
+            gap:5px;
+          }
+
+          .category-row {
+            min-width:0;
+            padding:8px 9px;
+            border:1px solid rgba(255,255,255,.055);
+            border-radius:9px;
+            background:rgba(17,24,39,.58);
+          }
+
+          .category-row.inactive {
+            background:rgba(17,17,17,.48);
+          }
+
+          .category-main,
+          .editing-row {
+            display:flex;
+            align-items:center;
+            gap:8px;
+            min-width:0;
+          }
+
+          .category-number {
+            width:28px;
+            height:28px;
+            display:grid;
+            place-items:center;
+            flex-shrink:0;
+            border-radius:7px;
+            background:rgba(255,255,255,.035);
+            color:rgba(255,255,255,.25);
+            font-size:7px;
+            font-weight:800;
+          }
+
+          .active .category-number {
+            color:#f97316;
+            background:rgba(249,115,22,.07);
+          }
+
+          .category-copy {
+            min-width:0;
+            flex:1;
+          }
+
+          .category-copy strong {
+            display:block;
+            overflow:hidden;
+            text-overflow:ellipsis;
+            white-space:nowrap;
+            color:rgba(255,255,255,.82);
+            font-size:9px;
+            font-weight:800;
+          }
+
+          .inactive .category-copy strong {
+            color:rgba(255,255,255,.4);
+          }
+
+          .category-copy small {
+            display:block;
+            margin-top:2px;
+            color:rgba(255,255,255,.22);
+            font-size:7px;
+          }
+
+          .category-actions {
+            display:flex;
+            align-items:center;
+            gap:4px;
+            flex-shrink:0;
+          }
+
+          .switch {
+            position:relative;
+            width:31px;
+            height:18px;
+            flex-shrink:0;
+          }
+
+          .switch input {
+            opacity:0;
+            width:0;
+            height:0;
+          }
+
+          .switch span {
+            position:absolute;
+            inset:0;
+            border-radius:999px;
+            background:#30343a;
+            cursor:pointer;
+            transition:.18s;
+          }
+
+          .switch span:before {
+            content:"";
+            position:absolute;
+            width:14px;
+            height:14px;
+            left:2px;
+            top:2px;
+            border-radius:50%;
+            background:#fff;
+            transition:.18s;
+          }
+
+          .switch input:checked + span {
+            background:#22c55e;
+          }
+
+          .switch input:checked + span:before {
+            transform:translateX(13px);
+          }
+
+          .icon-button {
+            width:27px;
+            height:27px;
+            display:grid;
+            place-items:center;
+            padding:0;
+            border:1px solid rgba(255,255,255,.06);
+            border-radius:7px;
+            background:rgba(255,255,255,.035);
+            color:rgba(255,255,255,.62);
+            font-size:11px;
+            cursor:pointer;
+          }
+
+          .icon-button.delete {
+            color:#ef4444;
+            background:rgba(239,68,68,.055);
+            border-color:rgba(239,68,68,.11);
+          }
+
+          .icon-button:disabled {
+            opacity:.45;
+            cursor:not-allowed;
+          }
+
+          .editing-row input {
+            flex:1;
+            min-width:0;
+            height:30px;
+            box-sizing:border-box;
+            padding:5px 8px;
+            border:1px solid rgba(249,115,22,.35);
+            border-radius:7px;
+            background:#0b0f16;
+            color:#fff;
+            outline:none;
+            font:700 9px system-ui,sans-serif;
+          }
+
+          .confirm,
+          .cancel {
+            width:27px;
+            height:27px;
+            flex-shrink:0;
+            border:0;
+            border-radius:7px;
+            color:#fff;
+            font-size:11px;
+            cursor:pointer;
+          }
+
+          .confirm {
+            background:#22c55e;
+          }
+
+          .cancel {
+            background:rgba(255,255,255,.06);
+            color:rgba(255,255,255,.5);
+          }
+
+          .empty-state {
+            padding:30px 12px;
+            border:1px dashed rgba(255,255,255,.07);
+            border-radius:10px;
+            text-align:center;
+            color:rgba(255,255,255,.3);
+          }
+
+          .empty-state span {
+            display:block;
+            margin-bottom:5px;
+            color:#f97316;
+            font-size:22px;
+          }
+
+          .empty-state strong {
+            display:block;
+            color:rgba(255,255,255,.6);
+            font-size:9px;
+          }
+
+          .empty-state small {
+            display:block;
+            margin-top:3px;
+            font-size:7px;
+          }
+
+          @media(max-width:390px) {
+            .categories-page {
+              padding-left:9px;
+              padding-right:9px;
+            }
+
+            .category-row {
+              padding:8px;
+            }
+
+            .category-actions {
+              gap:3px;
+            }
+
+            .icon-button {
+              width:26px;
+              height:26px;
+            }
+          }
+        `}</style>
       </main>
     </PermissionGuard>
-  );
-}
-
-// NUEVOS ESTILOS OPTIMIZADOS
-const mainContainer = { minHeight: "100vh", background: "radial-gradient(circle at top right, #160a02, #050505)", padding: "20px 16px", color: "#fff", fontFamily: "system-ui, -apple-system, sans-serif" };
-const contentWrapper = { maxWidth: "700px", margin: "0 auto" };
-const gridContainer = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px", marginBottom: "20px" };
-
-const formCard = { 
-  background: "rgba(17, 17, 17, 0.95)", 
-  border: "1px solid rgba(255,255,255,0.06)", 
-  borderRadius: "16px", 
-  padding: "12px", 
-  display: "flex", 
-  gap: "10px", 
-  marginBottom: "20px" 
-};
-
-const inputStyle = { 
-  flex: 1, 
-  background: "#121212", 
-  border: "1px solid #2d2d2d", 
-  borderRadius: "10px", 
-  padding: "10px 14px", 
-  color: "#fff",
-  fontSize: "14px",
-  outline: "none"
-};
-
-const primaryBtn = { 
-  background: "#f97316", 
-  color: "#fff", 
-  border: "none", 
-  padding: "10px 18px", 
-  borderRadius: "10px", 
-  fontWeight: "700", 
-  cursor: "pointer",
-  fontSize: "14px"
-};
-
-const categoryItem = { 
-  background: "rgba(20, 20, 20, 0.7)", 
-  border: "1px solid rgba(255,255,255,.05)", 
-  borderRadius: "14px", 
-  padding: "10px 14px", 
-  display: "flex", 
-  justifyContent: "space-between", 
-  alignItems: "center",
-  gap: "12px"
-};
-
-// Botones de acción simplificados y pequeños
-const actionBtn = { 
-  background: "rgba(255,255,255,0.03)", 
-  border: "1px solid rgba(255,255,255,0.05)", 
-  color: "#fff", 
-  width: "36px", 
-  height: "36px", 
-  borderRadius: "8px", 
-  cursor: "pointer", 
-  display: "flex", 
-  alignItems: "center", 
-  justifyContent: "center",
-  fontSize: "14px" 
-};
-
-const deleteBtn = { 
-  background: "rgba(239, 68, 68, 0.1)", 
-  border: "1px solid rgba(239, 68, 68, 0.15)", 
-  color: "#ef4444", 
-  width: "36px", 
-  height: "36px", 
-  borderRadius: "8px", 
-  cursor: "pointer", 
-  display: "flex", 
-  alignItems: "center", 
-  justifyContent: "center",
-  fontSize: "14px" 
-};
-
-const saveBtn = { background: "#22c55e", border: "none", padding: "8px 12px", borderRadius: "8px", color: "#fff", cursor: "pointer", fontWeight: "600", fontSize: "13px" };
-const cancelBtn = { background: "#3f3f46", border: "none", padding: "8px 12px", borderRadius: "8px", color: "#fff", cursor: "pointer", fontSize: "13px" };
-
-function StatCard({ title, value, color }: any) {
-  return (
-    <div style={{ background: "rgba(17,17,17,.95)", border: "1px solid rgba(255,255,255,.08)", borderRadius: "16px", padding: "12px", textAlign: "center" }}>
-      <h3 style={{ margin: 0, fontSize: "18px", color: color }}>{value}</h3>
-      <p style={{ fontSize: "11px", color: "#888", margin: "2px 0 0 0", textTransform: "uppercase", letterSpacing: "0.5px" }}>{title}</p>
-    </div>
   );
 }

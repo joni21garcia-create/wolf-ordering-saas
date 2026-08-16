@@ -83,7 +83,7 @@ export async function POST(request: Request) {
         status: "pending",
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (insertError) throw insertError;
 

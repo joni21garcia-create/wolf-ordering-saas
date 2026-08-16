@@ -6,105 +6,106 @@ import LegalStats from "./LegalStats";
 import LegalToolbar from "./LegalToolbar";
 import LegalTable from "./LegalTable";
 
-type Props = {
-  agreements: any[];
+type LegalAgreement = {
+  id: string;
+  owner_name: string | null;
+  owner_email: string | null;
+  token: string | null;
+  status: string | null;
+  legal_document_id: string | null;
+  restaurants?: {
+    name: string | null;
+  } | null;
+  legal_documents?: {
+    title: string | null;
+    version: string | null;
+  } | null;
 };
+
+type Props = {
+  agreements: LegalAgreement[];
+};
+
+const STATUS_ALL = "Todos";
+const STATUS_ACCEPTED = "Firmados";
+const STATUS_PENDING = "Pendientes";
 
 export default function LegalPageClient({
   agreements,
 }: Props) {
-  const [search, setSearch] =
-    useState("");
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState(STATUS_ALL);
 
-  const [status, setStatus] =
-    useState("Todos");
+  const normalizedSearch = search.trim().toLowerCase();
 
   const filtered = useMemo(() => {
+    if (!normalizedSearch && status === STATUS_ALL) {
+      return agreements;
+    }
+
     return agreements.filter((item) => {
       const matchesSearch =
-        item.owner_name
-          ?.toLowerCase()
-          .includes(
-            search.toLowerCase()
-          ) ||
-        item.owner_email
-          ?.toLowerCase()
-          .includes(
-            search.toLowerCase()
-          ) ||
+        !normalizedSearch ||
+        item.owner_name?.toLowerCase().includes(normalizedSearch) ||
+        item.owner_email?.toLowerCase().includes(normalizedSearch) ||
         item.restaurants?.name
           ?.toLowerCase()
-          .includes(
-            search.toLowerCase()
-          );
+          .includes(normalizedSearch);
 
       const matchesStatus =
-        status === "Todos"
-          ? true
-          : status === "Firmados"
-          ? item.status === "accepted"
-          : item.status === "pending";
+        status === STATUS_ALL ||
+        (status === STATUS_ACCEPTED && item.status === "accepted") ||
+        (status === STATUS_PENDING && item.status === "pending");
 
-      return (
-        matchesSearch &&
-        matchesStatus
-      );
+      return matchesSearch && matchesStatus;
     });
-  }, [
-    agreements,
-    search,
-    status,
-  ]);
+  }, [agreements, normalizedSearch, status]);
 
-  const total =
-    filtered.length;
+  const stats = useMemo(() => {
+    let accepted = 0;
+    let pending = 0;
+    const documentIds = new Set<string>();
 
-  const accepted =
-    filtered.filter(
-      (x) =>
-        x.status ===
-        "accepted"
-    ).length;
+    for (const item of filtered) {
+      if (item.status === "accepted") {
+        accepted += 1;
+      }
 
-  const pending =
-    filtered.filter(
-      (x) =>
-        x.status ===
-        "pending"
-    ).length;
+      if (item.status === "pending") {
+        pending += 1;
+      }
 
-  const documents =
-    new Set(
-      filtered.map(
-        (x) =>
-          x.legal_document_id
-      )
-    ).size;
+      if (item.legal_document_id) {
+        documentIds.add(item.legal_document_id);
+      }
+    }
+
+    return {
+      total: filtered.length,
+      accepted,
+      pending,
+      documents: documentIds.size,
+    };
+  }, [filtered]);
 
   return (
     <>
       <LegalStats
-        total={total}
-        accepted={accepted}
-        pending={pending}
-        documents={documents}
+        total={stats.total}
+        accepted={stats.accepted}
+        pending={stats.pending}
+        documents={stats.documents}
       />
 
       <LegalToolbar
-        total={total}
+        total={stats.total}
         search={search}
         status={status}
-        onSearchChange={
-          setSearch
-        }
-        onStatusChange={
-          setStatus
-        }
+        onSearchChange={setSearch}
+        onStatusChange={setStatus}
       />
 
-      <LegalTable
-        agreements={filtered}
-      />
+      <LegalTable agreements={filtered} />
     </>
   );
 }

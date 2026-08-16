@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import type { QuickAction } from "./types";
 
 interface Props {
@@ -8,174 +9,207 @@ interface Props {
 }
 
 export default function SettingsQuickActions({ actions }: Props) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <section
-      style={{
-        marginBottom: 24,
-      }}
-    >
-      {/* HEADER COMPACTO */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 10,
-        }}
+    <section className="quick-actions" aria-label="Accesos rápidos">
+      <button
+        type="button"
+        className={`trigger ${open ? "open" : ""}`}
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        aria-controls="quick-actions-list"
       >
-        <h2
-          style={{
-            margin: 0,
-            color: "#fff",
-            fontSize: 16,
-            fontWeight: 800,
-            letterSpacing: "-0.2px",
-          }}
-        >
-          Accesos Rápidos
-        </h2>
-        <span
-          style={{
-            color: "#8b8b95",
-            fontSize: 11,
-            fontWeight: 700,
-          }}
-        >
-          {actions.length} módulos
+        <span className="trigger-copy">
+          <span className="eyebrow">Accesos rápidos</span>
+          <strong>Acciones disponibles</strong>
         </span>
-      </div>
 
-      {/* GRID DE FILAS COMPACTAS */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: 10,
-        }}
-      >
-        {actions.map((action) => (
-          <Link
-            key={action.title}
-            href={action.href}
-            style={{
-              textDecoration: "none",
-              display: "block",
-            }}
-          >
-            <article
-              style={{
-                position: "relative",
-                overflow: "hidden",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-                padding: "10px 14px",
-                borderRadius: 14,
-                background: "linear-gradient(180deg,#171717,#0b0b0b)",
-                border: "1px solid rgba(255,255,255,.06)",
-                boxShadow: "0 4px 12px rgba(0,0,0,.1)",
-                boxSizing: "border-box",
-                transition: "transform 0.2s ease, border-color 0.2s ease",
-              }}
-            >
-              {/* Barra lateral de color distintivo */}
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  bottom: 0,
-                  width: 3,
-                  background: action.color,
-                }}
-              />
+        <span className="trigger-meta">
+          <span className="count">{actions.length}</span>
+          <span className="chevron" aria-hidden="true">
+            ›
+          </span>
+        </span>
+      </button>
 
-              {/* LADO IZQUIERDO: Icono y Título */}
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  minWidth: 0,
-                }}
-              >
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 8,
-                    background: `${action.color}15`,
-                    border: `1px solid ${action.color}30`,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    fontSize: 15,
-                    color: action.color,
-                    flexShrink: 0,
-                  }}
-                >
-                  {action.icon}
-                </div>
-
-                <div style={{ minWidth: 0 }}>
-                  <h3
-                    style={{
-                      margin: 0,
-                      color: "#fff",
-                      fontWeight: 700,
-                      fontSize: 13,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {action.title}
-                  </h3>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 4,
-                      marginTop: 2,
-                    }}
-                  >
-                    <span
-                      style={{
-                        width: 5,
-                        height: 5,
-                        borderRadius: "50%",
-                        background: "#22c55e",
-                      }}
-                    />
-                    <span
-                      style={{
-                        color: "#22c55e",
-                        fontSize: 10,
-                        fontWeight: 600,
-                      }}
-                    >
-                      Disponible
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* FLECHA DERECHA */}
-              <div
+      {open && (
+        <div id="quick-actions-list" className="list">
+          {actions.map((action) => (
+            <Link key={action.title} href={action.href} className="action">
+              <span
+                className="icon"
                 style={{
                   color: action.color,
-                  fontSize: 14,
-                  fontWeight: 800,
-                  flexShrink: 0,
+                  background: `${action.color}10`,
+                  borderColor: `${action.color}20`,
                 }}
+                aria-hidden="true"
+              >
+                {action.icon}
+              </span>
+
+              <span className="copy">
+                <strong>{action.title}</strong>
+              </span>
+
+              <span
+                className="arrow"
+                style={{ color: action.color }}
+                aria-hidden="true"
               >
                 →
-              </div>
-            </article>
-          </Link>
-        ))}
-      </div>
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      <style jsx>{`
+        .quick-actions {
+          margin: 0 0 12px;
+        }
+
+        .trigger {
+          width: 100%;
+          min-height: 52px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 8px 11px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 11px;
+          background: rgba(255, 255, 255, 0.025);
+          color: inherit;
+          text-align: left;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+          transition:
+            background 0.16s ease,
+            border-color 0.16s ease;
+        }
+
+        .trigger:hover,
+        .trigger.open {
+          background: rgba(255, 255, 255, 0.035);
+          border-color: rgba(255, 145, 75, 0.12);
+        }
+
+        .trigger-copy {
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .eyebrow {
+          color: #777;
+          font-size: 8px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.65px;
+        }
+
+        .trigger-copy strong {
+          color: #d4d4d4;
+          font-size: 10px;
+          font-weight: 750;
+        }
+
+        .trigger-meta {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          flex: 0 0 auto;
+        }
+
+        .count {
+          min-width: 18px;
+          height: 18px;
+          display: grid;
+          place-items: center;
+          padding: 0 4px;
+          box-sizing: border-box;
+          border-radius: 6px;
+          background: rgba(255, 106, 0, 0.08);
+          color: #ff914b;
+          font-size: 8px;
+          font-weight: 800;
+        }
+
+        .chevron {
+          color: #777;
+          font-size: 20px;
+          font-weight: 300;
+          line-height: 1;
+          transform: ${open ? "rotate(90deg)" : "rotate(0deg)"};
+          transition: transform 0.18s ease;
+        }
+
+        .list {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 5px;
+          margin-top: 5px;
+        }
+
+        .action {
+          min-width: 0;
+          min-height: 44px;
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          padding: 6px 8px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 9px;
+          background: rgba(255, 255, 255, 0.018);
+          color: inherit;
+          text-decoration: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .icon {
+          width: 27px;
+          height: 27px;
+          flex: 0 0 27px;
+          display: grid;
+          place-items: center;
+          border: 1px solid;
+          border-radius: 8px;
+          font-size: 12px;
+        }
+
+        .copy {
+          min-width: 0;
+          flex: 1;
+        }
+
+        .copy strong {
+          display: block;
+          overflow: hidden;
+          color: #ccc;
+          font-size: 9px;
+          font-weight: 700;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .arrow {
+          flex: 0 0 auto;
+          font-size: 13px;
+        }
+
+        @media (max-width: 430px) {
+          .list {
+            grid-template-columns: 1fr;
+          }
+
+          .trigger {
+            min-height: 50px;
+          }
+        }
+      `}</style>
     </section>
   );
 }

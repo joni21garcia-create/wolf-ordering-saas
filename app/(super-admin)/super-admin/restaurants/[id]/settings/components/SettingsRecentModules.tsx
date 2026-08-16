@@ -20,11 +20,13 @@ export default function SettingsRecentModules({ modules }: Props) {
       ) as string[];
 
       const list = saved
-        .map((id) => modules.find((m) => m.id === id))
+        .map((id) => modules.find((module) => module.id === id))
         .filter(Boolean) as SettingsModule[];
 
       setRecent(list);
-    } catch {}
+    } catch {
+      setRecent([]);
+    }
   }, [modules]);
 
   if (recent.length === 0) {
@@ -32,247 +34,152 @@ export default function SettingsRecentModules({ modules }: Props) {
   }
 
   return (
-    <section
-      style={{
-        marginTop: 40,
-        marginBottom: 36,
-      }}
-    >
-      {/* HEADER */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          flexWrap: "wrap",
-          gap: 20,
-          marginBottom: 24,
-        }}
-      >
-        <div style={{ flex: 1, minWidth: 280 }}>
-          <div
-            style={{
-              color: "#3b82f6",
-              fontSize: 12,
-              fontWeight: 800,
-              letterSpacing: 1.5,
-              textTransform: "uppercase",
-              marginBottom: 6,
-            }}
-          >
-            Historial
-          </div>
-
-          <h2
-            style={{
-              margin: 0,
-              color: "#fff",
-              fontSize: "clamp(26px, 4vw, 34px)",
-              fontWeight: 900,
-              letterSpacing: "-0.5px",
-            }}
-          >
-            Módulos Recientes
-          </h2>
-
-          <p
-            style={{
-              marginTop: 8,
-              color: "#8b8b95",
-              lineHeight: 1.6,
-              maxWidth: 680,
-              fontSize: 14,
-            }}
-          >
-            Continúa trabajando donde lo dejaste. Los últimos módulos abiertos aparecen automáticamente aquí.
-          </p>
-        </div>
-
-        <div
-          style={{
-            padding: "8px 16px",
-            borderRadius: 99,
-            background: "rgba(255,255,255,.025)",
-            border: "1px solid rgba(255,255,255,.06)",
-            color: "#bdbdbd",
-            fontWeight: 700,
-            fontSize: 13,
-          }}
-        >
-          {recent.length} recientes
-        </div>
+    <section className="recent" aria-label="Módulos recientes">
+      <div className="header">
+        <h2>Recientes</h2>
+        <span>{recent.length}</span>
       </div>
 
-      {/* GRID */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: 18,
-        }}
-      >
+      <div className="list">
         {recent.map((module) => (
-          <Link
-            key={module.id}
-            href={module.href}
-            style={{
-              textDecoration: "none",
-              display: "block",
-              height: "100%",
-            }}
-          >
-            <article
+          <Link key={module.id} href={module.href} className="item">
+            <span
+              className="icon"
               style={{
-                position: "relative",
-                overflow: "hidden",
-                height: "100%",
-                padding: 24,
-                borderRadius: 24,
-                background: "linear-gradient(180deg,#171717,#0b0b0b)",
-                border: "1px solid rgba(255,255,255,.06)",
-                display: "flex",
-                alignItems: "center",
-                gap: 20,
-                boxShadow: "0 15px 35px rgba(0,0,0,.15)",
-                boxSizing: "border-box",
-                transition: "transform 0.2s ease, border-color 0.2s ease",
+                color: module.color,
+                background: `${module.color}10`,
+                borderColor: `${module.color}20`,
               }}
+              aria-hidden="true"
             >
-              {/* Glow decorativo sutil */}
-              <div
-                style={{
-                  position: "absolute",
-                  top: -50,
-                  right: -50,
-                  width: 130,
-                  height: 130,
-                  borderRadius: "50%",
-                  background: `${module.color}12`,
-                  filter: "blur(40px)",
-                  pointerEvents: "none",
-                }}
-              />
+              {module.icon}
+            </span>
 
-              {/* ICONO */}
-              <div
-                style={{
-                  position: "relative",
-                  zIndex: 2,
-                  width: 60,
-                  height: 60,
-                  borderRadius: 18,
-                  background: `${module.color}15`,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  fontSize: 26,
-                  flexShrink: 0,
-                }}
-              >
-                {module.icon}
-              </div>
+            <span className="title">{module.title}</span>
 
-              {/* CONTENIDO */}
-              <div
-                style={{
-                  position: "relative",
-                  zIndex: 2,
-                  flex: 1,
-                  minWidth: 0,
-                }}
-              >
-                <div
-                  style={{
-                    display: "inline-flex",
-                    padding: "4px 10px",
-                    borderRadius: 99,
-                    background: `${module.color}12`,
-                    color: module.color,
-                    fontWeight: 700,
-                    fontSize: 11,
-                    marginBottom: 10,
-                    textTransform: "uppercase",
-                    letterSpacing: 0.8,
-                  }}
-                >
-                  {module.category}
-                </div>
-
-                <h3
-                  style={{
-                    margin: 0,
-                    color: "#fff",
-                    fontWeight: 800,
-                    fontSize: 18,
-                    letterSpacing: "-0.3px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {module.title}
-                </h3>
-
-                <p
-                  style={{
-                    margin: "6px 0 0 0",
-                    color: "#8b8b95",
-                    lineHeight: 1.5,
-                    fontSize: 13,
-                  }}
-                >
-                  Continúa configurando este módulo desde el último punto.
-                </p>
-
-                <div
-                  style={{
-                    marginTop: 12,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    color: "#22c55e",
-                    fontWeight: 700,
-                    fontSize: 12,
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: 99,
-                      background: "#22c55e",
-                    }}
-                  />
-                  Disponible
-                </div>
-              </div>
-
-              {/* Flecha */}
-              <div
-                style={{
-                  position: "relative",
-                  zIndex: 2,
-                  color: module.color,
-                  fontSize: 20,
-                  fontWeight: 800,
-                  flexShrink: 0,
-                }}
-              >
-                →
-              </div>
-            </article>
+            <span
+              className="arrow"
+              style={{ color: module.color }}
+              aria-hidden="true"
+            >
+              ›
+            </span>
           </Link>
         ))}
       </div>
+
+      <style jsx>{`
+        .recent {
+          margin: 16px 0 0;
+        }
+
+        .header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          margin: 0 2px 7px;
+        }
+
+        .header h2 {
+          margin: 0;
+          color: #777;
+          font-size: 9px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.7px;
+        }
+
+        .header span {
+          min-width: 17px;
+          height: 17px;
+          display: grid;
+          place-items: center;
+          padding: 0 4px;
+          box-sizing: border-box;
+          border-radius: 6px;
+          background: rgba(255, 255, 255, 0.04);
+          color: #666;
+          font-size: 8px;
+          font-weight: 750;
+        }
+
+        .list {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 5px;
+        }
+
+        .item {
+          min-width: 0;
+          min-height: 42px;
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          padding: 6px 8px;
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 9px;
+          background: rgba(255, 255, 255, 0.016);
+          color: inherit;
+          text-decoration: none;
+          transition:
+            background 0.16s ease,
+            border-color 0.16s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .item:hover {
+          background: rgba(255, 255, 255, 0.035);
+          border-color: rgba(255, 255, 255, 0.09);
+        }
+
+        .icon {
+          width: 25px;
+          height: 25px;
+          flex: 0 0 25px;
+          display: grid;
+          place-items: center;
+          border: 1px solid;
+          border-radius: 7px;
+          font-size: 11px;
+        }
+
+        .title {
+          min-width: 0;
+          flex: 1;
+          overflow: hidden;
+          color: #aaa;
+          font-size: 9px;
+          font-weight: 700;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .arrow {
+          flex: 0 0 auto;
+          font-size: 15px;
+          font-weight: 300;
+        }
+
+        @media (max-width: 700px) {
+          .list {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 430px) {
+          .list {
+            grid-template-columns: 1fr;
+          }
+
+          .item {
+            min-height: 44px;
+          }
+        }
+      `}</style>
     </section>
   );
 }
-
-/*
-=========================================================
-UTILIDAD
-=========================================================
-*/
 
 export function saveRecentModule(moduleId: string) {
   try {

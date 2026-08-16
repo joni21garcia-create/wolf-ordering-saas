@@ -51,15 +51,7 @@ export function OnboardingNavigation({
         </button>
       </div>
 
-      {!isLast && (
-        <button
-          type="button"
-          onClick={onNext}
-          className="relative mx-auto mt-2.5 block px-3 py-1 text-xs font-medium text-white/38 transition-colors hover:text-white/65"
-        >
-          Omitir
-        </button>
-      )}
+
     </div>
   );
 }

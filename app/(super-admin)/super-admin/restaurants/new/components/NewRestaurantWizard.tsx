@@ -386,61 +386,18 @@ return (
           currentStep={step}
         />
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "minmax(0,1fr) 360px",
-            gap: 32,
-            alignItems: "start",
-          }}
-        >
-          <section
-            style={{
-              background:
-                "linear-gradient(180deg,#171717,#101010)",
-              border:
-                "1px solid rgba(255,255,255,.08)",
-              borderRadius: 32,
-              padding: 36,
-              minHeight: 760,
-            }}
-          >
-            <div
-              style={{
-                marginBottom: 30,
-              }}
-            >
-              <div
-                style={{
-                  color: "#f97316",
-                  fontWeight: 700,
-                  marginBottom: 12,
-                }}
-              >
+        <div className="wizard-shell">
+          <section className="wizard-card">
+            <div className="wizard-header">
+              <div className="wizard-step-label">
                 Paso {step} de {TOTAL_STEPS}
               </div>
 
-              <h2
-                style={{
-                  margin: 0,
-                  color: "#fff",
-                  fontSize: 34,
-                  fontWeight: 900,
-                }}
-              >
-                {stepTitle}
-              </h2>
+              <h2>{stepTitle}</h2>
 
-              <p
-                style={{
-                  marginTop: 14,
-                  color: "#8b8b8b",
-                  lineHeight: 1.8,
-                }}
-              >
-                Completa este paso para continuar con la
-                creación del restaurante.
+              <p>
+                Completa este paso para continuar con la creación
+                del restaurante.
               </p>
             </div>
 
@@ -581,10 +538,165 @@ return (
             }
           />
         </div>
+
+        <style jsx>{`
+          .wizard-shell {
+            width: 100%;
+            max-width: 1440px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 360px;
+            gap: 24px;
+            align-items: start;
+            box-sizing: border-box;
+            padding: 0 20px 24px;
+          }
+
+          .wizard-card {
+            min-width: 0;
+            box-sizing: border-box;
+            min-height: 720px;
+            padding: 32px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            background: linear-gradient(180deg, #171717, #101010);
+          }
+
+          .wizard-header {
+            margin-bottom: 26px;
+          }
+
+          .wizard-step-label {
+            display: inline-flex;
+            align-items: center;
+            min-height: 24px;
+            margin-bottom: 9px;
+            padding: 0 9px;
+            border: 1px solid rgba(249, 115, 22, 0.14);
+            border-radius: 999px;
+            background: rgba(249, 115, 22, 0.06);
+            color: #f97316;
+            font-size: 10px;
+            line-height: 1;
+            font-weight: 800;
+            letter-spacing: 0.01em;
+          }
+
+          .wizard-header h2 {
+            margin: 0;
+            color: #fff;
+            font-size: clamp(25px, 3vw, 34px);
+            line-height: 1.05;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+          }
+
+          .wizard-header p {
+            max-width: 680px;
+            margin: 10px 0 0;
+            color: #8b8b8b;
+            font-size: 13px;
+            line-height: 1.55;
+          }
+
+          @media (max-width: 1100px) {
+            .wizard-shell {
+              grid-template-columns: minmax(0, 1fr) 300px;
+              gap: 16px;
+              padding-inline: 14px;
+            }
+
+            .wizard-card {
+              padding: 24px;
+            }
+          }
+
+          @media (max-width: 820px) {
+            .wizard-shell {
+              grid-template-columns: 1fr;
+              gap: 8px;
+              width: 100%;
+              max-width: none;
+              padding: 0 calc(8px + env(safe-area-inset-left))
+                calc(14px + env(safe-area-inset-bottom))
+                calc(8px + env(safe-area-inset-right));
+            }
+
+            .wizard-card {
+              width: 100%;
+              min-height: auto;
+              padding: 14px;
+              border-radius: 16px;
+            }
+
+            .wizard-header {
+              margin-bottom: 18px;
+            }
+
+            .wizard-header h2 {
+              font-size: clamp(23px, 7vw, 29px);
+            }
+
+            .wizard-header p {
+              margin-top: 7px;
+              font-size: 11px;
+              line-height: 1.45;
+            }
+          }
+
+          @media (max-width: 520px) {
+            .wizard-shell {
+              width: 100%;
+              padding-left: 4px;
+              padding-right: 4px;
+            }
+
+            .wizard-card {
+              width: 100%;
+              padding: 10px;
+              border-radius: 12px;
+              border-color: rgba(255, 255, 255, 0.06);
+            }
+
+            .wizard-header {
+              margin-bottom: 12px;
+            }
+
+            .wizard-step-label {
+              min-height: 22px;
+              margin-bottom: 7px;
+              padding: 0 8px;
+              font-size: 8px;
+            }
+
+            .wizard-header h2 {
+              font-size: 23px;
+              letter-spacing: -0.035em;
+            }
+
+            .wizard-header p {
+              font-size: 10px;
+            }
+          }
+
+          @media (max-width: 360px) {
+            .wizard-shell {
+              padding-left: 2px;
+              padding-right: 2px;
+            }
+
+            .wizard-card {
+              padding: 8px;
+            }
+
+            .wizard-header h2 {
+              font-size: 21px;
+            }
+          }
+        `}</style>
       </>
     )}
   </>
 );
 }
-
-

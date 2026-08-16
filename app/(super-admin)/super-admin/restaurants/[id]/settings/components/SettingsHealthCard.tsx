@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 interface Item {
   title: string;
   status: "ok" | "warning" | "error";
@@ -10,196 +12,215 @@ interface Props {
 }
 
 export default function SettingsHealthCard({ items }: Props) {
+  const [open, setOpen] = useState(false);
+
   const total = items.length;
-  const ok = items.filter((x) => x.status === "ok").length;
-  const warning = items.filter((x) => x.status === "warning").length;
-  const error = items.filter((x) => x.status === "error").length;
+  const ok = items.filter((item) => item.status === "ok").length;
+  const pending = items.filter((item) => item.status === "warning").length;
+  const errors = items.filter((item) => item.status === "error").length;
 
-  const progress = total === 0 ? 0 : Math.round((ok / total) * 100);
+  const completed = ok;
+  const progress = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+  const hasIssues = pending + errors > 0;
 
   return (
-    <section
-      style={{
-        position: "relative",
-        overflow: "hidden",
-        marginBottom: 24,
-        borderRadius: 20,
-        background: "linear-gradient(180deg,#181818,#0d0d0d)",
-        border: "1px solid rgba(255,255,255,.07)",
-        padding: "20px 24px",
-        boxShadow: "0 10px 30px rgba(0,0,0,.15)",
-        boxSizing: "border-box",
-      }}
-    >
-      {/* Glow decorativo sutil */}
-      <div
-        style={{
-          position: "absolute",
-          top: -60,
-          right: -60,
-          width: 160,
-          height: 160,
-          borderRadius: "50%",
-          background: "rgba(34,197,94,.06)",
-          filter: "blur(40px)",
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* Cabecera compacta con barra de estado integrada */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 2,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 20,
-          marginBottom: 18,
-        }}
+    <section className="health" aria-label="Estado de configuración">
+      <button
+        type="button"
+        className={`trigger ${open ? "open" : ""}`}
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        aria-controls="settings-health-details"
       >
-        <div style={{ flex: 1, minWidth: 240 }}>
-          <div
-            style={{
-              color: "#22c55e",
-              fontWeight: 800,
-              letterSpacing: 1.2,
-              fontSize: 11,
-              textTransform: "uppercase",
-              marginBottom: 2,
-            }}
-          >
-            Health Center
-          </div>
-          <h2
-            style={{
-              color: "#fff",
-              margin: 0,
-              fontSize: 20,
-              fontWeight: 900,
-              letterSpacing: "-0.3px",
-            }}
-          >
-            Estado del Restaurante
-          </h2>
-        </div>
+        <span className="summary">
+          <span className={`dot ${hasIssues ? "warning" : "ok"}`} />
 
-        {/* Panel lateral de progreso compacto */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 16,
-            background: "rgba(255,255,255,.025)",
-            border: "1px solid rgba(255,255,255,.05)",
-            borderRadius: 14,
-            padding: "10px 16px",
-          }}
-        >
-          <div style={{ textAlign: "right" }}>
-            <div style={{ color: "#fff", fontWeight: 800, fontSize: 12 }}>
-              Estado General <span style={{ color: "#22c55e" }}>{progress}%</span>
-            </div>
-            <div style={{ color: "#8f8f8f", fontSize: 11, fontWeight: 600 }}>
-              {ok}/{total} listos • {warning + error} pendientes
-            </div>
+          <span className="copy">
+            <span className="label">Estado de configuración</span>
+            <strong>
+              {completed} de {total} configurados
+              {hasIssues && (
+                <small>
+                  · {pending + errors} pendiente
+                  {pending + errors === 1 ? "" : "s"}
+                </small>
+              )}
+            </strong>
+          </span>
+        </span>
+
+        <span className="right">
+          <strong className="percentage">{progress}%</strong>
+          <span className="chevron" aria-hidden="true">
+            ›
+          </span>
+        </span>
+      </button>
+
+      {open && (
+        <div id="settings-health-details" className="details">
+          <div className="progress">
+            <span style={{ width: `${progress}%` }} />
           </div>
-          <div
-            style={{
-              width: 90,
-              height: 6,
-              borderRadius: 99,
-              background: "rgba(255,255,255,.08)",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                width: `${progress}%`,
-                height: "100%",
-                borderRadius: 99,
-                background: "#22c55e",
-                transition: "width 0.4s ease",
-              }}
-            />
+
+          <div className="items">
+            {items.map((item) => (
+              <HealthItem key={item.title} {...item} />
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Resumen de contadores en minitarjetas horizontales */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
-          gap: 12,
-          marginBottom: 18,
-        }}
-      >
-        <SummaryCard title="Configurados" value={ok} color="#22c55e" icon="✅" />
-        <SummaryCard title="Pendientes" value={warning} color="#f59e0b" icon="🟡" />
-        <SummaryCard title="Errores" value={error} color="#ef4444" icon="⚠️" />
-        <SummaryCard title="Total" value={total} color="#3b82f6" icon="📦" />
-      </div>
+      <style jsx>{`
+        .health {
+          margin: 0 0 12px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 11px;
+          background: rgba(255, 255, 255, 0.022);
+          overflow: hidden;
+        }
 
-      {/* Grid de ítems individuales ultra compactos */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: 10,
-        }}
-      >
-        {items.map((item) => (
-          <HealthItem key={item.title} {...item} />
-        ))}
-      </div>
+        .trigger {
+          width: 100%;
+          min-height: 58px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 9px 11px;
+          border: 0;
+          background: transparent;
+          color: inherit;
+          text-align: left;
+          cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .trigger:hover,
+        .trigger.open {
+          background: rgba(255, 255, 255, 0.018);
+        }
+
+        .summary {
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .dot {
+          width: 6px;
+          height: 6px;
+          flex: 0 0 6px;
+          border-radius: 50%;
+        }
+
+        .dot.ok {
+          background: #22c55e;
+          box-shadow: 0 0 7px rgba(34, 197, 94, 0.4);
+        }
+
+        .dot.warning {
+          background: #f59e0b;
+          box-shadow: 0 0 7px rgba(245, 158, 11, 0.35);
+        }
+
+        .copy {
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .label {
+          color: #777;
+          font-size: 8px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.65px;
+        }
+
+        .copy strong {
+          color: #ddd;
+          font-size: 11px;
+          font-weight: 800;
+          white-space: nowrap;
+        }
+
+        .copy small {
+          color: #777;
+          font-size: 9px;
+          font-weight: 500;
+        }
+
+        .right {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          gap: 7px;
+        }
+
+        .percentage {
+          color: #22c55e;
+          font-size: 12px;
+          font-weight: 850;
+        }
+
+        .chevron {
+          color: #777;
+          font-size: 20px;
+          font-weight: 300;
+          line-height: 1;
+          transform: ${open ? "rotate(90deg)" : "rotate(0deg)"};
+          transition: transform 0.18s ease;
+        }
+
+        .details {
+          padding: 0 11px 10px;
+        }
+
+        .progress {
+          height: 3px;
+          margin-bottom: 8px;
+          overflow: hidden;
+          border-radius: 99px;
+          background: rgba(255, 255, 255, 0.07);
+        }
+
+        .progress span {
+          display: block;
+          height: 100%;
+          border-radius: inherit;
+          background: #22c55e;
+        }
+
+        .items {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 4px;
+        }
+
+        @media (max-width: 430px) {
+          .trigger {
+            min-height: 54px;
+            padding: 8px 10px;
+          }
+
+          .copy strong {
+            font-size: 10px;
+          }
+
+          .percentage {
+            font-size: 11px;
+          }
+
+          .items {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
     </section>
-  );
-}
-
-function SummaryCard({
-  title,
-  value,
-  color,
-  icon,
-}: {
-  title: string;
-  value: number;
-  color: string;
-  icon: string;
-}) {
-  return (
-    <div
-      style={{
-        borderRadius: 14,
-        padding: "10px 14px",
-        background: "rgba(255,255,255,.02)",
-        border: "1px solid rgba(255,255,255,.04)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        boxSizing: "border-box",
-      }}
-    >
-      <div>
-        <div
-          style={{
-            color: "#8b8b8b",
-            fontSize: 10,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: 0.5,
-          }}
-        >
-          {title}
-        </div>
-        <div style={{ color, fontWeight: 900, fontSize: 20, lineHeight: 1.1 }}>
-          {value}
-        </div>
-      </div>
-      <div style={{ fontSize: 18 }}>{icon}</div>
-    </div>
   );
 }
 
@@ -207,64 +228,83 @@ function HealthItem({ title, status }: Item) {
   const config = {
     ok: {
       color: "#22c55e",
-      icon: "🟢",
-      label: "Configurado",
+      icon: "✓",
+      label: "Listo",
     },
     warning: {
       color: "#f59e0b",
-      icon: "🟡",
+      icon: "!",
       label: "Pendiente",
     },
     error: {
       color: "#ef4444",
-      icon: "🔴",
+      icon: "×",
       label: "Error",
     },
   }[status];
 
   return (
-    <div
-      style={{
-        borderRadius: 14,
-        padding: "12px 14px",
-        background: "rgba(255,255,255,.02)",
-        border: "1px solid rgba(255,255,255,.04)",
-        boxSizing: "border-box",
-        display: "flex",
-        flexDirection: "column",
-        gap: 8,
-      }}
-    >
-      <div
+    <div className="item">
+      <span
+        className="icon"
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          color: config.color,
+          background: `${config.color}10`,
         }}
+        aria-hidden="true"
       >
-        <span style={{ color: "#fff", fontWeight: 700, fontSize: 13 }}>
-          {title}
-        </span>
-        <span style={{ fontSize: 12 }}>{config.icon}</span>
-      </div>
+        {config.icon}
+      </span>
 
-      <div
-        style={{
-          height: 3,
-          borderRadius: 99,
-          background: "rgba(255,255,255,.06)",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            width: status === "ok" ? "100%" : status === "warning" ? "60%" : "25%",
-            height: "100%",
-            background: config.color,
-            borderRadius: 99,
-          }}
-        />
-      </div>
+      <span className="item-copy">
+        <strong>{title}</strong>
+        <small style={{ color: config.color }}>{config.label}</small>
+      </span>
+
+      <style jsx>{`
+        .item {
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          min-height: 35px;
+          padding: 5px 7px;
+          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.018);
+        }
+
+        .icon {
+          width: 20px;
+          height: 20px;
+          flex: 0 0 20px;
+          display: grid;
+          place-items: center;
+          border-radius: 6px;
+          font-size: 10px;
+          font-weight: 900;
+        }
+
+        .item-copy {
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+        }
+
+        .item-copy strong {
+          overflow: hidden;
+          color: #c8c8c8;
+          font-size: 8px;
+          font-weight: 700;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .item-copy small {
+          font-size: 7px;
+          font-weight: 650;
+        }
+      `}</style>
     </div>
   );
 }

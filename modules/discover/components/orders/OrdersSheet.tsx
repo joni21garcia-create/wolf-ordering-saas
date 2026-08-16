@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase/client";
 
 import { WolfSheet } from "@/lib/wolf-ui";
@@ -17,18 +16,6 @@ import OrderCard from "./OrderCard";
 import OrderItems from "./OrderItems";
 import OrderStatusBadge from "./OrderStatusBadge";
 import OrderTimeline from "./OrderTimeline";
-
-const discoverRealtime = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-  }
-);
 
 interface OrdersSheetProps {
   open: boolean;
@@ -159,7 +146,7 @@ export function OrdersSheet({
       orderId
     );
 
-    const channel = discoverRealtime
+    const channel = supabase
       .channel(`discover-order-${orderId}`)
       .on(
         "postgres_changes",
@@ -254,7 +241,7 @@ export function OrdersSheet({
         orderId
       );
 
-      void discoverRealtime.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
   }, [open, selectedOrder?.id]);
 

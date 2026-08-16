@@ -7,65 +7,114 @@ interface Props {
 
 export default function SettingsSearch({ value, onChange }: Props) {
   return (
-    <section
-      style={{
-        marginBottom: 24,
-      }}
-    >
-      <div
-        style={{
-          position: "relative",
-        }}
-      >
-        {/* ICONO DE BÚSQUEDA */}
-        <div
-          style={{
-            position: "absolute",
-            left: 18,
-            top: "50%",
-            transform: "translateY(-50%)",
-            fontSize: 18,
-            pointerEvents: "none",
-            filter: "grayscale(100%) opacity(0.6)",
-          }}
-        >
-          🔍
-        </div>
+    <section className="search">
+      <div className="field">
+        <span className="icon" aria-hidden="true">
+          ⌕
+        </span>
 
-        {/* INPUT */}
         <input
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Buscar módulos, configuración, pedidos, finanzas, marketing..."
-          style={{
-            width: "100%",
-            height: 50,
-            paddingLeft: 50,
-            paddingRight: 20,
-            borderRadius: 16,
-            border: "1px solid rgba(255,255,255,.06)",
-            background: "linear-gradient(180deg,#171717,#0b0b0b)",
-            color: "#fff",
-            fontSize: 14,
-            outline: "none",
-            boxSizing: "border-box",
-            boxShadow: "0 8px 20px rgba(0,0,0,.1)",
-            transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-          }}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder="Buscar configuración..."
+          aria-label="Buscar configuración"
+          autoComplete="off"
+          spellCheck={false}
         />
+
+        {value && (
+          <button
+            type="button"
+            className="clear"
+            onClick={() => onChange("")}
+            aria-label="Limpiar búsqueda"
+          >
+            ×
+          </button>
+        )}
       </div>
 
-      {/* AYUDA / DESCRIPCIÓN */}
-      <div
-        style={{
-          marginTop: 6,
-          marginLeft: 4,
-          color: "#8b8b95",
-          fontSize: 12,
-        }}
-      >
-        Busca por nombre del módulo o descripción.
-      </div>
+      <style jsx>{`
+        .search {
+          width: 100%;
+          margin: 0;
+        }
+
+        .field {
+          position: relative;
+          width: 100%;
+        }
+
+        .icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #666;
+          font-size: 17px;
+          line-height: 1;
+          pointer-events: none;
+        }
+
+        input {
+          width: 100%;
+          height: 38px;
+          box-sizing: border-box;
+          padding: 0 36px 0 34px;
+          border: 1px solid rgba(255, 255, 255, 0.065);
+          border-radius: 10px;
+          outline: none;
+          background: rgba(255, 255, 255, 0.025);
+          color: #e8e8e8;
+          font: inherit;
+          font-size: 10px;
+          -webkit-appearance: none;
+          transition:
+            border-color 0.16s ease,
+            background 0.16s ease;
+        }
+
+        input::placeholder {
+          color: #555;
+        }
+
+        input:focus {
+          border-color: rgba(255, 145, 75, 0.28);
+          background: rgba(255, 255, 255, 0.035);
+        }
+
+        .clear {
+          position: absolute;
+          right: 8px;
+          top: 50%;
+          width: 23px;
+          height: 23px;
+          transform: translateY(-50%);
+          display: grid;
+          place-items: center;
+          padding: 0;
+          border: 0;
+          border-radius: 7px;
+          background: rgba(255, 255, 255, 0.05);
+          color: #888;
+          font: inherit;
+          font-size: 15px;
+          line-height: 1;
+          cursor: pointer;
+        }
+
+        .clear:hover {
+          background: rgba(255, 255, 255, 0.08);
+          color: #ddd;
+        }
+
+        @media (max-width: 430px) {
+          input {
+            height: 40px;
+            font-size: 11px;
+          }
+        }
+      `}</style>
     </section>
   );
 }

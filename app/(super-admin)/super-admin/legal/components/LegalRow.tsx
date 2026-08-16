@@ -1,33 +1,52 @@
 ﻿import Link from "next/link";
 
-type Props = {
-  item: any;
+type LegalAgreement = {
+  id: string;
+  token: string | null;
+  owner_name: string | null;
+  owner_email: string | null;
+  owner_phone?: string | null;
+  status: string | null;
+  accepted_at?: string | null;
+  pdf_url?: string | null;
+  restaurants?: {
+    name: string | null;
+  } | null;
+  legal_documents?: {
+    version: string | null;
+  } | null;
 };
 
-function formatDate(date: string) {
+type Props = {
+  item: LegalAgreement;
+};
+
+function formatDate(date?: string | null) {
+  if (!date) return "—";
+
   const d = new Date(date);
 
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
+  if (Number.isNaN(d.getTime())) {
+    return "—";
+  }
 
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mi = String(d.getMinutes()).padStart(2, "0");
-  const ss = String(d.getSeconds()).padStart(2, "0");
-
-  return `${dd}/${mm}/${yyyy} ${hh}:${mi}:${ss}`;
+  return new Intl.DateTimeFormat("es-CO", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(d);
 }
 
 export default function LegalRow({ item }: Props) {
   const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    "http://localhost:3000";
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-  const agreementUrl = `${baseUrl}/legal/accept/${item.token}`;
+  const agreementUrl = item.token
+    ? `${baseUrl}/legal/accept/${item.token}`
+    : "";
 
   const phone = (item.owner_phone ?? "").replace(/\D/g, "");
 
-  const message = `Hola ${item.owner_name}
+  const message = `Hola ${item.owner_name ?? ""}
 
 Bienvenido a Wolf Ordering.
 
@@ -37,175 +56,199 @@ ${agreementUrl}
 
 Gracias.`;
 
-  const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(
-    message
-  )}`;
+  const whatsappUrl = phone
+    ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+    : null;
+
+  const accepted = item.status === "accepted";
 
   return (
-    <tr
-      style={{
-        borderBottom: "1px solid #2a2a2a",
-      }}
-    >
-      <td
-        style={{
-          padding: 16,
-          borderBottom: "1px solid #262626",
-        }}
-      >
-        {item.restaurants?.name}
+    <tr className="legal-row">
+      <td className="restaurant-cell">
+        <div className="restaurant-name">
+          <span className="restaurant-dot" />
+          {item.restaurants?.name || "—"}
+        </div>
       </td>
 
-      <td
-        style={{
-          padding: 16,
-          borderBottom: "1px solid #262626",
-        }}
-      >
-        {item.owner_name}
+      <td>{item.owner_name || "—"}</td>
+
+      <td className="email-cell">
+        {item.owner_email || "—"}
       </td>
 
-      <td
-        style={{
-          padding: 16,
-          borderBottom: "1px solid #262626",
-        }}
-      >
-        {item.owner_email}
-      </td>
-
-      <td
-        style={{
-          padding: 16,
-          borderBottom: "1px solid #262626",
-        }}
-      >
-        <span
-          style={{
-            display: "inline-block",
-            padding: "6px 12px",
-            borderRadius: 999,
-            fontWeight: 600,
-            fontSize: 13,
-            background:
-              item.status === "accepted"
-                ? "#16351f"
-                : "#3b2b09",
-            color:
-              item.status === "accepted"
-                ? "#4ade80"
-                : "#fbbf24",
-            border:
-              item.status === "accepted"
-                ? "1px solid #22c55e"
-                : "1px solid #f59e0b",
-          }}
-        >
-          {item.status === "accepted"
-            ? "Firmado"
-            : "Pendiente"}
+      <td>
+        <span className={`status ${accepted ? "accepted" : "pending"}`}>
+          <i />
+          {accepted ? "Firmado" : "Pendiente"}
         </span>
       </td>
 
-      <td
-        style={{
-          padding: 16,
-          borderBottom: "1px solid #262626",
-        }}
-      >
-        {item.legal_documents?.version}
-      </td>
+      <td>{item.legal_documents?.version || "—"}</td>
 
-      <td
-        style={{
-          padding: 16,
-          borderBottom: "1px solid #262626",
-        }}
-      >
-        {item.accepted_at
-          ? formatDate(item.accepted_at)
-          : "-"}
-      </td>
+      <td>{formatDate(item.accepted_at)}</td>
 
-      <td
-        style={{
-          padding: 16,
-          borderBottom: "1px solid #262626",
-        }}
-      >
+      <td>
         {item.pdf_url ? (
           <a
             href={item.pdf_url}
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              display: "inline-block",
-              padding: "8px 14px",
-              borderRadius: 10,
-              background: "#dc2626",
-              color: "#fff",
-              textDecoration: "none",
-              fontWeight: 600,
-            }}
+            className="action"
           >
             PDF
           </a>
         ) : (
-          <span style={{ color: "#777" }}>—</span>
+          <span className="muted">—</span>
         )}
       </td>
 
-      <td
-        style={{
-          padding: 16,
-          borderBottom: "1px solid #262626",
-        }}
-      >
-        <Link
-          href={`/legal/view/${item.token}`}
-          target="_blank"
-          style={{
-            display: "inline-block",
-            padding: "8px 14px",
-            borderRadius: 10,
-            background: "#2563eb",
-            color: "#fff",
-            textDecoration: "none",
-            fontWeight: 600,
-          }}
-        >
-          Ver
-        </Link>
+      <td>
+        {item.token ? (
+          <Link
+            href={`/legal/view/${item.token}`}
+            target="_blank"
+            className="action primary"
+          >
+            Ver
+          </Link>
+        ) : (
+          <span className="muted">—</span>
+        )}
       </td>
 
-      <td
-        style={{
-          padding: 16,
-          borderBottom: "1px solid #262626",
-        }}
-      >
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            padding: "8px 14px",
-            minWidth: 130,
-            borderRadius: 10,
-            background: "#16a34a",
-            color: "#fff",
-            textDecoration: "none",
-            fontWeight: 600,
-            whiteSpace: "nowrap",
-          }}
-        >
-          WhatsApp
-        </a>
+      <td>
+        {whatsappUrl ? (
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="action whatsapp"
+          >
+            WhatsApp
+          </a>
+        ) : (
+          <span className="muted">—</span>
+        )}
       </td>
+
+      <style jsx>{`
+        .legal-row {
+          height: 46px;
+        }
+
+        .legal-row > td {
+          padding: 0 10px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+          color: rgba(255, 255, 255, 0.58);
+          font-size: 7px;
+          font-weight: 550;
+          white-space: nowrap;
+          vertical-align: middle;
+        }
+
+        .legal-row:hover > td {
+          background: rgba(255, 255, 255, 0.018);
+        }
+
+        .restaurant-cell {
+          min-width: 130px;
+        }
+
+        .restaurant-name {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          max-width: 180px;
+          overflow: hidden;
+          color: rgba(255, 255, 255, 0.78);
+          font-size: 7px;
+          font-weight: 800;
+          text-overflow: ellipsis;
+        }
+
+        .restaurant-dot {
+          width: 5px;
+          height: 5px;
+          flex: 0 0 5px;
+          border-radius: 50%;
+          background: #f97316;
+          box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.06);
+        }
+
+        .email-cell {
+          max-width: 190px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .status {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 6px;
+          border-radius: 999px;
+          font-size: 5.5px;
+          font-weight: 850;
+          text-transform: uppercase;
+        }
+
+        .status i {
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background: currentColor;
+        }
+
+        .status.accepted {
+          color: #22c55e;
+          background: rgba(34, 197, 94, 0.07);
+        }
+
+        .status.pending {
+          color: #f59e0b;
+          background: rgba(245, 158, 11, 0.07);
+        }
+
+        .action {
+          min-width: 35px;
+          min-height: 26px;
+          box-sizing: border-box;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 7px;
+          border: 1px solid rgba(255, 255, 255, 0.065);
+          border-radius: 6px;
+          background: #151515;
+          color: rgba(255, 255, 255, 0.52);
+          text-decoration: none;
+          font-size: 5.5px;
+          font-weight: 800;
+          transition: border-color 0.15s ease, color 0.15s ease,
+            background 0.15s ease;
+        }
+
+        .action:hover {
+          border-color: rgba(255, 255, 255, 0.13);
+          color: #fff;
+          background: #191919;
+        }
+
+        .action.primary {
+          border-color: rgba(249, 115, 22, 0.16);
+          background: rgba(249, 115, 22, 0.07);
+          color: #f97316;
+        }
+
+        .action.whatsapp {
+          color: #22c55e;
+        }
+
+        .muted {
+          color: rgba(255, 255, 255, 0.14);
+        }
+      `}</style>
     </tr>
   );
 }

@@ -2,6 +2,12 @@
 
 import LegalPageClient from "./components/LegalPageClient";
 
+// Este módulo siempre debe leer datos frescos.
+// Evita que el Centro Legal conserve una versión anterior en producción.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export default async function LegalPage() {
   const { data: agreements, error } = await supabaseAdmin
     .from("restaurant_legal_acceptance")
@@ -20,61 +26,66 @@ export default async function LegalPage() {
     });
 
   if (error) {
+    console.error("LEGAL PAGE LOAD ERROR:", error);
     throw error;
   }
 
   console.log(
     "LEGAL AGREEMENTS:",
-    agreements?.length,
-    agreements?.map((x) => x.owner_name)
+    agreements?.length ?? 0
   );
-
-  const total = agreements?.length ?? 0;
-
-  const accepted =
-    agreements?.filter(
-      (agreement) => agreement.status === "accepted"
-    ).length ?? 0;
-
-  const pending =
-    agreements?.filter(
-      (agreement) => agreement.status === "pending"
-    ).length ?? 0;
-
-  const documents = new Set(
-    agreements?.map(
-      (agreement) => agreement.legal_document_id
-    )
-  ).size;
 
   return (
     <main
       style={{
-        padding: 30,
-        maxWidth: 1700,
-        margin: "0 auto",
+        width: "100%",
+        minHeight: "100dvh",
+        boxSizing: "border-box",
+        padding: "clamp(12px, 2vw, 30px)",
+        margin: 0,
       }}
     >
-      <h1
+      <div
         style={{
-          fontSize: 32,
-          fontWeight: 800,
-          marginBottom: 8,
+          width: "100%",
+          maxWidth: 1700,
+          margin: "0 auto",
+          boxSizing: "border-box",
         }}
       >
-        Centro Legal
-      </h1>
+        <header
+          style={{
+            marginBottom: "clamp(16px, 2.5vw, 30px)",
+          }}
+        >
+          <h1
+            style={{
+              margin: 0,
+              fontSize: "clamp(22px, 3vw, 32px)",
+              lineHeight: 1.1,
+              fontWeight: 850,
+              letterSpacing: "-0.04em",
+            }}
+          >
+            Centro Legal
+          </h1>
 
-      <p
-        style={{
-          color: "#888",
-          marginBottom: 30,
-        }}
-      >
-        Administración de acuerdos comerciales, firmas electrónicas y expedientes legales.
-      </p>
+          <p
+            style={{
+              margin: "7px 0 0",
+              maxWidth: 760,
+              color: "#888",
+              fontSize: "clamp(12px, 1.3vw, 14px)",
+              lineHeight: 1.5,
+            }}
+          >
+            Administración de acuerdos comerciales, firmas electrónicas y
+            expedientes legales.
+          </p>
+        </header>
 
-      <LegalPageClient agreements={agreements ?? []} />
+        <LegalPageClient agreements={agreements ?? []} />
+      </div>
     </main>
   );
 }

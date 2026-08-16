@@ -49,14 +49,26 @@ export async function POST(req: NextRequest) {
         }
       )
       .select("id")
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
+if (error) throw error;
 
-    return NextResponse.json({
-      success: true,
-      subscription_id: data.id,
-    });
+if (!data) {
+  return NextResponse.json(
+    {
+      success: false,
+      error: "No fue posible registrar la suscripción",
+    },
+    {
+      status: 500,
+    },
+  );
+}
+
+return NextResponse.json({
+  success: true,
+  subscription_id: data.id,
+});
   } catch (error) {
     console.error("[REGISTER WEB]", error);
 

@@ -9,206 +9,179 @@ interface Props {
 
 export default function SettingsModuleCard({ module }: Props) {
   return (
-    <Link
-      href={module.href}
-      style={{
-        textDecoration: "none",
-        display: "block",
-        width: "100%",
-      }}
-    >
-      <article
-        style={{
-          position: "relative",
-          overflow: "hidden",
-          background: "linear-gradient(90deg, #181818 0%, #0d0d0d 100%)",
-          border: "1px solid rgba(255,255,255,.07)",
-          borderRadius: 20,
-          padding: "18px 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 20,
-          transition: ".2s ease",
-          cursor: "pointer",
-          boxSizing: "border-box",
-          boxShadow: "0 8px 24px rgba(0,0,0,.15)",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "translateX(4px)";
-          e.currentTarget.style.borderColor = `${module.color}60`;
-          e.currentTarget.style.boxShadow = `0 12px 30px ${module.color}15`;
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "translateX(0px)";
-          e.currentTarget.style.borderColor = "rgba(255,255,255,.07)";
-          e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,.15)";
-        }}
-      >
-        {/* Barra lateral de color distintivo */}
-        <div
+    <Link href={module.href} className="link">
+      <article className="card">
+        <span
+          className="icon"
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            bottom: 0,
-            width: 4,
-            background: module.color,
+            color: module.color,
+            background: `${module.color}10`,
+            borderColor: `${module.color}20`,
           }}
-        />
-
-        {/* LADO IZQUIERDO: Icono, Títulos y Descripción */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 18,
-            flex: 1,
-            minWidth: 0,
-          }}
+          aria-hidden="true"
         >
-          {/* ICONO */}
-          <div
-            style={{
-              width: 50,
-              height: 50,
-              borderRadius: 14,
-              background: `${module.color}18`,
-              border: `1px solid ${module.color}30`,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              color: module.color,
-              fontSize: 22,
-              flexShrink: 0,
-            }}
-          >
-            {module.icon}
-          </div>
+          {module.icon}
+        </span>
 
-          {/* TEXTOS */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0, flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <h2
-                style={{
-                  color: "#fff",
-                  margin: 0,
-                  fontSize: 16,
-                  fontWeight: 800,
-                  letterSpacing: "-0.3px",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {module.title}
-              </h2>
+        <div className="content">
+          <div className="title-row">
+            <h2>{module.title}</h2>
 
+            {module.featured && (
               <span
+                className="featured"
                 style={{
-                  padding: "2px 10px",
-                  borderRadius: 99,
-                  background: `${module.color}15`,
                   color: module.color,
-                  fontWeight: 700,
-                  fontSize: 11,
+                  background: `${module.color}10`,
                 }}
               >
-                {module.category}
+                Destacado
               </span>
-
-              {module.featured && (
-                <span
-                  style={{
-                    padding: "2px 8px",
-                    borderRadius: 99,
-                    background: `${module.color}20`,
-                    border: `1px solid ${module.color}40`,
-                    color: module.color,
-                    fontWeight: 800,
-                    fontSize: 10,
-                  }}
-                >
-                  ⭐ Destacado
-                </span>
-              )}
-            </div>
-
-            <p
-              style={{
-                color: "#8d8d95",
-                margin: 0,
-                fontSize: 13,
-                lineHeight: 1.4,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {module.description}
-            </p>
+            )}
           </div>
+
+          <p>{module.description}</p>
+
+          <span className="category">{module.category}</span>
         </div>
 
-        {/* LADO DERECHO: Estado y Flecha */}
-        <div
+        <span
+          className="arrow"
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 16,
-            flexShrink: 0,
+            color: module.color,
           }}
+          aria-hidden="true"
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background: "rgba(34, 197, 94, 0.08)",
-              border: "1px solid rgba(34, 197, 94, 0.2)",
-              padding: "4px 10px",
-              borderRadius: 99,
-            }}
-          >
-            <span
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: "#22c55e",
-                boxShadow: "0 0 8px #22c55e",
-              }}
-            />
-            <span
-              style={{
-                color: "#22c55e",
-                fontWeight: 700,
-                fontSize: 12,
-              }}
-            >
-              Disponible
-            </span>
-          </div>
-
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              background: `${module.color}18`,
-              border: `1px solid ${module.color}35`,
-              color: module.color,
-              fontSize: 16,
-              fontWeight: 800,
-            }}
-          >
-            →
-          </div>
-        </div>
+          ›
+        </span>
       </article>
+
+      <style jsx>{`
+        .link {
+          display: block;
+          min-width: 0;
+          color: inherit;
+          text-decoration: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .card {
+          min-width: 0;
+          min-height: 58px;
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 7px 9px;
+          box-sizing: border-box;
+          border: 1px solid rgba(255, 255, 255, 0.055);
+          border-radius: 11px;
+          background: rgba(255, 255, 255, 0.018);
+          transition:
+            background 0.16s ease,
+            border-color 0.16s ease,
+            transform 0.16s ease;
+        }
+
+        .link:hover .card {
+          background: rgba(255, 255, 255, 0.04);
+          border-color: rgba(255, 255, 255, 0.1);
+          transform: translateY(-1px);
+        }
+
+        .icon {
+          width: 31px;
+          height: 31px;
+          flex: 0 0 31px;
+          display: grid;
+          place-items: center;
+          border: 1px solid;
+          border-radius: 9px;
+          font-size: 14px;
+        }
+
+        .content {
+          min-width: 0;
+          flex: 1;
+          overflow: hidden;
+        }
+
+        .title-row {
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        h2 {
+          min-width: 0;
+          margin: 0;
+          overflow: hidden;
+          color: #ddd;
+          font-size: 10px;
+          line-height: 1.25;
+          font-weight: 800;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        p {
+          margin: 2px 0 0;
+          overflow: hidden;
+          color: #626262;
+          font-size: 8px;
+          line-height: 1.35;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .category {
+          display: inline-block;
+          max-width: 100%;
+          margin-top: 3px;
+          overflow: hidden;
+          color: #555;
+          font-size: 7px;
+          font-weight: 700;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .featured {
+          flex: 0 0 auto;
+          padding: 2px 5px;
+          border-radius: 5px;
+          font-size: 7px;
+          font-weight: 800;
+        }
+
+        .arrow {
+          flex: 0 0 auto;
+          font-size: 19px;
+          font-weight: 300;
+          line-height: 1;
+        }
+
+        @media (max-width: 620px) {
+          .card {
+            min-height: 60px;
+            padding: 8px 10px;
+          }
+
+          .icon {
+            width: 32px;
+            height: 32px;
+            flex-basis: 32px;
+          }
+
+          h2 {
+            font-size: 10.5px;
+          }
+
+          p {
+            font-size: 8.5px;
+          }
+        }
+      `}</style>
     </Link>
   );
 }

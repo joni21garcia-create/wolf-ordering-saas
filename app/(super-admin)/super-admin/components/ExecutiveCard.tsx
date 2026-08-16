@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 
 type Props = {
   title: string;
@@ -12,6 +12,19 @@ type Props = {
   badge?: string;
 };
 
+/**
+ * UI ONLY
+ *
+ * Mantiene:
+ * - href
+ * - título
+ * - descripción
+ * - icono
+ * - badge
+ * - color recibido por el módulo
+ *
+ * No modifica permisos, autenticación ni navegación.
+ */
 export default function ExecutiveCard({
   title,
   description,
@@ -20,204 +33,172 @@ export default function ExecutiveCard({
   color,
   badge,
 }: Props) {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
-    <Link
-      href={href}
-      style={{
-        textDecoration: "none",
-        display: "block",
-        height: "100%",
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <article
+    <Link href={href} className="module-card">
+      <span
+        className="module-icon"
         style={{
-          position: "relative",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between", // Alinea arriba y abajo por separado
-          height: "100%",
-          minHeight: 220, // Altura balanceada y compacta
-          borderRadius: 16, // Estilo industrial moderno
-          padding: 20,
-          background: "linear-gradient(180deg, #141414, #0d0d0d)",
-          border: isHovered 
-            ? `1px solid ${color}40` 
-            : "1px solid rgba(255, 255, 255, 0.04)",
-          boxShadow: isHovered 
-            ? "0 12px 30px rgba(0, 0, 0, 0.4)" 
-            : "0 4px 20px rgba(0, 0, 0, 0.2)",
-          transform: isHovered ? "translateY(-4px)" : "translateY(0px)",
-          transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+          color,
+          backgroundColor: `${color}10`,
+          borderColor: `${color}20`,
         }}
       >
-        {/* Glow dinámico de fondo */}
-        <div
-          style={{
-            position: "absolute",
-            top: -40,
-            right: -40,
-            width: 120,
-            height: 120,
-            borderRadius: "50%",
-            background: `${color}12`,
-            filter: "blur(30px)",
-            pointerEvents: "none",
-            transform: isHovered ? "scale(1.2)" : "scale(1)",
-            transition: "transform 0.4s ease",
-          }}
-        />
+        {icon}
+      </span>
 
-        {/* CONTENEDOR SUPERIOR */}
-        <div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 16,
-            }}
-          >
-            {/* Contenedor del Icono */}
-            <div
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 10,
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                background: `${color}10`,
-                border: `1px solid ${color}25`,
-                color,
-                fontSize: 20,
-              }}
-            >
-              {/* Forzamos un tamaño premium controlado al elemento hijo si es SVG */}
-              <div style={{ display: "flex", transform: "scale(0.65)" }}>
-                {icon}
-              </div>
-            </div>
+      <span className="module-content">
+        <span className="module-title">{title}</span>
 
-            {/* Badge Miniaturizado */}
-            {badge && (
-              <span
-                style={{
-                  padding: "4px 8px",
-                  borderRadius: 999,
-                  background: "rgba(255, 255, 255, 0.03)",
-                  border: "1px solid rgba(255, 255, 255, 0.05)",
-                  color: "#666666",
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: "0.5px",
-                  textTransform: "uppercase",
-                }}
-              >
-                {badge}
-              </span>
-            )}
-          </div>
+        <span className="module-description">
+          {description}
+        </span>
 
-          {/* Textos */}
-          <h3
-            style={{
-              margin: "0 0 6px 0",
-              color: "#fff",
-              fontSize: 16,
-              fontWeight: 700,
-              letterSpacing: "-0.3px",
-            }}
-          >
-            {title}
-          </h3>
+        {badge && (
+          <span className="module-badge">
+            {badge}
+          </span>
+        )}
+      </span>
 
-          <p
-            style={{
-              margin: 0,
-              color: "#666666",
-              fontSize: 13,
-              lineHeight: 1.4,
-            }}
-          >
-            {description}
-          </p>
-        </div>
+      <span className="module-arrow" aria-hidden="true">
+        →
+      </span>
 
-        {/* CONTENEDOR INFERIOR (FOOTER ALINEADO) */}
-        <div
-          style={{
-            marginTop: 20,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderTop: "1px solid rgba(255, 255, 255, 0.03)",
-            paddingTop: 12,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            <span
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: color,
-                boxShadow: `0 0 8px ${color}`,
-              }}
-            />
-            <span
-              style={{
-                color: isHovered ? "#fff" : "#444444",
-                fontSize: 11,
-                fontWeight: 600,
-                transition: "color 0.2s ease",
-              }}
-            >
-              Abrir módulo
-            </span>
-          </div>
+      <style jsx>{`
+        .module-card {
+          position: relative;
+          min-width: 0;
+          min-height: 64px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 11px 13px;
+          overflow: hidden;
+          color: inherit;
+          text-decoration: none;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 13px;
+          background: #0e0e0e;
+          transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease;
+        }
 
-          {/* Flecha minimalista tipo indicador */}
-          <div
-            style={{
-              color: isHovered ? color : "#333",
-              fontSize: 14,
-              fontWeight: 700,
-              transform: isHovered ? "translateX(2px)" : "translateX(0px)",
-              transition: "all 0.2s ease",
-            }}
-          >
-            →
-          </div>
-        </div>
+        .module-card:hover {
+          background: #111;
+          border-color: ${color}30;
+          transform: translateY(-1px);
+        }
 
-        {/* Sutil barra de color inferior */}
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 2,
-            background: isHovered 
-              ? `linear-gradient(90deg, ${color}, transparent)` 
-              : "transparent",
-            transition: "background 0.3s ease",
-          }}
-        />
-      </article>
+        .module-card::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          width: 28%;
+          height: 1px;
+          background: ${color};
+          opacity: 0;
+          transition: opacity 0.18s ease;
+        }
+
+        .module-card:hover::after {
+          opacity: 0.7;
+        }
+
+        .module-icon {
+          width: 38px;
+          height: 38px;
+          flex: 0 0 38px;
+          display: grid;
+          place-items: center;
+          overflow: hidden;
+          border: 1px solid;
+          border-radius: 10px;
+        }
+
+        .module-icon :global(svg) {
+          width: 18px;
+          height: 18px;
+        }
+
+        .module-content {
+          min-width: 0;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .module-title {
+          display: block;
+          color: #f3f3f3;
+          font-size: 13px;
+          font-weight: 750;
+          line-height: 1.25;
+        }
+
+        .module-description {
+          display: -webkit-box;
+          margin-top: 3px;
+          overflow: hidden;
+          color: #626262;
+          font-size: 10px;
+          line-height: 1.35;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 1;
+        }
+
+        .module-badge {
+          margin-top: 5px;
+          padding: 3px 7px;
+          border-radius: 999px;
+          color: #666;
+          background: rgba(255, 255, 255, 0.035);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          font-size: 8px;
+          font-weight: 700;
+          letter-spacing: 0.6px;
+          line-height: 1;
+          text-transform: uppercase;
+        }
+
+        .module-arrow {
+          flex: 0 0 auto;
+          color: #444;
+          font-size: 16px;
+          transition:
+            color 0.18s ease,
+            transform 0.18s ease;
+        }
+
+        .module-card:hover .module-arrow {
+          color: ${color};
+          transform: translateX(2px);
+        }
+
+        @media (max-width: 600px) {
+          .module-card {
+            min-height: 58px;
+            padding: 10px 12px;
+          }
+
+          .module-icon {
+            width: 35px;
+            height: 35px;
+            flex-basis: 35px;
+          }
+
+          .module-description {
+            -webkit-line-clamp: 2;
+          }
+
+          .module-badge {
+            margin-top: 4px;
+          }
+        }
+      `}</style>
     </Link>
   );
 }
-
-

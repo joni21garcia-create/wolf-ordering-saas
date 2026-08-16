@@ -145,245 +145,343 @@ export default function NewUserPage() {
   return (
     <main
       style={{
-        maxWidth: "680px",
+        width: "100%",
+        maxWidth: "620px",
         margin: "0 auto",
-        padding: "24px 20px 60px",
+        padding: "16px 12px 42px",
         color: "#fff",
+        boxSizing: "border-box",
       }}
     >
-      {/* HEADER */}
-      <header style={{ marginBottom: "22px" }}>
-        <div
-          style={{
-            color: "#f97316",
-            fontSize: "11px",
-            fontWeight: 800,
-            letterSpacing: "1.6px",
-            textTransform: "uppercase",
-            marginBottom: "7px",
-          }}
-        >
-          Equipo
+      <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "12px",
+          marginBottom: "12px",
+        }}
+      >
+        <div style={{ minWidth: 0 }}>
+          <div
+            style={{
+              color: "#f97316",
+              fontSize: "8px",
+              fontWeight: 800,
+              letterSpacing: "1.2px",
+              textTransform: "uppercase",
+              marginBottom: "3px",
+            }}
+          >
+            Equipo
+          </div>
+
+          <h1
+            style={{
+              margin: 0,
+              fontSize: "22px",
+              lineHeight: 1.1,
+              fontWeight: 800,
+              letterSpacing: "-0.4px",
+            }}
+          >
+            Nuevo usuario
+          </h1>
+
+          <p
+            style={{
+              margin: "4px 0 0",
+              color: "rgba(255,255,255,.38)",
+              fontSize: "10px",
+            }}
+          >
+            Crea una cuenta y asígnale un rol operativo.
+          </p>
         </div>
 
-        <h1
+        <button
+          type="button"
+          onClick={() => router.back()}
+          disabled={loading}
+          aria-label="Volver"
           style={{
-            margin: 0,
-            fontSize: "28px",
-            lineHeight: 1.15,
-            fontWeight: 800,
+            flexShrink: 0,
+            width: "32px",
+            height: "32px",
+            display: "grid",
+            placeItems: "center",
+            padding: 0,
+            border: "1px solid rgba(255,255,255,.07)",
+            borderRadius: "8px",
+            background: "rgba(255,255,255,.035)",
+            color: "rgba(255,255,255,.65)",
+            cursor: loading ? "not-allowed" : "pointer",
+            fontSize: "16px",
           }}
         >
-          Nuevo usuario
-        </h1>
-
-        <p
-          style={{
-            margin: "7px 0 0",
-            color: "rgba(255,255,255,.45)",
-            fontSize: "13px",
-          }}
-        >
-          Crea una cuenta y asígnale un rol operativo.
-        </p>
+          ‹
+        </button>
       </header>
 
-      {/* FORMULARIO */}
       <section
         style={{
-          background: "#111827",
-          border: "1px solid rgba(255,255,255,.07)",
-          borderRadius: "16px",
-          padding: "20px",
+          border: "1px solid rgba(255,255,255,.06)",
+          borderRadius: "12px",
+          background: "rgba(17,24,39,.72)",
+          overflow: "hidden",
         }}
       >
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "16px",
+            padding: "12px 13px",
+            borderBottom: "1px solid rgba(255,255,255,.045)",
           }}
         >
-          {/* NOMBRE */}
-          <div style={{ gridColumn: "span 2" }}>
-            <label style={labelStyle}>Nombre completo</label>
-
-            <input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Ej. Juan Pérez"
-              style={inputStyle}
-            />
+          <div
+            style={{
+              color: "rgba(255,255,255,.55)",
+              fontSize: "9px",
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: ".8px",
+            }}
+          >
+            Datos de acceso
           </div>
+        </div>
 
-          {/* EMAIL */}
-          <div>
-            <label style={labelStyle}>Email</label>
-
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="correo@ejemplo.com"
-              style={inputStyle}
-            />
-          </div>
-
-          {/* TELEFONO */}
-          <div>
-            <label style={labelStyle}>Teléfono</label>
-
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="099..."
-              style={inputStyle}
-            />
-          </div>
-
-          {/* PASSWORD */}
-          <div style={{ gridColumn: "span 2" }}>
-            <label style={labelStyle}>Contraseña</label>
-
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Contraseña temporal"
-              style={inputStyle}
-            />
-          </div>
-
-          {/* ROL */}
-          <div style={{ gridColumn: "span 2" }}>
-            <label style={labelStyle}>Rol operativo</label>
-
-            {loadingRoles ? (
-              <div
-                style={{
-                  marginTop: "7px",
-                  padding: "12px",
-                  color: "rgba(255,255,255,.4)",
-                  background: "#0b0f16",
-                  border: "1px solid rgba(255,255,255,.07)",
-                  borderRadius: "10px",
-                  fontSize: "13px",
-                }}
-              >
-                Cargando roles...
-              </div>
-            ) : roles.length === 0 ? (
-              <div
-                style={{
-                  marginTop: "7px",
-                  padding: "12px",
-                  color: "#facc15",
-                  background: "rgba(250,204,21,.06)",
-                  border: "1px solid rgba(250,204,21,.12)",
-                  borderRadius: "10px",
-                  fontSize: "13px",
-                }}
-              >
-                No hay roles operativos disponibles.
-              </div>
-            ) : (
-              <select
-                value={roleId}
-                onChange={(e) => setRoleId(e.target.value)}
+        <div style={{ padding: "13px" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "10px",
+            }}
+            className="form-grid"
+          >
+            <div className="full">
+              <label style={labelStyle}>Nombre completo</label>
+              <input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Ej. Juan Pérez"
+                autoComplete="name"
                 style={inputStyle}
-              >
-                {roles.map((role) => (
-                  <option key={role.id} value={role.id}>
-                    {role.name}
-                  </option>
-                ))}
-              </select>
-            )}
+              />
+            </div>
 
-            <p
+            <div>
+              <label style={labelStyle}>Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="correo@ejemplo.com"
+                autoComplete="email"
+                style={inputStyle}
+              />
+            </div>
+
+            <div>
+              <label style={labelStyle}>Teléfono</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="099..."
+                autoComplete="tel"
+                style={inputStyle}
+              />
+            </div>
+
+            <div className="full">
+              <label style={labelStyle}>Contraseña</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Contraseña temporal"
+                autoComplete="new-password"
+                style={inputStyle}
+              />
+              <div
+                style={{
+                  marginTop: "4px",
+                  color: "rgba(255,255,255,.25)",
+                  fontSize: "8px",
+                }}
+              >
+                Usa una contraseña temporal segura.
+              </div>
+            </div>
+
+            <div className="full">
+              <label style={labelStyle}>Rol operativo</label>
+
+              {loadingRoles ? (
+                <div
+                  style={{
+                    marginTop: "6px",
+                    minHeight: "39px",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 11px",
+                    boxSizing: "border-box",
+                    color: "rgba(255,255,255,.4)",
+                    background: "#0b0f16",
+                    border: "1px solid rgba(255,255,255,.07)",
+                    borderRadius: "8px",
+                    fontSize: "10px",
+                  }}
+                >
+                  Cargando roles...
+                </div>
+              ) : roles.length === 0 ? (
+                <div
+                  style={{
+                    marginTop: "6px",
+                    padding: "10px",
+                    color: "#facc15",
+                    background: "rgba(250,204,21,.05)",
+                    border: "1px solid rgba(250,204,21,.12)",
+                    borderRadius: "8px",
+                    fontSize: "9px",
+                  }}
+                >
+                  No hay roles operativos disponibles.
+                </div>
+              ) : (
+                <select
+                  value={roleId}
+                  onChange={(e) => setRoleId(e.target.value)}
+                  style={inputStyle}
+                >
+                  {roles.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              <p
+                style={{
+                  margin: "5px 0 0",
+                  color: "rgba(255,255,255,.27)",
+                  fontSize: "8px",
+                  lineHeight: 1.4,
+                }}
+              >
+                Solo puedes asignar roles operativos del restaurante.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "7px",
+              marginTop: "14px",
+              paddingTop: "12px",
+              borderTop: "1px solid rgba(255,255,255,.045)",
+            }}
+          >
+            <button
+              type="button"
+              onClick={createUser}
+              disabled={loading || loadingRoles || roles.length === 0}
               style={{
-                margin: "7px 0 0",
-                color: "rgba(255,255,255,.32)",
-                fontSize: "11px",
-                lineHeight: 1.5,
+                flex: 1,
+                minHeight: "38px",
+                border: "none",
+                borderRadius: "8px",
+                background:
+                  loading || loadingRoles || roles.length === 0
+                    ? "rgba(249,115,22,.28)"
+                    : "#f97316",
+                color: "#fff",
+                cursor:
+                  loading || loadingRoles || roles.length === 0
+                    ? "not-allowed"
+                    : "pointer",
+                fontSize: "10px",
+                fontWeight: 800,
               }}
             >
-              Solo puedes asignar roles operativos del restaurante.
-            </p>
+              {loading ? "Creando..." : "Crear usuario"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => router.back()}
+              disabled={loading}
+              style={{
+                minHeight: "38px",
+                padding: "0 13px",
+                border: "1px solid rgba(255,255,255,.07)",
+                borderRadius: "8px",
+                background: "rgba(255,255,255,.035)",
+                color: "rgba(255,255,255,.58)",
+                cursor: loading ? "not-allowed" : "pointer",
+                fontSize: "10px",
+                fontWeight: 700,
+              }}
+            >
+              Cancelar
+            </button>
           </div>
         </div>
-
-        {/* ACCIONES */}
-        <div
-          style={{
-            display: "flex",
-            gap: "8px",
-            marginTop: "22px",
-          }}
-        >
-          <button
-            onClick={createUser}
-            disabled={loading || loadingRoles || roles.length === 0}
-            style={{
-              flex: 1,
-              background:
-                loading || loadingRoles || roles.length === 0
-                  ? "rgba(249,115,22,.35)"
-                  : "#f97316",
-              color: "#fff",
-              border: "none",
-              padding: "11px 15px",
-              borderRadius: "10px",
-              cursor:
-                loading || loadingRoles || roles.length === 0
-                  ? "not-allowed"
-                  : "pointer",
-              fontSize: "13px",
-              fontWeight: 750,
-            }}
-          >
-            {loading ? "Creando..." : "Crear usuario"}
-          </button>
-
-          <button
-            onClick={() => router.back()}
-            disabled={loading}
-            style={{
-              padding: "11px 15px",
-              background: "rgba(255,255,255,.05)",
-              border: "1px solid rgba(255,255,255,.07)",
-              borderRadius: "10px",
-              color: "rgba(255,255,255,.65)",
-              cursor: loading ? "not-allowed" : "pointer",
-              fontSize: "13px",
-              fontWeight: 700,
-            }}
-          >
-            Cancelar
-          </button>
-        </div>
       </section>
+
+      <style jsx>{`
+        @media (max-width: 520px) {
+          main {
+            padding-left: 10px !important;
+            padding-right: 10px !important;
+          }
+
+          .form-grid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .full {
+            grid-column: auto !important;
+          }
+        }
+
+        input,
+        select,
+        button {
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        input:focus,
+        select:focus {
+          border-color: rgba(249, 115, 22, 0.45) !important;
+          box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.07);
+        }
+      `}</style>
     </main>
   );
 }
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  color: "rgba(255,255,255,.62)",
-  fontSize: "12px",
-  fontWeight: 700,
+  color: "rgba(255,255,255,.58)",
+  fontSize: "9px",
+  fontWeight: 750,
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
+  minHeight: "39px",
   boxSizing: "border-box",
-  padding: "11px 12px",
-  marginTop: "7px",
+  padding: "9px 10px",
+  marginTop: "6px",
   background: "#0b0f16",
   color: "#fff",
-  border: "1px solid rgba(255,255,255,.08)",
-  borderRadius: "10px",
+  border: "1px solid rgba(255,255,255,.07)",
+  borderRadius: "8px",
   outline: "none",
-  fontSize: "13px",
+  fontSize: "10px",
 };
-
