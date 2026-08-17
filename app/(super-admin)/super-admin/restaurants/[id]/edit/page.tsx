@@ -6,101 +6,113 @@ import PermissionGuard from "@/components/auth/PermissionGuard";
 
 export default function EditRestaurantPage() {
   const params = useParams();
-  // Blindaje: nos aseguramos de que el id sea un string o una cadena vacía
   const restaurantId = (params?.id as string) || "";
 
-  // Blindaje preventivo: si no hay ID, no renderizamos el formulario para evitar errores de consulta
   if (!restaurantId) {
     return (
-      <div style={{ color: "#fff", padding: "40px", textAlign: "center" }}>
+      <div className="loading-state">
         Cargando información del restaurante...
+        <style jsx>{`
+          .loading-state {
+            min-height: 100dvh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            box-sizing: border-box;
+            background: #050505;
+            color: #fff;
+            text-align: center;
+          }
+        `}</style>
       </div>
     );
   }
 
   return (
     <PermissionGuard permission="restaurants">
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "linear-gradient(180deg,#050505 0%,#0f172a 100%)",
-          padding: "clamp(20px, 5vw, 60px) clamp(15px, 3vw, 30px)",
-        }}
-      >
-        <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-          
-          {/* HEADER */}
-          <div style={{ textAlign: "center", marginBottom: "40px" }}>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "8px 16px",
-                borderRadius: "999px",
-                background: "rgba(59,130,246,.12)",
-                border: "1px solid rgba(59,130,246,.2)",
-                color: "#60a5fa",
-                fontWeight: "700",
-                fontSize: "14px",
-                marginBottom: "20px",
-              }}
-            >
-              ✏️ Editar Restaurante
-            </div>
-
-            <h1
-              style={{
-                color: "#fff",
-                fontSize: "clamp(2rem, 8vw, 4rem)",
-                fontWeight: "900",
-                margin: 0,
-                lineHeight: 1.1,
-              }}
-            >
-              Editar Restaurante
-            </h1>
-
-            <p
-              style={{
-                color: "#94a3b8",
-                maxWidth: "600px",
-                margin: "20px auto 0 auto",
-                lineHeight: 1.6,
-                fontSize: "clamp(1rem, 2vw, 1.125rem)",
-              }}
-            >
-              Actualiza la información principal del restaurante. Branding, ubicación y datos de contacto.
-            </p>
+      <main className="page">
+        <header className="page-header">
+          <div className="eyebrow">
+            <span aria-hidden="true">✏️</span>
+            <span>Editar Restaurante</span>
           </div>
+          <h1>Configuración del restaurante</h1>
+          <p>
+            Gestiona identidad, propietario, ubicación, branding y delivery sin
+            convertir el móvil en un formulario interminable.
+          </p>
+        </header>
 
-          {/* FORMULARIO */}
-          <div
-            style={{
-              background: "rgba(17,17,17,.92)",
-              border: "1px solid rgba(255,255,255,.08)",
-              borderRadius: "24px",
-              padding: "clamp(20px, 4vw, 40px)",
-              backdropFilter: "blur(20px)",
-              boxShadow: "0 20px 40px rgba(0,0,0,.4)",
-            }}
-          >
-            <div style={{ marginBottom: "30px" }}>
-              <h2 style={{ color: "#fff", margin: "0 0 8px 0", fontSize: "1.5rem" }}>
-                Datos Generales
-              </h2>
-              <p style={{ color: "#94a3b8", margin: 0, fontSize: "0.9rem" }}>
-                Configuración principal del establecimiento.
-              </p>
-            </div>
+        <RestaurantForm mode="edit" restaurantId={restaurantId} />
 
-            <RestaurantForm
-              mode="edit"
-              restaurantId={restaurantId}
-            />
-          </div>
-        </div>
-      </div>
+        <style jsx>{`
+          .page {
+            min-height: 100dvh;
+            box-sizing: border-box;
+            padding: clamp(18px, 4vw, 38px) clamp(10px, 2vw, 24px) 40px;
+            background:
+              radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.08), transparent 30%),
+              linear-gradient(180deg, #050505 0%, #080808 55%, #0c1018 100%);
+          }
+
+          .page-header {
+            width: min(100%, 900px);
+            margin: 0 auto 18px;
+            text-align: center;
+          }
+
+          .eyebrow {
+            width: fit-content;
+            margin: 0 auto 11px;
+            padding: 7px 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            border: 1px solid rgba(249, 115, 22, 0.2);
+            border-radius: 999px;
+            background: rgba(249, 115, 22, 0.07);
+            color: #fb923c;
+            font-size: 10px;
+            font-weight: 900;
+          }
+
+          .page-header h1 {
+            margin: 0;
+            color: #fff;
+            font-size: clamp(1.65rem, 5vw, 2.9rem);
+            line-height: 1.02;
+            letter-spacing: -0.045em;
+          }
+
+          .page-header p {
+            max-width: 650px;
+            margin: 10px auto 0;
+            color: #71717a;
+            font-size: clamp(0.78rem, 1.8vw, 0.95rem);
+            line-height: 1.5;
+          }
+
+          @media (max-width: 760px) {
+            .page {
+              padding-top: 12px;
+            }
+
+            .page-header {
+              margin-bottom: 8px;
+              padding-inline: 4px;
+            }
+
+            .page-header h1 {
+              font-size: clamp(1.45rem, 7vw, 2rem);
+            }
+
+            .page-header p {
+              max-width: 360px;
+              font-size: 0.78rem;
+            }
+          }
+        `}</style>
+      </main>
     </PermissionGuard>
   );
 }
