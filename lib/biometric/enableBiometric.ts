@@ -7,7 +7,7 @@ export async function enableBiometric(
 ) {
   try {
     await BiometricAuth.authenticate({
-      reason: "Confirma tu identidad para activar el ingreso con huella",
+      reason: "Activa el ingreso con huella",
       allowDeviceCredential: true,
     });
 
