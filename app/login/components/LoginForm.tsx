@@ -1,7 +1,6 @@
 "use client";
 
-import InstallSection from "./InstallSection";
-import GoogleButton from "./GoogleButton";
+import { Fingerprint } from "lucide-react";
 
 interface LoginFormProps {
   email: string;
@@ -43,8 +42,7 @@ export default function LoginForm({
           width: 100%;
           max-width: 560px;
           margin: 0 auto;
-          padding:
-            clamp(32px, 5vw, 72px)
+          padding: clamp(32px, 5vw, 72px)
             clamp(24px, 5vw, 64px);
           box-sizing: border-box;
           display: flex;
@@ -284,6 +282,10 @@ export default function LoginForm({
 
         .biometric-button {
           margin-top: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
           background:
             linear-gradient(
               180deg,
@@ -291,6 +293,10 @@ export default function LoginForm({
               #111 100%
             );
           border-color: rgba(255,255,255,.16);
+        }
+
+        .biometric-icon {
+          flex: 0 0 auto;
         }
 
         @media (max-width: 700px) {
@@ -416,17 +422,37 @@ export default function LoginForm({
             className="login-button biometric-button"
             type="button"
           >
-            {loading
-              ? "Autenticando..."
-              : "🫆 Ingresar con huella"}
+            <Fingerprint
+              className="biometric-icon"
+              size={21}
+              strokeWidth={1.8}
+              aria-hidden="true"
+            />
+
+            <span>
+              {loading
+                ? "Autenticando..."
+                : "Ingresar con huella"}
+            </span>
           </button>
         )}
 
-        <GoogleButton
+        {/* GOOGLE */}
+        <button
+          type="button"
           onClick={loginWithGoogle}
-        />
-
-        <InstallSection />
+          disabled={loading}
+          className="login-button"
+          style={{
+            marginTop: "12px",
+            background:
+              "linear-gradient(180deg, #2b2b2b 0%, #151515 100%)",
+            borderColor:
+              "rgba(255,255,255,.12)",
+          }}
+        >
+          Continuar con Google
+        </button>
       </aside>
     </>
   );
