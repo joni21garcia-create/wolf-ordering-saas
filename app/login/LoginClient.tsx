@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import LoginView from "./LoginView";
 import { registerWeb } from "@/lib/push/registerWeb";
-
+import { testBiometric } from "@/lib/biometric/testBiometric";
 
 export default function LoginClient() {
   // ==========================
@@ -31,6 +31,10 @@ export default function LoginClient() {
 
     setIsMounted(true);
   }, []);
+
+  useEffect(() => {
+  testBiometric();
+}, []);
 
   // ==========================
   // Recuperar contraseña
