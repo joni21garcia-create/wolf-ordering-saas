@@ -17,9 +17,11 @@ export async function enableBiometric(
       enabled: true,
     });
 
-    console.log(
-      "[BIOMETRIC] Activado correctamente"
-    );
+    console.log("[BIOMETRIC] Guardado:", {
+      userId,
+      hasRefreshToken: !!refreshToken,
+      enabled: true,
+    });
 
     return true;
   } catch (error) {
