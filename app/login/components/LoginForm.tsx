@@ -2,6 +2,7 @@
 
 import InstallSection from "./InstallSection";
 import GoogleButton from "./GoogleButton";
+import { Fingerprint } from "lucide-react";
 
 interface LoginFormProps {
   email: string;
@@ -416,9 +417,14 @@ export default function LoginForm({
             className="login-button biometric-button"
             type="button"
           >
-            {loading
-              ? "Autenticando..."
-              : "👆 Ingresar con huella"}
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
+              <Fingerprint size={21} strokeWidth={1.8} aria-hidden="true" />
+              <span>
+                {loading
+                  ? "Autenticando..."
+                  : "Ingresar con huella"}
+              </span>
+            </span>
           </button>
         )}
 
