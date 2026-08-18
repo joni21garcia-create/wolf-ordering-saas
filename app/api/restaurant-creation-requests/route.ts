@@ -2,23 +2,29 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const PAYPAL_API_BASE =
+const PAYPAL_API =
   process.env.PAYPAL_API_BASE ||
   "https://api-m.sandbox.paypal.com";
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 
-const PLAN_VALUES = ["basic", "pro"] as const;
-type Plan = (typeof PLAN_VALUES)[number];
+const PLAN_IDS = {
+  basic: process.env.PAYPAL_PLAN_BASIC_ID,
+  pro: process.env.PAYPAL_PLAN_PRO_ID,
+} as const;
+
+type Plan = "basic" | "pro";
 
 type CreateRequestBody = {
   restaurant_name?: unknown;
   owner_name?: unknown;
   owner_email?: unknown;
   owner_phone?: unknown;
+  password?: unknown;
   plan?: unknown;
   paypal_subscription_id?: unknown;
 };
@@ -28,20 +34,43 @@ function cleanString(value: unknown) {
 }
 
 function isPlan(value: unknown): value is Plan {
-  return (
-    typeof value === "string" &&
-    PLAN_VALUES.includes(value as Plan)
+  return value === "basic" || value === "pro";
+}
+
+function jsonError(
+  error: string,
+  message: string,
+  status: number,
+) {
+  return NextResponse.json(
+    { error, message },
+    { status },
   );
 }
 
-function jsonError(error: string, message: string, status: number) {
-  return NextResponse.json({ error, message }, { status });
+function getSupabaseAdmin() {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error(
+      "Faltan las variables de Supabase.",
+    );
+  }
+
+  return createClient(
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY,
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    },
+  );
 }
 
 async function getPayPalAccessToken(): Promise<string> {
   if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
     throw new Error(
-      "Faltan PAYPAL_CLIENT_ID o PAYPAL_CLIENT_SECRET",
+      "Faltan las credenciales de PayPal.",
     );
   }
 
@@ -50,7 +79,7 @@ async function getPayPalAccessToken(): Promise<string> {
   ).toString("base64");
 
   const response = await fetch(
-    `${PAYPAL_API_BASE}/v1/oauth2/token`,
+    `${PAYPAL_API}/v1/oauth2/token`,
     {
       method: "POST",
       headers: {
@@ -65,9 +94,13 @@ async function getPayPalAccessToken(): Promise<string> {
 
   if (!response.ok) {
     const errorText = await response.text();
-
+    console.error(
+      "[ONBOARDING PAYPAL TOKEN ERROR]",
+      response.status,
+      errorText,
+    );
     throw new Error(
-      `PayPal OAuth error ${response.status}: ${errorText}`,
+      "No se pudo autenticar con PayPal.",
     );
   }
 
@@ -82,28 +115,14 @@ async function getPayPalAccessToken(): Promise<string> {
   return data.access_token as string;
 }
 
-type PayPalSubscriptionStatus =
-  | "ACTIVE"
-  | "APPROVAL_PENDING"
-  | "APPROVED"
-  | "SUSPENDED"
-  | "CANCELLED"
-  | "EXPIRED"
-  | string;
-
-type PayPalSubscriptionResponse = {
-  id?: string;
-  plan_id?: string;
-  status?: PayPalSubscriptionStatus;
-};
-
 async function getPayPalSubscription(
   subscriptionId: string,
-): Promise<PayPalSubscriptionResponse> {
-  const accessToken = await getPayPalAccessToken();
+) {
+  const accessToken =
+    await getPayPalAccessToken();
 
   const response = await fetch(
-    `${PAYPAL_API_BASE}/v1/billing/subscriptions/${encodeURIComponent(
+    `${PAYPAL_API}/v1/billing/subscriptions/${encodeURIComponent(
       subscriptionId,
     )}`,
     {
@@ -116,99 +135,91 @@ async function getPayPalSubscription(
     },
   );
 
-  const data =
-    (await response.json()) as PayPalSubscriptionResponse & {
-      message?: string;
-      error?: string;
-    };
+  const data = await response.json();
 
   if (!response.ok) {
     throw new Error(
       data?.message ||
-        data?.error ||
-        `PayPal devolvió ${response.status} al consultar la suscripción.`,
+        "No pudimos consultar la suscripción en PayPal.",
     );
   }
 
   return data;
 }
 
-function mapPayPalSubscriptionStatus(status?: string) {
-  switch (status) {
-    case "ACTIVE":
-      return {
-        payment_status: "completed" as const,
-        subscription_status: "active" as const,
-      };
+function slugify(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 70);
+}
 
-    case "SUSPENDED":
-      return {
-        payment_status: "pending" as const,
-        subscription_status: "suspended" as const,
-      };
+async function getUniqueSlug(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  restaurantName: string,
+) {
+  const baseSlug = slugify(restaurantName) || "restaurante";
 
-    case "CANCELLED":
-      return {
-        payment_status: "cancelled" as const,
-        subscription_status: "cancelled" as const,
-      };
+  for (let index = 0; index < 100; index += 1) {
+    const candidate =
+      index === 0
+        ? baseSlug
+        : `${baseSlug}-${index + 1}`;
 
-    case "EXPIRED":
-      return {
-        payment_status: "pending" as const,
-        subscription_status: "expired" as const,
-      };
+    const { data, error } = await supabase
+      .from("restaurants")
+      .select("id")
+      .eq("slug", candidate)
+      .maybeSingle();
 
-    default:
-      return {
-        payment_status: "pending" as const,
-        subscription_status: "pending" as const,
-      };
+    if (error) {
+      throw new Error(
+        `No pudimos comprobar el slug del restaurante: ${error.message}`,
+      );
+    }
+
+    if (!data) {
+      return candidate;
+    }
   }
+
+  throw new Error(
+    "No pudimos generar un slug único para el restaurante.",
+  );
 }
 
 export async function POST(request: NextRequest) {
+  let supabase: ReturnType<typeof getSupabaseAdmin> | null =
+    null;
+
+  let createdAuthUserId: string | null = null;
+  let createdRestaurantId: string | null = null;
+  let createdRoleId: string | null = null;
+
   try {
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      console.error(
-        "[RESTAURANT ACTIVATION REQUEST] Faltan variables de Supabase",
-      );
+    const body =
+      (await request.json()) as CreateRequestBody;
 
-      return jsonError(
-        "Configuración del servidor incompleta",
-        "No está configurada la conexión con Supabase.",
-        500,
-      );
-    }
-
-    const authorization = request.headers.get("authorization");
-
-    if (!authorization?.startsWith("Bearer ")) {
-      return jsonError(
-        "No autenticado",
-        "Necesitas una sesión activa para crear una solicitud.",
-        401,
-      );
-    }
-
-    const accessToken = authorization.slice("Bearer ".length).trim();
-
-    if (!accessToken) {
-      return jsonError(
-        "No autenticado",
-        "Necesitas una sesión activa para crear una solicitud.",
-        401,
-      );
-    }
-
-    const body = (await request.json()) as CreateRequestBody;
-
-    const restaurantName = cleanString(body.restaurant_name);
-    const ownerName = cleanString(body.owner_name);
-    const ownerEmail = cleanString(body.owner_email).toLowerCase();
-    const ownerPhone = cleanString(body.owner_phone);
+    const restaurantName = cleanString(
+      body.restaurant_name,
+    );
+    const ownerName = cleanString(
+      body.owner_name,
+    );
+    const ownerEmail = cleanString(
+      body.owner_email,
+    ).toLowerCase();
+    const ownerPhone = cleanString(
+      body.owner_phone,
+    );
+    const password = cleanString(body.password);
     const plan = body.plan;
-    const paypalSubscriptionId = cleanString(body.paypal_subscription_id);
+    const paypalSubscriptionId = cleanString(
+      body.paypal_subscription_id,
+    );
 
     if (restaurantName.length < 2) {
       return jsonError(
@@ -226,18 +237,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!ownerEmail || !/^\S+@\S+\.\S+$/.test(ownerEmail)) {
+    if (
+      !ownerEmail ||
+      !/^\S+@\S+\.\S+$/.test(ownerEmail)
+    ) {
       return jsonError(
-        "Correo electrónico inválido",
+        "Correo inválido",
         "Introduce un correo electrónico válido.",
         400,
       );
     }
 
-    if (ownerPhone.replace(/\D/g, "").length < 7) {
+    if (
+      ownerPhone.replace(/\D/g, "").length < 7
+    ) {
       return jsonError(
         "Teléfono inválido",
         "Introduce un número de teléfono válido.",
+        400,
+      );
+    }
+
+    if (password.length < 8) {
+      return jsonError(
+        "Contraseña inválida",
+        "La contraseña debe tener al menos 8 caracteres.",
         400,
       );
     }
@@ -252,264 +276,377 @@ export async function POST(request: NextRequest) {
 
     if (!paypalSubscriptionId) {
       return jsonError(
-        "Suscripción de PayPal requerida",
+        "Suscripción requerida",
         "No recibimos el identificador de la suscripción de PayPal.",
         400,
       );
     }
 
-    const supabase = createClient(
-      SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      },
-    );
+    supabase = getSupabaseAdmin();
 
-    const {
-      data: userData,
-      error: userError,
-    } = await supabase.auth.getUser(accessToken);
-
-    if (userError || !userData.user) {
-      console.error(
-        "[RESTAURANT ACTIVATION REQUEST] Error obteniendo usuario:",
-        userError,
+    // Nunca confiamos solamente en que el navegador diga "paypal=success".
+    // El backend vuelve a consultar PayPal antes de crear la cuenta.
+    const paypalSubscription =
+      await getPayPalSubscription(
+        paypalSubscriptionId,
       );
 
+    const expectedPlanId = PLAN_IDS[plan];
+
+    if (!expectedPlanId) {
       return jsonError(
-        "Sesión inválida",
-        "No pudimos verificar tu sesión.",
-        401,
+        "Plan de PayPal no configurado",
+        "El plan seleccionado no está configurado en PayPal.",
+        500,
       );
     }
 
-    const userId = userData.user.id;
-
-    // Evita crear dos solicitudes para la misma suscripción si
-    // el usuario vuelve a cargar la página o reenvía el formulario.
-    const {
-      data: existingRequest,
-      error: existingRequestError,
-    } = await supabase
-      .from("restaurant_creation_requests")
-      .select(
-        "id, user_id, plan, request_status, payment_status, subscription_status, restaurant_id, paypal_subscription_id",
-      )
-      .eq("paypal_subscription_id", paypalSubscriptionId)
-      .maybeSingle();
-
-    if (existingRequestError) {
-      console.error(
-        "[RESTAURANT ACTIVATION REQUEST] Error comprobando solicitud existente:",
-        existingRequestError,
-      );
-
+    if (
+      paypalSubscription?.id !==
+      paypalSubscriptionId
+    ) {
       return jsonError(
-        "No pudimos comprobar la solicitud",
-        existingRequestError.message,
-        500,
+        "Suscripción inconsistente",
+        "La suscripción de PayPal no coincide con la solicitada.",
+        409,
+      );
+    }
+
+    if (
+      paypalSubscription?.plan_id !==
+      expectedPlanId
+    ) {
+      return jsonError(
+        "Plan inconsistente",
+        "La suscripción de PayPal no corresponde al plan seleccionado.",
+        409,
+      );
+    }
+
+    if (
+      !["ACTIVE", "APPROVED"].includes(
+        paypalSubscription?.status,
+      )
+    ) {
+      return jsonError(
+        "Pago pendiente",
+        `PayPal todavía no confirma la suscripción. Estado: ${
+          paypalSubscription?.status || "desconocido"
+        }.`,
+        409,
+      );
+    }
+
+    // Evita duplicar la cuenta si el usuario vuelve a enviar el formulario.
+    const { data: existingRequest, error: existingError } =
+      await supabase
+        .from("restaurant_creation_requests")
+        .select(
+          "id, user_id, restaurant_id, plan, request_status, payment_status, subscription_status, paypal_subscription_id",
+        )
+        .eq(
+          "paypal_subscription_id",
+          paypalSubscriptionId,
+        )
+        .maybeSingle();
+
+    if (existingError) {
+      throw new Error(
+        `No pudimos comprobar la solicitud existente: ${existingError.message}`,
       );
     }
 
     if (existingRequest) {
-      if (existingRequest.plan !== plan) {
-        return jsonError(
-          "Plan inconsistente",
-          "La suscripción de PayPal ya está asociada a otro plan.",
-          409,
-        );
-      }
-
-      if (existingRequest.user_id && existingRequest.user_id !== userId) {
-        return jsonError(
-          "Solicitud no disponible",
-          "La suscripción de PayPal ya está asociada a otro usuario.",
-          409,
-        );
-      }
-
       return NextResponse.json({
         success: true,
-        requestId: existingRequest.id,
-        plan: existingRequest.plan,
-        status: {
-          request: existingRequest.request_status,
-          payment: existingRequest.payment_status,
-          subscription: existingRequest.subscription_status,
-        },
-        restaurantId: existingRequest.restaurant_id,
-        paypalSubscriptionId: existingRequest.paypal_subscription_id,
         existing: true,
+        requestId: existingRequest.id,
+        restaurantId:
+          existingRequest.restaurant_id,
+        plan: existingRequest.plan,
+        paypalSubscriptionId:
+          existingRequest.paypal_subscription_id,
       });
     }
 
+    // 1. Crear restaurante.
+    const slug = await getUniqueSlug(
+      supabase,
+      restaurantName,
+    );
+
+    const planName =
+      plan === "pro" ? "PRO" : "BASIC";
+
+    const { data: restaurant, error: restaurantError } =
+      await supabase
+        .from("restaurants")
+        .insert({
+          name: restaurantName,
+          slug,
+          owner_name: ownerName,
+          owner_email: ownerEmail,
+          whatsapp: ownerPhone,
+          active: true,
+          accepting_orders: false,
+          terms_accepted: true,
+          terms_accepted_at:
+            new Date().toISOString(),
+          plan_name: planName,
+          expires_at: null,
+          discover_visible: false,
+          featured_visible: false,
+          service_menu: true,
+          service_ordering: true,
+          pickup_enabled: true,
+          delivery_enabled: true,
+        })
+        .select("id, name, slug, plan_name")
+        .single();
+
+    if (restaurantError || !restaurant) {
+      throw new Error(
+        restaurantError?.message ||
+          "No pudimos crear el restaurante.",
+      );
+    }
+
+    createdRestaurantId = restaurant.id;
+
+    // 2. Crear el rol owner específico de este restaurante.
     const {
-      data: createdRequest,
-      error: insertError,
+      data: ownerRole,
+      error: ownerRoleError,
     } = await supabase
-      .from("restaurant_creation_requests")
+      .from("restaurant_roles")
       .insert({
-        user_id: userId,
-        restaurant_name: restaurantName,
-        owner_name: ownerName,
-        owner_email: ownerEmail,
-        owner_phone: ownerPhone,
-        plan,
-        paypal_subscription_id: paypalSubscriptionId,
-        payment_status: "pending",
-        subscription_status: "pending",
-        request_status: "pending",
-        restaurant_id: null,
+        restaurant_id: restaurant.id,
+        code: "owner",
+        name: "Owner",
+      })
+      .select("id, code, name")
+      .single();
+
+    if (
+      ownerRoleError ||
+      !ownerRole
+    ) {
+      throw new Error(
+        ownerRoleError?.message ||
+          "No pudimos crear el rol Owner.",
+      );
+    }
+
+    createdRoleId = ownerRole.id;
+
+    // 3. Crear la cuenta Auth.
+    const {
+      data: authData,
+      error: authError,
+    } = await supabase.auth.admin.createUser({
+      email: ownerEmail,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: ownerName,
+        phone: ownerPhone,
+        restaurant_id: restaurant.id,
+        role: "owner",
+      },
+    });
+
+    if (
+      authError ||
+      !authData?.user
+    ) {
+      if (
+        authError?.message
+          ?.toLowerCase()
+          .includes("already")
+      ) {
+        throw new Error(
+          "Ese correo ya tiene una cuenta en Wolf Ordering. Usa otro correo para crear esta cuenta.",
+        );
+      }
+
+      throw new Error(
+        authError?.message ||
+          "No pudimos crear la cuenta del propietario.",
+      );
+    }
+
+    createdAuthUserId =
+      authData.user.id;
+
+    // 4. Vincular Auth con restaurant_users.
+    const {
+      data: restaurantUser,
+      error: restaurantUserError,
+    } = await supabase
+      .from("restaurant_users")
+      .insert({
+        auth_user_id:
+          createdAuthUserId,
+        restaurant_id:
+          restaurant.id,
+        role_id:
+          ownerRole.id,
+        full_name:
+          ownerName,
+        phone:
+          ownerPhone,
+        email:
+          ownerEmail,
+        active: true,
       })
       .select(
-        "id, user_id, plan, request_status, payment_status, subscription_status, restaurant_id, paypal_subscription_id",
+        "id, auth_user_id, restaurant_id, role_id, email, full_name",
       )
       .single();
 
-    if (insertError) {
-      console.error(
-        "[RESTAURANT ACTIVATION REQUEST] Error creando solicitud:",
-        insertError,
+    if (
+      restaurantUserError ||
+      !restaurantUser
+    ) {
+      throw new Error(
+        restaurantUserError?.message ||
+          "No pudimos vincular la cuenta con el restaurante.",
       );
+    }
 
-      return jsonError(
-        "No pudimos crear la solicitud del restaurante",
-        insertError.message,
-        500,
+    // 5. Registrar la solicitud/pago para el panel de administración.
+    const {
+      data: creationRequest,
+      error: requestError,
+    } = await supabase
+      .from("restaurant_creation_requests")
+      .insert({
+        user_id:
+          createdAuthUserId,
+        restaurant_name:
+          restaurantName,
+        owner_name:
+          ownerName,
+        owner_email:
+          ownerEmail,
+        owner_phone:
+          ownerPhone,
+        plan,
+        paypal_subscription_id:
+          paypalSubscriptionId,
+        payment_status:
+          "completed",
+        subscription_status:
+          "active",
+        request_status:
+          "pending",
+        restaurant_id:
+          restaurant.id,
+      })
+      .select(
+        "id, user_id, restaurant_id, plan, request_status, payment_status, subscription_status, paypal_subscription_id",
+      )
+      .single();
+
+    if (
+      requestError ||
+      !creationRequest
+    ) {
+      throw new Error(
+        requestError?.message ||
+          "No pudimos registrar la solicitud del restaurante.",
       );
     }
 
     console.log(
-      "[RESTAURANT ACTIVATION REQUEST] Solicitud creada",
+      "[PUBLIC RESTAURANT ONBOARDING] Cuenta creada",
       {
-        requestId: createdRequest.id,
-        userId,
-        plan: createdRequest.plan,
-        paypalSubscriptionId: createdRequest.paypal_subscription_id,
+        requestId:
+          creationRequest.id,
+        restaurantId:
+          restaurant.id,
+        authUserId:
+          createdAuthUserId,
+        plan,
+        paypalSubscriptionId,
       },
     );
-
-    let finalRequest = createdRequest;
-
-    try {
-      const paypalSubscription =
-        await getPayPalSubscription(
-          paypalSubscriptionId,
-        );
-
-      console.log(
-        "[RESTAURANT ACTIVATION REQUEST] Estado actual de PayPal",
-        {
-          subscriptionId:
-            paypalSubscription.id,
-          paypalPlanId:
-            paypalSubscription.plan_id,
-          status:
-            paypalSubscription.status,
-        },
-      );
-
-      if (
-        paypalSubscription.id &&
-        paypalSubscription.id !==
-          paypalSubscriptionId
-      ) {
-        throw new Error(
-          "PayPal devolvió un ID de suscripción diferente al solicitado.",
-        );
-      }
-
-      const expectedPlanId = process.env[
-        plan === "basic"
-          ? "PAYPAL_PLAN_BASIC_ID"
-          : "PAYPAL_PLAN_PRO_ID"
-      ];
-
-      if (
-        expectedPlanId &&
-        paypalSubscription.plan_id &&
-        paypalSubscription.plan_id !==
-          expectedPlanId
-      ) {
-        return jsonError(
-          "Plan de PayPal inconsistente",
-          "La suscripción de PayPal no corresponde al plan seleccionado.",
-          409,
-        );
-      }
-
-      const mappedStatus =
-        mapPayPalSubscriptionStatus(
-          paypalSubscription.status,
-        );
-
-      const { data: synchronizedRequest, error: syncError } =
-        await supabase
-          .from("restaurant_creation_requests")
-          .update(mappedStatus)
-          .eq("id", createdRequest.id)
-          .select(
-            "id, user_id, plan, request_status, payment_status, subscription_status, restaurant_id, paypal_subscription_id",
-          )
-          .single();
-
-      if (syncError) {
-        throw new Error(
-          `No pudimos sincronizar el estado de la suscripción: ${syncError.message}`,
-        );
-      }
-
-      finalRequest = synchronizedRequest;
-
-      console.log(
-        "[RESTAURANT ACTIVATION REQUEST] Solicitud sincronizada con PayPal",
-        {
-          requestId: finalRequest.id,
-          paypalSubscriptionId:
-            finalRequest.paypal_subscription_id,
-          paymentStatus:
-            finalRequest.payment_status,
-          subscriptionStatus:
-            finalRequest.subscription_status,
-        },
-      );
-    } catch (paypalError) {
-      console.error(
-        "[RESTAURANT ACTIVATION REQUEST] No pudimos consultar/sincronizar PayPal después de crear la solicitud:",
-        paypalError,
-      );
-
-      // La solicitud ya fue creada correctamente. El webhook puede
-      // sincronizarla cuando llegue posteriormente.
-    }
 
     return NextResponse.json({
       success: true,
-      requestId: finalRequest.id,
-      plan: finalRequest.plan,
-      status: {
-        request: finalRequest.request_status,
-        payment: finalRequest.payment_status,
-        subscription: finalRequest.subscription_status,
-      },
-      restaurantId: finalRequest.restaurant_id,
-      paypalSubscriptionId:
-        finalRequest.paypal_subscription_id,
       existing: false,
+      requestId:
+        creationRequest.id,
+      restaurantId:
+        restaurant.id,
+      authUserId:
+        createdAuthUserId,
+      plan,
+      paypalSubscriptionId,
+      status: {
+        payment: "completed",
+        subscription: "active",
+        request: "pending",
+      },
     });
   } catch (error) {
     console.error(
-      "[RESTAURANT ACTIVATION REQUEST] Error inesperado:",
+      "[PUBLIC RESTAURANT ONBOARDING] Error:",
       error,
     );
 
+    // Rollback: no dejamos cuentas/restaurantes huérfanos
+    // si uno de los pasos posteriores falla.
+    if (supabase) {
+      if (createdAuthUserId) {
+        try {
+          await supabase.auth.admin.deleteUser(
+            createdAuthUserId,
+          );
+        } catch (cleanupError) {
+          console.error(
+            "[PUBLIC RESTAURANT ONBOARDING] Error eliminando Auth durante rollback:",
+            cleanupError,
+          );
+        }
+      }
+
+      if (createdRoleId) {
+        const { error: roleCleanupError } =
+          await supabase
+            .from("restaurant_roles")
+            .delete()
+            .eq("id", createdRoleId);
+
+        if (roleCleanupError) {
+          console.error(
+            "[PUBLIC RESTAURANT ONBOARDING] Error eliminando rol durante rollback:",
+            roleCleanupError,
+          );
+        }
+      }
+
+      if (createdRestaurantId) {
+        const {
+          error: restaurantCleanupError,
+        } = await supabase
+          .from("restaurants")
+          .delete()
+          .eq("id", createdRestaurantId);
+
+        if (restaurantCleanupError) {
+          console.error(
+            "[PUBLIC RESTAURANT ONBOARDING] Error eliminando restaurante durante rollback:",
+            restaurantCleanupError,
+          );
+        }
+      }
+    }
+
     return NextResponse.json(
       {
-        error: "Error interno creando la solicitud",
+        error:
+          "No pudimos completar la creación de tu cuenta",
         message:
           error instanceof Error
             ? error.message

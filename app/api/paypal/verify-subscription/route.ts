@@ -38,8 +38,6 @@ async function getPayPalAccessToken(): Promise<string> {
   );
 
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error("[PAYPAL TOKEN ERROR]", response.status, errorText);
     throw new Error("No se pudo autenticar con PayPal.");
   }
 
@@ -55,7 +53,24 @@ async function getPayPalAccessToken(): Promise<string> {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    const subscriptionId =
+      typeof body?.subscriptionId === "string"
+        ? body.subscriptionId.trim()
+        : "";
+
     const plan = body?.plan as Plan | undefined;
+
+    if (!subscriptionId) {
+      return NextResponse.json(
+        {
+          error: "Suscripción requerida",
+          message:
+            "No recibimos el identificador de la suscripción.",
+        },
+        { status: 400 },
+      );
+    }
 
     if (plan !== "basic" && plan !== "pro") {
       return NextResponse.json(
@@ -67,48 +82,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const planId = PLAN_IDS[plan];
+    const expectedPlanId = PLAN_IDS[plan];
 
-    if (!planId) {
+    if (!expectedPlanId) {
       return NextResponse.json(
         {
           error: "Plan de PayPal no configurado",
-          message: `Falta PAYPAL_PLAN_${
-            plan === "basic" ? "BASIC" : "PRO"
-          }_ID en las variables de entorno.`,
+          message:
+            "El plan seleccionado no está configurado en PayPal.",
         },
         { status: 500 },
       );
     }
 
     const accessToken = await getPayPalAccessToken();
-    const origin = new URL(request.url).origin;
 
     const response = await fetch(
-      `${PAYPAL_API}/v1/billing/subscriptions`,
+      `${PAYPAL_API}/v1/billing/subscriptions/${encodeURIComponent(
+        subscriptionId,
+      )}`,
       {
-        method: "POST",
+        method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
           Accept: "application/json",
-          Prefer: "return=representation",
         },
-        body: JSON.stringify({
-          plan_id: planId,
-          application_context: {
-            brand_name: "Wolf Ordering",
-            locale: "es-CO",
-            shipping_preference: "NO_SHIPPING",
-            user_action: "SUBSCRIBE_NOW",
-            return_url:
-              `${origin}/restaurant/onboarding` +
-              `?paypal=success&plan=${plan}`,
-            cancel_url:
-              `${origin}/restaurant/onboarding` +
-              `?paypal=cancelled&plan=${plan}`,
-          },
-        }),
         cache: "no-store",
       },
     );
@@ -117,55 +115,75 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       console.error(
-        "[PAYPAL CREATE SUBSCRIPTION ERROR]",
+        "[PAYPAL VERIFY SUBSCRIPTION ERROR]",
         data,
       );
 
       return NextResponse.json(
         {
-          error: "PayPal no pudo crear la suscripción",
+          error: "No pudimos verificar la suscripción",
           message:
             data?.message ||
-            data?.details?.[0]?.description ||
-            "PayPal devolvió un error.",
-          details: data,
+            "PayPal no permitió consultar la suscripción.",
         },
         { status: response.status },
       );
     }
 
-    const approveUrl = data?.links?.find(
-      (link: { rel?: string; href?: string }) =>
-        link.rel === "approve",
-    )?.href;
-
-    if (!approveUrl || !data?.id) {
-      console.error("[PAYPAL] Respuesta incompleta", data);
-
+    if (data?.id !== subscriptionId) {
       return NextResponse.json(
         {
-          error: "Respuesta incompleta de PayPal",
+          error: "Suscripción inconsistente",
           message:
-            "PayPal no devolvió la URL de aprobación o el ID de suscripción.",
+            "La suscripción devuelta por PayPal no coincide.",
         },
-        { status: 502 },
+        { status: 409 },
+      );
+    }
+
+    if (data?.plan_id !== expectedPlanId) {
+      return NextResponse.json(
+        {
+          error: "Plan inconsistente",
+          message:
+            "La suscripción de PayPal no corresponde al plan seleccionado.",
+        },
+        { status: 409 },
+      );
+    }
+
+    const acceptedStatuses = ["ACTIVE", "APPROVED"];
+
+    if (!acceptedStatuses.includes(data?.status)) {
+      return NextResponse.json(
+        {
+          error: "Pago pendiente",
+          message:
+            `PayPal todavía no confirma la suscripción. Estado: ${
+              data?.status || "desconocido"
+            }.`,
+          status: data?.status ?? null,
+        },
+        { status: 409 },
       );
     }
 
     return NextResponse.json({
       success: true,
+      subscriptionId,
       plan,
-      paypalPlanId: planId,
-      subscriptionId: data.id,
-      subscriptionStatus: data.status ?? "APPROVAL_PENDING",
-      approveUrl,
+      status: data.status,
+      paypalPlanId: data.plan_id,
     });
   } catch (error) {
-    console.error("[PAYPAL SUBSCRIPTION ERROR]", error);
+    console.error(
+      "[PAYPAL VERIFY SUBSCRIPTION ERROR]",
+      error,
+    );
 
     return NextResponse.json(
       {
-        error: "Error interno creando la suscripción",
+        error: "Error interno verificando PayPal",
         message:
           error instanceof Error
             ? error.message

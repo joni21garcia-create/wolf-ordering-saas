@@ -7,6 +7,7 @@ export type RestaurantInfo = {
   ownerName: string;
   email: string;
   phone: string;
+  password: string;
 };
 
 type RestaurantInfoScreenProps = {
@@ -32,14 +33,18 @@ export function RestaurantInfoScreen({
   );
   const [email, setEmail] = useState(initialValues?.email ?? "");
   const [phone, setPhone] = useState(initialValues?.phone ?? "");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
 
     const cleanRestaurantName = restaurantName.trim();
     const cleanOwnerName = ownerName.trim();
-    const cleanEmail = email.trim();
+    const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = phone.trim();
 
     if (!cleanRestaurantName) {
@@ -52,13 +57,23 @@ export function RestaurantInfoScreen({
       return;
     }
 
-    if (!cleanEmail) {
-      setError("Escribe el email del propietario.");
+    if (!cleanEmail || !/^\S+@\S+\.\S+$/.test(cleanEmail)) {
+      setError("Escribe un email válido.");
       return;
     }
 
-    if (!cleanPhone) {
-      setError("Escribe el telefono del propietario.");
+    if (!cleanPhone || cleanPhone.replace(/\D/g, "").length < 7) {
+      setError("Escribe un teléfono válido.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden.");
       return;
     }
 
@@ -74,6 +89,7 @@ export function RestaurantInfoScreen({
       ownerName: cleanOwnerName,
       email: cleanEmail,
       phone: cleanPhone,
+      password,
     });
   };
 
@@ -81,16 +97,16 @@ export function RestaurantInfoScreen({
     <section className="relative flex min-h-dvh flex-col overflow-hidden bg-[#050505] px-5 pb-28 pt-16 text-white sm:px-6 sm:pt-20">
       <div className="relative z-10 mx-auto w-full max-w-md">
         <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-orange-400">
-          DATOS DEL RESTAURANTE
+          CREAR CUENTA
         </p>
 
         <h1 className="mt-3 text-4xl font-semibold leading-tight tracking-tight">
-          Cuéntanos sobre tu restaurante.
+          Tu restaurante está casi listo.
         </h1>
 
         <p className="mt-4 text-sm leading-6 text-white/55">
-          Estos son los datos iniciales que necesitamos para preparar la
-          activacion de tu restaurante.
+          El pago ya fue verificado. Ahora crea la cuenta del propietario
+          y registraremos tu restaurante.
         </p>
 
         {selectedPlan && (
@@ -99,7 +115,9 @@ export function RestaurantInfoScreen({
               PLAN
             </p>
             <p className="mt-2 text-sm font-semibold text-white">
-              {selectedPlan === "pro" ? "WOLF PRO - $46/mes" : "WOLF BASICO - $35/mes"}
+              {selectedPlan === "pro"
+                ? "WOLF PRO - $46/mes"
+                : "WOLF BÁSICO - $35/mes"}
             </p>
           </div>
         )}
@@ -116,11 +134,11 @@ export function RestaurantInfoScreen({
             label="Nombre del propietario"
             value={ownerName}
             onChange={setOwnerName}
-            placeholder="Ej. Juan Perez"
+            placeholder="Ej. Juan Pérez"
           />
 
           <Field
-            label="Email"
+            label="Email de acceso"
             type="email"
             value={email}
             onChange={setEmail}
@@ -128,11 +146,27 @@ export function RestaurantInfoScreen({
           />
 
           <Field
-            label="Telefono"
+            label="Teléfono"
             type="tel"
             value={phone}
             onChange={setPhone}
             placeholder="0999999999"
+          />
+
+          <Field
+            label="Contraseña"
+            type="password"
+            value={password}
+            onChange={setPassword}
+            placeholder="Mínimo 8 caracteres"
+          />
+
+          <Field
+            label="Confirmar contraseña"
+            type="password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            placeholder="Repite tu contraseña"
           />
 
           {error && (
@@ -156,7 +190,7 @@ export function RestaurantInfoScreen({
               disabled={isSubmitting}
               className="h-14 flex-[1.5] rounded-2xl bg-orange-500 text-sm font-bold text-white transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isSubmitting ? "Guardando..." : "Continuar"}
+              {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
             </button>
           </div>
         </form>
@@ -170,7 +204,7 @@ type FieldProps = {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
-  type?: "text" | "email" | "tel";
+  type?: "text" | "email" | "tel" | "password";
 };
 
 function Field({
@@ -191,6 +225,13 @@ function Field({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
+        autoComplete={
+          type === "password"
+            ? "new-password"
+            : type === "email"
+              ? "email"
+              : "off"
+        }
         className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-orange-400/40 focus:bg-white/[0.06]"
       />
     </label>
