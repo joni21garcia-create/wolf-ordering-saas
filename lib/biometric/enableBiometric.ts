@@ -1,15 +1,19 @@
 import { BiometricAuth } from "@aparajita/capacitor-biometric-auth";
 import { saveBiometricUser } from "./storage";
 
-export async function enableBiometric(userId: string) {
+export async function enableBiometric(
+  userId: string,
+  refreshToken: string
+) {
   try {
     await BiometricAuth.authenticate({
-      reason: "Activa el ingreso con huella",
+      reason: "Confirma tu identidad para activar el ingreso con huella",
       allowDeviceCredential: true,
     });
 
     await saveBiometricUser({
       userId,
+      refreshToken,
       enabled: true,
     });
 
@@ -18,7 +22,6 @@ export async function enableBiometric(userId: string) {
     );
 
     return true;
-
   } catch (error) {
     console.error(
       "[BIOMETRIC] Error activando",

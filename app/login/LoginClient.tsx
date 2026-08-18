@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import LoginView from "./LoginView";
 import { registerWeb } from "@/lib/push/registerWeb";
-import { testBiometric } from "@/lib/biometric/testBiometric";
 import { enableBiometric } from "@/lib/biometric/enableBiometric";
 
 export default function LoginClient() {
@@ -33,26 +32,6 @@ export default function LoginClient() {
     setIsMounted(true);
   }, []);
 
-  useEffect(() => {
-  testBiometric();
-}, []);
-
-useEffect(() => {
-
-  async function testEnable() {
-    const result = await enableBiometric(
-      "usuario-prueba"
-    );
-
-    console.log(
-      "[TEST ENABLE]",
-      result
-    );
-  }
-
-  testEnable();
-
-}, []);
 
   // ==========================
   // Recuperar contraseña
@@ -144,6 +123,29 @@ useEffect(() => {
         alert("No fue posible crear la sesión.");
         return;
       }
+
+const biometricRefreshToken =
+  session.refresh_token;
+
+if (biometricRefreshToken) {
+  const activate = window.confirm(
+    "¿Quieres activar el ingreso con huella en este dispositivo?"
+  );
+
+  if (activate) {
+    const enabled = await enableBiometric(
+      session.user.id,
+      biometricRefreshToken
+    );
+
+    if (enabled) {
+      console.log(
+        "[LOGIN] Ingreso con huella activado."
+      );
+    }
+  }
+}
+
 
       const {
         data: restaurantUser,
