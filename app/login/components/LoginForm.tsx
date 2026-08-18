@@ -18,6 +18,8 @@ interface LoginFormProps {
   login: () => void;
   resetPassword: () => void;
   loginWithGoogle: () => void;
+  loginWithBiometric: () => void;
+  biometricEnabled: boolean;
 }
 
 export default function LoginForm({
@@ -31,6 +33,8 @@ export default function LoginForm({
   login,
   resetPassword,
   loginWithGoogle,
+  loginWithBiometric,
+  biometricEnabled,
 }: LoginFormProps) {
   return (
     <>
@@ -38,15 +42,11 @@ export default function LoginForm({
         .form {
           width: 100%;
           max-width: 560px;
-
           margin: 0 auto;
-
           padding:
             clamp(32px, 5vw, 72px)
             clamp(24px, 5vw, 64px);
-
           box-sizing: border-box;
-
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -84,9 +84,7 @@ export default function LoginForm({
         .label {
           display: block;
           margin-bottom: 8px;
-
           color: #a6a6a6;
-
           font-size: 13px;
           font-weight: 500;
         }
@@ -94,31 +92,21 @@ export default function LoginForm({
         .input {
           width: 100%;
           height: 56px;
-
           padding: 0 17px;
-
           border-radius: 14px;
-
           border: 1px solid rgba(255,255,255,.075);
-
           background:
             linear-gradient(
               180deg,
               rgba(255,255,255,.045),
               rgba(255,255,255,.018)
             );
-
           color: #fff;
-
           outline: none;
-
           font-size: 15px;
-
           box-sizing: border-box;
-
           box-shadow:
             inset 0 1px 0 rgba(255,255,255,.025);
-
           transition:
             border-color .18s ease,
             background .18s ease,
@@ -131,14 +119,12 @@ export default function LoginForm({
 
         .input:focus {
           border-color: rgba(249,115,22,.42);
-
           background:
             linear-gradient(
               180deg,
               rgba(255,255,255,.055),
               rgba(255,255,255,.022)
             );
-
           box-shadow:
             0 0 0 3px rgba(249,115,22,.07),
             inset 0 1px 0 rgba(255,255,255,.04);
@@ -148,13 +134,8 @@ export default function LoginForm({
           display: flex;
           justify-content: space-between;
           align-items: center;
-
           gap: 14px;
-
-          margin:
-            4px 0
-            26px;
-
+          margin: 4px 0 26px;
           font-size: 13px;
         }
 
@@ -162,11 +143,8 @@ export default function LoginForm({
           display: flex;
           align-items: center;
           gap: 8px;
-
           color: #858585;
-
           cursor: pointer;
-
           white-space: nowrap;
         }
 
@@ -179,16 +157,11 @@ export default function LoginForm({
         .forgot {
           border: 0;
           background: transparent;
-
           color: #f97316;
-
           cursor: pointer;
-
           font-size: 13px;
           font-weight: 600;
-
           padding: 4px 0;
-
           transition: opacity .18s ease;
         }
 
@@ -200,22 +173,15 @@ export default function LoginForm({
           position: relative;
           isolation: isolate;
           overflow: hidden;
-
           width: 100%;
           height: 58px;
-
           border-radius: 15px;
-
           border: 1px solid rgba(255, 190, 130, .38);
-
           color: #fff;
-
           font-size: 15px;
           font-weight: 750;
           letter-spacing: .1px;
-
           cursor: pointer;
-
           background:
             linear-gradient(
               180deg,
@@ -223,13 +189,11 @@ export default function LoginForm({
               #ff872f 38%,
               #f97316 100%
             );
-
           box-shadow:
             inset 0 1px 0 rgba(255,255,255,.34),
             inset 0 -1px 0 rgba(111,34,0,.32),
             0 1px 2px rgba(0,0,0,.40),
             0 8px 24px rgba(249,115,22,.13);
-
           transition:
             transform .18s cubic-bezier(.2,.8,.2,1),
             box-shadow .18s ease,
@@ -237,19 +201,15 @@ export default function LoginForm({
             border-color .18s ease;
         }
 
-        /* Borde luminoso superior */
         .login-button::before {
           content: "";
           position: absolute;
           z-index: -1;
-
           top: 1px;
           left: 9%;
           width: 82%;
           height: 1px;
-
           border-radius: 999px;
-
           background:
             linear-gradient(
               90deg,
@@ -257,25 +217,19 @@ export default function LoginForm({
               rgba(255,255,255,.58),
               transparent
             );
-
           opacity: .75;
           pointer-events: none;
         }
 
-        /* Reflejo diagonal muy sutil */
         .login-button::after {
           content: "";
           position: absolute;
           z-index: -1;
-
           top: -90%;
           left: -35%;
-
           width: 28%;
           height: 280%;
-
           transform: rotate(18deg);
-
           background:
             linear-gradient(
               90deg,
@@ -283,23 +237,17 @@ export default function LoginForm({
               rgba(255,255,255,.16),
               transparent
             );
-
           opacity: 0;
-
           transition:
             left .55s cubic-bezier(.2,.7,.2,1),
             opacity .25s ease;
-
           pointer-events: none;
         }
 
         .login-button:hover:not(:disabled) {
           transform: translateY(-1px);
-
           filter: brightness(1.035);
-
           border-color: rgba(255, 205, 160, .52);
-
           box-shadow:
             inset 0 1px 0 rgba(255,255,255,.40),
             inset 0 -1px 0 rgba(111,34,0,.28),
@@ -314,9 +262,7 @@ export default function LoginForm({
 
         .login-button:active:not(:disabled) {
           transform: translateY(1px);
-
           filter: brightness(.98);
-
           box-shadow:
             inset 0 2px 5px rgba(92,28,0,.25),
             0 3px 10px rgba(249,115,22,.09);
@@ -324,7 +270,6 @@ export default function LoginForm({
 
         .login-button:focus-visible {
           outline: none;
-
           box-shadow:
             0 0 0 3px rgba(249,115,22,.13),
             inset 0 1px 0 rgba(255,255,255,.34),
@@ -335,6 +280,17 @@ export default function LoginForm({
           cursor: wait;
           opacity: .55;
           filter: saturate(.75);
+        }
+
+        .biometric-button {
+          margin-top: 12px;
+          background:
+            linear-gradient(
+              180deg,
+              #333 0%,
+              #111 100%
+            );
+          border-color: rgba(255,255,255,.16);
         }
 
         @media (max-width: 700px) {
@@ -451,6 +407,20 @@ export default function LoginForm({
             ? "Ingresando..."
             : "Ingresar"}
         </button>
+
+        {/* BIOMETRIC LOGIN */}
+        {biometricEnabled && (
+          <button
+            onClick={loginWithBiometric}
+            disabled={loading}
+            className="login-button biometric-button"
+            type="button"
+          >
+            {loading
+              ? "Autenticando..."
+              : "👆 Ingresar con huella"}
+          </button>
+        )}
 
         <GoogleButton
           onClick={loginWithGoogle}

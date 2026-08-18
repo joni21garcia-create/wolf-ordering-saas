@@ -5,6 +5,11 @@ import { supabase } from "@/lib/supabase/client";
 import LoginView from "./LoginView";
 import { registerWeb } from "@/lib/push/registerWeb";
 import { enableBiometric } from "@/lib/biometric/enableBiometric";
+import {
+  getBiometricUser,
+  saveBiometricUser,
+} from "@/lib/biometric/storage";
+import { BiometricAuth } from "@aparajita/capacitor-biometric-auth";
 
 export default function LoginClient() {
   // ==========================
@@ -16,22 +21,45 @@ export default function LoginClient() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
 
   // ==========================
   // Inicialización
   // ==========================
 
   useEffect(() => {
-    const savedEmail = localStorage.getItem("wolf_email");
+    async function initializeLogin() {
+      const savedEmail =
+        localStorage.getItem("wolf_email");
 
-    if (savedEmail) {
-      setEmail(savedEmail);
-      setRememberMe(true);
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRememberMe(true);
+      }
+
+      try {
+        const biometricUser =
+          await getBiometricUser();
+
+        if (biometricUser?.enabled === true) {
+          setBiometricEnabled(true);
+
+          console.log(
+            "[BIOMETRIC] Usuario con huella activada"
+          );
+        }
+      } catch (error) {
+        console.error(
+          "[BIOMETRIC] Error leyendo almacenamiento",
+          error
+        );
+      }
+
+      setIsMounted(true);
     }
 
-    setIsMounted(true);
+    initializeLogin();
   }, []);
-
 
   // ==========================
   // Recuperar contraseña
@@ -86,6 +114,80 @@ export default function LoginClient() {
   }
 
   // ==========================
+  // Login con biometría
+  // ==========================
+
+  async function loginWithBiometric() {
+    try {
+      setLoading(true);
+
+      const biometricUser =
+        await getBiometricUser();
+
+      if (
+        !biometricUser?.enabled ||
+        !biometricUser?.refreshToken
+      ) {
+        alert(
+          "No hay un ingreso con huella configurado en este dispositivo."
+        );
+        return;
+      }
+
+      await BiometricAuth.authenticate({
+        reason: "Confirma tu identidad para ingresar",
+        allowDeviceCredential: true,
+      });
+
+      console.log(
+        "[BIOMETRIC] Huella validada."
+      );
+
+      const { data, error } =
+        await supabase.auth.refreshSession({
+          refresh_token:
+            biometricUser.refreshToken,
+        });
+
+      if (error || !data.session) {
+        console.error(
+          "[BIOMETRIC] Error recuperando sesión",
+          error
+        );
+
+        alert(
+          "La sesión biométrica ya no es válida. Ingresa con tu contraseña."
+        );
+
+        return;
+      }
+
+      await saveBiometricUser({
+        ...biometricUser,
+        userId: data.session.user.id,
+        refreshToken: data.session.refresh_token,
+        enabled: true,
+      });
+
+      console.log(
+        "[BIOMETRIC] Sesión recuperada correctamente."
+      );
+
+      alert("Ingreso con huella correcto.");
+
+      // La redirección todavía se hará después de reutilizar
+      // el flujo actual de restaurantUser/roles/push.
+    } catch (error) {
+      console.error(
+        "[BIOMETRIC] Autenticación cancelada o fallida",
+        error
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ==========================
   // Login Email
   // ==========================
 
@@ -124,28 +226,29 @@ export default function LoginClient() {
         return;
       }
 
-const biometricRefreshToken =
-  session.refresh_token;
+      const biometricRefreshToken =
+        session.refresh_token;
 
-if (biometricRefreshToken) {
-  const activate = window.confirm(
-    "¿Quieres activar el ingreso con huella en este dispositivo?"
-  );
+      if (biometricRefreshToken) {
+        const activate = window.confirm(
+          "¿Quieres activar el ingreso con huella en este dispositivo?"
+        );
 
-  if (activate) {
-    const enabled = await enableBiometric(
-      session.user.id,
-      biometricRefreshToken
-    );
+        if (activate) {
+          const enabled = await enableBiometric(
+            session.user.id,
+            biometricRefreshToken
+          );
 
-    if (enabled) {
-      console.log(
-        "[LOGIN] Ingreso con huella activado."
-      );
-    }
-  }
-}
+          if (enabled) {
+            setBiometricEnabled(true);
 
+            console.log(
+              "[LOGIN] Ingreso con huella activado."
+            );
+          }
+        }
+      }
 
       const {
         data: restaurantUser,
@@ -169,83 +272,88 @@ if (biometricRefreshToken) {
       }
 
       if (rememberMe) {
-        localStorage.setItem("wolf_email", email);
+        localStorage.setItem(
+          "wolf_email",
+          email
+        );
       } else {
-        localStorage.removeItem("wolf_email");
+        localStorage.removeItem(
+          "wolf_email"
+        );
       }
 
+      /*
+      ==========================================================
+      REGISTRO PUSH (PWA)
+      ==========================================================
+      */
 
-/*
-==========================================================
-REGISTRO PUSH (PWA)
-==========================================================
-*/
+      try {
+        if ("serviceWorker" in navigator) {
+          await navigator.serviceWorker.ready;
+        }
 
-try {
+        console.log(
+          "[LOGIN][WEB] Registrando Push..."
+        );
 
-  if ("serviceWorker" in navigator) {
+        await registerWeb({
+          restaurantId:
+            restaurantUser.restaurant_id,
 
-    await navigator.serviceWorker.ready;
+          userId:
+            session.user.id,
+        });
 
-  }
+        console.log(
+          "[LOGIN][WEB] Push registrado."
+        );
+      } catch (error) {
+        console.error(
+          "[LOGIN][WEB] Error registrando Push",
+          error
+        );
+      }
 
-  console.log(
-    "[LOGIN][WEB] Registrando Push..."
-  );
+      await new Promise((resolve) =>
+        setTimeout(resolve, 800)
+      );
 
-  await registerWeb({
+      // Si el usuario abrió la app desde una notificación,
+      // continuar hacia el pedido en lugar del dashboard.
+      const pendingUrl =
+        localStorage.getItem(
+          "pendingPushUrl"
+        );
 
-    restaurantId:
-      restaurantUser.restaurant_id,
+      if (pendingUrl) {
+        localStorage.removeItem(
+          "pendingPushUrl"
+        );
 
-    userId:
-      session.user.id,
+        window.location.replace(
+          pendingUrl
+        );
 
-  });
+        return;
+      }
 
-  console.log(
-    "[LOGIN][WEB] Push registrado."
-  );
+      const role =
+        restaurantUser
+          .restaurant_roles?.code;
 
-} catch (error) {
-
-  console.error(
-    "[LOGIN][WEB] Error registrando Push",
-    error
-  );
-
-}
-
-await new Promise((resolve) =>
-  setTimeout(resolve, 800)
-);
-
-
-// Si el usuario abrió la app desde una notificación,
-// continuar hacia el pedido en lugar del dashboard.
-const pendingUrl = localStorage.getItem("pendingPushUrl");
-
-if (pendingUrl) {
-  localStorage.removeItem("pendingPushUrl");
-  window.location.replace(pendingUrl);
-  return;
-}
-
-const role =
-  restaurantUser.restaurant_roles?.code;
-
-if (
-  role === "super-user" ||
-  role === "owner"
-) {
-  window.location.replace(
-    "/login/super-admin"
-  );
-} else {
-  window.location.replace(
-    `/super-admin/restaurants/${restaurantUser.restaurant_id}/restaurante/dashboard`
-  );
-}
+      if (
+        role === "super-user" ||
+        role === "owner"
+      ) {
+        window.location.replace(
+          "/login/super-admin"
+        );
+      } else {
+        window.location.replace(
+          `/super-admin/restaurants/${restaurantUser.restaurant_id}/restaurante/dashboard`
+        );
+      }
     } catch (err) {
       console.error(err);
       alert("Error al iniciar sesión.");
@@ -271,6 +379,8 @@ if (
       resetPassword={resetPassword}
       loginWithGoogle={loginWithGoogle}
       login={login}
+      loginWithBiometric={loginWithBiometric}
+      biometricEnabled={biometricEnabled}
     />
   );
 }
