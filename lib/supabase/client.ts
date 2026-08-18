@@ -62,7 +62,6 @@ export const supabase = createBrowserClient(
       persistSession: true,
       detectSessionInUrl: true,
       flowType: "pkce",
-      storageKey: "wolf-supabase-auth",
     },
     global: {
       fetch: wolfFetch,
@@ -93,15 +92,6 @@ export async function getWolfAccessToken(): Promise<string | null> {
 
   if (refreshError) {
     console.error("[SUPABASE AUTH] refreshSession:", refreshError);
-
-    const message = refreshError.message?.toLowerCase() ?? "";
-
-    if (
-      message.includes("refresh_token_not_found") ||
-      message.includes("refresh token not found")
-    ) {
-      await supabase.auth.signOut({ scope: "local" });
-    }
   }
 
   return null;
