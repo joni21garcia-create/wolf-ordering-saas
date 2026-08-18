@@ -418,7 +418,7 @@ export default function LoginForm({
           >
             {loading
               ? "Autenticando..."
-              : "👆 Ingresar con huella"}
+              : "🫆 Ingresar con huella"}
           </button>
         )}
 

@@ -66,5 +66,3 @@ biometricEnabled,
     </LoginBackground>
   );
 }
-
-
