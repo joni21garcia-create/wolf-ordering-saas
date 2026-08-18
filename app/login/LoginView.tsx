@@ -19,11 +19,11 @@ interface LoginViewProps {
 
   loading: boolean;
 
-login: () => void;
-resetPassword: () => void;
-loginWithGoogle: () => void;
-loginWithBiometric: () => void;
-biometricEnabled: boolean;
+  login: () => void;
+  resetPassword: () => void;
+  loginWithGoogle: () => void;
+  loginWithBiometric: () => void;
+  biometricEnabled: boolean;
 }
 
 export default function LoginView({
@@ -36,12 +36,14 @@ export default function LoginView({
   setRememberMe,
   loading,
   login,
-resetPassword,
-loginWithGoogle,
-loginWithBiometric,
-biometricEnabled,
+  resetPassword,
+  loginWithGoogle,
+  loginWithBiometric,
+  biometricEnabled,
 }: LoginViewProps) {
-  if (!isMounted) return null;
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <LoginBackground>
@@ -59,8 +61,12 @@ biometricEnabled,
           login={login}
           resetPassword={resetPassword}
           loginWithGoogle={loginWithGoogle}
-          loginWithBiometric={loginWithBiometric}
-          biometricEnabled={biometricEnabled}
+          loginWithBiometric={
+            loginWithBiometric
+          }
+          biometricEnabled={
+            biometricEnabled
+          }
         />
       </LoginCard>
     </LoginBackground>
