@@ -57,8 +57,52 @@ export const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+      flowType: "pkce",
+      storageKey: "wolf-supabase-auth",
+    },
     global: {
       fetch: wolfFetch,
     },
   },
 );
+
+/**
+ * Obtiene un access token válido para llamadas al backend.
+ */
+export async function getWolfAccessToken(): Promise<string | null> {
+  const { data, error } = await supabase.auth.getSession();
+
+  if (data.session?.access_token) {
+    return data.session.access_token;
+  }
+
+  if (error) {
+    console.error("[SUPABASE AUTH] getSession:", error);
+  }
+
+  const { data: refreshed, error: refreshError } =
+    await supabase.auth.refreshSession();
+
+  if (refreshed.session?.access_token) {
+    return refreshed.session.access_token;
+  }
+
+  if (refreshError) {
+    console.error("[SUPABASE AUTH] refreshSession:", refreshError);
+
+    const message = refreshError.message?.toLowerCase() ?? "";
+
+    if (
+      message.includes("refresh_token_not_found") ||
+      message.includes("refresh token not found")
+    ) {
+      await supabase.auth.signOut({ scope: "local" });
+    }
+  }
+
+  return null;
+}

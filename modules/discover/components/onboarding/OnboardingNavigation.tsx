@@ -26,7 +26,7 @@ export function OnboardingNavigation({
       : "Continuar";
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 px-5 pb-5 pt-3">
+    <div className="fixed inset-x-0 bottom-0 z-50 px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-3">
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black via-black/90 to-transparent" />
 
       <div className="relative mx-auto flex w-full max-w-md items-center gap-3">

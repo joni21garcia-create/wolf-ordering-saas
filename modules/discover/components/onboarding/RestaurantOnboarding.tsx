@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { getWolfAccessToken } from "@/lib/supabase/client";
 
 import { OnboardingProgress } from "./OnboardingProgress";
 import { OnboardingNavigation } from "./OnboardingNavigation";
@@ -145,15 +145,11 @@ export function RestaurantOnboarding({
         { plan },
       );
 
-      const { data: sessionData, error: sessionError } =
-        await supabase.auth.getSession();
+      const accessToken = await getWolfAccessToken();
 
-      const accessToken =
-        sessionData.session?.access_token;
-
-      if (sessionError || !accessToken) {
+      if (!accessToken) {
         throw new Error(
-          "Tu sesión no está disponible. Inicia sesión nuevamente e inténtalo otra vez.",
+          "Tu sesión expiró o ya no está disponible. Inicia sesión nuevamente e inténtalo otra vez.",
         );
       }
 
@@ -286,15 +282,11 @@ export function RestaurantOnboarding({
     setIsSubmittingRequest(true);
 
     try {
-      const { data: sessionData, error: sessionError } =
-        await supabase.auth.getSession();
+      const accessToken = await getWolfAccessToken();
 
-      const accessToken =
-        sessionData.session?.access_token;
-
-      if (sessionError || !accessToken) {
+      if (!accessToken) {
         throw new Error(
-          "Tu sesión no está disponible. Inicia sesión nuevamente e inténtalo otra vez.",
+          "Tu sesión expiró o ya no está disponible. Inicia sesión nuevamente e inténtalo otra vez.",
         );
       }
 
