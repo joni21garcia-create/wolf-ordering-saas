@@ -5,15 +5,15 @@ import {
   RefreshCw,
   Truck,
   ShoppingBag,
+  CreditCard,
 } from "lucide-react";
 
 import {
   WolfButton,
   WolfFlex,
   WolfInput,
-  WolfSpacer,
-  WolfStack,
 } from "@/lib/wolf-ui";
+
 
 interface Props {
   search: string;
@@ -39,20 +39,24 @@ interface Props {
   onRefresh: () => void;
 }
 
+
 export default function FiltersBar({
   search,
+  paymentFilter,
   orderTypeFilter,
   loading,
+
   onSearchChange,
+  onPaymentFilterChange,
   onOrderTypeFilterChange,
+
   onRefresh,
 }: Props) {
 
-    return (
-
+  return (
     <section
       style={{
-        marginBottom: 18,
+        marginBottom:18,
       }}
     >
 
@@ -61,11 +65,12 @@ export default function FiltersBar({
         gap="lg"
         wrap
       >
-              <div
+
+        <div
           style={{
-            flex: 1,
-            minWidth: 280,
-            maxWidth: 560,
+            flex:"1 1 320px",
+            minWidth:240,
+            maxWidth:560,
           }}
         >
 
@@ -74,92 +79,118 @@ export default function FiltersBar({
 
             value={search}
 
-            onChange={(e) =>
+            onChange={(e)=>
               onSearchChange(
                 e.target.value
               )
             }
 
             leftIcon={
-              <Search size={18} />
+              <Search size={18}/>
             }
           />
 
         </div>
-                <WolfFlex
+
+
+        <WolfFlex
           gap="sm"
           wrap
           align="center"
         >
-                    <WolfButton
+
+          <WolfButton
             variant={
-              orderTypeFilter === "all"
-                ? "primary"
-                : "secondary"
+              orderTypeFilter==="all"
+              ? "primary"
+              : "secondary"
             }
             size="sm"
-            onClick={() =>
+            onClick={()=>
               onOrderTypeFilterChange("all")
             }
           >
             Todos
           </WolfButton>
 
+
           <WolfButton
             variant={
-              orderTypeFilter === "delivery"
-                ? "primary"
-                : "secondary"
+              orderTypeFilter==="delivery"
+              ? "primary"
+              : "secondary"
             }
             size="sm"
-            leftIcon={<Truck size={15} />}
-            onClick={() =>
-              onOrderTypeFilterChange(
-                "delivery"
-              )
+            leftIcon={
+              <Truck size={15}/>
+            }
+            onClick={()=>
+              onOrderTypeFilterChange("delivery")
             }
           >
             Delivery
           </WolfButton>
 
+
           <WolfButton
             variant={
-              orderTypeFilter === "pickup"
-                ? "primary"
-                : "secondary"
+              orderTypeFilter==="pickup"
+              ? "primary"
+              : "secondary"
             }
             size="sm"
             leftIcon={
-              <ShoppingBag size={15} />
+              <ShoppingBag size={15}/>
             }
-            onClick={() =>
-              onOrderTypeFilterChange(
-                "pickup"
-              )
+            onClick={()=>
+              onOrderTypeFilterChange("pickup")
             }
           >
             Pickup
           </WolfButton>
 
+
+          <WolfButton
+            variant={
+              paymentFilter==="paid"
+              ? "primary"
+              : "secondary"
+            }
+            size="sm"
+            leftIcon={
+              <CreditCard size={15}/>
+            }
+            onClick={()=>
+              onPaymentFilterChange(
+                paymentFilter==="paid"
+                ? "all"
+                : "paid"
+              )
+            }
+          >
+            Pagados
+          </WolfButton>
+
+
         </WolfFlex>
 
-        <WolfSpacer />
 
         <WolfButton
           variant="ghost"
           size="sm"
           loading={loading}
           leftIcon={
-            <RefreshCw size={16} />
+            <RefreshCw size={16}/>
           }
           onClick={onRefresh}
         >
           Actualizar
         </WolfButton>
 
+
       </WolfFlex>
 
-    </section>
 
+    </section>
   );
 }

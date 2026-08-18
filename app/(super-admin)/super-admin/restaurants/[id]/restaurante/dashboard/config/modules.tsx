@@ -20,6 +20,7 @@ import {
   Layout,
   MessageCircle,
   Settings,
+  ClipboardList,
 } from "lucide-react";
 
 export type DashboardModule = {
@@ -83,7 +84,8 @@ export const dashboardModules: DashboardModule[] = [
     href: (id) =>
       `/super-admin/restaurants/${id}/finance`,
   },
-    {
+
+  {
     code: "users",
     title: "Usuarios",
     description: "Administra usuarios del restaurante.",
@@ -258,6 +260,18 @@ export const dashboardModules: DashboardModule[] = [
     href: (id) =>
       `/super-admin/restaurants/${id}/settings/services`,
   },
+
+{
+  code: "requests",
+  title: "Solicitudes",
+  description:
+    "Gestiona solicitudes del restaurante.",
+  category: "settings",
+  color: "#f97316",
+  icon: <ClipboardList size={34} />,
+  href: (id) =>
+    `/super-admin/restaurants/${id}/settings/requests`,
+},
 
   {
     code: "serviciosrestaurant",

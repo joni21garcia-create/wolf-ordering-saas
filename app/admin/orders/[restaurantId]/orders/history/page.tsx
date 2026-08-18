@@ -17,8 +17,7 @@ export default function HistoryPage() {
     restaurantId: string;
   }>();
 
-  const restaurantId =
-    params.restaurantId;
+  const restaurantId = params.restaurantId;
 
   const [orders, setOrders] =
     useState<any[]>([]);
@@ -54,8 +53,7 @@ export default function HistoryPage() {
 
       const {
         data: { session },
-      } =
-        await supabase.auth.getSession();
+      } = await supabase.auth.getSession();
 
       if (!session) return;
 
@@ -76,81 +74,71 @@ export default function HistoryPage() {
       if (!json.success) return;
 
       setOrders(json.orders ?? []);
-
     } finally {
       setLoading(false);
     }
   }
 
-  const filtered =
-    useMemo(() => {
-      return orders.filter(
-        (order) => {
-          const term =
-            search.toLowerCase();
+  const filtered = useMemo(() => {
+    return orders.filter((order) => {
+      const term =
+        search.toLowerCase();
 
-          const matchSearch =
-            search === "" ||
-            order.customer_name
-              ?.toLowerCase()
-              .includes(term) ||
-            order.customer_phone
-              ?.includes(search) ||
-            order.tracking_code
-              ?.toLowerCase()
-              .includes(term);
+      const matchSearch =
+        search === "" ||
+        order.customer_name
+          ?.toLowerCase()
+          .includes(term) ||
+        order.customer_phone
+          ?.includes(search) ||
+        order.tracking_code
+          ?.toLowerCase()
+          .includes(term);
 
-          const matchStatus =
-            status === "" ||
-            order.status === status;
+      const matchStatus =
+        status === "" ||
+        order.status === status;
 
-          const matchPayment =
-            payment === "" ||
-            order.payment_status ===
-              payment;
+      const matchPayment =
+        payment === "" ||
+        order.payment_status === payment;
 
-          const matchType =
-            orderType === "" ||
-            order.order_type ===
-              orderType;
+      const matchType =
+        orderType === "" ||
+        order.order_type === orderType;
 
-          const created =
-            new Date(
-              order.created_at
-            );
+      const created =
+        new Date(order.created_at);
 
-          const matchFrom =
-            !from ||
-            created >=
-              new Date(from);
+      const matchFrom =
+        !from ||
+        created >= new Date(from);
 
-          const matchTo =
-            !to ||
-            created <=
-              new Date(
-                `${to}T23:59:59`
-              );
+      const matchTo =
+        !to ||
+        created <=
+          new Date(`${to}T23:59:59`);
 
-          return (
-            matchSearch &&
-            matchStatus &&
-            matchPayment &&
-            matchType &&
-            matchFrom &&
-            matchTo
-          );
-        }
+      return (
+        matchSearch &&
+        matchStatus &&
+        matchPayment &&
+        matchType &&
+        matchFrom &&
+        matchTo
       );
-    }, [
-      orders,
-      search,
-      from,
-      to,
-      status,
-      payment,
-      orderType,
-    ]);
-      const metrics = useMemo(() => {
+    });
+  }, [
+    orders,
+    search,
+    from,
+    to,
+    status,
+    payment,
+    orderType,
+  ]);
+
+  const metrics = useMemo(() => {
     const sales = filtered.reduce(
       (acc, order) =>
         acc + Number(order.total ?? 0),
@@ -162,9 +150,10 @@ export default function HistoryPage() {
         ? sales / filtered.length
         : 0;
 
-    const cancelled = filtered.filter(
-      (o) => o.status === "cancelled"
-    ).length;
+    const cancelled =
+      filtered.filter(
+        (o) => o.status === "cancelled"
+      ).length;
 
     return [
       {
@@ -195,20 +184,8 @@ export default function HistoryPage() {
 
   return (
     <PermissionGuard permission="history">
-      <main
-        style={{
-          minHeight: "100vh",
-          background:
-            "linear-gradient(180deg,#050505,#0b0b0b)",
-          padding: 24,
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1800,
-            margin: "0 auto",
-          }}
-        >
+      <main className="page">
+        <div className="container">
           <HistoryHeader
             restaurantId={restaurantId}
             title="Historial de Pedidos"
@@ -243,27 +220,109 @@ export default function HistoryPage() {
           />
 
           {loading ? (
-            <div
-              style={{
-                color: "#999",
-                textAlign: "center",
-                padding: 60,
-              }}
-            >
-              Cargando pedidos...
+            <div className="loading">
+              <span className="loading-spinner" />
+              <span>Cargando pedidos...</span>
             </div>
           ) : filtered.length === 0 ? (
             <HistoryEmpty />
           ) : (
             <HistoryTable
-              restaurantId={
-                restaurantId
-              }
+              restaurantId={restaurantId}
               orders={filtered}
             />
           )}
         </div>
       </main>
+
+      <style jsx>{`
+        .page {
+          width: 100%;
+          min-height: 100vh;
+          box-sizing: border-box;
+          overflow-x: hidden;
+          background:
+            linear-gradient(
+              180deg,
+              #050505 0%,
+              #0b0b0b 100%
+            );
+          padding: 24px;
+        }
+
+        .container {
+          width: 100%;
+          max-width: 1800px;
+          margin: 0 auto;
+          box-sizing: border-box;
+        }
+
+        .loading {
+          min-height: 180px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+          color: #777;
+          font-size: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 14px;
+          background: rgba(255, 255, 255, 0.015);
+        }
+
+        .loading-spinner {
+          width: 14px;
+          height: 14px;
+          flex: 0 0 14px;
+          border: 2px solid rgba(255, 255, 255, 0.1);
+          border-top-color: #f97316;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        @media (max-width: 1200px) {
+          .page {
+            padding: 20px;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .page {
+            padding: 16px;
+          }
+
+          .container {
+            max-width: 100%;
+          }
+
+          .loading {
+            min-height: 150px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .page {
+            padding: 12px;
+          }
+
+          .loading {
+            min-height: 130px;
+            font-size: 11px;
+          }
+        }
+
+        @media (max-width: 360px) {
+          .page {
+            padding: 10px;
+          }
+        }
+      `}</style>
     </PermissionGuard>
   );
 }

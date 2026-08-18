@@ -17,8 +17,7 @@ export default function CancelledPage() {
     restaurantId: string;
   }>();
 
-  const restaurantId =
-    params.restaurantId;
+  const restaurantId = params.restaurantId;
 
   const [orders, setOrders] =
     useState<any[]>([]);
@@ -39,30 +38,26 @@ export default function CancelledPage() {
 
       const {
         data: { session },
-      } =
-        await supabase.auth.getSession();
+      } = await supabase.auth.getSession();
 
       if (!session) return;
 
-      const response =
-        await fetch(
-          "/api/orders/get-orders",
-          {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          }
-        );
+      const response = await fetch(
+        "/api/orders/get-orders",
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
 
-      const result =
-        await response.json();
+      const result = await response.json();
 
       if (result.success) {
         setOrders(
           (result.orders ?? []).filter(
             (o: any) =>
-              o.status ===
-              "cancelled"
+              o.status === "cancelled"
           )
         );
       }
@@ -71,50 +66,32 @@ export default function CancelledPage() {
     }
   }
 
-  const filtered =
-    useMemo(() => {
-      return orders.filter(
-        (order) => {
-          if (!search) return true;
+  const filtered = useMemo(() => {
+    return orders.filter((order) => {
+      if (!search) return true;
 
-          const term =
-            search.toLowerCase();
+      const term = search.toLowerCase();
 
-          return (
-            order.customer_name
-              ?.toLowerCase()
-              .includes(term) ||
-            order.customer_phone
-              ?.toLowerCase()
-              .includes(term) ||
-            order.tracking_code
-              ?.toLowerCase()
-              .includes(term)
-          );
-        }
+      return (
+        order.customer_name
+          ?.toLowerCase()
+          .includes(term) ||
+        order.customer_phone
+          ?.toLowerCase()
+          .includes(term) ||
+        order.tracking_code
+          ?.toLowerCase()
+          .includes(term)
       );
-    }, [orders, search]);
+    });
+  }, [orders, search]);
 
   return (
     <PermissionGuard permission="cancelled">
-      <main
-        style={{
-          minHeight: "100vh",
-          background:
-            "linear-gradient(180deg,#050505,#090909)",
-          padding: 24,
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1700,
-            margin: "0 auto",
-          }}
-        >
+      <main className="page">
+        <div className="container">
           <HistoryHeader
-            restaurantId={
-              restaurantId
-            }
+            restaurantId={restaurantId}
             title="Pedidos Cancelados"
             subtitle="Consulta todos los pedidos cancelados del restaurante."
           />
@@ -123,25 +100,74 @@ export default function CancelledPage() {
             orders={filtered}
           />
 
-<HistoryFilters
-  search={search}
-  onSearch={setSearch}
-  onClear={() => setSearch("")}
-/>
+          <HistoryFilters
+            search={search}
+            onSearch={setSearch}
+            onClear={() => setSearch("")}
+          />
 
           {loading ? null : filtered.length ===
             0 ? (
             <HistoryEmpty />
           ) : (
             <HistoryTable
-              restaurantId={
-                restaurantId
-              }
+              restaurantId={restaurantId}
               orders={filtered}
             />
           )}
         </div>
       </main>
+
+      <style jsx>{`
+        .page {
+          width: 100%;
+          min-height: 100vh;
+          box-sizing: border-box;
+          background:
+            linear-gradient(
+              180deg,
+              #050505 0%,
+              #090909 100%
+            );
+          padding: 24px;
+          overflow-x: hidden;
+        }
+
+        .container {
+          width: 100%;
+          max-width: 1700px;
+          margin: 0 auto;
+          box-sizing: border-box;
+        }
+
+        @media (max-width: 1024px) {
+          .page {
+            padding: 20px;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .page {
+            padding: 16px;
+          }
+
+          .container {
+            max-width: 100%;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .page {
+            padding: 12px;
+          }
+        }
+
+        @media (max-width: 360px) {
+          .page {
+            padding: 10px;
+          }
+        }
+      `}</style>
     </PermissionGuard>
   );
 }

@@ -1,15 +1,8 @@
 import {
   Building2,
   Plus,
-  DollarSign,
-  BarChart3,
-  Users,
   Shield,
-  KeyRound,
-  Landmark,
-  Megaphone,
-  Smartphone,
-  Settings,
+  ClipboardList,
 } from "lucide-react";
 
 export type DashboardModule = {
@@ -46,6 +39,17 @@ export const dashboardModules: DashboardModule[] = [
   },
 
   {
+    code: "requests",
+    title: "Solicitudes",
+    description:
+      "Gestiona las solicitudes de restaurantes de la plataforma.",
+    href: "/super-admin/restaurant-requests",
+    color: "#f97316",
+    category: "operation",
+    icon: <ClipboardList size={34} />,
+  },
+
+  {
     code: "legal",
     title: "Centro Legal",
     description:
@@ -55,7 +59,4 @@ export const dashboardModules: DashboardModule[] = [
     category: "operation",
     icon: <Shield size={34} />,
   },
-
 ];
-
-

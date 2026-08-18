@@ -9,6 +9,7 @@ type Module = {
   href: string;
   color: string;
   icon: React.ReactNode;
+  category?: string;
 };
 
 interface Props {
@@ -26,31 +27,41 @@ interface Props {
  * - rutas
  * - lógica de negocio
  *
- * Solo reorganiza la presentación de los módulos para desktop y móvil.
+ * Solo organiza la presentación de los módulos
+ * para desktop y móvil.
  */
 export default function ExecutiveCenter({
   operationModules = [],
   settingsModules = [],
 }: Props) {
   const totalModulesCount =
-    operationModules.length + settingsModules.length;
+    operationModules.length +
+    settingsModules.length;
 
   return (
     <section className="executive-center">
       <div className="section-intro">
         <div className="section-copy">
-          <span className="eyebrow">ACCESOS</span>
+          <span className="eyebrow">
+            ACCESOS
+          </span>
 
           <h2>Módulos</h2>
 
           <p>
-            Accede a las herramientas globales disponibles para tu cuenta.
+            Accede a las herramientas globales
+            disponibles para tu cuenta.
           </p>
         </div>
 
         <div className="module-count">
-          <strong>{totalModulesCount}</strong>
-          <span>módulos disponibles</span>
+          <strong>
+            {totalModulesCount}
+          </strong>
+
+          <span>
+            módulos disponibles
+          </span>
         </div>
       </div>
 
@@ -63,8 +74,7 @@ export default function ExecutiveCenter({
         )}
 
         {settingsModules.length > 0 && (
-          <ModuleGroup
-            title="Configuración"
+          <SettingsGroups
             modules={settingsModules}
           />
         )}
@@ -72,9 +82,13 @@ export default function ExecutiveCenter({
 
       {totalModulesCount === 0 && (
         <div className="empty-state">
-          <strong>No tienes módulos asignados</strong>
+          <strong>
+            No tienes módulos asignados
+          </strong>
+
           <span>
-            Los módulos autorizados para tu cuenta aparecerán aquí
+            Los módulos autorizados para tu
+            cuenta aparecerán aquí
             automáticamente.
           </span>
         </div>
@@ -144,7 +158,7 @@ export default function ExecutiveCenter({
 
         .groups {
           display: grid;
-          gap: 18px;
+          gap: 22px;
         }
 
         .group {
@@ -173,7 +187,8 @@ export default function ExecutiveCenter({
           padding: 10px 13px;
           color: inherit;
           text-decoration: none;
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          border: 1px solid
+            rgba(255, 255, 255, 0.06);
           border-radius: 13px;
           background: #0e0e0e;
           transition:
@@ -184,7 +199,8 @@ export default function ExecutiveCenter({
 
         .module:hover {
           background: #111;
-          border-color: rgba(249, 115, 22, 0.18);
+          border-color:
+            rgba(249, 115, 22, 0.18);
           transform: translateY(-1px);
         }
 
@@ -196,9 +212,7 @@ export default function ExecutiveCenter({
           place-items: center;
           overflow: hidden;
           border-radius: 10px;
-          background: rgba(249, 115, 22, 0.06);
-          border: 1px solid rgba(249, 115, 22, 0.1);
-          color: #f97316;
+          border: 1px solid;
         }
 
         .module-icon :global(svg) {
@@ -233,6 +247,14 @@ export default function ExecutiveCenter({
           flex: 0 0 auto;
           color: #4d4d4d;
           font-size: 18px;
+          transition:
+            color 0.18s ease,
+            transform 0.18s ease;
+        }
+
+        .module:hover .module-arrow {
+          color: #f97316;
+          transform: translateX(2px);
         }
 
         .empty-state {
@@ -240,7 +262,8 @@ export default function ExecutiveCenter({
           flex-direction: column;
           gap: 5px;
           padding: 20px;
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          border: 1px solid
+            rgba(255, 255, 255, 0.06);
           border-radius: 13px;
           background: #0e0e0e;
         }
@@ -257,9 +280,9 @@ export default function ExecutiveCenter({
         }
 
         /*
-         * ExecutiveCard se mantiene importado para no alterar dependencias
-         * existentes del proyecto. La presentación principal usa la lista
-         * compacta de abajo.
+         * ExecutiveCard se mantiene importado
+         * para compatibilidad con dependencias
+         * existentes del proyecto.
          */
         :global(.executive-card) {
           display: none;
@@ -267,13 +290,15 @@ export default function ExecutiveCenter({
 
         @media (min-width: 760px) {
           .module-list {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns:
+              repeat(2, minmax(0, 1fr));
           }
         }
 
         @media (min-width: 1050px) {
           .module-list {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns:
+              repeat(3, minmax(0, 1fr));
           }
         }
 
@@ -301,6 +326,59 @@ export default function ExecutiveCenter({
   );
 }
 
+function SettingsGroups({
+  modules,
+}: {
+  modules: Module[];
+}) {
+  const categoryOrder = [
+    "Experiencia",
+    "Operación",
+    "Negocio",
+    "Administración",
+    "Sistema",
+  ];
+
+  const groups = categoryOrder
+    .map((category) => ({
+      title: category,
+      modules: modules.filter(
+        (module) =>
+          module.category === category
+      ),
+    }))
+    .filter(
+      (group) => group.modules.length > 0
+    );
+
+  /*
+   * Compatibilidad con módulos antiguos
+   * que todavía no tengan category.
+   */
+  const uncategorized = modules.filter(
+    (module) => !module.category
+  );
+
+  if (uncategorized.length > 0) {
+    groups.push({
+      title: "Configuración",
+      modules: uncategorized,
+    });
+  }
+
+  return (
+    <>
+      {groups.map((group) => (
+        <ModuleGroup
+          key={group.title}
+          title={group.title}
+          modules={group.modules}
+        />
+      ))}
+    </>
+  );
+}
+
 function ModuleGroup({
   title,
   modules,
@@ -310,7 +388,9 @@ function ModuleGroup({
 }) {
   return (
     <div className="group">
-      <h3 className="group-title">{title}</h3>
+      <h3 className="group-title">
+        {title}
+      </h3>
 
       <div className="module-list">
         {modules.map((module) => (
@@ -320,17 +400,34 @@ function ModuleGroup({
             className="module"
             aria-label={`Abrir ${module.title}`}
           >
-            <span className="module-icon">{module.icon}</span>
+            <span
+              className="module-icon"
+              style={{
+                color: module.color,
+                backgroundColor:
+                  `${module.color}10`,
+                borderColor:
+                  `${module.color}20`,
+              }}
+            >
+              {module.icon}
+            </span>
 
             <span className="module-content">
-              <span className="module-title">{module.title}</span>
+              <span className="module-title">
+                {module.title}
+              </span>
+
               <span className="module-description">
                 {module.description}
               </span>
             </span>
 
-            <span className="module-arrow" aria-hidden="true">
-              ›
+            <span
+              className="module-arrow"
+              aria-hidden="true"
+            >
+              →
             </span>
           </a>
         ))}

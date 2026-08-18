@@ -25,48 +25,39 @@ interface Props {
 export default function HistoryFilters({
   search,
   onSearch,
-
   from,
   onFrom,
-
   to,
   onTo,
-
   status,
   onStatus,
-
   payment,
   onPayment,
-
   orderType,
   onOrderType,
-
   onClear,
 }: Props) {
   return (
-    <section
-      style={{
-        background:
-          "linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015))",
-        border: "1px solid rgba(255,255,255,.07)",
-        borderRadius: 24,
-        padding: 24,
-        marginBottom: 32,
-      }}
-    >
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(180px,1fr))",
-          gap: 18,
-        }}
-      >
+    <section className="filters">
+
+      <div className="filters-header">
+        <div>
+          <span>FILTROS</span>
+          <strong>
+            Buscar pedidos
+          </strong>
+        </div>
+      </div>
+
+
+      <div className="filters-grid">
+
         <Input
-          placeholder="Buscar..."
+          placeholder="Buscar cliente, teléfono o tracking..."
           value={search}
           onChange={onSearch}
         />
+
 
         {from !== undefined && (
           <Input
@@ -76,6 +67,7 @@ export default function HistoryFilters({
           />
         )}
 
+
         {to !== undefined && (
           <Input
             type="date"
@@ -83,6 +75,7 @@ export default function HistoryFilters({
             onChange={onTo ?? (() => {})}
           />
         )}
+
 
         {status !== undefined && (
           <Select
@@ -100,6 +93,7 @@ export default function HistoryFilters({
           />
         )}
 
+
         {payment !== undefined && (
           <Select
             value={payment}
@@ -113,122 +107,264 @@ export default function HistoryFilters({
           />
         )}
 
+
         {orderType !== undefined && (
           <Select
             value={orderType}
             onChange={onOrderType ?? (() => {})}
             options={[
-              ["", "Todos"],
+              ["", "Todos los tipos"],
               ["delivery", "Delivery"],
               ["pickup", "Pickup"],
               ["dine_in", "Mesa"],
             ]}
           />
         )}
+
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginTop: 20,
-        }}
+
+      <button
+        className="clear-button"
+        onClick={onClear}
       >
-        <button
-          onClick={onClear}
-          style={{
-            padding: "12px 22px",
-            borderRadius: 14,
-            border: "none",
-            cursor: "pointer",
-            background: "#f97316",
-            color: "#fff",
-            fontWeight: 700,
-          }}
-        >
-          Limpiar filtros
-        </button>
-      </div>
+        Limpiar filtros
+      </button>
+
+
+
+      <style jsx>{`
+
+        .filters {
+          padding: 20px;
+          margin-bottom: 24px;
+          border-radius: 20px;
+          border:1px solid rgba(255,255,255,.07);
+
+          background:
+          linear-gradient(
+            180deg,
+            rgba(255,255,255,.04),
+            rgba(255,255,255,.015)
+          );
+        }
+
+
+        .filters-header {
+          margin-bottom:16px;
+        }
+
+
+        .filters-header span {
+          display:block;
+          color:#f97316;
+          font-size:9px;
+          font-weight:800;
+          letter-spacing:1.5px;
+        }
+
+
+        .filters-header strong {
+          display:block;
+          margin-top:5px;
+          color:#fff;
+          font-size:15px;
+          font-weight:800;
+        }
+
+
+        .filters-grid {
+
+          display:grid;
+
+          grid-template-columns:
+          repeat(4,minmax(0,1fr));
+
+          gap:12px;
+
+        }
+
+
+
+        input,
+        select {
+
+          width:100%;
+          box-sizing:border-box;
+
+          padding:13px 14px;
+
+          border-radius:12px;
+
+          border:
+          1px solid rgba(255,255,255,.08);
+
+          background:
+          rgba(255,255,255,.04);
+
+          color:#fff;
+
+          outline:none;
+
+          font-size:13px;
+
+        }
+
+
+        input::placeholder {
+          color:#666;
+        }
+
+
+        select option {
+          background:#111;
+        }
+
+
+
+        .clear-button {
+
+          display:flex;
+          align-items:center;
+          justify-content:center;
+
+          width:max-content;
+
+          margin-left:auto;
+          margin-top:16px;
+
+          padding:11px 22px;
+
+          border:none;
+
+          border-radius:12px;
+
+          background:#f97316;
+
+          color:white;
+
+          cursor:pointer;
+
+          font-size:13px;
+
+          font-weight:800;
+
+          transition:
+          transform .15s ease,
+          opacity .15s ease;
+
+        }
+
+
+        .clear-button:hover {
+          transform:translateY(-1px);
+          opacity:.9;
+        }
+
+
+
+        @media(max-width:1100px){
+
+          .filters-grid {
+
+            grid-template-columns:
+            repeat(2,minmax(0,1fr));
+
+          }
+
+        }
+
+
+
+        @media(max-width:600px){
+
+          .filters {
+
+            padding:15px;
+            border-radius:16px;
+
+          }
+
+
+          .filters-grid {
+
+            grid-template-columns:1fr;
+
+            gap:10px;
+
+          }
+
+
+          .clear-button {
+
+            width:100%;
+            margin-left:0;
+
+          }
+
+        }
+
+      `}</style>
+
     </section>
   );
 }
+
+
 
 function Input({
   value,
   onChange,
   placeholder,
-  type = "text",
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  type?: string;
-}) {
-  return (
+  type="text",
+}:{
+  value:string;
+  onChange:(value:string)=>void;
+  placeholder?:string;
+  type?:string;
+}){
+
+  return(
     <input
       type={type}
       value={value}
       placeholder={placeholder}
-      onChange={(e) =>
+      onChange={(e)=>
         onChange(e.target.value)
       }
-      style={{
-        width: "100%",
-        padding: "14px 16px",
-        borderRadius: 14,
-        border:
-          "1px solid rgba(255,255,255,.08)",
-        background:
-          "rgba(255,255,255,.04)",
-        color: "#fff",
-        outline: "none",
-        fontSize: 14,
-        boxSizing: "border-box",
-      }}
     />
   );
 }
+
+
 
 function Select({
   value,
   onChange,
   options,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  options: string[][];
-}) {
-  return (
+}:{
+  value:string;
+  onChange:(value:string)=>void;
+  options:string[][];
+}){
+
+  return(
     <select
       value={value}
-      onChange={(e) =>
+      onChange={(e)=>
         onChange(e.target.value)
       }
-      style={{
-        width: "100%",
-        padding: "14px 16px",
-        borderRadius: 14,
-        border:
-          "1px solid rgba(255,255,255,.08)",
-        background:
-          "rgba(255,255,255,.04)",
-        color: "#fff",
-        outline: "none",
-        fontSize: 14,
-        boxSizing: "border-box",
-      }}
     >
-      {options.map(([value, label]) => (
+
+      {options.map(([value,label])=>(
         <option
           key={value}
           value={value}
-          style={{
-            background: "#111",
-          }}
         >
           {label}
         </option>
       ))}
+
     </select>
   );
 }

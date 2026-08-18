@@ -249,17 +249,17 @@ export function getSettingsModules(
       color: "#22c55e",
     },
 
-{
-  id: "discover",
-  title: "Discover",
-  description: "Controla la visibilidad del restaurante en Discover.",
-  icon: "🔎",
-  category: "Operación",
-  href: `/super-admin/restaurants/${restaurantId}/settings/discover`,
-  permission: "discover",
-  color: "#22c55e",
-  featured: true,
-},
+    {
+      id: "discover",
+      title: "Discover",
+      description: "Controla la visibilidad del restaurante en Discover.",
+      icon: "🔎",
+      category: "Operación",
+      href: `/super-admin/restaurants/${restaurantId}/settings/discover`,
+      permission: "discover",
+      color: "#22c55e",
+      featured: true,
+    },
 
     // =====================================================
     // NEGOCIO
@@ -344,6 +344,7 @@ export function getSettingsModules(
       permission: "cancelled",
       color: "#f97316",
     },
+
     // =====================================================
     // ADMINISTRACIÓN
     // =====================================================
@@ -392,6 +393,18 @@ export function getSettingsModules(
       href: "/super-admin/legal",
       permission: "legal",
       color: "#6366f1",
+      featured: true,
+    },
+
+        {
+      id: "requests",
+      title: "Solicitudes",
+      description: "Gestiona las solicitudes del restaurante.",
+      icon: "📋",
+      category: "Administración",
+      href: `/super-admin/restaurants/${restaurantId}/settings/requests`,
+      permission: "requests",
+      color: "#f97316",
       featured: true,
     },
 
