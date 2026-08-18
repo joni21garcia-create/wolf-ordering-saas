@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase/client";
 import LoginView from "./LoginView";
 import { registerWeb } from "@/lib/push/registerWeb";
 import { testBiometric } from "@/lib/biometric/testBiometric";
+import { enableBiometric } from "@/lib/biometric/enableBiometric";
 
 export default function LoginClient() {
   // ==========================
@@ -34,6 +35,23 @@ export default function LoginClient() {
 
   useEffect(() => {
   testBiometric();
+}, []);
+
+useEffect(() => {
+
+  async function testEnable() {
+    const result = await enableBiometric(
+      "usuario-prueba"
+    );
+
+    console.log(
+      "[TEST ENABLE]",
+      result
+    );
+  }
+
+  testEnable();
+
 }, []);
 
   // ==========================
