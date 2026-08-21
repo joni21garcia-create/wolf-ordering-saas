@@ -239,6 +239,17 @@ export function getSettingsModules(
     },
 
     {
+  id: "reservations_settings",
+  title: "Configuración de Reservas",
+  description: "Configura el funcionamiento de las reservas online.",
+  icon: "📅",
+  category: "Operación",
+  href: `/super-admin/restaurants/${restaurantId}/settings/reservations`,
+  permission: "reservations_settings",
+  color: "#22c55e",
+},
+
+    {
       id: "payments",
       title: "Pagos",
       description: "Transferencias y métodos.",
@@ -301,6 +312,18 @@ export function getSettingsModules(
     },
 
     {
+  id: "google_reviews",
+  title: "Google Reviews",
+  description: "Gestiona reseñas, QR y material promocional.",
+  icon: "⭐",
+  category: "Negocio",
+  href: `/super-admin/restaurants/${restaurantId}/settings/google-reviews`,
+  permission: "google_reviews",
+  color: "#4285f4",
+  featured: true,
+},
+
+    {
       id: "analytics",
       title: "Orders Analytics Global",
       description: "Métricas generales.",
@@ -322,6 +345,18 @@ export function getSettingsModules(
       color: "#f97316",
       featured: true,
     },
+
+    {
+  id: "reservations",
+  title: "Reservas",
+  description: "Gestiona las reservas y la operación de mesas.",
+  icon: "📅",
+  category: "Negocio",
+  href: `/admin/reservations/${restaurantId}`,
+  permission: "reservations",
+  color: "#f97316",
+  featured: true,
+},
 
     {
       id: "history",

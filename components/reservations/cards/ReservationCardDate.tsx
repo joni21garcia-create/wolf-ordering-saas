@@ -1,94 +1,33 @@
 "use client";
 
+import { CalendarDays, Clock3 } from "lucide-react";
 
 interface ReservationCardDateProps {
-
-  date:string;
-
-  startTime:string;
-
-  endTime:string;
-
+  date: string;
+  startTime: string;
+  endTime: string;
 }
-
-
 
 export function ReservationCardDate({
-
   date,
-
   startTime,
-
   endTime,
-
-}:ReservationCardDateProps){
-
-
-
+}: ReservationCardDateProps) {
   return (
-
-    <div
-      className="
-        flex
-        flex-col
-        gap-1
-      "
-    >
-
-
-
-      <span
-        className="
-          text-xs
-          font-medium
-          uppercase
-          text-gray-400
-        "
-      >
-
+    <div className="rounded-xl bg-zinc-50 p-3">
+      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-zinc-400">
+        <CalendarDays className="h-3.5 w-3.5" />
         Fecha y horario
+      </div>
 
-      </span>
-
-
-
-
-
-      <span
-        className="
-          font-semibold
-          text-gray-900
-        "
-      >
-
+      <div className="mt-1 text-sm font-bold text-zinc-900">
         {date}
+      </div>
 
-      </span>
-
-
-
-
-
-      <span
-        className="
-          text-sm
-          text-gray-600
-        "
-      >
-
-        {startTime}
-
-        {" - "}
-
-        {endTime}
-
-      </span>
-
-
-
+      <div className="mt-0.5 flex items-center gap-1 text-xs font-medium text-zinc-600">
+        <Clock3 className="h-3.5 w-3.5" />
+        {startTime} – {endTime}
+      </div>
     </div>
-
   );
-
 }
-

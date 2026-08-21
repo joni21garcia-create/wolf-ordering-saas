@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -20,51 +20,148 @@ export default function AnalyticsFilters({
   function applyFilters() {
     const params = new URLSearchParams();
 
-    if (fromDate) {
-      params.set("from", fromDate);
-    }
+    if (fromDate) params.set("from", fromDate);
+    if (toDate) params.set("to", toDate);
 
-    if (toDate) {
-      params.set("to", toDate);
-    }
-
-    router.push(`?${params.toString()}`);
+    const query = params.toString();
+    router.push(query ? `?${query}` : "?");
   }
 
   function clearFilters() {
     setFromDate("");
     setToDate("");
-
     router.push("?");
   }
 
   return (
-    <section
-      style={{
-        background:
-          "linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015))",
+    <section className="filters">
+      <style jsx>{`
+        .filters {
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255, 255, 255, 0.045),
+              rgba(255, 255, 255, 0.015)
+            );
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 22px;
+          padding: 16px;
+          margin-bottom: 22px;
+        }
 
-        border: "1px solid rgba(255,255,255,.07)",
+        .inner {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto;
+          gap: 10px;
+          align-items: end;
+        }
 
-        borderRadius: 26,
+        .field {
+          min-width: 0;
+        }
 
-        padding: 24,
+        .label {
+          color: #888;
+          margin: 0 0 7px 3px;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.8px;
+        }
 
-        marginBottom: 28,
-      }}
-    >
-      <div
-        style={{
-          display: "grid",
+        .input {
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+          height: 46px;
+          padding: 0 13px;
+          border-radius: 13px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.035);
+          color: #fff;
+          outline: none;
+          font-size: 14px;
+          color-scheme: dark;
+        }
 
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(220px,1fr))",
+        .input:focus {
+          border-color: rgba(249, 115, 22, 0.65);
+          box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.08);
+        }
 
-          gap: 18,
+        .button {
+          height: 46px;
+          padding: 0 17px;
+          border-radius: 13px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          white-space: nowrap;
+          transition:
+            transform 0.15s ease,
+            opacity 0.15s ease;
+        }
 
-          alignItems: "end",
-        }}
-      >
+        .button:active {
+          transform: scale(0.98);
+        }
+
+        .primary {
+          border: none;
+          background: #f97316;
+          color: #fff;
+        }
+
+        .secondary {
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: transparent;
+          color: #ddd;
+        }
+
+        @media (max-width: 700px) {
+          .filters {
+            border-radius: 18px;
+            padding: 12px;
+            margin-bottom: 18px;
+          }
+
+          .inner {
+            grid-template-columns: 1fr 1fr;
+            gap: 9px;
+          }
+
+          .actions {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 9px;
+          }
+
+          .button {
+            width: 100%;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .inner {
+            grid-template-columns: 1fr;
+          }
+
+          .actions {
+            grid-column: auto;
+          }
+
+          .input,
+          .button {
+            height: 44px;
+          }
+        }
+      `}</style>
+
+      <div className="inner">
         <Field
           label="Desde"
           value={fromDate}
@@ -77,19 +174,23 @@ export default function AnalyticsFilters({
           onChange={setToDate}
         />
 
-        <button
-          onClick={applyFilters}
-          style={primaryButton}
-        >
-          Consultar
-        </button>
+        <div className="actions">
+          <button
+            type="button"
+            onClick={applyFilters}
+            className="button primary"
+          >
+            Consultar
+          </button>
 
-        <button
-          onClick={clearFilters}
-          style={secondaryButton}
-        >
-          Limpiar
-        </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="button secondary"
+          >
+            Limpiar
+          </button>
+        </div>
       </div>
     </section>
   );
@@ -105,82 +206,15 @@ function Field({
   onChange: (value: string) => void;
 }) {
   return (
-    <div>
-      <div
-        style={{
-          color: "#888",
-          marginBottom: 8,
-          fontSize: 13,
-          fontWeight: 700,
-          textTransform: "uppercase",
-          letterSpacing: 1,
-        }}
-      >
-        {label}
-      </div>
+    <div className="field">
+      <div className="label">{label}</div>
 
       <input
+        className="input"
         type="date"
         value={value}
-        onChange={(e) =>
-          onChange(e.target.value)
-        }
-        style={{
-          width: "100%",
-
-          padding: "14px 16px",
-
-          borderRadius: 14,
-
-          border:
-            "1px solid rgba(255,255,255,.08)",
-
-          background:
-            "rgba(255,255,255,.03)",
-
-          color: "#fff",
-
-          outline: "none",
-
-          fontSize: 15,
-        }}
+        onChange={(e) => onChange(e.target.value)}
       />
     </div>
   );
 }
-
-const primaryButton: React.CSSProperties = {
-  height: 52,
-
-  border: "none",
-
-  borderRadius: 14,
-
-  background: "#f97316",
-
-  color: "#fff",
-
-  fontWeight: 700,
-
-  cursor: "pointer",
-
-  fontSize: 15,
-};
-
-const secondaryButton: React.CSSProperties = {
-  height: 52,
-
-  borderRadius: 14,
-
-  border: "1px solid rgba(255,255,255,.08)",
-
-  background: "transparent",
-
-  color: "#fff",
-
-  cursor: "pointer",
-
-  fontWeight: 700,
-
-  fontSize: 15,
-};

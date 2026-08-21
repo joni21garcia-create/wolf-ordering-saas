@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 interface Props {
   salesTotal: number;
@@ -19,108 +19,89 @@ export default function ExecutiveSummary({
   deliveryOrders,
   pickupOrders,
 }: Props) {
-
   const deliveryPercent =
-    totalOrders === 0
-      ? 0
-      : (deliveryOrders / totalOrders) * 100;
+    totalOrders === 0 ? 0 : (deliveryOrders / totalOrders) * 100;
 
   const pickupPercent =
-    totalOrders === 0
-      ? 0
-      : (pickupOrders / totalOrders) * 100;
+    totalOrders === 0 ? 0 : (pickupOrders / totalOrders) * 100;
 
   return (
-    <section
-      style={{
-        background:
-          "linear-gradient(180deg,#141414,#0a0a0a)",
+    <section className="summary">
+      <style jsx>{`
+        .summary {
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+          background: linear-gradient(180deg, #141414, #0a0a0a);
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 22px;
+          padding: 22px;
+          margin-bottom: 24px;
+        }
 
-        border:
-          "1px solid rgba(255,255,255,.07)",
+        .eyebrow {
+          color: #888;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+        }
 
-        borderRadius: 24,
+        .title {
+          margin: 7px 0 20px;
+          color: #fff;
+          font-size: 25px;
+          font-weight: 800;
+          line-height: 1.1;
+        }
 
-        padding: 28,
-      }}
-    >
-      <div
-        style={{
-          color: "#888",
-          fontSize: 13,
-          fontWeight: 700,
-          letterSpacing: 1,
-          textTransform: "uppercase",
-        }}
-      >
-        Ejecutivo
-      </div>
+        .metrics {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 10px;
+        }
 
-      <h2
-        style={{
-          margin: "8px 0 28px",
-          color: "#fff",
-          fontSize: 28,
-          fontWeight: 800,
-        }}
-      >
-        Resumen Financiero
-      </h2>
+        @media (max-width: 950px) {
+          .metrics {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
 
-      <div
-        style={{
-          display: "grid",
+        @media (max-width: 560px) {
+          .summary {
+            border-radius: 18px;
+            padding: 15px;
+            margin-bottom: 18px;
+          }
 
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(240px,1fr))",
+          .title {
+            font-size: 21px;
+            margin-bottom: 14px;
+          }
 
-          gap: 18,
-        }}
-      >
-        <Metric
-          label="Ventas"
-          value={money(salesTotal)}
-        />
+          .metrics {
+            gap: 8px;
+          }
+        }
+      `}</style>
 
-        <Metric
-          label="Wolf"
-          value={money(wolfTotal)}
-        />
+      <div className="eyebrow">Ejecutivo</div>
+      <h2 className="title">Resumen Financiero</h2>
 
-        <Metric
-          label="Restaurante"
-          value={money(restaurantTotal)}
-        />
-
-        <Metric
-          label="Ticket promedio"
-          value={money(avgTicket)}
-        />
-
-        <Metric
-          label="Pedidos"
-          value={String(totalOrders)}
-        />
-
-        <Metric
-          label="% Delivery"
-          value={`${deliveryPercent.toFixed(1)}%`}
-        />
-
-        <Metric
-          label="% Pickup"
-          value={`${pickupPercent.toFixed(1)}%`}
-        />
-
+      <div className="metrics">
+        <Metric label="Ventas" value={money(salesTotal)} />
+        <Metric label="Wolf" value={money(wolfTotal)} />
+        <Metric label="Restaurante" value={money(restaurantTotal)} />
+        <Metric label="Ticket promedio" value={money(avgTicket)} />
+        <Metric label="Pedidos" value={String(totalOrders)} />
+        <Metric label="% Delivery" value={`${deliveryPercent.toFixed(1)}%`} />
+        <Metric label="% Pickup" value={`${pickupPercent.toFixed(1)}%`} />
         <Metric
           label="Ganancia promedio"
           value={
             totalOrders === 0
               ? "$0.00"
-              : money(
-                  restaurantTotal /
-                    totalOrders
-                )
+              : money(restaurantTotal / totalOrders)
           }
         />
       </div>
@@ -136,38 +117,56 @@ function Metric({
   value: string;
 }) {
   return (
-    <div
-      style={{
-        background:
-          "rgba(255,255,255,.035)",
+    <div className="metric">
+      <style jsx>{`
+        .metric {
+          min-width: 0;
+          box-sizing: border-box;
+          background: rgba(255, 255, 255, 0.035);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 16px;
+          padding: 15px;
+          overflow: hidden;
+        }
 
-        border:
-          "1px solid rgba(255,255,255,.06)",
+        .label {
+          color: #888;
+          font-size: 11px;
+          margin-bottom: 8px;
+          line-height: 1.25;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
 
-        borderRadius: 18,
+        .value {
+          color: #fff;
+          font-size: clamp(18px, 2.2vw, 24px);
+          font-weight: 800;
+          line-height: 1.1;
+          letter-spacing: -0.4px;
+          overflow-wrap: anywhere;
+        }
 
-        padding: 20,
-      }}
-    >
-      <div
-        style={{
-          color: "#888",
-          fontSize: 13,
-          marginBottom: 10,
-        }}
-      >
-        {label}
-      </div>
+        @media (max-width: 560px) {
+          .metric {
+            padding: 12px;
+            border-radius: 14px;
+          }
 
-      <div
-        style={{
-          color: "#fff",
-          fontSize: 24,
-          fontWeight: 800,
-        }}
-      >
-        {value}
-      </div>
+          .label {
+            font-size: 9px;
+            margin-bottom: 6px;
+          }
+
+          .value {
+            font-size: clamp(16px, 5vw, 21px);
+          }
+        }
+      `}</style>
+
+      <div className="label">{label}</div>
+      <div className="value">{value}</div>
     </div>
   );
 }

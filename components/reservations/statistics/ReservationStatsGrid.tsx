@@ -1,11 +1,10 @@
 "use client";
 
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import clsx from "clsx";
 
 export interface ReservationStatsGridProps {
   children: ReactNode;
-
   className?: string;
 }
 
@@ -16,7 +15,10 @@ export default function ReservationStatsGrid({
   return (
     <div
       className={clsx(
-        "grid gap-4 sm:grid-cols-2 lg:grid-cols-4",
+        "flex gap-2 overflow-x-auto pb-1",
+        "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        "sm:grid sm:grid-cols-2 sm:gap-3",
+        "xl:grid-cols-4",
         className
       )}
     >
@@ -24,4 +26,3 @@ export default function ReservationStatsGrid({
     </div>
   );
 }
-

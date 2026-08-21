@@ -12,153 +12,178 @@ interface Props {
 export default function FinanceHealthCard({
   items,
 }: Props) {
-  const ok =
-    items.filter(
-      (item) => item.status === "ok"
-    ).length;
+  const ok = items.filter(
+    (item) => item.status === "ok"
+  ).length;
+
+  const healthy = ok === items.length;
 
   return (
-    <section
-      style={{
-        marginTop: 40,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 20,
-          flexWrap: "wrap",
-          gap: 16,
-        }}
-      >
-        <div>
-          <h2
-            style={{
-              margin: 0,
-              color: "#fff",
-              fontSize: 28,
-              fontWeight: 800,
-            }}
-          >
-            🩺 Salud Financiera
-          </h2>
+    <section className="health-section">
+      <style jsx>{`
+        .health-section {
+          width: 100%;
+          min-width: 0;
+          margin: 0 0 24px;
+        }
 
-          <p
-            style={{
-              marginTop: 8,
-              color: "#888",
-            }}
-          >
-            Estado general de la configuración financiera.
-          </p>
-        </div>
+        .panel {
+          overflow: hidden;
+          border-radius: 18px;
+          border: 1px solid rgba(255,255,255,.07);
+          background: linear-gradient(180deg,#151515,#0d0d0d);
+        }
 
-        <div
-          style={{
-            background:
-              ok === items.length
-                ? "rgba(34,197,94,.15)"
-                : "rgba(245,158,11,.15)",
+        .panel > summary {
+          list-style: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          min-height: 64px;
+          padding: 0 16px;
+        }
 
-            border:
-              ok === items.length
-                ? "1px solid rgba(34,197,94,.30)"
-                : "1px solid rgba(245,158,11,.30)",
+        .panel > summary::-webkit-details-marker {
+          display: none;
+        }
 
-            color:
-              ok === items.length
-                ? "#22c55e"
-                : "#f59e0b",
+        .heading {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
 
-            padding: "12px 18px",
+        .icon {
+          width: 32px;
+          height: 32px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          background: rgba(255,255,255,.045);
+          border: 1px solid rgba(255,255,255,.06);
+        }
 
-            borderRadius: 999,
+        .title {
+          color:#fff;
+          font-size:13px;
+          font-weight:800;
+        }
 
-            fontWeight: 800,
-          }}
-        >
-          {ok} / {items.length} Correctos
-        </div>
-      </div>
+        .subtitle {
+          margin-top:2px;
+          color:#777;
+          font-size:10px;
+        }
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(220px,1fr))",
-          gap: 18,
-        }}
-      >
-        {items.map((item) => (
-          <div
-            key={item.title}
-            style={{
-              background:
-                "linear-gradient(180deg,#171717,#101010)",
+        .badge {
+          padding:6px 10px;
+          border-radius:999px;
+          background:${healthy ? "rgba(34,197,94,.12)" : "rgba(245,158,11,.12)"};
+          border:1px solid ${healthy ? "rgba(34,197,94,.22)" : "rgba(245,158,11,.22)"};
+          color:${healthy ? "#22c55e" : "#f59e0b"};
+          font-size:10px;
+          font-weight:800;
+        }
 
-              border:
-                "1px solid rgba(255,255,255,.07)",
+        .content {
+          padding:0 10px 12px;
+          border-top:1px solid rgba(255,255,255,.05);
+          display:grid;
+          grid-template-columns:repeat(5,minmax(0,1fr));
+          gap:10px;
+        }
 
-              borderRadius: 20,
+        .item {
+          padding:14px;
+          border-radius:13px;
+          background:rgba(255,255,255,.025);
+          border:1px solid rgba(255,255,255,.05);
+        }
 
-              padding: 22,
+        .name {
+          color:#fff;
+          font-size:12px;
+          font-weight:700;
+        }
 
-              display: "flex",
+        .status {
+          margin-top:8px;
+          font-size:11px;
+          font-weight:800;
+        }
 
-              justifyContent: "space-between",
+        .ok { color:#22c55e; }
+        .warning { color:#f59e0b; }
 
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  color: "#fff",
-                  fontWeight: 700,
-                }}
-              >
-                {item.title}
+        @media(max-width:900px){
+          .content {
+            grid-template-columns:repeat(3,minmax(0,1fr));
+          }
+        }
+
+        @media(max-width:560px){
+          .panel {
+            border-radius:15px;
+          }
+
+          .panel > summary {
+            min-height:58px;
+            padding:0 12px;
+          }
+
+          .content {
+            grid-template-columns:repeat(2,minmax(0,1fr));
+            padding:0 8px 8px;
+          }
+
+          .item {
+            padding:12px;
+          }
+        }
+      `}</style>
+
+      <details className="panel" open>
+        <summary>
+          <span className="heading">
+            <span className="icon">🩺</span>
+            <span>
+              <div className="title">
+                Salud Financiera
               </div>
+              <div className="subtitle">
+                Estado general de configuración financiera
+              </div>
+            </span>
+          </span>
+
+          <span className="badge">
+            {ok}/{items.length} Correctos
+          </span>
+        </summary>
+
+        <div className="content">
+          {items.map((item) => (
+            <div className="item" key={item.title}>
+              <div className="name">{item.title}</div>
 
               <div
-                style={{
-                  marginTop: 8,
-
-                  color:
-                    item.status === "ok"
-                      ? "#22c55e"
-                      : "#f59e0b",
-
-                  fontWeight: 700,
-                }}
+                className={`status ${
+                  item.status === "ok"
+                    ? "ok"
+                    : "warning"
+                }`}
               >
                 {item.status === "ok"
                   ? "Configurado"
                   : "Pendiente"}
               </div>
             </div>
-
-            <div
-              style={{
-                width: 18,
-                height: 18,
-                borderRadius: 999,
-                background:
-                  item.status === "ok"
-                    ? "#22c55e"
-                    : "#f59e0b",
-
-                boxShadow:
-                  item.status === "ok"
-                    ? "0 0 20px rgba(34,197,94,.5)"
-                    : "0 0 20px rgba(245,158,11,.5)",
-              }}
-            />
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </details>
     </section>
   );
 }

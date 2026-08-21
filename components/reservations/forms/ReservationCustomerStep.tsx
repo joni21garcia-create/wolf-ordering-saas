@@ -13,157 +13,76 @@ import {
   useReservationWizard,
 } from "../wizard";
 
-
-
-export default function ReservationCustomerStep(){
-
-
+export default function ReservationCustomerStep() {
   const {
     data,
     update,
   } = useReservationWizard();
 
-
-
-
-
   return (
-
     <ReservationWizardStep>
-
-
       <div className="space-y-2">
-
-        <h3 className="text-xl font-semibold">
+        <h3 className="text-xl font-semibold text-white">
           Datos del cliente
         </h3>
 
-
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-zinc-400">
           Ingresa la información de contacto para confirmar la reserva.
         </p>
-
       </div>
-
-
-
-
-
 
       <div className="mt-5 space-y-4">
 
-
-
-
-
         <ReservationInput
-
           label="Nombre completo"
-
-          value={
-            data.customerName ?? ""
+          value={data.customerName ?? ""}
+          onChange={(value) =>
+            update({
+              customerName:
+                value.target.value,
+            })
           }
-
-          onChange={
-            (value)=>
-              update({
-                customerName:value.target.value
-              })
-          }
-
           placeholder="Ej: Juan Pérez"
-
         />
 
-
-
-
-
-
-
         <ReservationInput
-
           label="Teléfono"
-
-          value={
-            data.phone ?? ""
+          value={data.phone ?? ""}
+          onChange={(value) =>
+            update({
+              phone:
+                value.target.value,
+            })
           }
-
-          onChange={
-            (value)=>
-              update({
-                phone:value.target.value
-              })
-          }
-
           placeholder="Ej: +593 999999999"
-
         />
-
-
-
-
-
-
 
         <ReservationInput
-
           label="Correo electrónico"
-
           type="email"
-
-          value={
-            data.email ?? ""
+          value={data.email ?? ""}
+          onChange={(value) =>
+            update({
+              email:
+                value.target.value,
+            })
           }
-
-          onChange={
-            (value)=>
-              update({
-                email:value.target.value
-              })
-          }
-
           placeholder="correo@email.com"
-
         />
-
-
-
-
-
-
 
         <ReservationTextarea
-
           label="Notas adicionales"
-
-          value={
-            data.customerNotes ?? ""
+          value={data.customerNotes ?? ""}
+          onChange={(value) =>
+            update({
+              customerNotes:
+                value.target.value,
+            })
           }
-
-          onChange={
-            (value)=>
-              update({
-                customerNotes:value.target.value
-              })
-          }
-
-          placeholder="Alguna solicitud especial..."
-
+          placeholder="Alguna solicitud especial, alergia, celebración..."
         />
 
-
-
-
-
       </div>
-
-
-
     </ReservationWizardStep>
-
   );
-
 }
-
-

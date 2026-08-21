@@ -3,11 +3,8 @@ import clsx from "clsx";
 
 export interface ReservationContainerProps {
   children: ReactNode;
-
   className?: string;
-
   size?: "sm" | "md" | "lg" | "xl" | "full";
-
   padding?: boolean;
 }
 
@@ -29,11 +26,8 @@ export default function ReservationContainer({
     <div
       className={clsx(
         "mx-auto w-full",
-
         sizes[size],
-
-        padding && "px-4 py-6 sm:px-6 lg:px-8",
-
+        padding && "px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10",
         className
       )}
     >
@@ -41,5 +35,3 @@ export default function ReservationContainer({
     </div>
   );
 }
-
-

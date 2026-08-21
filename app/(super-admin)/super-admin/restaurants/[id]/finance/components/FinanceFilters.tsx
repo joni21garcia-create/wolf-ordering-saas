@@ -4,14 +4,13 @@ interface Props {
   month: string;
   year: string;
   status: string;
-
   onMonthChange: (value: string) => void;
   onYearChange: (value: string) => void;
   onStatusChange: (value: string) => void;
 }
 
 const MONTHS = [
-  { value: "", label: "Todos los meses" },
+  { value: "", label: "Todos" },
   { value: "1", label: "Enero" },
   { value: "2", label: "Febrero" },
   { value: "3", label: "Marzo" },
@@ -35,136 +34,95 @@ export default function FinanceFilters({
   onStatusChange,
 }: Props) {
   return (
-    <section
-      style={{
-        marginTop: 36,
-        marginBottom: 36,
+    <section className="filters">
+      <style jsx>{`
+        .filters {
+          width: 100%;
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+          margin: 24px 0;
+        }
 
-        display: "grid",
+        .field {
+          min-width: 0;
+        }
 
-        gridTemplateColumns:
-          "repeat(auto-fit,minmax(220px,1fr))",
+        .label {
+          margin-bottom: 7px;
+          color: #777;
+          font-size: 10px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: .08em;
+        }
 
-        gap: 18,
-      }}
-    >
-      <Select
-        label="Mes"
-        value={month}
-        onChange={onMonthChange}
-      >
-        {MONTHS.map((m) => (
-          <option
-            key={m.value}
-            value={m.value}
-          >
-            {m.label}
-          </option>
-        ))}
-      </Select>
+        select,
+        input {
+          width: 100%;
+          box-sizing: border-box;
+          min-height: 42px;
+          padding: 0 12px;
+          border-radius: 12px;
+          border: 1px solid rgba(255,255,255,.08);
+          background: #151515;
+          color: #fff;
+          font-size: 13px;
+          outline: none;
+        }
 
-      <Input
-        label="Año"
-        value={year}
-        onChange={onYearChange}
-      />
+        select:focus,
+        input:focus {
+          border-color: rgba(249,115,22,.45);
+        }
 
-      <Select
-        label="Estado"
-        value={status}
-        onChange={onStatusChange}
-      >
-        <option value="">
-          Todos
-        </option>
+        @media(max-width:700px){
+          .filters {
+            grid-template-columns: 1fr;
+            gap: 10px;
+          }
+        }
+      `}</style>
 
-        <option value="pending">
-          Pendiente
-        </option>
+      <Field label="Mes">
+        <select value={month} onChange={(e) => onMonthChange(e.target.value)}>
+          {MONTHS.map((item) => (
+            <option key={item.value} value={item.value}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+      </Field>
 
-        <option value="paid">
-          Pagado
-        </option>
-      </Select>
+      <Field label="Año">
+        <input
+          value={year}
+          onChange={(e) => onYearChange(e.target.value)}
+        />
+      </Field>
+
+      <Field label="Estado">
+        <select value={status} onChange={(e) => onStatusChange(e.target.value)}>
+          <option value="">Todos</option>
+          <option value="pending">Pendiente</option>
+          <option value="paid">Pagado</option>
+        </select>
+      </Field>
     </section>
   );
 }
 
-function Select({
+function Field({
   label,
-  value,
-  onChange,
   children,
-}: any) {
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div>
-      <div
-        style={{
-          color: "#888",
-          marginBottom: 8,
-          fontSize: 13,
-          fontWeight: 700,
-          textTransform: "uppercase",
-        }}
-      >
-        {label}
-      </div>
-
-      <select
-        value={value}
-        onChange={(e) =>
-          onChange(e.target.value)
-        }
-        style={{
-          width: "100%",
-          padding: "14px",
-          borderRadius: 14,
-          border:
-            "1px solid rgba(255,255,255,.08)",
-          background: "#151515",
-          color: "#fff",
-        }}
-      >
-        {children}
-      </select>
-    </div>
-  );
-}
-
-function Input({
-  label,
-  value,
-  onChange,
-}: any) {
-  return (
-    <div>
-      <div
-        style={{
-          color: "#888",
-          marginBottom: 8,
-          fontSize: 13,
-          fontWeight: 700,
-          textTransform: "uppercase",
-        }}
-      >
-        {label}
-      </div>
-
-      <input
-        value={value}
-        onChange={(e) =>
-          onChange(e.target.value)
-        }
-        style={{
-          width: "100%",
-          padding: "14px",
-          borderRadius: 14,
-          border:
-            "1px solid rgba(255,255,255,.08)",
-          background: "#151515",
-          color: "#fff",
-        }}
-      />
+    <div className="field">
+      <div className="label">{label}</div>
+      {children}
     </div>
   );
 }

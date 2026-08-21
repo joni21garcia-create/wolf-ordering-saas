@@ -1,15 +1,12 @@
 "use client";
 
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import clsx from "clsx";
 
 export interface ReservationStatCardProps {
   children: ReactNode;
-
   title?: ReactNode;
-
   icon?: ReactNode;
-
   className?: string;
 }
 
@@ -20,30 +17,32 @@ export default function ReservationStatCard({
   className,
 }: ReservationStatCardProps) {
   return (
-    <div
+    <section
       className={clsx(
-        "rounded-2xl border border-border bg-card p-5 shadow-sm",
+        "min-w-0 rounded-2xl border border-border/70 bg-card p-4 shadow-sm transition-colors",
+        "sm:p-5",
         className
       )}
     >
-      {(title || icon) && (
-        <div className="mb-4 flex items-center justify-between">
-          {title && (
-            <h3 className="text-sm font-medium text-muted-foreground">
+      {(title || icon) ? (
+        <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
+          {title ? (
+            <h3 className="min-w-0 truncate text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground sm:text-xs">
               {title}
             </h3>
+          ) : (
+            <span />
           )}
 
-          {icon && (
-            <div className="text-muted-foreground">
+          {icon ? (
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
               {icon}
-            </div>
-          )}
+            </span>
+          ) : null}
         </div>
-      )}
+      ) : null}
 
       {children}
-    </div>
+    </section>
   );
 }
-

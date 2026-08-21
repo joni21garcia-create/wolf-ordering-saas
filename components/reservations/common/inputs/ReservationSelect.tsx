@@ -16,7 +16,7 @@ const ReservationSelect = forwardRef<
   return (
     <div className="space-y-2">
       {label && (
-        <label className="text-sm font-medium text-zinc-700">
+        <label className="block text-xs font-bold uppercase tracking-[0.08em] text-zinc-700">
           {label}
         </label>
       )}
@@ -24,10 +24,11 @@ const ReservationSelect = forwardRef<
       <select
         ref={ref}
         className={clsx(
-          "w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition",
-          "border-zinc-200",
-          "focus:border-orange-500 focus:ring-4 focus:ring-orange-100",
-          error && "border-red-500",
+          "w-full rounded-xl border px-4 py-3.5 text-[15px] font-medium",
+          "bg-white text-zinc-950 border-zinc-300 shadow-sm outline-none transition",
+          "hover:border-zinc-400",
+          "focus:border-zinc-900 focus:ring-4 focus:ring-zinc-900/5",
+          error && "border-red-500 focus:border-red-500 focus:ring-red-100",
           className
         )}
         {...props}
@@ -36,9 +37,7 @@ const ReservationSelect = forwardRef<
       </select>
 
       {error && (
-        <p className="text-xs font-medium text-red-500">
-          {error}
-        </p>
+        <p className="text-xs font-semibold text-red-600">{error}</p>
       )}
     </div>
   );
@@ -47,5 +46,3 @@ const ReservationSelect = forwardRef<
 ReservationSelect.displayName = "ReservationSelect";
 
 export default ReservationSelect;
-
-

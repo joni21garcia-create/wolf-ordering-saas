@@ -1,12 +1,14 @@
-import ReservationHeader from "./components/ReservationHeader";
-import ReservationStats from "./components/ReservationStats";
-import ReservationContent from "./components/ReservationContent";
+﻿import ReservationStats from "./components/ReservationStats";
+import ReservationPageClient from "./components/ReservationPageClient";
 
-import { supabaseAdmin } from "@/lib/supabase/supabase";
+import { reservationRepository } from "@/modules/reservations/repositories/reservation.repository";
 import { mapRestaurantReservation } from "@/modules/reservations/mappers/reservation.mapper";
+import type { ReservationCalendarEvent } from "@/types/reservations";
 
 interface Props {
-  params: Promise<{ restaurantId: string; }>;
+  params: Promise<{
+    restaurantId: string;
+  }>;
 }
 
 export default async function ReservationsPage({
@@ -14,46 +16,64 @@ export default async function ReservationsPage({
 }: Props) {
   const { restaurantId } = await params;
 
-  const [{ data }, { data: tables }] = await Promise.all([
-    supabaseAdmin
-      .from("restaurant_reservations")
-      .select("*")
-      .eq("restaurant_id", restaurantId)
-      .order("start_at", { ascending: true }),
+  const { data } =
+    await reservationRepository.list(
+      restaurantId
+    );
 
-    supabaseAdmin
-      .from("restaurant_tables")
-      .select("*")
-      .eq("restaurant_id", restaurantId)
-      .order("code"),
-  ]);
+  const reservations =
+    data.map(mapRestaurantReservation);
 
-  const reservations = (data ?? []).map(mapRestaurantReservation);
+  const events: ReservationCalendarEvent[] =
+    reservations.map((reservation) => ({
+      id: reservation.id,
+      reservationId: reservation.id,
+      title: reservation.guest.fullName,
+      guestName: reservation.guest.fullName,
+      phone: reservation.guest.phone,
+      start:
+        `${reservation.datetime.date}T${reservation.datetime.startTime}`,
+      end:
+        `${reservation.datetime.date}T${reservation.datetime.endTime}`,
+      status: reservation.status,
+      guests: reservation.capacity.guests,
+      durationMinutes: reservation.datetime.durationMinutes,
+      typeName: reservation.typeName,
+      customerNotes: reservation.customerNotes,
+      checkedIn: reservation.checkIn.checked,
+tableNames:
+  reservation.assignment?.tables?.map(
+    (table) => table.name
+  ) ?? [],
 
-  const events = reservations.map((reservation) => ({
-    id: reservation.id,
-    reservationId: reservation.id,
-    title: reservation.guest.fullName,
-    start: reservation.datetime.startTime,
-    end: reservation.datetime.endTime,
-    status: reservation.status,
-    guests: reservation.capacity.guests,
-  }));
+tableZone:
+  reservation.assignment?.tables
+    ?.map((table) => table.zone)
+    .filter(
+      (zone): zone is string =>
+        Boolean(zone)
+    )
+    .join(", ") ?? "",
+    }));
 
   return (
-    <main className="space-y-8 p-8">
-      <ReservationHeader />
+    <main
+      className="
+        space-y-8
+        p-4
+        sm:p-6
+        lg:p-8
+      "
+    >
+      <ReservationStats
+        restaurantId={restaurantId}
+      />
 
-      <ReservationStats />
-
-      <ReservationContent
+      <ReservationPageClient
+        restaurantId={restaurantId}
         reservations={reservations}
         events={events}
       />
     </main>
   );
 }
-
-
-
-

@@ -16,69 +16,164 @@ export default function FinanceOverview({
   averageTicket,
 }: Props) {
   return (
-    <section
-      style={{
-        marginTop: 36,
-        marginBottom: 42,
-      }}
-    >
-      {/* Header */}
+    <section className="finance-overview">
+      <style jsx>{`
+        .finance-overview {
+          width: 100%;
+          min-width: 0;
+          margin-top: 30px;
+          margin-bottom: 34px;
+        }
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 20,
-          marginBottom: 22,
-        }}
-      >
+        .header {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 18px;
+          margin-bottom: 18px;
+        }
+
+        .title {
+          margin: 0;
+          color: #fff;
+          font-size: clamp(22px, 3vw, 28px);
+          font-weight: 800;
+          line-height: 1.1;
+        }
+
+        .description {
+          margin: 7px 0 0;
+          color: #888;
+          font-size: 13px;
+          line-height: 1.5;
+        }
+
+        .badge {
+          flex: 0 0 auto;
+          padding: 8px 12px;
+          border-radius: 999px;
+          background: rgba(249, 115, 22, 0.08);
+          color: #f97316;
+          border: 1px solid rgba(249, 115, 22, 0.18);
+          font-size: 11px;
+          font-weight: 800;
+          white-space: nowrap;
+        }
+
+        .grid {
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .card {
+          min-width: 0;
+          box-sizing: border-box;
+          padding: 18px;
+          border-radius: 18px;
+          background: linear-gradient(180deg, #171717, #101010);
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+        }
+
+        .icon {
+          margin-bottom: 12px;
+          font-size: 21px;
+          line-height: 1;
+        }
+
+        .label {
+          color: #858585;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.7px;
+          text-transform: uppercase;
+        }
+
+        .value {
+          margin-top: 8px;
+          color: #fff;
+          font-size: clamp(22px, 2.5vw, 31px);
+          font-weight: 900;
+          line-height: 1.05;
+          overflow-wrap: anywhere;
+        }
+
+        @media (max-width: 1050px) {
+          .grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 680px) {
+          .finance-overview {
+            margin-top: 24px;
+            margin-bottom: 28px;
+          }
+
+          .header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 14px;
+          }
+
+          .badge {
+            padding: 7px 10px;
+          }
+
+          .grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 9px;
+          }
+
+          .card {
+            padding: 15px;
+            border-radius: 15px;
+          }
+
+          .icon {
+            margin-bottom: 10px;
+            font-size: 19px;
+          }
+
+          .value {
+            font-size: 23px;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+          }
+
+          .card {
+            padding: 13px;
+          }
+
+          .label {
+            font-size: 9px;
+          }
+
+          .value {
+            font-size: 20px;
+          }
+        }
+      `}</style>
+
+      <div className="header">
         <div>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: 28,
-              fontWeight: 800,
-            }}
-          >
-            📊 Dashboard Financiero
-          </h2>
-
-          <p
-            style={{
-              marginTop: 8,
-              color: "#8b8b8b",
-            }}
-          >
+          <h2 className="title">📊 Dashboard Financiero</h2>
+          <p className="description">
             Resumen general de ventas y rendimiento.
           </p>
         </div>
 
-        <div
-          style={{
-            padding: "10px 18px",
-            borderRadius: 999,
-            background: "rgba(249,115,22,.10)",
-            color: "#f97316",
-            border: "1px solid rgba(249,115,22,.20)",
-            fontWeight: 700,
-          }}
-        >
-          Live Analytics
-        </div>
+        <div className="badge">Live Analytics</div>
       </div>
 
-      {/* Cards */}
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(250px,1fr))",
-          gap: 18,
-        }}
-      >
+      <div className="grid">
         <MetricCard
           title="Ventas Hoy"
           value={`$${salesToday.toFixed(2)}`}
@@ -123,55 +218,14 @@ function MetricCard({
   icon: string;
 }) {
   return (
-    <div
-      style={{
-        background:
-          "linear-gradient(180deg,#171717,#101010)",
-
-        border:
-          "1px solid rgba(255,255,255,.07)",
-
-        borderRadius: 24,
-
-        padding: 24,
-
-        transition: ".25s",
-
-        boxShadow:
-          "0 18px 45px rgba(0,0,0,.35)",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 28,
-          marginBottom: 14,
-        }}
-      >
+    <div className="card">
+      <div className="icon" aria-hidden="true">
         {icon}
       </div>
 
-      <div
-        style={{
-          color: "#8a8a8a",
-          textTransform: "uppercase",
-          fontWeight: 700,
-          fontSize: 12,
-          letterSpacing: ".5px",
-        }}
-      >
-        {title}
-      </div>
+      <div className="label">{title}</div>
 
-      <div
-        style={{
-          marginTop: 12,
-          fontSize: 38,
-          fontWeight: 900,
-          color: "#fff",
-        }}
-      >
-        {value}
-      </div>
+      <div className="value">{value}</div>
     </div>
   );
 }

@@ -1,11 +1,10 @@
 "use client";
 
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import clsx from "clsx";
 
 export interface ReservationTimelineProps {
   children: ReactNode;
-
   className?: string;
 }
 
@@ -15,8 +14,9 @@ export default function ReservationTimeline({
 }: ReservationTimelineProps) {
   return (
     <div
+      role="list"
       className={clsx(
-        "space-y-0",
+        "relative space-y-0",
         className
       )}
     >
@@ -24,4 +24,3 @@ export default function ReservationTimeline({
     </div>
   );
 }
-

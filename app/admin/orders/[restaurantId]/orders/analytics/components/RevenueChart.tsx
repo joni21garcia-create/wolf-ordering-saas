@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import {
   ResponsiveContainer,
@@ -10,6 +10,7 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   data: {
@@ -19,130 +20,221 @@ interface Props {
   }[];
 }
 
-export default function RevenueChart({
-  data,
-}: Props) {
+export default function RevenueChart({ data }: Props) {
+  const chartRef = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const element = chartRef.current;
+
+    if (!element) return;
+
+    const updateSize = () => {
+      const { width, height } = element.getBoundingClientRect();
+      setReady(width > 0 && height > 0);
+    };
+
+    updateSize();
+
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section
-      style={{
-        background:
-          "linear-gradient(180deg,#141414,#0a0a0a)",
+    <section className="revenue-chart">
+      <style jsx>{`
+        .revenue-chart {
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+          background: linear-gradient(180deg, #141414, #0a0a0a);
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 24px;
+          padding: 28px;
+          overflow: hidden;
+        }
 
-        border:
-          "1px solid rgba(255,255,255,.07)",
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          gap: 16px;
+          margin-bottom: 20px;
+        }
 
-        borderRadius: 24,
+        .eyebrow {
+          color: #888;
+          font-size: 12px;
+          text-transform: uppercase;
+          font-weight: 700;
+          letter-spacing: 1px;
+        }
 
-        padding: 28,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
+        .title {
+          margin: 6px 0 0;
+          color: #fff;
+          font-size: 28px;
+          font-weight: 800;
+          line-height: 1.1;
+        }
 
-          justifyContent: "space-between",
+        .description {
+          color: #777;
+          font-size: 13px;
+          line-height: 1.45;
+          text-align: right;
+          max-width: 240px;
+        }
 
-          alignItems: "center",
+        .chart {
+          width: 100%;
+          height: 420px;
+          min-width: 0;
+          min-height: 1px;
+        }
 
-          flexWrap: "wrap",
+        .chart-placeholder {
+          width: 100%;
+          height: 100%;
+          min-height: 1px;
+        }
 
-          gap: 12,
+        @media (max-width: 700px) {
+          .revenue-chart {
+            border-radius: 20px;
+            padding: 18px 12px 14px;
+          }
 
-          marginBottom: 22,
-        }}
-      >
+          .header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+          }
+
+          .title {
+            font-size: 22px;
+          }
+
+          .description {
+            max-width: none;
+            text-align: left;
+            font-size: 12px;
+          }
+
+          .chart {
+            height: 280px;
+          }
+        }
+
+        @media (max-width: 380px) {
+          .revenue-chart {
+            padding-left: 8px;
+            padding-right: 8px;
+          }
+
+          .chart {
+            height: 250px;
+          }
+        }
+      `}</style>
+
+      <div className="header">
         <div>
-          <div
-            style={{
-              color: "#888",
-
-              fontSize: 13,
-
-              textTransform: "uppercase",
-
-              fontWeight: 700,
-
-              letterSpacing: 1,
-            }}
-          >
-            Tendencia
-          </div>
-
-          <h2
-            style={{
-              margin: "6px 0 0",
-
-              color: "#fff",
-
-              fontSize: 28,
-
-              fontWeight: 800,
-            }}
-          >
-            Ventas por Día
-          </h2>
+          <div className="eyebrow">Tendencia</div>
+          <h2 className="title">Ventas por Día</h2>
         </div>
 
-        <div
-          style={{
-            color: "#777",
-
-            fontSize: 14,
-          }}
-        >
+        <div className="description">
           Datos generados desde pedidos completados
         </div>
       </div>
 
-      <ResponsiveContainer
-        width="100%"
-        height={420}
-      >
-        <LineChart data={data}>
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="#222"
-          />
+      <div ref={chartRef} className="chart">
+        {ready && (
+          <ResponsiveContainer width="100%" height="100%" minWidth={1}>
+            <LineChart
+              data={data}
+              margin={{
+                top: 8,
+                right: 8,
+                left: -18,
+                bottom: 4,
+              }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#222"
+                vertical={false}
+              />
 
-          <XAxis
-            dataKey="day"
-            stroke="#777"
-          />
+              <XAxis
+                dataKey="day"
+                stroke="#777"
+                tick={{
+                  fill: "#777",
+                  fontSize: 11,
+                }}
+                tickLine={false}
+                axisLine={false}
+                minTickGap={18}
+              />
 
-          <YAxis stroke="#777" />
+              <YAxis
+                stroke="#777"
+                tick={{
+                  fill: "#777",
+                  fontSize: 11,
+                }}
+                tickLine={false}
+                axisLine={false}
+                width={42}
+              />
 
-          <Tooltip
-            contentStyle={{
-              background: "#111",
+              <Tooltip
+                contentStyle={{
+                  background: "#111",
+                  border: "1px solid rgba(255,255,255,.08)",
+                  borderRadius: 12,
+                  color: "#fff",
+                }}
+                labelStyle={{
+                  color: "#aaa",
+                }}
+              />
 
-              border:
-                "1px solid rgba(255,255,255,.08)",
+              <Legend
+                wrapperStyle={{
+                  fontSize: 12,
+                  paddingTop: 8,
+                }}
+              />
 
-              borderRadius: 12,
-            }}
-          />
+              <Line
+                type="monotone"
+                dataKey="sales"
+                name="Ventas"
+                stroke="#22c55e"
+                strokeWidth={3}
+                dot={false}
+                activeDot={{ r: 5 }}
+              />
 
-          <Legend />
-
-          <Line
-            type="monotone"
-            dataKey="sales"
-            name="Ventas"
-            stroke="#22c55e"
-            strokeWidth={3}
-            dot={false}
-          />
-
-          <Line
-            type="monotone"
-            dataKey="orders"
-            name="Pedidos"
-            stroke="#f97316"
-            strokeWidth={3}
-            dot={false}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+              <Line
+                type="monotone"
+                dataKey="orders"
+                name="Pedidos"
+                stroke="#f97316"
+                strokeWidth={3}
+                dot={false}
+                activeDot={{ r: 5 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </div>
     </section>
   );
 }

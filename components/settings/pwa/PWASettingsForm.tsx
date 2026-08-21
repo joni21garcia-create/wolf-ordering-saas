@@ -1,10 +1,8 @@
 "use client";
-import { RestaurantPWASettings, UploadResult } from "@/types/pwa";
-import { useState } from "react";
 
+import { useState } from "react";
 import { usePWASettings } from "@/hooks/usePWASettings";
 import { useManagerPWASettings } from "@/hooks/useManagerPWASettings";
-
 import SectionCard from "./SectionCard";
 import PhonePreview from "./PhonePreview";
 import ColorPicker from "./ColorPicker";
@@ -16,28 +14,13 @@ interface Props {
   restaurantId: string;
 }
 
-export default function PWASettingsForm({
-  restaurantId,
-}: Props) {
+type AppType = "restaurant" | "manager";
+type Section = "info" | "appearance" | "logo" | "advanced";
 
-  /*
-  =====================================================
-  TIPO DE APLICACIÓN
-  =====================================================
-  */
-
-  const [
-    appType,
-    setAppType,
-  ] = useState<"restaurant" | "manager">(
-    "restaurant"
-  );
-
-  /*
-  =====================================================
-  CONFIGURACIÓN RESTAURANTE
-  =====================================================
-  */
+export default function PWASettingsForm({ restaurantId }: Props) {
+  const [appType, setAppType] = useState<AppType>("restaurant");
+  const [section, setSection] = useState<Section>("info");
+  const [showPreview, setShowPreview] = useState(false);
 
   const {
     settings,
@@ -46,15 +29,7 @@ export default function PWASettingsForm({
     error,
     updateField,
     saveSettings,
-  } = usePWASettings(
-    restaurantId
-  );
-
-  /*
-  =====================================================
-  CONFIGURACIÓN MANAGER
-  =====================================================
-  */
+  } = usePWASettings(restaurantId);
 
   const {
     settings: managerSettings,
@@ -64,913 +39,718 @@ export default function PWASettingsForm({
     setSaving: setManagerSaving,
   } = useManagerPWASettings();
 
-  /*
-  =====================================================
-  CONFIGURACIÓN ACTIVA
-  =====================================================
-  */
-
   const current =
-    appType === "restaurant"
-      ? settings
-      : managerSettings;
-  /*
-  =====================================================
-  ACTUALIZAR CAMPOS
-  =====================================================
-  */
+    appType === "restaurant" ? settings : managerSettings;
 
-  function updateCurrentField(
-    field: string,
-    value: any
-  ) {
-
-    if (
-      appType === "restaurant"
-    ) {
-
-      updateField(
-        field as any,
-        value
-      );
-
-      return;
-
-    }
-
-    setManagerSettings(
-      (prev: any) => ({
-        ...prev,
-        [field]: value,
-      })
-    );
-
+  function selectAppType(type: AppType) {
+    setAppType(type);
+    setSection("info");
   }
 
-  /*
-  =====================================================
-  GUARDAR
-  =====================================================
-  */
+  function updateCurrentField(field: string, value: any) {
+    if (appType === "restaurant") {
+      updateField(field as any, value);
+      return;
+    }
+
+    setManagerSettings((prev: any) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }
 
   async function saveCurrentSettings() {
-
-    if (
-      appType === "restaurant"
-    ) {
-
+    if (appType === "restaurant") {
       await saveSettings();
-
       return;
-
     }
 
     try {
-
       setManagerSaving(true);
 
-      const response =
-        await fetch(
-          "/api/pwa/save-manager-settings",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-
-            body: JSON.stringify(
-              managerSettings
-            ),
-          }
-        );
-
-      const json =
-        await response.json();
-
-      if (!json.success) {
-
-        throw new Error(
-          json.error ??
-          "No fue posible guardar."
-        );
-
-      }
-
-      setManagerSettings(
-        json.settings
+      const response = await fetch(
+        "/api/pwa/save-manager-settings",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(managerSettings),
+        }
       );
 
+      const json = await response.json();
+
+      if (!json.success) {
+        throw new Error(
+          json.error ?? "No fue posible guardar."
+        );
+      }
+
+      setManagerSettings(json.settings);
       alert(
         "Configuración del Manager guardada correctamente."
       );
-
     } catch (error: any) {
-
       alert(
-        error.message ??
-        "Error guardando configuración."
+        error.message ?? "Error guardando configuración."
       );
-
     } finally {
-
       setManagerSaving(false);
-
     }
-
   }
 
-  /*
-  =====================================================
-  LOADING
-  =====================================================
-  */
-
-  if (
-    loading ||
-    managerLoading
-  ) {
-
-
-
+  if (loading || managerLoading || !current) {
     return (
-
-      <div
-        style={{
-          padding: 40,
-          color: "#fff",
-        }}
-      >
+      <div className="loading">
+        <style jsx>{`
+          .loading {
+            min-height: 160px;
+            display: grid;
+            place-items: center;
+            color: #a1a1aa;
+            font-size: 12px;
+          }
+        `}</style>
         Cargando configuración...
       </div>
-
     );
-
   }
-   /*
-  =====================================================
-  RENDER
-  =====================================================
-  */
+
+  const previewSettings =
+    appType === "restaurant"
+      ? settings
+      : {
+          ...managerSettings,
+          restaurant_id: "",
+          theme_color:
+            managerSettings.theme_color || "#ffffff",
+          background_color:
+            managerSettings.background_color || "#000000",
+          display:
+            (managerSettings as any).display ||
+            "standalone",
+          orientation:
+            (managerSettings as any).orientation ||
+            "portrait",
+          app_logo: managerSettings.app_logo ?? null,
+        };
+
+  const tabs: {
+    id: Section;
+    label: string;
+    icon: string;
+  }[] = [
+    { id: "info", label: "Información", icon: "✦" },
+    { id: "appearance", label: "Apariencia", icon: "◐" },
+    { id: "logo", label: "Logo", icon: "▣" },
+    { id: "advanced", label: "Avanzado", icon: "⚙" },
+  ];
 
   return (
+    <main className="page">
+      <style jsx>{`
+        .page {
+          --accent: ${appType === "restaurant"
+            ? "#f97316"
+            : "#22c55e"};
+          --accent-soft: ${appType === "restaurant"
+            ? "rgba(249,115,22,.12)"
+            : "rgba(34,197,94,.11)"};
 
-    <main
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 32,
-        boxSizing: "border-box",
-        width: "100%",
-      }}
-    >
-
-      {/* ===========================================
-          CABECERA (BOTONES APILADOS VERTICALMENTE EN FILAS PREMIUM)
-      =========================================== */}
-
-      <SectionCard
-        title="Configuración PWA"
-        subtitle={
-          appType === "restaurant"
-            ? "Personaliza la aplicación que instalarán los clientes del restaurante."
-            : "Configura la aplicación oficial de administración de Wolf Ordering."
+          width: 100%;
+          min-width: 0;
+          color: #fff;
+          box-sizing: border-box;
         }
-      >
 
+        .shell {
+          width: 100%;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(270px, 330px);
+          gap: 18px;
+          align-items: start;
+        }
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 14,
-            width: "100%",
-          }}
-        >
+        .workspace {
+          min-width: 0;
+        }
 
-          <button
-            type="button"
-            onClick={() =>
-              setAppType("restaurant")
-            }
-            style={{
-              minHeight: 86,
-              width: "100%",
-              borderRadius: 20,
-              boxShadow:
-                appType === "restaurant"
-                  ? "0 0 0 1px rgba(249,115,22,.3), 0 8px 24px rgba(249,115,22,.12)"
-                  : "none",
-              background:
-                appType === "restaurant"
-                  ? "#cc6220"
-                  : "#18181b",
-              border: 
-                appType === "restaurant" 
-                  ? "1px solid #f97316" 
-                  : "1px solid #27272a",
-              color: "#fff",
-              cursor: "pointer",
-              transition: ".2s ease",
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              padding: "16px 20px",
-              gap: 16,
-              textAlign: "left",
-              boxSizing: "border-box",
-            }}
-          >
+        .topbar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 10px;
+        }
 
-            <span
-              style={{
-                fontSize: 24,
-                background: appType === "restaurant" ? "rgba(255,255,255,0.1)" : "#27272a",
-                padding: "10px",
-                borderRadius: "14px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              🌐
-            </span>
+        .app-switch {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 4px;
+          padding: 4px;
+          width: min(100%, 420px);
+          border: 1px solid rgba(255,255,255,.07);
+          border-radius: 13px;
+          background: rgba(255,255,255,.025);
+        }
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <span
-                style={{
-                  fontWeight: 700,
-                  fontSize: 15,
-                }}
+        .switch-button {
+          min-height: 40px;
+          border: 0;
+          border-radius: 9px;
+          background: transparent;
+          color: #71717a;
+          font-size: 11px;
+          font-weight: 800;
+          cursor: pointer;
+          transition: .18s ease;
+        }
+
+        .switch-button.active {
+          color: #fff;
+          background: var(--accent-soft);
+          box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+        }
+
+        .preview-button {
+          display: none;
+          min-height: 40px;
+          padding: 0 12px;
+          border: 1px solid rgba(255,255,255,.08);
+          border-radius: 10px;
+          background: rgba(255,255,255,.035);
+          color: #fff;
+          font-size: 11px;
+          font-weight: 800;
+        }
+
+        .tabs {
+          display: flex;
+          gap: 6px;
+          overflow-x: auto;
+          padding: 2px 0 9px;
+          scrollbar-width: none;
+        }
+
+        .tabs::-webkit-scrollbar {
+          display: none;
+        }
+
+        .tab {
+          flex: 0 0 auto;
+          min-height: 36px;
+          padding: 0 12px;
+          border: 1px solid rgba(255,255,255,.065);
+          border-radius: 999px;
+          background: rgba(255,255,255,.025);
+          color: #777;
+          font-size: 10px;
+          font-weight: 800;
+          white-space: nowrap;
+          cursor: pointer;
+          transition: .18s ease;
+        }
+
+        .tab.active {
+          color: #fff;
+          border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+          background: var(--accent-soft);
+        }
+
+        .panel {
+          min-width: 0;
+          border: 1px solid rgba(255,255,255,.065);
+          border-radius: 16px;
+          background: rgba(255,255,255,.018);
+          overflow: hidden;
+        }
+
+        .panel-head {
+          padding: 14px 15px;
+          border-bottom: 1px solid rgba(255,255,255,.05);
+        }
+
+        .panel-title {
+          font-size: 13px;
+          font-weight: 850;
+        }
+
+        .panel-subtitle {
+          margin-top: 3px;
+          color: #71717a;
+          font-size: 10px;
+        }
+
+        .panel-body {
+          padding: 14px;
+        }
+
+        .fields {
+          display: flex;
+          flex-direction: column;
+          gap: 13px;
+        }
+
+        .field-label {
+          display: block;
+          margin-bottom: 6px;
+          color: #d4d4d8;
+          font-size: 10px;
+          font-weight: 750;
+        }
+
+        input,
+        textarea,
+        select {
+          width: 100%;
+          box-sizing: border-box;
+          border: 1px solid #303035;
+          border-radius: 11px;
+          background: #171719;
+          color: #fff;
+          outline: none;
+          font-size: 12px;
+        }
+
+        input,
+        select {
+          height: 42px;
+          padding: 0 12px;
+        }
+
+        textarea {
+          min-height: 105px;
+          padding: 11px 12px;
+          resize: vertical;
+          line-height: 1.45;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+          border-color: color-mix(in srgb, var(--accent) 48%, #303035);
+        }
+
+        .two-col {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+        }
+
+        .help {
+          padding: 12px;
+          border: 1px solid rgba(255,255,255,.055);
+          border-radius: 11px;
+          background: rgba(255,255,255,.025);
+          color: #8b8b94;
+          font-size: 10px;
+          line-height: 1.55;
+        }
+
+        .help strong {
+          color: #e4e4e7;
+        }
+
+        .preview-panel {
+          position: sticky;
+          top: 16px;
+          min-width: 0;
+          border: 1px solid rgba(255,255,255,.065);
+          border-radius: 18px;
+          background: rgba(255,255,255,.018);
+          overflow: hidden;
+        }
+
+        .preview-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          padding: 13px 14px;
+          border-bottom: 1px solid rgba(255,255,255,.05);
+        }
+
+        .preview-title {
+          font-size: 11px;
+          font-weight: 850;
+        }
+
+        .live {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          color: #71717a;
+          font-size: 9px;
+          font-weight: 800;
+        }
+
+        .live-dot {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: #22c55e;
+        }
+
+        .preview-body {
+          padding: 8px;
+        }
+
+        .error {
+          margin-top: 10px;
+          padding: 11px 12px;
+          border: 1px solid rgba(220,38,38,.35);
+          border-radius: 11px;
+          background: rgba(127,29,29,.28);
+          color: #fecaca;
+          font-size: 10px;
+        }
+
+        .save-row {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: 10px;
+        }
+
+        .mobile-sheet {
+          display: none;
+        }
+
+        @media (max-width: 850px) {
+          .shell {
+            grid-template-columns: 1fr;
+          }
+
+          .preview-panel {
+            display: none;
+          }
+
+          .preview-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
+
+        @media (max-width: 560px) {
+          .topbar {
+            align-items: stretch;
+            flex-direction: column;
+          }
+
+          .app-switch {
+            width: 100%;
+          }
+
+          .switch-button {
+            min-height: 38px;
+          }
+
+          .panel {
+            border-radius: 14px;
+          }
+
+          .panel-body {
+            padding: 11px;
+          }
+
+          .two-col {
+            grid-template-columns: 1fr;
+          }
+
+          .preview-button {
+            width: 100%;
+          }
+        }
+      `}</style>
+
+      <div className="shell">
+        <div className="workspace">
+          <div className="topbar">
+            <div className="app-switch" aria-label="Tipo de aplicación">
+              <button
+                type="button"
+                className={`switch-button ${
+                  appType === "restaurant" ? "active" : ""
+                }`}
+                onClick={() => selectAppType("restaurant")}
+                aria-pressed={appType === "restaurant"}
               >
-                Restaurante
-              </span>
+                🌐 Restaurante
+              </button>
 
-              <span
-                style={{
-                  color: appType === "restaurant" ? "#ffedd5" : "#71717a",
-                  fontSize: 12.5,
-                }}
+              <button
+                type="button"
+                className={`switch-button ${
+                  appType === "manager" ? "active" : ""
+                }`}
+                onClick={() => selectAppType("manager")}
+                aria-pressed={appType === "manager"}
               >
-                Aplicación para clientes
-              </span>
+                🐺 Wolf Manager
+              </button>
             </div>
 
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              setAppType("manager")
-            }
-            style={{
-              minHeight: 86,
-              width: "100%",
-              borderRadius: 20,
-              boxShadow:
-                appType === "manager"
-                ? "0 0 0 1px rgba(249,115,22,.3), 0 8px 24px rgba(249,115,22,.12)"
-                 : "none",
-              background:
-                appType === "manager"
-                  ? "#cc6220"
-                  : "#18181b",
-              border: 
-                appType === "manager" 
-                  ? "1px solid #f97316" 
-                  : "1px solid #27272a",
-              color: "#fff",
-              cursor: "pointer",
-              transition: ".2s ease",
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              padding: "16px 20px",
-              gap: 16,
-              textAlign: "left",
-              boxSizing: "border-box",
-            }}
-          >
-
-            <span
-              style={{
-                fontSize: 24,
-                background: appType === "manager" ? "rgba(255,255,255,0.1)" : "#27272a",
-                padding: "10px",
-                borderRadius: "14px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
+            <button
+              type="button"
+              className="preview-button"
+              onClick={() => setShowPreview(true)}
             >
-              🐺
-            </span>
+              👁 Vista previa
+            </button>
+          </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <span
-                style={{
-                  fontWeight: 700,
-                  fontSize: 15,
-                }}
+          <nav className="tabs" aria-label="Configuración PWA">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                className={`tab ${
+                  section === tab.id ? "active" : ""
+                }`}
+                onClick={() => setSection(tab.id)}
+                aria-current={
+                  section === tab.id ? "page" : undefined
+                }
               >
-                Wolf Manager
-              </span>
-
-              <span
-                style={{
-                  color: appType === "manager" ? "#ffedd5" : "#71717a",
-                  fontSize: 12.5,
-                }}
-              >
-                Aplicación administrativa
-              </span>
-            </div>
-
-            
-
-          </button>
-
-        </div>
-
-      </SectionCard>
-
-      {/* ===========================================
-          GRID PRINCIPAL AUTO-ADAPTATIVO RESPONSIVO
-      =========================================== */}
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 400px), 1fr))",
-          gap: 32,
-          alignItems: "start",
-          width: "100%",
-        }}
-      >
-
-        {/* =======================================
-            COLUMNA IZQUIERDA
-        ======================================= */}
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 28,
-          }}
-        >
-            {/* ===========================================
-    INFORMACIÓN GENERAL
-=========================================== */}
-
-<SectionCard
-  title="Información"
-  subtitle="Define la información principal de la aplicación."
->
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: 22,
-    }}
-  >
-
-    <div>
-      <label
-        style={{
-          display: "block",
-          marginBottom: 8,
-          color: "#fff",
-          fontWeight: 600,
-        }}
-      >
-        Nombre de la aplicación
-      </label>
-
-      <input
-        type="text"
-        value={current.app_name}
-        onChange={(e) =>
-          updateCurrentField(
-            "app_name",
-            e.target.value
-          )
-        }
-        placeholder="Ej: Wolf Burger"
-        style={{
-          width: "100%",
-          height: 52,
-          borderRadius: 12,
-          border: "1px solid #3f3f46",
-          background: "#27272a",
-          color: "#fff",
-          padding: "0 16px",
-          boxSizing: "border-box",
-        }}
-      />
-    </div>
-
-    <div>
-      <label
-        style={{
-          display: "block",
-          marginBottom: 8,
-          color: "#fff",
-          fontWeight: 600,
-        }}
-      >
-        Nombre corto
-      </label>
-
-      <input
-        type="text"
-        value={current.short_name}
-        onChange={(e) =>
-          updateCurrentField(
-            "short_name",
-            e.target.value
-          )
-        }
-        placeholder="Ej: Wolf"
-        style={{
-          width: "100%",
-          height: 52,
-          borderRadius: 12,
-          border: "1px solid #3f3f46",
-          background: "#27272a",
-          color: "#fff",
-          padding: "0 16px",
-          boxSizing: "border-box",
-        }}
-      />
-    </div>
-
-    <div>
-      <label
-        style={{
-          display: "block",
-          marginBottom: 8,
-          color: "#fff",
-          fontWeight: 600,
-        }}
-      >
-        Descripción
-      </label>
-
-      <textarea
-        rows={5}
-        value={current.description}
-        onChange={(e) =>
-          updateCurrentField(
-            "description",
-            e.target.value
-          )
-        }
-        placeholder="Describe brevemente la aplicación."
-        style={{
-          width: "100%",
-          borderRadius: 12,
-          border: "1px solid #3f3f46",
-          background: "#27272a",
-          color: "#fff",
-          padding: 16,
-          resize: "vertical",
-          boxSizing: "border-box",
-        }}
-      />
-    </div>
-
-  </div>
-</SectionCard>
-
-{/* ===========================================
-    APARIENCIA
-=========================================== */}
-
-<SectionCard
-  title="Apariencia"
-  subtitle="Personaliza los colores principales."
->
-
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: 26,
-    }}
-  >
-
-    <ColorPicker
-      label="Color principal"
-     value={current.theme_color || ""}
-      onChange={(color) =>
-        updateCurrentField(
-          "theme_color",
-          color
-        )
-      }
-    />
-
-    <ColorPicker
-      label="Color de fondo"
-     value={current.background_color || ""}
-      onChange={(color) =>
-        updateCurrentField(
-          "background_color",
-          color
-        )
-      }
-    />
-
-  </div>
-
-</SectionCard>
-
-{/* ===========================================
-    LOGO
-=========================================== */}
-
-<SectionCard
-  title="Logo"
-  subtitle="Selecciona el logo de la aplicación."
->
-
-  {appType === "restaurant" ? (
-
-    <RestaurantLogoUploader
-      restaurantId={restaurantId}
-      value={settings.app_logo}
-      onChange={(url) =>
-        updateField(
-          "app_logo",
-          url
-        )
-      }
-    />
-
-  ) : (
-
-<ManagerLogoUploader
-  value={managerSettings.app_logo ?? null}
-  onChange={(newSettings) =>
-    setManagerSettings((prev: any) => ({
-      ...prev,
-      ...newSettings,
-    }))
-  }
-/>
-
-  )}
-
-</SectionCard>
-
-{/* ===========================================
-    CONFIGURACIÓN AVANZADA
-=========================================== */}
-
-<SectionCard
-  title="Configuración avanzada"
-  subtitle="Opciones del manifiesto PWA."
->
-
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      gap: 24,
-    }}
-  >
-
-    <div>
-
-      <label
-        style={{
-          display: "block",
-          marginBottom: 8,
-          color: "#fff",
-          fontWeight: 600,
-        }}
-      >
-        Display
-      </label>
-
-      <select
-      value={(current as any).display}
-        onChange={(e) =>
-          updateCurrentField(
-            "display",
-            e.target.value
-          )
-        }
-        style={{
-          width: "100%",
-          height: 52,
-          borderRadius: 12,
-          border: "1px solid #3f3f46",
-          background: "#27272a",
-          color: "#fff",
-          padding: "0 14px",
-          boxSizing: "border-box",
-        }}
-      >
-        <option value="standalone">
-          Standalone
-        </option>
-
-        <option value="fullscreen">
-          Fullscreen
-        </option>
-
-        <option value="minimal-ui">
-          Minimal UI
-        </option>
-
-        <option value="browser">
-          Browser
-        </option>
-
-      </select>
-
-    </div>
-
-    <div>
-
-      <label
-        style={{
-          display: "block",
-          marginBottom: 8,
-          color: "#fff",
-          fontWeight: 600,
-        }}
-      >
-        Orientación
-      </label>
-
-      <select
-        value={(current as any).orientation}
-        onChange={(e) =>
-          updateCurrentField(
-            "orientation" as any,
-            e.target.value
-          )
-        }
-        style={{
-          width: "100%",
-          height: 52,
-          borderRadius: 12,
-          border: "1px solid #3f3f46",
-          background: "#27272a",
-          color: "#fff",
-          padding: "0 14px",
-          boxSizing: "border-box",
-        }}
-      >
-        <option value="portrait">
-          Portrait
-        </option>
-
-        <option value="landscape">
-          Landscape
-        </option>
-
-        <option value="any">
-          Any
-        </option>
-
-      </select>
-
-    </div>
-
-    <div
-      style={{
-        background: "#27272a",
-        border: "1px solid #3f3f46",
-        borderRadius: 12,
-        padding: 18,
-        color: "#a1a1aa",
-        fontSize: 14,
-        lineHeight: 1.7,
-        boxSizing: "border-box",
-      }}
-    >
-      <strong
-        style={{
-          color: "#fff",
-        }}
-      >
-        ¿Qué significa esto?
-      </strong>
-
-      <br />
-      <br />
-
-      • <b>Standalone:</b> abre como una aplicación instalada.
-
-      <br />
-
-      • <b>Fullscreen:</b> ocupa toda la pantalla.
-
-      <br />
-
-      • <b>Browser:</b> abre como una página web.
-
-      <br />
-
-      • <b>Portrait:</b> solo orientación vertical.
-
-      <br />
-
-      • <b>Landscape:</b> solo orientación horizontal.
-
-    </div>
-
-  </div>
-
-</SectionCard>
- </div>
-
-        {/* =======================================
-            COLUMNA DERECHA
-        ======================================= */}
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 28,
-            alignSelf: "start",
-          }}
-        >
-
-          {/* ===================================
-              VISTA PREVIA
-          =================================== */}
-
-<SectionCard
-  title="Vista previa"
-  subtitle="Así se verá la aplicación instalada."
->
-
-  {appType === "restaurant" ? (
-
-    <PhonePreview
-      settings={settings}
-    />
-
-  ) : (
-
-<PhonePreview
-  settings={{
-    ...managerSettings,
-    restaurant_id: "",
-    theme_color: managerSettings.theme_color || "#ffffff",
-    background_color: managerSettings.background_color || "#000000",
-    display: (managerSettings as any).display || "standalone",
-    orientation: (managerSettings as any).orientation || "portrait",
-    app_logo: managerSettings.app_logo ?? null, 
-  }}
-/>
-
-  )}
-
-</SectionCard>
-
-          {/* ===================================
-              ESTADO
-          =================================== */}
-
-          <SectionCard
-            title="Estado"
-            subtitle="Información del formulario."
-          >
-
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 14,
-              }}
-            >
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "14px 16px",
-                  borderRadius: 12,
-                  background: "#27272a",
-                  boxSizing: "border-box",
-                }}
-              >
-
-                <span
-                  style={{
-                    color: "#a1a1aa",
-                  }}
-                >
-                  Aplicación
-                </span>
-
-                <strong
-                  style={{
-                    color: "#fff",
-                  }}
-                >
-                  {appType === "restaurant"
-                    ? "Restaurante"
-                    : "Wolf Manager"}
-                </strong>
-
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "14px 16px",
-                  borderRadius: 12,
-                  background: "#27272a",
-                  boxSizing: "border-box",
-                }}
-              >
-
-                <span
-                  style={{
-                    color: "#a1a1aa",
-                  }}
-                >
-                  Estado
-                </span>
-
-                <strong
-                  style={{
-                    color:
-                      appType === "restaurant"
-                        ? saving
-                          ? "#f59e0b"
-                          : "#22c55e"
-                        : managerSaving
-                          ? "#f59e0b"
-                          : "#22c55e",
-                  }}
-                >
-                  {appType === "restaurant"
-                    ? saving
-                      ? "Guardando..."
-                      : "Listo"
-                    : managerSaving
-                      ? "Guardando..."
-                      : "Listo"}
-                </strong>
-
-              </div>
-
-            </div>
-
-          </SectionCard>
-
-          {/* ===================================
-              ERROR
-          =================================== */}
-
-          {error &&
-            appType === "restaurant" && (
-
-            <div
-              style={{
-                background: "#7f1d1d",
-                border: "1px solid #dc2626",
-                color: "#fff",
-                padding: 18,
-                borderRadius: 12,
-                boxSizing: "border-box",
-              }}
-            >
-              {error}
-            </div>
-
+                {tab.icon} {tab.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="panel">
+            {section === "info" && (
+              <>
+                <div className="panel-head">
+                  <div className="panel-title">
+                    Información
+                  </div>
+                  <div className="panel-subtitle">
+                    Nombre, nombre corto y descripción de la aplicación.
+                  </div>
+                </div>
+
+                <div className="panel-body">
+                  <div className="fields">
+                    <div>
+                      <label className="field-label">
+                        Nombre de la aplicación
+                      </label>
+                      <input
+                        type="text"
+                        value={current.app_name}
+                        onChange={(e) =>
+                          updateCurrentField(
+                            "app_name",
+                            e.target.value
+                          )
+                        }
+                        placeholder="Ej: Wolf Burger"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="field-label">
+                        Nombre corto
+                      </label>
+                      <input
+                        type="text"
+                        value={current.short_name}
+                        onChange={(e) =>
+                          updateCurrentField(
+                            "short_name",
+                            e.target.value
+                          )
+                        }
+                        placeholder="Ej: Wolf"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="field-label">
+                        Descripción
+                      </label>
+                      <textarea
+                        rows={4}
+                        value={current.description}
+                        onChange={(e) =>
+                          updateCurrentField(
+                            "description",
+                            e.target.value
+                          )
+                        }
+                        placeholder="Describe brevemente la aplicación."
+                      />
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {section === "appearance" && (
+              <>
+                <div className="panel-head">
+                  <div className="panel-title">
+                    Apariencia
+                  </div>
+                  <div className="panel-subtitle">
+                    Define los colores principales de la PWA.
+                  </div>
+                </div>
+
+                <div className="panel-body">
+                  <div className="two-col">
+                    <ColorPicker
+                      label="Color principal"
+                      value={current.theme_color || ""}
+                      onChange={(color) =>
+                        updateCurrentField(
+                          "theme_color",
+                          color
+                        )
+                      }
+                    />
+
+                    <ColorPicker
+                      label="Color de fondo"
+                      value={current.background_color || ""}
+                      onChange={(color) =>
+                        updateCurrentField(
+                          "background_color",
+                          color
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {section === "logo" && (
+              <>
+                <div className="panel-head">
+                  <div className="panel-title">
+                    {appType === "restaurant"
+                      ? "Logo del restaurante"
+                      : "Logo de Wolf Manager"}
+                  </div>
+                  <div className="panel-subtitle">
+                    Identidad visual de la aplicación instalada.
+                  </div>
+                </div>
+
+                <div className="panel-body">
+                  {appType === "restaurant" ? (
+                    <RestaurantLogoUploader
+                      restaurantId={restaurantId}
+                      value={settings.app_logo}
+                      onChange={(url) =>
+                        updateField("app_logo", url)
+                      }
+                    />
+                  ) : (
+                    <ManagerLogoUploader
+                      value={managerSettings.app_logo ?? null}
+                      onChange={(newSettings) =>
+                        setManagerSettings((prev: any) => ({
+                          ...prev,
+                          ...newSettings,
+                        }))
+                      }
+                    />
+                  )}
+                </div>
+              </>
+            )}
+
+            {section === "advanced" && (
+              <>
+                <div className="panel-head">
+                  <div className="panel-title">
+                    Configuración avanzada
+                  </div>
+                  <div className="panel-subtitle">
+                    Manifest, display y orientación de la PWA.
+                  </div>
+                </div>
+
+                <div className="panel-body">
+                  <div className="fields">
+                    <div className="two-col">
+                      <div>
+                        <label className="field-label">
+                          Display
+                        </label>
+                        <select
+                          value={(current as any).display}
+                          onChange={(e) =>
+                            updateCurrentField(
+                              "display",
+                              e.target.value
+                            )
+                          }
+                        >
+                          <option value="standalone">
+                            Standalone
+                          </option>
+                          <option value="fullscreen">
+                            Fullscreen
+                          </option>
+                          <option value="minimal-ui">
+                            Minimal UI
+                          </option>
+                          <option value="browser">
+                            Browser
+                          </option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="field-label">
+                          Orientación
+                        </label>
+                        <select
+                          value={(current as any).orientation}
+                          onChange={(e) =>
+                            updateCurrentField(
+                              "orientation",
+                              e.target.value
+                            )
+                          }
+                        >
+                          <option value="portrait">
+                            Portrait
+                          </option>
+                          <option value="landscape">
+                            Landscape
+                          </option>
+                          <option value="any">
+                            Any
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="help">
+                      <strong>Display:</strong> Standalone abre la
+                      PWA como aplicación instalada; Fullscreen ocupa
+                      toda la pantalla; Browser mantiene la experiencia
+                      web.
+                      <br />
+                      <br />
+                      <strong>Orientación:</strong> Portrait fuerza
+                      vertical, Landscape fuerza horizontal y Any
+                      permite ambas.
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {error && appType === "restaurant" && (
+            <div className="error">{error}</div>
           )}
 
-          {/* ===================================
-              GUARDAR
-          =================================== */}
-
-          <SectionCard
-            title="Guardar cambios"
-            subtitle={
-              appType === "restaurant"
-                ? "Los cambios se aplicarán únicamente a este restaurante."
-                : "Los cambios actualizarán la aplicación Wolf Ordering Manager."
-            }
-          >
-
+          <div className="save-row">
             <SaveButton
               loading={
                 appType === "restaurant"
@@ -979,17 +759,96 @@ export default function PWASettingsForm({
               }
               onClick={saveCurrentSettings}
             />
-
-          </SectionCard>
-
+          </div>
         </div>
 
+        <aside className="preview-panel">
+          <div className="preview-head">
+            <div className="preview-title">
+              Vista previa
+            </div>
+
+            <div className="live">
+              <span className="live-dot" />
+              En vivo
+            </div>
+          </div>
+
+          <div className="preview-body">
+            <PhonePreview settings={previewSettings} />
+          </div>
+        </aside>
       </div>
 
+      {showPreview && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Vista previa PWA"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            display: "flex",
+            justifyContent: "flex-end",
+            background: "rgba(0,0,0,.58)",
+            backdropFilter: "blur(8px)",
+          }}
+          onClick={() => setShowPreview(false)}
+        >
+          <div
+            style={{
+              width: "min(92vw, 360px)",
+              height: "100%",
+              overflowY: "auto",
+              background: "#0b0b0c",
+              borderLeft:
+                "1px solid rgba(255,255,255,.08)",
+              padding: "12px 10px 20px",
+              boxSizing: "border-box",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 8,
+              }}
+            >
+              <strong
+                style={{
+                  fontSize: 12,
+                  color: "#fff",
+                }}
+              >
+                Vista previa
+              </strong>
+
+              <button
+                type="button"
+                onClick={() => setShowPreview(false)}
+                aria-label="Cerrar vista previa"
+                style={{
+                  width: 34,
+                  height: 34,
+                  border: 0,
+                  borderRadius: 10,
+                  background: "rgba(255,255,255,.06)",
+                  color: "#fff",
+                  cursor: "pointer",
+                  fontSize: 16,
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <PhonePreview settings={previewSettings} />
+          </div>
+        </div>
+      )}
     </main>
-
   );
-
 }
-
-

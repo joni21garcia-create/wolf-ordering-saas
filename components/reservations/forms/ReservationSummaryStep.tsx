@@ -1,225 +1,136 @@
 "use client";
 
 import {
-  ReservationWizardStep,
-} from "../wizard";
-
+  CalendarDays,
+  Clock3,
+  FileText,
+  UserRound,
+  Users,
+  Tag,
+} from "lucide-react";
 import {
+  ReservationWizardStep,
   useReservationWizard,
 } from "../wizard";
 
+const reservationTypeLabels: Record<string, string> = {
+  table: "Mesa en restaurante",
+  event: "Evento especial",
+  private: "Área privada",
+};
 
+const serviceLabels: Record<string, string> = {
+  normal: "Reserva normal",
+  birthday: "Cumpleaños",
+  business: "Reunión empresarial",
+  special: "Ocasión especial",
+};
 
-export default function ReservationSummaryStep(){
+export default function ReservationSummaryStep() {
+  const { data } = useReservationWizard();
 
+  const reservationType =
+    data.typeName?.trim() ||
+    reservationTypeLabels[data.type ?? ""] ||
+    data.type ||
+    "No seleccionado";
 
-
-  const {
-    data,
-  } = useReservationWizard();
-
-
-
-
+  const service =
+    data.serviceName?.trim() ||
+    serviceLabels[data.service ?? ""] ||
+    data.service ||
+    "No seleccionado";
 
 
   return (
-
     <ReservationWizardStep>
-
-
-      <div className="space-y-2">
-
-        <h3 className="text-xl font-semibold">
+      <div className="space-y-1">
+        <h3 className="text-lg font-bold tracking-tight text-zinc-900 sm:text-xl">
           Resumen de la reserva
         </h3>
-
-
         <p className="text-sm text-zinc-500">
           Revisa los datos antes de confirmar.
         </p>
-
-
       </div>
 
+      <div className="mt-5 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+        <div className="grid sm:grid-cols-2">
+          <SummaryItem
+            icon={<UserRound className="h-4 w-4" />}
+            label="Cliente"
+            value={data.customerName || "No indicado"}
+          />
 
+          <SummaryItem
+            icon={<CalendarDays className="h-4 w-4" />}
+            label="Fecha"
+            value={data.date || "No seleccionada"}
+          />
 
+          <SummaryItem
+            icon={<Users className="h-4 w-4" />}
+            label="Personas"
+            value={`${data.guests ?? 0} personas`}
+          />
 
+          <SummaryItem
+            icon={<Clock3 className="h-4 w-4" />}
+            label="Horario"
+            value={data.time || "No seleccionado"}
+          />
 
+          <SummaryItem
+            icon={<Tag className="h-4 w-4" />}
+            label="Tipo de reserva"
+            value={reservationType}
+          />
 
+          <SummaryItem
+            label="Servicio"
+            value={service}
+          />
 
-
-      <div
-        className="
-          mt-5
-          space-y-4
-          rounded-lg
-          border
-          p-5
-        "
-      >
-
-
-
-        <div>
-
-          <span className="text-sm text-zinc-500">
-            Cliente
-          </span>
-
-
-          <p className="font-medium">
-            {
-              data.customerName ||
-              "No indicado"
-            }
-          </p>
-
+          <SummaryItem
+            icon={<FileText className="h-4 w-4" />}
+            label="Notas"
+            value={data.customerNotes || "Sin notas"}
+            multiline
+          />
         </div>
-
-
-
-
-
-
-
-
-        <div>
-
-          <span className="text-sm text-zinc-500">
-            Fecha
-          </span>
-
-
-          <p className="font-medium">
-            {
-              data.date ||
-              "No seleccionada"
-            }
-          </p>
-
-
-        </div>
-
-
-
-
-
-
-
-
-        <div>
-
-          <span className="text-sm text-zinc-500">
-            Personas
-          </span>
-
-
-          <p className="font-medium">
-
-            {
-              data.guests ??
-              0
-            }
-
-            {" personas"}
-
-          </p>
-
-
-        </div>
-
-
-
-
-
-
-
-
-        <div>
-
-          <span className="text-sm text-zinc-500">
-            Horario
-          </span>
-
-
-          <p className="font-medium">
-
-            {
-              data.time ||
-              "No seleccionado"
-            }
-
-          </p>
-
-
-        </div>
-
-
-
-
-
-
-
-
-        <div>
-
-          <span className="text-sm text-zinc-500">
-            Servicio
-          </span>
-
-
-          <p className="font-medium">
-
-            {
-              data.service ||
-              "Reserva normal"
-            }
-
-          </p>
-
-
-        </div>
-
-
-
-
-
-
-
-
-        <div>
-
-          <span className="text-sm text-zinc-500">
-            Notas
-          </span>
-
-
-          <p className="font-medium">
-
-            {
-              data.notes ||
-              "Sin notas"
-            }
-
-          </p>
-
-
-        </div>
-
-
-
-
-
       </div>
 
-
-
-
-
+      <div className="rounded-xl border border-orange-100 bg-orange-50/70 px-4 py-3 text-xs leading-5 text-orange-800">
+        Verifica que los datos sean correctos antes de confirmar la reserva.
+      </div>
     </ReservationWizardStep>
-
   );
-
 }
 
+function SummaryItem({
+  icon,
+  label,
+  value,
+  multiline = false,
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  value: string;
+  multiline?: boolean;
+}) {
+  return (
+    <div className="border-b border-zinc-100 p-4 last:border-b-0 sm:nth-[odd]:border-r sm:nth-[5]:border-b-0">
+      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-zinc-400">
+        {icon}
+        {label}
+      </div>
+
+      <p
+        className={`mt-1 text-sm font-semibold text-zinc-900 ${
+          multiline ? "leading-5" : "truncate"
+        }`}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}

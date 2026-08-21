@@ -18,9 +18,8 @@ export default function ReservationStatusLabel({
   status,
 }: Props) {
   return (
-    <span>
+    <span className="font-medium text-foreground">
       {labels[status]}
     </span>
   );
 }
-

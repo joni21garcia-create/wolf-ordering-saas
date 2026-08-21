@@ -1,99 +1,36 @@
 "use client";
 
-import type {
-  ReservationCalendarEvent,
-} from "@/types/reservations";
-
-import {
-  ReservationCalendarDay,
-} from "./ReservationCalendarDay";
-
-
+import type { ReservationCalendarEvent } from "@/types/reservations";
+import { ReservationCalendarDay } from "./ReservationCalendarDay";
 
 interface ReservationCalendarMonthProps {
-
-
-  days:{
-    date:string;
-
-    events:ReservationCalendarEvent[];
-
+  days: {
+    date: string;
+    events: ReservationCalendarEvent[];
   }[];
-
-
-  onSelectReservation?:(
-    reservationId:string
-  )=>void;
-
-
+  onSelectReservation?: (reservationId: string) => void;
 }
 
-
-
 export function ReservationCalendarMonth({
-
   days,
-
   onSelectReservation,
-
-}:ReservationCalendarMonthProps){
-
-
-
+}: ReservationCalendarMonthProps) {
   return (
-
     <div
       className="
-        grid
-        grid-cols-1
-        gap-3
-
-        sm:grid-cols-2
-
+        grid grid-cols-1 gap-2.5
+        sm:grid-cols-2 sm:gap-3
         lg:grid-cols-7
       "
     >
-
-
-
-      {
-        days.map(
-
-          day => (
-
-            <ReservationCalendarDay
-
-              key={
-                day.date
-              }
-
-
-              date={
-                day.date
-              }
-
-
-              events={
-                day.events
-              }
-
-
-              onSelectReservation={
-                onSelectReservation
-              }
-
-            />
-
-          )
-
-        )
-      }
-
-
-
+      {days.map((day) => (
+        <ReservationCalendarDay
+          key={day.date}
+          date={day.date}
+          events={day.events}
+          onSelectReservation={onSelectReservation}
+        />
+      ))}
     </div>
-
   );
-
 }
-

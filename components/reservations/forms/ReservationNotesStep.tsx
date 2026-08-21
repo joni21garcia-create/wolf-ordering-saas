@@ -12,84 +12,40 @@ import {
   useReservationWizard,
 } from "../wizard";
 
-
-
-export default function ReservationNotesStep(){
-
-
-
+export default function ReservationNotesStep() {
   const {
     data,
     update,
   } = useReservationWizard();
 
-
-
-
-
   return (
-
     <ReservationWizardStep>
 
-
       <div className="space-y-2">
-
         <h3 className="text-xl font-semibold">
           Notas de la reserva
         </h3>
 
-
         <p className="text-sm text-zinc-500">
           Agrega solicitudes especiales o información adicional.
         </p>
-
-
       </div>
-
-
-
-
-
-
 
       <div className="mt-5">
 
-
         <ReservationTextarea
-
           label="Notas"
-
-          value={
-            data.notes ?? ""
+          value={data.customerNotes ?? ""}
+          onChange={(value) =>
+            update({
+              customerNotes: value.target.value,
+            })
           }
-
-          onChange={
-            (value)=>
-              update({
-                notes:value.target.value
-              })
-          }
-
-          placeholder="
-            Ej: Mesa cerca de ventana,
-            celebración de cumpleaños,
-            alergias o preferencias
-          "
-
+          placeholder="Ej: Mesa cerca de ventana, celebración de cumpleaños, alergias o preferencias..."
         />
-
-
 
       </div>
 
-
-
-
-
     </ReservationWizardStep>
-
   );
-
 }
-
-

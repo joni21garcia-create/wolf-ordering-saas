@@ -13,143 +13,185 @@ interface Props {
 export default function FinanceHeader({
   restaurant,
 }: Props) {
+  const restaurantId = restaurant?.id ?? "";
+
   return (
-    <section
-      style={{
-        marginBottom: 36,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 24,
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              color: "#8b8b8b",
-              fontSize: 14,
-              marginBottom: 14,
-              flexWrap: "wrap",
-            }}
-          >
-            <BackToSettings
-              restaurantId={
-                restaurant?.id ?? ""
-              }
-            />
+    <section className="finance-header">
+      <style jsx>{`
+        .finance-header {
+          width: 100%;
+          min-width: 0;
+          margin-bottom: 32px;
+        }
 
-            <span>/</span>
+        .layout {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 28px;
+        }
 
-            <span>
-              Finance Center
-            </span>
+        .content {
+          min-width: 0;
+          flex: 1;
+        }
+
+        .breadcrumb {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 9px;
+          margin-bottom: 14px;
+          color: #777;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.2px;
+        }
+
+        .title {
+          margin: 0;
+          color: #fff;
+          font-size: clamp(30px, 5vw, 48px);
+          font-weight: 900;
+          line-height: 1.05;
+          letter-spacing: -1.5px;
+          overflow-wrap: anywhere;
+        }
+
+        .description {
+          max-width: 650px;
+          margin: 12px 0 0;
+          color: #858585;
+          font-size: 14px;
+          line-height: 1.6;
+        }
+
+        .actions {
+          display: flex;
+          flex: 0 0 auto;
+          gap: 10px;
+          padding-top: 26px;
+        }
+
+        .action {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 42px;
+          padding: 0 16px;
+          border-radius: 13px;
+          text-decoration: none;
+          color: #fff;
+          font-size: 13px;
+          font-weight: 800;
+          white-space: nowrap;
+          transition:
+            transform 0.18s ease,
+            opacity 0.18s ease,
+            border-color 0.18s ease;
+        }
+
+        .action:hover {
+          transform: translateY(-1px);
+          opacity: 0.92;
+        }
+
+        .secondary {
+          background: rgba(255, 255, 255, 0.045);
+          border: 1px solid rgba(255, 255, 255, 0.09);
+        }
+
+        .primary {
+          background: #f97316;
+          border: 1px solid rgba(249, 115, 22, 0.35);
+        }
+
+        @media (max-width: 760px) {
+          .layout {
+            flex-direction: column;
+            gap: 18px;
+          }
+
+          .actions {
+            width: 100%;
+            padding-top: 0;
+          }
+
+          .action {
+            flex: 1 1 0;
+            min-width: 0;
+          }
+        }
+
+        @media (max-width: 430px) {
+          .finance-header {
+            margin-bottom: 24px;
+          }
+
+          .breadcrumb {
+            margin-bottom: 11px;
+            font-size: 11px;
+          }
+
+          .title {
+            font-size: 30px;
+            letter-spacing: -1px;
+          }
+
+          .description {
+            margin-top: 10px;
+            font-size: 13px;
+            line-height: 1.5;
+          }
+
+          .actions {
+            gap: 8px;
+          }
+
+          .action {
+            min-height: 40px;
+            padding: 0 10px;
+            border-radius: 11px;
+            font-size: 12px;
+          }
+        }
+      `}</style>
+
+      <div className="layout">
+        <div className="content">
+          <div className="breadcrumb">
+            <BackToSettings restaurantId={restaurantId} />
+            <span aria-hidden="true">/</span>
+            <span>Finance Center</span>
           </div>
 
-          <h1
-            style={{
-              margin: 0,
-              color: "#fff",
-              fontSize: "clamp(32px,4vw,48px)",
-              fontWeight: 900,
-              lineHeight: 1.1,
-            }}
-          >
-            💰{" "}
-            {restaurant?.name ??
-              "Restaurante"}
+          <h1 className="title">
+            💰 {restaurant?.name ?? "Restaurante"}
           </h1>
 
-          <p
-            style={{
-              marginTop: 12,
-              color: "#888",
-              maxWidth: 650,
-              lineHeight: 1.6,
-            }}
-          >
-            Centro financiero del
-            restaurante. Aquí puedes
-            administrar liquidaciones,
-            invoices, ingresos,
-            métricas y toda la
-            información financiera del
-            negocio.
+          <p className="description">
+            Centro financiero del restaurante. Aquí puedes administrar
+            liquidaciones, invoices, ingresos, métricas y toda la
+            información financiera del negocio.
           </p>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 14,
-            flexWrap: "wrap",
-          }}
-        >
+        <nav className="actions" aria-label="Navegación financiera">
           <Link
-            href={`/super-admin/restaurants/${restaurant?.id}/analytics`}
-            style={{
-              textDecoration:
-                "none",
-            }}
+            href={`/super-admin/restaurants/${restaurantId}/analytics`}
+            className="action secondary"
           >
-            <Button
-              background="#171717"
-            >
-              📈 Analytics
-            </Button>
+            📈 Analytics
           </Link>
 
           <Link
-            href={`/super-admin/restaurants/${restaurant?.id}/settings`}
-            style={{
-              textDecoration:
-                "none",
-            }}
+            href={`/super-admin/restaurants/${restaurantId}/settings`}
+            className="action primary"
           >
-            <Button
-              background="#f97316"
-            >
-              ⚙ Configuración
-            </Button>
+            ⚙ Configuración
           </Link>
-        </div>
+        </nav>
       </div>
     </section>
-  );
-}
-
-function Button({
-  children,
-  background,
-}: {
-  children: React.ReactNode;
-  background: string;
-}) {
-  return (
-    <div
-      style={{
-        background,
-        color: "#fff",
-        padding:
-          "14px 20px",
-        borderRadius: 14,
-        fontWeight: 700,
-        border:
-          background === "#171717"
-            ? "1px solid rgba(255,255,255,.08)"
-            : "none",
-        transition: ".25s",
-        whiteSpace: "nowrap",
-      }}
-    >
-      {children}
-    </div>
   );
 }

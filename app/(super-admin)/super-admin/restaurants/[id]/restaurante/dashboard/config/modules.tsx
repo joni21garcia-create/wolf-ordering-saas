@@ -21,6 +21,8 @@ import {
   MessageCircle,
   Settings,
   ClipboardList,
+  Star,
+  CalendarDays,
 } from "lucide-react";
 
 export type DashboardModule = {
@@ -42,6 +44,16 @@ export const dashboardModules: DashboardModule[] = [
     color: "#f97316",
     icon: <ShoppingCart size={34} />,
     href: (id) => `/admin/orders/${id}/orders`,
+  },
+
+  {
+    code: "reservations",
+    title: "Reservas",
+    description: "Gestiona las reservas y la operación de mesas.",
+    category: "operation",
+    color: "#f97316",
+    icon: <CalendarDays size={34} />,
+    href: (id) => `/admin/reservations/${id}`,
   },
 
   {
@@ -81,8 +93,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "operation",
     color: "#22c55e",
     icon: <DollarSign size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/finance`,
+    href: (id) => `/super-admin/restaurants/${id}/finance`,
   },
 
   {
@@ -92,8 +103,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#3b82f6",
     icon: <Users size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/access/users`,
+    href: (id) => `/super-admin/restaurants/${id}/access/users`,
   },
 
   {
@@ -103,8 +113,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#8b5cf6",
     icon: <Shield size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/access/roles`,
+    href: (id) => `/super-admin/restaurants/${id}/access/roles`,
   },
 
   {
@@ -114,8 +123,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#ef4444",
     icon: <KeyRound size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/access/permissions`,
+    href: (id) => `/super-admin/restaurants/${id}/access/permissions`,
   },
 
   {
@@ -125,8 +133,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#f97316",
     icon: <Package size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/settings/products`,
+    href: (id) => `/super-admin/restaurants/${id}/settings/products`,
   },
 
   {
@@ -136,8 +143,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#06b6d4",
     icon: <Grid2X2 size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/settings/categories`,
+    href: (id) => `/super-admin/restaurants/${id}/settings/categories`,
   },
 
   {
@@ -147,8 +153,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#ec4899",
     icon: <Image size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/settings/gallery`,
+    href: (id) => `/super-admin/restaurants/${id}/settings/gallery`,
   },
 
   {
@@ -158,8 +163,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#22c55e",
     icon: <MapPin size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/settings/location`,
+    href: (id) => `/super-admin/restaurants/${id}/settings/location`,
   },
 
   {
@@ -169,8 +173,18 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#f59e0b",
     icon: <Clock3 size={34} />,
+    href: (id) => `/super-admin/restaurants/${id}/settings/schedule`,
+  },
+
+  {
+    code: "reservations_settings",
+    title: "Configuración de Reservas",
+    description: "Configura el funcionamiento de las reservas online.",
+    category: "settings",
+    color: "#f59e0b",
+    icon: <CalendarDays size={34} />,
     href: (id) =>
-      `/super-admin/restaurants/${id}/settings/schedule`,
+      `/super-admin/restaurants/${id}/settings/reservations`,
   },
 
   {
@@ -180,8 +194,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#22c55e",
     icon: <CreditCard size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/settings/payments`,
+    href: (id) => `/super-admin/restaurants/${id}/settings/payments`,
   },
 
   {
@@ -191,8 +204,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#a855f7",
     icon: <Palette size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/settings/themes`,
+    href: (id) => `/super-admin/restaurants/${id}/settings/themes`,
   },
 
   {
@@ -202,8 +214,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#14b8a6",
     icon: <Smartphone size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/settings/pwa`,
+    href: (id) => `/super-admin/restaurants/${id}/settings/pwa`,
   },
 
   {
@@ -213,8 +224,18 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#f43f5e",
     icon: <Megaphone size={34} />,
+    href: (id) => `/super-admin/restaurants/${id}/settings/marketing`,
+  },
+
+  {
+    code: "google_reviews",
+    title: "Google Reviews",
+    description: "Gestiona reseñas, QR y material promocional.",
+    category: "settings",
+    color: "#4285f4",
+    icon: <Star size={34} />,
     href: (id) =>
-      `/super-admin/restaurants/${id}/settings/marketing`,
+      `/super-admin/restaurants/${id}/settings/google-reviews`,
   },
 
   {
@@ -224,8 +245,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#f97316",
     icon: <Home size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/settings/hero`,
+    href: (id) => `/super-admin/restaurants/${id}/settings/hero`,
   },
 
   {
@@ -235,8 +255,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#3b82f6",
     icon: <Layout size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/settings/navbar`,
+    href: (id) => `/super-admin/restaurants/${id}/settings/navbar`,
   },
 
   {
@@ -246,8 +265,7 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#ec4899",
     icon: <MessageCircle size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/settings/socials`,
+    href: (id) => `/super-admin/restaurants/${id}/settings/socials`,
   },
 
   {
@@ -257,21 +275,19 @@ export const dashboardModules: DashboardModule[] = [
     category: "settings",
     color: "#22c55e",
     icon: <Settings size={34} />,
-    href: (id) =>
-      `/super-admin/restaurants/${id}/settings/services`,
+    href: (id) => `/super-admin/restaurants/${id}/settings/services`,
   },
 
-{
-  code: "requests",
-  title: "Solicitudes",
-  description:
-    "Gestiona solicitudes del restaurante.",
-  category: "settings",
-  color: "#f97316",
-  icon: <ClipboardList size={34} />,
-  href: (id) =>
-    `/super-admin/restaurants/${id}/settings/requests`,
-},
+  {
+    code: "requests",
+    title: "Solicitudes",
+    description: "Gestiona solicitudes del restaurante.",
+    category: "settings",
+    color: "#f97316",
+    icon: <ClipboardList size={34} />,
+    href: (id) =>
+      `/super-admin/restaurants/${id}/settings/requests`,
+  },
 
   {
     code: "serviciosrestaurant",

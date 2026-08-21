@@ -238,8 +238,9 @@ export interface Reservation {
   assignment?: ReservationAssignment;
 
   typeId?: string;
-
   typeName?: string;
+  serviceId?: string;
+  serviceName?: string;
 
   services: ReservationServiceItem[];
 
@@ -277,6 +278,9 @@ export interface CreateReservationDto {
   capacity: ReservationCapacity;
 
   typeId?: string;
+  typeName?: string;
+  serviceId?: string;
+  serviceName?: string;
 
   services?: ReservationServiceItem[];
 
@@ -295,6 +299,9 @@ export interface UpdateReservationDto {
   capacity?: ReservationCapacity;
 
   typeId?: string;
+  typeName?: string;
+  serviceId?: string;
+  serviceName?: string;
 
   services?: ReservationServiceItem[];
 
@@ -429,6 +436,22 @@ export interface ReservationCalendarEvent {
   color?: string;
 
   reservationId: string;
+
+  guestName?: string;
+
+  phone?: string;
+
+  tableNames?: string[];
+
+  tableZone?: string;
+
+  durationMinutes?: number;
+
+  typeName?: string;
+
+  customerNotes?: string;
+
+  checkedIn?: boolean;
 }
 
 /* ============================================================================
@@ -688,4 +711,3 @@ export function isReservationFinal(
  );
 
 }
-

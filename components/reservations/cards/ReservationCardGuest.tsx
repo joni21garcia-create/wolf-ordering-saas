@@ -1,114 +1,39 @@
 "use client";
 
-import type {
-  ReservationGuest,
-} from "@/types/reservations";
-
-
+import { Mail, Phone, UserRound } from "lucide-react";
+import type { ReservationGuest } from "@/types/reservations";
 
 interface ReservationCardGuestProps {
-
   guest: ReservationGuest;
-
 }
-
-
 
 export function ReservationCardGuest({
-
   guest,
-
-}:ReservationCardGuestProps){
-
-
-
+}: ReservationCardGuestProps) {
   return (
-
-    <div
-      className="
-        flex
-        flex-col
-        gap-1
-      "
-    >
-
-
-      <span
-        className="
-          text-xs
-          font-medium
-          uppercase
-          text-gray-400
-        "
-      >
-
+    <div className="rounded-xl bg-zinc-50 p-3">
+      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-zinc-400">
+        <UserRound className="h-3.5 w-3.5" />
         Cliente
+      </div>
 
-      </span>
+      <div className="mt-1 truncate text-sm font-bold text-zinc-900">
+        {guest.fullName || "Sin nombre"}
+      </div>
 
+      {guest.phone ? (
+        <div className="mt-1 flex items-center gap-1 text-xs text-zinc-600">
+          <Phone className="h-3 w-3" />
+          <span className="truncate">{guest.phone}</span>
+        </div>
+      ) : null}
 
-
-
-      <span
-        className="
-          font-semibold
-          text-gray-900
-        "
-      >
-
-        {guest.fullName}
-
-      </span>
-
-
-
-
-      {
-        guest.phone && (
-
-          <span
-            className="
-              text-sm
-              text-gray-600
-            "
-          >
-
-            {guest.phone}
-
-          </span>
-
-        )
-      }
-
-
-
-
-
-
-      {
-        guest.email && (
-
-          <span
-            className="
-              text-sm
-              text-gray-500
-            "
-          >
-
-            {guest.email}
-
-          </span>
-
-        )
-      }
-
-
-
-
-
+      {guest.email ? (
+        <div className="mt-1 flex items-center gap-1 text-[11px] text-zinc-500">
+          <Mail className="h-3 w-3" />
+          <span className="truncate">{guest.email}</span>
+        </div>
+      ) : null}
     </div>
-
   );
-
 }
-

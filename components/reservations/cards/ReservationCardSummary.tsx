@@ -1,192 +1,70 @@
 "use client";
 
-import type {
-  Reservation,
-} from "@/types/reservations";
-
-
+import { FileText, Package, Ticket } from "lucide-react";
+import type { Reservation } from "@/types/reservations";
 
 interface ReservationCardSummaryProps {
-
   reservation: Reservation;
-
 }
-
-
 
 export function ReservationCardSummary({
-
   reservation,
-
-}:ReservationCardSummaryProps){
-
-
-
-  const services =
-    reservation.services ?? [];
-
-
+}: ReservationCardSummaryProps) {
+  const services = reservation.services ?? [];
 
   return (
-
-    <div
-      className="
-        flex
-        flex-col
-        gap-3
-      "
-    >
-
-
-
-      <span
-        className="
-          text-xs
-          font-medium
-          uppercase
-          text-gray-400
-        "
-      >
-
+    <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4">
+      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-zinc-400">
+        <FileText className="h-3.5 w-3.5" />
         Resumen
-
-      </span>
-
-
-
-
-
-      <div
-        className="
-          grid
-          grid-cols-2
-          gap-3
-          text-sm
-        "
-      >
-
-
-
-        <div>
-
-          <span
-            className="
-              block
-              text-gray-400
-            "
-          >
-            Servicios
-          </span>
-
-
-          <span
-            className="
-              font-medium
-              text-gray-900
-            "
-          >
-
-            {
-              services.length
-            }
-
-          </span>
-
-
-        </div>
-
-
-
-
-
-
-
-        <div>
-
-          <span
-            className="
-              block
-              text-gray-400
-            "
-          >
-            Código
-          </span>
-
-
-          <span
-            className="
-              font-medium
-              text-gray-900
-            "
-          >
-
-            {
-              reservation.confirmationCode
-            }
-
-          </span>
-
-
-        </div>
-
-
-
-
-
       </div>
 
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <Info
+          icon={<Package className="h-3.5 w-3.5" />}
+          label="Servicios"
+          value={String(services.length)}
+        />
 
+        <Info
+          icon={<Ticket className="h-3.5 w-3.5" />}
+          label="Código"
+          value={reservation.confirmationCode || "—"}
+        />
+      </div>
 
-
-
-
-
-      {
-        reservation.customerNotes
-        &&
-        (
-
-          <div
-            className="
-              rounded-md
-              bg-gray-50
-              p-3
-              text-sm
-              text-gray-600
-            "
-          >
-
-            <span
-              className="
-                font-medium
-                text-gray-800
-              "
-            >
-
-              Nota:
-              
-            </span>
-
-
-            {" "}
-
-            {
-              reservation.customerNotes
-            }
-
-
+      {reservation.customerNotes ? (
+        <div className="mt-3 rounded-xl border border-zinc-200 bg-white p-3">
+          <div className="text-[10px] font-bold uppercase tracking-wide text-zinc-400">
+            Nota
           </div>
-
-        )
-      }
-
-
-
-
-
+          <p className="mt-1 text-sm leading-5 text-zinc-600">
+            {reservation.customerNotes}
+          </p>
+        </div>
+      ) : null}
     </div>
-
   );
-
 }
 
+function Info({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="min-w-0 rounded-xl bg-white px-3 py-2.5">
+      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-zinc-400">
+        {icon}
+        {label}
+      </div>
+      <div className="mt-1 truncate text-sm font-bold text-zinc-800">
+        {value}
+      </div>
+    </div>
+  );
+}

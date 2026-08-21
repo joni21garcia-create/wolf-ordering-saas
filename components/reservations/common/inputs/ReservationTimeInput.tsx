@@ -8,12 +8,5 @@ export type ReservationTimeInputProps =
 export default function ReservationTimeInput(
   props: ReservationTimeInputProps
 ) {
-  return (
-    <ReservationInput
-      type="time"
-      {...props}
-    />
-  );
+  return <ReservationInput type="time" {...props} />;
 }
-
-

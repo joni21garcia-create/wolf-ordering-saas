@@ -2,336 +2,139 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useMemo,
   useState,
-  ReactNode,
+  type ReactNode,
 } from "react";
 
-
-
 export interface ReservationWizardData {
-
   date?: string;
-
   time?: string;
-
   guests?: number;
-
   type?: string;
-
-
+  typeName?: string;
   customerName?: string;
-
   phone?: string;
-
   email?: string;
-
-
   service?: string;
-
+  serviceName?: string;
   services?: string[];
-
-
   notes?: string;
-
   customerNotes?: string;
-
 }
-
-
 
 export interface ReservationWizardContextValue {
-
-  currentStep:number;
-
-  totalSteps:number;
-
-
-  data:ReservationWizardData;
-
-
-  next:()=>void;
-
-  previous:()=>void;
-
-  goTo:(step:number)=>void;
-
-
-  update:(
-    values:Partial<ReservationWizardData>
-  )=>void;
-
-
-  reset:()=>void;
-
+  currentStep: number;
+  totalSteps: number;
+  data: ReservationWizardData;
+  next: () => void;
+  previous: () => void;
+  goTo: (step: number) => void;
+  update: (values: Partial<ReservationWizardData>) => void;
+  reset: () => void;
 }
-
-
 
 const ReservationWizardContext =
- createContext<ReservationWizardContextValue | null>(
-  null
- );
-
-
+  createContext<ReservationWizardContextValue | null>(null);
 
 interface Props {
-
- children:ReactNode;
-
- totalSteps:number;
-
+  children: ReactNode;
+  totalSteps: number;
 }
-
-
-
-
 
 export function ReservationWizardProvider({
+  children,
+  totalSteps,
+}: Props) {
+  const safeTotalSteps = Math.max(1, totalSteps);
 
- children,
+  const [currentStep, setCurrentStep] = useState(0);
+  const [data, setData] =
+    useState<ReservationWizardData>({});
 
- totalSteps,
+  const next = useCallback(() => {
+    setCurrentStep((step) =>
+      Math.min(step + 1, safeTotalSteps - 1)
+    );
+  }, [safeTotalSteps]);
 
-}:Props){
+  const previous = useCallback(() => {
+    setCurrentStep((step) =>
+      Math.max(step - 1, 0)
+    );
+  }, []);
 
+  const goTo = useCallback(
+    (step: number) => {
+      if (!Number.isFinite(step)) return;
 
-
- const [
-  currentStep,
-  setCurrentStep
- ] =
- useState(0);
-
-
-
-
- const [
-  data,
-  setData
- ] =
- useState<ReservationWizardData>({});
-
-
-
-
-
-
- function next(){
-
-
-  setCurrentStep(
-
-   step =>
-    Math.min(
-     step + 1,
-     totalSteps - 1
-    )
-
+      setCurrentStep(
+        Math.min(
+          Math.max(Math.trunc(step), 0),
+          safeTotalSteps - 1
+        )
+      );
+    },
+    [safeTotalSteps]
   );
 
-
- }
-
-
-
-
-
-
-
- function previous(){
-
-
-  setCurrentStep(
-
-   step =>
-    Math.max(
-     step - 1,
-     0
-    )
-
+  const update = useCallback(
+    (values: Partial<ReservationWizardData>) => {
+      setData((previous) => ({
+        ...previous,
+        ...values,
+      }));
+    },
+    []
   );
 
+  const reset = useCallback(() => {
+    setCurrentStep(0);
+    setData({});
+  }, []);
 
- }
-
-
-
-
-
-
-
- function goTo(
-  step:number
- ){
-
-
-  setCurrentStep(
-
-   Math.min(
-
-    Math.max(
-     step,
-     0
-    ),
-
-    totalSteps - 1
-
-   )
-
+  const value = useMemo(
+    () => ({
+      currentStep,
+      totalSteps: safeTotalSteps,
+      data,
+      next,
+      previous,
+      goTo,
+      update,
+      reset,
+    }),
+    [
+      currentStep,
+      safeTotalSteps,
+      data,
+      next,
+      previous,
+      goTo,
+      update,
+      reset,
+    ]
   );
 
-
- }
-
-
-
-
-
-
-
- function update(
-
-  values:Partial<ReservationWizardData>
-
- ){
-
-
-  setData(
-
-   previous => ({
-
-    ...previous,
-
-    ...values
-
-   })
-
+  return (
+    <ReservationWizardContext.Provider value={value}>
+      {children}
+    </ReservationWizardContext.Provider>
   );
-
-
- }
-
-
-
-
-
-
-
- function reset(){
-
-
-  setCurrentStep(0);
-
-
-  setData({});
-
-
- }
-
-
-
-
-
-
-
- const value = useMemo(
-
-  () => ({
-
-   currentStep,
-
-   totalSteps,
-
-   data,
-
-   next,
-
-   previous,
-
-   goTo,
-
-   update,
-
-   reset,
-
-  }),
-
-
-  [
-   currentStep,
-   totalSteps,
-   data
-  ]
-
- );
-
-
-
-
-
-
-
- return (
-
-  <ReservationWizardContext.Provider
-
-   value={
-    value
-   }
-
-  >
-
-   {children}
-
-  </ReservationWizardContext.Provider>
-
- );
-
-
 }
 
-
-
-
-
-
-
-
-
-export function useReservationWizard(){
-
-
-
- const context =
-
-  useContext(
-   ReservationWizardContext
+export function useReservationWizard() {
+  const context = useContext(
+    ReservationWizardContext
   );
 
+  if (!context) {
+    throw new Error(
+      "useReservationWizard must be used inside ReservationWizardProvider"
+    );
+  }
 
-
-
-
- if(!context){
-
-
-  throw new Error(
-
-   "useReservationWizard must be used inside ReservationWizardProvider"
-
-  );
-
-
- }
-
-
-
-
-
- return context;
-
-
+  return context;
 }
-

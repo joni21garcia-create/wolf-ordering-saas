@@ -13,153 +13,274 @@ export default function FinanceStatusCard({
   nextCutoff,
   nextPayment,
 }: Props) {
-  const paid =
-    currentStatus === "paid";
+  const paid = currentStatus === "paid";
 
   return (
-    <section
-      style={{
-        marginTop: 42,
-        marginBottom: 42,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 20,
-          marginBottom: 22,
-        }}
-      >
-        <div>
-          <h2
-            style={{
-              margin: 0,
-              color: "#fff",
-              fontSize: 28,
-              fontWeight: 800,
-            }}
-          >
-            📅 Estado Financiero
-          </h2>
+    <section className="status-section">
+      <style jsx>{`
+        .status-section {
+          width: 100%;
+          min-width: 0;
+          margin: 0 0 24px;
+        }
 
-          <p
-            style={{
-              marginTop: 8,
-              color: "#888",
-            }}
-          >
-            Estado operativo del ciclo financiero actual.
-          </p>
-        </div>
+        .status-card {
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+          overflow: hidden;
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 18px;
+          background: linear-gradient(180deg, #151515, #0d0d0d);
+        }
 
-        <div
-          style={{
-            padding: "10px 18px",
-            borderRadius: 999,
-            background: paid
-              ? "rgba(34,197,94,.12)"
-              : "rgba(245,158,11,.12)",
-            color: paid
-              ? "#22c55e"
-              : "#f59e0b",
-            border: paid
-              ? "1px solid rgba(34,197,94,.25)"
-              : "1px solid rgba(245,158,11,.25)",
-            fontWeight: 800,
-          }}
-        >
-          {paid
-            ? "Liquidación Pagada"
-            : "Pendiente de Pago"}
-        </div>
-      </div>
+        .status-card > summary {
+          list-style: none;
+          cursor: pointer;
+          user-select: none;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          min-height: 64px;
+          padding: 0 16px;
+        }
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit,minmax(220px,1fr))",
-          gap: 18,
-        }}
-      >
-        <Card
-          title="Estado"
-          value={
-            paid
-              ? "Pagado"
-              : "Pendiente"
+        .status-card > summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .heading {
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .icon {
+          width: 32px;
+          height: 32px;
+          flex: 0 0 32px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.045);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          font-size: 15px;
+        }
+
+        .title {
+          min-width: 0;
+          color: #fff;
+          font-size: 13px;
+          font-weight: 800;
+        }
+
+        .subtitle {
+          margin-top: 2px;
+          color: #777;
+          font-size: 10px;
+          line-height: 1.3;
+        }
+
+        .right {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          gap: 9px;
+        }
+
+        .badge {
+          padding: 6px 9px;
+          border-radius: 999px;
+          background: ${paid
+            ? "rgba(34,197,94,.10)"
+            : "rgba(245,158,11,.10)"};
+          border: 1px solid ${paid
+            ? "rgba(34,197,94,.18)"
+            : "rgba(245,158,11,.18)"};
+          color: ${paid ? "#22c55e" : "#f59e0b"};
+          font-size: 9px;
+          font-weight: 800;
+          white-space: nowrap;
+        }
+
+        .chevron {
+          color: #666;
+          font-size: 14px;
+          transition: transform 0.18s ease;
+        }
+
+        .status-card[open] .chevron {
+          transform: rotate(180deg);
+        }
+
+        .content {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 9px;
+          padding: 0 10px 10px;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .metric {
+          min-width: 0;
+          box-sizing: border-box;
+          padding: 14px;
+          border-radius: 13px;
+          background: rgba(255, 255, 255, 0.025);
+          border: 1px solid rgba(255, 255, 255, 0.055);
+        }
+
+        .label {
+          color: #777;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .value {
+          margin-top: 7px;
+          color: #fff;
+          font-size: 16px;
+          font-weight: 900;
+          line-height: 1.15;
+          overflow-wrap: anywhere;
+        }
+
+        .value.paid {
+          color: #22c55e;
+        }
+
+        .value.pending {
+          color: #f59e0b;
+        }
+
+        @media (max-width: 760px) {
+          .content {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
-          color={
-            paid
-              ? "#22c55e"
-              : "#f59e0b"
+        }
+
+        @media (max-width: 430px) {
+          .status-card {
+            border-radius: 15px;
           }
-        />
 
-        <Card
-          title="Periodo"
-          value={currentPeriod}
-        />
+          .status-card > summary {
+            min-height: 58px;
+            padding: 0 12px;
+          }
 
-        <Card
-          title="Próximo Corte"
-          value={nextCutoff}
-        />
+          .icon {
+            width: 29px;
+            height: 29px;
+            flex-basis: 29px;
+            border-radius: 9px;
+            font-size: 13px;
+          }
 
-        <Card
-          title="Próximo Pago"
-          value={nextPayment}
-        />
-      </div>
+          .title {
+            font-size: 11px;
+          }
+
+          .subtitle {
+            font-size: 9px;
+          }
+
+          .badge {
+            padding: 5px 7px;
+            font-size: 8px;
+          }
+
+          .content {
+            gap: 7px;
+            padding: 0 8px 8px;
+          }
+
+          .metric {
+            padding: 12px;
+            border-radius: 11px;
+          }
+
+          .label {
+            font-size: 8px;
+          }
+
+          .value {
+            font-size: 14px;
+          }
+        }
+      `}</style>
+
+      <details className="status-card" open>
+        <summary>
+          <span className="heading">
+            <span className="icon" aria-hidden="true">
+              📅
+            </span>
+
+            <span>
+              <span className="title">Estado Financiero</span>
+              <span className="subtitle">
+                Estado operativo del ciclo financiero actual
+              </span>
+            </span>
+          </span>
+
+          <span className="right">
+            <span className="badge">
+              {paid ? "Pagada" : "Pendiente"}
+            </span>
+
+            <span className="chevron" aria-hidden="true">
+              ⌄
+            </span>
+          </span>
+        </summary>
+
+        <div className="content">
+          <Metric
+            title="Estado"
+            value={paid ? "Pagado" : "Pendiente"}
+            tone={paid ? "paid" : "pending"}
+          />
+
+          <Metric
+            title="Periodo"
+            value={currentPeriod}
+          />
+
+          <Metric
+            title="Próximo Corte"
+            value={nextCutoff}
+          />
+
+          <Metric
+            title="Próximo Pago"
+            value={nextPayment}
+          />
+        </div>
+      </details>
     </section>
   );
 }
 
-function Card({
+function Metric({
   title,
   value,
-  color,
+  tone,
 }: {
   title: string;
   value: string;
-  color?: string;
+  tone?: "paid" | "pending";
 }) {
   return (
-    <div
-      style={{
-        background:
-          "linear-gradient(180deg,#171717,#101010)",
-        border:
-          "1px solid rgba(255,255,255,.07)",
-        borderRadius: 22,
-        padding: 22,
-      }}
-    >
-      <div
-        style={{
-          color: "#888",
-          fontSize: 12,
-          fontWeight: 700,
-          textTransform: "uppercase",
-          letterSpacing: 1,
-        }}
-      >
-        {title}
-      </div>
-
-      <div
-        style={{
-          marginTop: 12,
-          color: color ?? "#fff",
-          fontSize: 28,
-          fontWeight: 900,
-        }}
-      >
-        {value}
-      </div>
+    <div className="metric">
+      <div className="label">{title}</div>
+      <div className={`value ${tone ?? ""}`}>{value}</div>
     </div>
   );
 }

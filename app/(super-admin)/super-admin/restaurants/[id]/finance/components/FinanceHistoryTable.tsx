@@ -2,25 +2,17 @@
 
 interface Liquidation {
   id: string;
-
   month: number;
-
   year: number;
-
   sales_total: number;
-
   wolf_total: number;
-
   restaurant_total: number;
-
   total_orders: number;
-
   status: string;
 }
 
 interface Props {
   liquidations: Liquidation[];
-
   currentId?: string;
 }
 
@@ -33,253 +25,235 @@ export default function FinanceHistoryTable({
   );
 
   return (
-    <section
-      style={{
-        marginTop: 42,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 20,
-          marginBottom: 20,
-        }}
-      >
-        <div>
-          <h2
-            style={{
-              margin: 0,
-              color: "#fff",
-              fontSize: 28,
-              fontWeight: 800,
-            }}
-          >
-            📜 Historial de Liquidaciones
-          </h2>
+    <section className="history-section">
+      <style jsx>{`
+        .history-section {
+          width: 100%;
+          min-width: 0;
+          margin: 0 0 24px;
+        }
 
-          <p
-            style={{
-              marginTop: 8,
-              color: "#888",
-            }}
-          >
-            Liquidaciones anteriores del restaurante.
-          </p>
+        .panel {
+          overflow: hidden;
+          border-radius: 18px;
+          border: 1px solid rgba(255,255,255,.07);
+          background: linear-gradient(180deg,#151515,#0d0d0d);
+        }
+
+        .panel > summary {
+          list-style: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          min-height: 64px;
+          padding: 0 16px;
+        }
+
+        .panel > summary::-webkit-details-marker {
+          display: none;
+        }
+
+        .heading {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .icon {
+          width: 32px;
+          height: 32px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          background: rgba(255,255,255,.045);
+          border: 1px solid rgba(255,255,255,.06);
+        }
+
+        .title {
+          color: #fff;
+          font-size: 13px;
+          font-weight: 800;
+        }
+
+        .subtitle {
+          margin-top: 2px;
+          color: #777;
+          font-size: 10px;
+        }
+
+        .count {
+          color: #aaa;
+          font-size: 11px;
+          font-weight: 800;
+        }
+
+        .content {
+          padding: 0 10px 12px;
+          border-top: 1px solid rgba(255,255,255,.05);
+        }
+
+        .table-wrap {
+          overflow-x: auto;
+          border-radius: 14px;
+        }
+
+        table {
+          width: 100%;
+          min-width: 760px;
+          border-collapse: collapse;
+        }
+
+        th {
+          padding: 14px;
+          text-align: left;
+          color: #777;
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: .08em;
+        }
+
+        td {
+          padding: 14px;
+          color: #fff;
+          font-size: 13px;
+          font-weight: 600;
+          border-top: 1px solid rgba(255,255,255,.05);
+        }
+
+        .orange {
+          color: #f97316;
+        }
+
+        .green {
+          color: #22c55e;
+        }
+
+        .status {
+          display: inline-flex;
+          padding: 6px 10px;
+          border-radius: 999px;
+          font-size: 10px;
+          font-weight: 800;
+        }
+
+        .paid {
+          background: rgba(34,197,94,.12);
+          color: #22c55e;
+        }
+
+        .pending {
+          background: rgba(245,158,11,.12);
+          color: #f59e0b;
+        }
+
+        @media (max-width:560px) {
+          .panel {
+            border-radius: 15px;
+          }
+
+          .panel > summary {
+            min-height: 58px;
+            padding: 0 12px;
+          }
+
+          .title {
+            font-size: 11px;
+          }
+
+          .subtitle {
+            font-size: 9px;
+          }
+
+          .content {
+            padding: 0 8px 8px;
+          }
+
+          td {
+            padding: 12px;
+          }
+        }
+      `}</style>
+
+      <details className="panel" open>
+        <summary>
+          <span className="heading">
+            <span className="icon">📜</span>
+
+            <span>
+              <div className="title">
+                Historial de Liquidaciones
+              </div>
+              <div className="subtitle">
+                Liquidaciones anteriores del restaurante
+              </div>
+            </span>
+          </span>
+
+          <span className="count">
+            {history.length} registros
+          </span>
+        </summary>
+
+        <div className="content">
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Periodo</th>
+                  <th>Ventas</th>
+                  <th>Wolf</th>
+                  <th>Restaurante</th>
+                  <th>Pedidos</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {history.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      {item.month}/{item.year}
+                    </td>
+
+                    <td>
+                      ${Number(item.sales_total).toFixed(2)}
+                    </td>
+
+                    <td className="orange">
+                      ${Number(item.wolf_total).toFixed(2)}
+                    </td>
+
+                    <td className="green">
+                      ${Number(item.restaurant_total).toFixed(2)}
+                    </td>
+
+                    <td>
+                      {item.total_orders}
+                    </td>
+
+                    <td>
+                      <Status status={item.status} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-
-        <div
-          style={{
-            color: "#888",
-            fontWeight: 700,
-          }}
-        >
-          {history.length} registros
-        </div>
-      </div>
-
-      <div
-        style={{
-          overflowX: "auto",
-
-          borderRadius: 22,
-
-          border:
-            "1px solid rgba(255,255,255,.08)",
-
-          background:
-            "linear-gradient(180deg,#171717,#101010)",
-        }}
-      >
-        <table
-          style={{
-            width: "100%",
-
-            borderCollapse:
-              "collapse",
-
-            minWidth: 900,
-          }}
-        >
-          <thead>
-            <tr>
-              <Header>
-                Periodo
-              </Header>
-
-              <Header>
-                Ventas
-              </Header>
-
-              <Header>
-                Wolf
-              </Header>
-
-              <Header>
-                Restaurante
-              </Header>
-
-              <Header>
-                Pedidos
-              </Header>
-
-              <Header>
-                Estado
-              </Header>
-            </tr>
-          </thead>
-
-          <tbody>
-            {history.map((item) => (
-              <tr
-                key={item.id}
-                style={{
-                  borderTop:
-                    "1px solid rgba(255,255,255,.05)",
-                }}
-              >
-                <Cell>
-                  {item.month}/
-                  {item.year}
-                </Cell>
-
-                <Cell>
-                  $
-                  {Number(
-                    item.sales_total
-                  ).toFixed(2)}
-                </Cell>
-
-                <Cell
-                  color="#f97316"
-                >
-                  $
-                  {Number(
-                    item.wolf_total
-                  ).toFixed(2)}
-                </Cell>
-
-                <Cell
-                  color="#22c55e"
-                >
-                  $
-                  {Number(
-                    item.restaurant_total
-                  ).toFixed(2)}
-                </Cell>
-
-                <Cell>
-                  {
-                    item.total_orders
-                  }
-                </Cell>
-
-                <Cell>
-                  <Status
-                    status={
-                      item.status
-                    }
-                  />
-                </Cell>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      </details>
     </section>
   );
 }
 
-function Header({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <th
-      style={{
-        padding: 18,
-
-        textAlign: "left",
-
-        color: "#888",
-
-        fontSize: 12,
-
-        textTransform:
-          "uppercase",
-
-        letterSpacing: .8,
-
-        fontWeight: 700,
-      }}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Cell({
-  children,
-  color,
-}: {
-  children: React.ReactNode;
-
-  color?: string;
-}) {
-  return (
-    <td
-      style={{
-        padding: 18,
-
-        color:
-          color ?? "#fff",
-
-        fontWeight: 600,
-      }}
-    >
-      {children}
-    </td>
-  );
-}
-
-function Status({
-  status,
-}: {
-  status: string;
-}) {
-  const paid =
-    status === "paid";
+function Status({ status }: { status: string }) {
+  const paid = status === "paid";
 
   return (
-    <span
-      style={{
-        display:
-          "inline-flex",
-
-        padding:
-          "8px 14px",
-
-        borderRadius: 999,
-
-        background: paid
-          ? "rgba(34,197,94,.12)"
-          : "rgba(245,158,11,.12)",
-
-        color: paid
-          ? "#22c55e"
-          : "#f59e0b",
-
-        fontWeight: 700,
-
-        fontSize: 13,
-      }}
-    >
-      {paid
-        ? "Pagado"
-        : "Pendiente"}
+    <span className={`status ${paid ? "paid" : "pending"}`}>
+      {paid ? "Pagado" : "Pendiente"}
     </span>
   );
 }

@@ -1,4 +1,5 @@
 import { getRestaurant } from "@/lib/restaurants/getRestaurant";
+import { getReservationSettings } from "@/modules/reservations/actions";
 
 import ThemeProvider from "@/components/restaurant/ThemeProvider";
 import Hero from "@/components/restaurant/Hero";
@@ -6,6 +7,8 @@ import FeaturedMenu from "@/components/restaurant/FeaturedMenu";
 import Services from "@/components/restaurant/Services";
 import Gallery from "@/components/restaurant/Gallery";
 import About from "@/components/restaurant/About";
+import { FloatingReservationButton } from "@/components/reservations/FloatingReservationButton";
+import { getTheme } from "@/lib/theme/getTheme";
 
 import Menu from "@/components/restaurant/Menu";
 import CTA from "@/components/restaurant/sections/CTA";
@@ -30,9 +33,11 @@ export default async function RestaurantPage({
 }: Props) {
   const { slug } = await params;
 
-  // Asegúrate de que getRestaurant incluya el filtro .eq("active", true) 
+  // Asegúrate de que getRestaurant incluya el filtro .eq("active", true)
   // para que retorne null si el restaurante ha sido desactivado.
   const restaurant = await getRestaurant(slug);
+
+  const theme = getTheme(restaurant);
 
   if (!restaurant) {
     return (
@@ -50,62 +55,67 @@ export default async function RestaurantPage({
         }}
       >
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
+          <h1
+            style={{
+              fontSize: 24,
+              fontWeight: 700,
+              marginBottom: 8,
+            }}
+          >
             Restaurante no disponible
           </h1>
-          <p style={{ color: "#8f8f8f", fontSize: 14 }}>
-            Este establecimiento se encuentra inactivo temporalmente o no existe.
+
+          <p
+            style={{
+              color: "#8f8f8f",
+              fontSize: 14,
+            }}
+          >
+            Este establecimiento se encuentra inactivo temporalmente o no
+            existe.
           </p>
         </div>
       </main>
     );
   }
 
+  const reservationSettings = await getReservationSettings(
+    String(restaurant.id)
+  );
+
+  const reservationsEnabled =
+    reservationSettings?.reservations_enabled ?? true;
+
   return (
     <>
-<PushProvider
-  restaurantId={restaurant.id}
-/>
+      <PushProvider restaurantId={restaurant.id} />
 
-      <ThemeProvider
-        theme={restaurant.themeSettings}
-      />
+      <ThemeProvider theme={restaurant.themeSettings} />
 
-      <Navbar
-        restaurant={restaurant}
-      />
+      <Navbar restaurant={restaurant} />
 
-      <Hero
-        restaurant={restaurant}
-      />
+      <Hero restaurant={restaurant} />
 
-      <Services
-        restaurant={restaurant}
-      />
+{reservationsEnabled && restaurant.slug ? (
+  <FloatingReservationButton
+    slug={restaurant.slug}
+    primaryColor={theme.primary}
+  />
+) : null}
 
-      <FeaturedMenu
-        restaurant={restaurant}
-      />
+      <Services restaurant={restaurant} />
 
-      <Menu
-        restaurant={restaurant}
-      />
+      <FeaturedMenu restaurant={restaurant} />
 
-      <Gallery
-        restaurant={restaurant}
-      />
+      <Menu restaurant={restaurant} />
 
-      <About
-        restaurant={restaurant}
-      />
+      <Gallery restaurant={restaurant} />
 
-      <CTA
-        restaurant={restaurant}
-      />
+      <About restaurant={restaurant} />
 
-      <Footer
-        restaurant={restaurant}
-      />
+      <CTA restaurant={restaurant} />
+
+      <Footer restaurant={restaurant} />
     </>
   );
 }

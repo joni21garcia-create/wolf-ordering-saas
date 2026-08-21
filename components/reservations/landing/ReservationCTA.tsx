@@ -1,15 +1,13 @@
 "use client";
 
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import clsx from "clsx";
+import { ArrowRight, CalendarPlus } from "lucide-react";
 
 export interface ReservationCTAProps {
   title?: ReactNode;
-
   description?: ReactNode;
-
   action?: ReactNode;
-
   className?: string;
 }
 
@@ -22,25 +20,45 @@ export default function ReservationCTA({
   return (
     <section
       className={clsx(
-        "flex flex-col items-center gap-5 px-6 py-16 text-center",
-        "rounded-3xl bg-primary text-primary-foreground",
+        "relative overflow-hidden rounded-3xl border border-orange-200/60",
+        "bg-orange-500 px-5 py-8 text-white shadow-sm",
+        "sm:px-8 sm:py-10",
         className
       )}
     >
-      <h2 className="text-3xl font-bold tracking-tight">
-        {title}
-      </h2>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-white/10 blur-2xl"
+      />
 
-      <p className="max-w-xl text-sm opacity-90">
-        {description}
-      </p>
+      <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <div className="mb-2 flex items-center gap-2 text-white/80">
+            <CalendarPlus className="h-4 w-4" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em]">
+              Reservaciones
+            </span>
+          </div>
 
-      {action && (
-        <div>
-          {action}
+          <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
+            {title}
+          </h2>
+
+          <p className="mt-1 max-w-xl text-sm leading-5 text-white/80">
+            {description}
+          </p>
         </div>
-      )}
+
+        {action ? (
+          <div className="shrink-0 [&_button]:w-full sm:[&_button]:w-auto">
+            {action}
+          </div>
+        ) : (
+          <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 sm:flex">
+            <ArrowRight className="h-4 w-4" />
+          </div>
+        )}
+      </div>
     </section>
   );
 }
-

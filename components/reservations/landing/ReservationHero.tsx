@@ -1,15 +1,13 @@
 "use client";
 
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import clsx from "clsx";
+import { CalendarDays } from "lucide-react";
 
 export interface ReservationHeroProps {
   title?: ReactNode;
-
   description?: ReactNode;
-
   action?: ReactNode;
-
   className?: string;
 }
 
@@ -22,24 +20,35 @@ export default function ReservationHero({
   return (
     <section
       className={clsx(
-        "flex flex-col items-center justify-center gap-6 px-6 py-20 text-center",
+        "relative overflow-hidden rounded-3xl border border-border/70 bg-card",
+        "px-5 py-10 text-center shadow-sm sm:px-8 sm:py-14",
         className
       )}
     >
-      <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl">
-        {title}
-      </h1>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-orange-500/10 to-transparent"
+      />
 
-      <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
-        {description}
-      </p>
-
-      {action && (
-        <div>
-          {action}
+      <div className="relative mx-auto flex max-w-3xl flex-col items-center">
+        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+          <CalendarDays className="h-5 w-5" />
         </div>
-      )}
+
+        <h1 className="max-w-3xl text-3xl font-black tracking-tight text-foreground sm:text-5xl">
+          {title}
+        </h1>
+
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+          {description}
+        </p>
+
+        {action ? (
+          <div className="mt-6 w-full sm:w-auto">
+            {action}
+          </div>
+        ) : null}
+      </div>
     </section>
   );
 }
-

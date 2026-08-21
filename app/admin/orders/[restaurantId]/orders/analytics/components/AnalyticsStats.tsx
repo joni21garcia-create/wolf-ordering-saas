@@ -1,20 +1,13 @@
-"use client";
+ "use client";
 
 interface Props {
   salesTotal: number;
-
   wolfTotal: number;
-
   restaurantTotal: number;
-
   totalOrders: number;
-
   avgTicket: number;
-
   deliveryOrders: number;
-
   pickupOrders: number;
-
   cancelledOrders: number;
 }
 
@@ -29,64 +22,48 @@ export default function AnalyticsStats({
   cancelledOrders,
 }: Props) {
   return (
-    <section
-      style={{
-        display: "grid",
-        gridTemplateColumns:
-          "repeat(auto-fit,minmax(240px,1fr))",
+    <section className="stats">
+      <style jsx>{`
+        .stats {
+          width: 100%;
+          min-width: 0;
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 14px;
+          margin-bottom: 24px;
+        }
 
-        gap: 20,
+        @media (max-width: 1100px) {
+          .stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
 
-        marginBottom: 30,
-      }}
-    >
-      <Card
-        title="Ventas"
-        value={money(salesTotal)}
-        color="#22c55e"
-      />
+        @media (max-width: 560px) {
+          .stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 18px;
+          }
+        }
+      `}</style>
 
-      <Card
-        title="Pedidos"
-        value={totalOrders}
-        color="#f97316"
-      />
-
-      <Card
-        title="Wolf"
-        value={money(wolfTotal)}
-        color="#ef4444"
-      />
-
+      <Card title="Ventas" value={money(salesTotal)} color="#22c55e" />
+      <Card title="Pedidos" value={totalOrders} color="#f97316" />
+      <Card title="Wolf" value={money(wolfTotal)} color="#ef4444" />
       <Card
         title="Restaurante"
         value={money(restaurantTotal)}
         color="#3b82f6"
       />
-
       <Card
         title="Ticket Promedio"
         value={money(avgTicket)}
         color="#a855f7"
       />
-
-      <Card
-        title="Delivery"
-        value={deliveryOrders}
-        color="#06b6d4"
-      />
-
-      <Card
-        title="Pickup"
-        value={pickupOrders}
-        color="#14b8a6"
-      />
-
-      <Card
-        title="Cancelados"
-        value={cancelledOrders}
-        color="#dc2626"
-      />
+      <Card title="Delivery" value={deliveryOrders} color="#06b6d4" />
+      <Card title="Pickup" value={pickupOrders} color="#14b8a6" />
+      <Card title="Cancelados" value={cancelledOrders} color="#dc2626" />
     </section>
   );
 }
@@ -97,61 +74,94 @@ function Card({
   color,
 }: {
   title: string;
-
   value: string | number;
-
   color: string;
 }) {
   return (
-    <div
-      style={{
-        background:
-          "linear-gradient(180deg,#141414,#0a0a0a)",
-
-        border:
-          "1px solid rgba(255,255,255,.07)",
-
-        borderRadius: 24,
-
-        padding: 26,
-
-        display: "flex",
-
-        flexDirection: "column",
-
-        gap: 10,
-      }}
+    <article
+      className="card"
+      style={{ "--accent": color } as React.CSSProperties}
     >
-      <div
-        style={{
-          color: "#8b8b8b",
+      <style jsx>{`
+        .card {
+          min-width: 0;
+          box-sizing: border-box;
+          background:
+            linear-gradient(180deg, #151515 0%, #0b0b0b 100%);
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 20px;
+          padding: 18px 18px 17px;
+          display: flex;
+          flex-direction: column;
+          gap: 9px;
+          position: relative;
+          overflow: hidden;
+        }
 
-          fontSize: 13,
+        .card::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          height: 2px;
+          background: var(--accent);
+          opacity: 0.8;
+        }
 
-          fontWeight: 700,
+        .label {
+          color: #888;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.8px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
 
-          textTransform: "uppercase",
+        .value {
+          color: var(--accent);
+          font-size: clamp(22px, 2.5vw, 32px);
+          font-weight: 900;
+          line-height: 1;
+          letter-spacing: -0.6px;
+          overflow-wrap: anywhere;
+        }
 
-          letterSpacing: 1,
-        }}
-      >
-        {title}
-      </div>
+        @media (max-width: 560px) {
+          .card {
+            border-radius: 16px;
+            padding: 15px 13px 14px;
+            gap: 8px;
+          }
 
-      <div
-        style={{
-          color,
+          .label {
+            font-size: 9px;
+            letter-spacing: 0.55px;
+          }
 
-          fontSize: 36,
+          .value {
+            font-size: clamp(18px, 6vw, 25px);
+            letter-spacing: -0.4px;
+          }
+        }
 
-          fontWeight: 900,
+        @media (max-width: 360px) {
+          .card {
+            padding-left: 11px;
+            padding-right: 11px;
+          }
 
-          lineHeight: 1,
-        }}
-      >
-        {value}
-      </div>
-    </div>
+          .value {
+            font-size: 18px;
+          }
+        }
+      `}</style>
+
+      <div className="label">{title}</div>
+      <div className="value">{value}</div>
+    </article>
   );
 }
 

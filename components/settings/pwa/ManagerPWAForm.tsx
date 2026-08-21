@@ -1,33 +1,71 @@
+"use client";
+
+import SectionCard from "./SectionCard";
+
 export default function ManagerPWAForm() {
   return (
-    <div
-      style={{
-        padding: 30,
-        border: "1px solid #3f3f46",
-        borderRadius: 16,
-        background: "#18181b",
-        color: "#fff",
-      }}
+    <SectionCard
+      title="Wolf Manager"
+      subtitle="Configuración de la aplicación administrativa."
+      defaultOpen
+      accent="green"
     >
-      <h2
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          marginBottom: 12,
-        }}
-      >
-        Wolf Ordering Manager
-      </h2>
+      <div className="manager-box">
+        <style jsx>{`
+          .manager-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 4px 0;
+          }
 
-      <p
-        style={{
-          color: "#a1a1aa",
-        }}
-      >
-        Configuración de la aplicación de administración.
-      </p>
-    </div>
+          .item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.06);
+            background: rgba(255,255,255,.025);
+          }
+
+          .icon {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(34,197,94,.12);
+          }
+
+          .title {
+            color: #fff;
+            font-size: 13px;
+            font-weight: 800;
+          }
+
+          .text {
+            margin-top: 3px;
+            color: #888;
+            font-size: 11px;
+          }
+        `}</style>
+
+        <div className="item">
+          <div className="icon">🐺</div>
+
+          <div>
+            <div className="title">
+              Wolf Ordering Manager
+            </div>
+
+            <div className="text">
+              Panel administrativo optimizado para PWA.
+            </div>
+          </div>
+        </div>
+      </div>
+    </SectionCard>
   );
 }
-
-
