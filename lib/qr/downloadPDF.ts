@@ -784,3 +784,4 @@ if (isAndroid) {
 }
 
 pdf.save(fileName);
+}
