@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { toPng } from "html-to-image";
+import { Capacitor } from "@capacitor/core";
+import {
+  saveBase64FileOnAndroid,
+} from "@/lib/capacitor/download";
 
 interface Props {
   restaurantName: string;
@@ -241,131 +245,73 @@ export default function GoogleReviewsPoster({
   /* DESCARGAR PNG                                                            */
   /* ------------------------------------------------------------------------ */
 
-  async function downloadPoster() {
-    if (busy) return;
+ async function downloadPoster() {
+  if (busy) return;
 
-    setBusy("png");
+  setBusy("png");
 
-    try {
-      const image =
-        await getPosterImage();
+  try {
+    const image = await getPosterImage();
 
-      if (!image) {
-        alert(
-          "No fue posible generar el PNG del cartel.",
-        );
-
-        return;
-      }
-
-      const fileName = `${sanitizeFileName(
-        restaurantName,
-      )}-google-review.png`;
-
-      const isAndroid =
-        isNativeAndroid();
-
-      const isMobile =
-        isMobileDevice();
-
-      /*
-       * Android / móvil:
-       *
-       * Primero intentamos compartir el PNG como
-       * archivo real. Esto funciona mucho mejor dentro
-       * de WebView/PWA que depender exclusivamente de
-       * <a download>.
-       */
-
-      if (
-        (isAndroid || isMobile) &&
-        typeof navigator !== "undefined" &&
-        typeof navigator.share === "function"
-      ) {
-        try {
-          const response =
-            await fetch(image);
-
-          const blob =
-            await response.blob();
-
-          const file = new File(
-            [blob],
-            fileName,
-            {
-              type: "image/png",
-            },
-          );
-
-          const canShare =
-            typeof navigator.canShare ===
-            "function"
-              ? navigator.canShare({
-                  files: [file],
-                })
-              : true;
-
-          if (canShare) {
-            await navigator.share({
-              title:
-                "Google Reviews",
-              text:
-                `Cartel de Google Reviews - ${
-                  restaurantName ||
-                  "Restaurante"
-                }`,
-              files: [file],
-            });
-
-            return;
-          }
-        } catch (error) {
-          /*
-           * Cancelar el share sheet no es un error.
-           */
-
-          if (
-            error instanceof DOMException &&
-            error.name === "AbortError"
-          ) {
-            return;
-          }
-
-          console.warn(
-            "No fue posible compartir PNG:",
-            error,
-          );
-        }
-      }
-
-      /*
-       * Fallback navegador.
-       */
-
-      const link =
-        document.createElement("a");
-
-      link.download = fileName;
-      link.href = image;
-
-      document.body.appendChild(link);
-
-      link.click();
-
-      link.remove();
-    } catch (error) {
-      console.error(
-        "Error descargando PNG:",
-        error,
-      );
-
+    if (!image) {
       alert(
-        "No fue posible descargar el PNG.",
+        "No fue posible generar el PNG del cartel.",
       );
-    } finally {
-      setBusy(null);
+      return;
     }
+
+    const fileName = `${sanitizeFileName(
+      restaurantName,
+    )}-google-review.png`;
+
+    const isAndroid =
+      isNativeAndroid();
+
+    // ANDROID
+    if (isAndroid) {
+      const base64 =
+        image.split(",")[1];
+
+      if (!base64) {
+        throw new Error(
+          "No fue posible obtener el PNG en Base64.",
+        );
+      }
+
+      await saveBase64FileOnAndroid(
+        base64,
+        fileName,
+        "image/png",
+      );
+
+      return;
+    }
+
+    // WEB
+    const link =
+      document.createElement("a");
+
+    link.download = fileName;
+    link.href = image;
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+  } catch (error) {
+    console.error(
+      "Error descargando PNG:",
+      error,
+    );
+
+    alert(
+      "No fue posible descargar el PNG.",
+    );
+  } finally {
+    setBusy(null);
   }
+}
 
   /* ------------------------------------------------------------------------ */
   /* GENERAR PDF                                                              */
@@ -745,179 +691,6 @@ export default function GoogleReviewsPoster({
     }
   }
 
-  /* ------------------------------------------------------------------------ */
-  /* IMPRESIÓN WEB                                                            */
-  /* ------------------------------------------------------------------------ */
-
-  async function printPoster() {
-    /*
-     * En Android nativo usamos directamente
-     * el mismo generador PDF.
-     */
-
-    if (isNativeAndroid()) {
-      await downloadPDF();
-      return;
-    }
-
-    const image =
-      await getPosterImage();
-
-    if (!image) {
-      alert(
-        "No fue posible generar el cartel.",
-      );
-
-      return;
-    }
-
-    const win =
-      window.open(
-        "",
-        "_blank",
-      );
-
-    if (!win) {
-      alert(
-        "El navegador bloqueó la ventana de impresión.",
-      );
-
-      return;
-    }
-
-    win.document.open();
-
-    win.document.write(`
-      <!DOCTYPE html>
-
-      <html lang="es">
-
-      <head>
-
-        <meta charset="UTF-8" />
-
-        <title>
-          ${restaurantName || "Google Reviews"}
-        </title>
-
-        <style>
-
-          *,
-          *::before,
-          *::after {
-            box-sizing: border-box;
-          }
-
-          @page {
-            size: A4 portrait;
-            margin: 0;
-          }
-
-          html,
-          body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100%;
-            background: #ffffff;
-          }
-
-          body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-          }
-
-          .print-page {
-            width: 210mm;
-            height: 297mm;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            padding: 8mm;
-
-            overflow: hidden;
-          }
-
-          .print-poster {
-            display: block;
-
-            max-width: 100%;
-            max-height: 100%;
-
-            width: auto;
-            height: auto;
-
-            object-fit: contain;
-            object-position: center;
-
-            margin: 0 auto;
-          }
-
-        </style>
-
-      </head>
-
-      <body>
-
-        <main class="print-page">
-
-          <img
-            class="print-poster"
-            src="${image}"
-            alt="Poster Google Reviews"
-          />
-
-        </main>
-
-        <script>
-
-          const image =
-            document.querySelector(
-              ".print-poster"
-            );
-
-          function printWhenReady() {
-
-            if (
-              image &&
-              image.complete
-            ) {
-
-              setTimeout(() => {
-
-                window.focus();
-
-                window.print();
-
-              }, 250);
-
-            }
-
-          }
-
-          if (image) {
-
-            image.addEventListener(
-              "load",
-              printWhenReady
-            );
-
-          }
-
-          printWhenReady();
-
-        </script>
-
-      </body>
-
-      </html>
-    `);
-
-    win.document.close();
-  }
 
   /* ------------------------------------------------------------------------ */
   /* UI                                                                        */
@@ -1389,15 +1162,6 @@ export default function GoogleReviewsPoster({
             : "📄 Descargar PDF"}
         </button>
 
-        <button
-          type="button"
-          onClick={printPoster}
-          disabled={
-            busy !== null
-          }
-        >
-          🖨 Imprimir cartel
-        </button>
       </div>
     </section>
   );

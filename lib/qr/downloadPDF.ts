@@ -1,4 +1,6 @@
 import jsPDF from "jspdf";
+import { Capacitor } from "@capacitor/core";
+import { openPdfOnAndroid } from "@/lib/capacitor/download";
 
 interface DownloadPDFProps {
   restaurantName: string;
@@ -748,13 +750,37 @@ export async function downloadPDF({
    * =========================================================
    */
 
-  const safeName =
-    restaurantName
-      .trim()
-      .replace(/\s+/g, "-")
-      .toLowerCase();
+ const safeName =
+  restaurantName
+    .trim()
+    .replace(/\s+/g, "-")
+    .toLowerCase();
 
-  pdf.save(
-    `${safeName}-qr.pdf`,
+const fileName = `${safeName}-qr.pdf`;
+
+const isAndroid =
+  Capacitor.isNativePlatform() &&
+  Capacitor.getPlatform() === "android";
+
+if (isAndroid) {
+  const dataUri =
+    pdf.output("datauristring");
+
+  const base64 =
+    dataUri.split(",")[1];
+
+  if (!base64) {
+    throw new Error(
+      "No fue posible generar el PDF.",
+    );
+  }
+
+  await openPdfOnAndroid(
+    base64,
+    fileName,
   );
+
+  return;
 }
+
+pdf.save(fileName);
