@@ -404,7 +404,7 @@ function MobileReservationItem({
   );
 }
 
-function ReservationSheetContent({
+export function ReservationSheetContent({
   reservation,
   onRefresh,
   onClose,

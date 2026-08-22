@@ -22,6 +22,10 @@ import {
 } from "@/constants/reservations/reservation-status";
 
 import ReservationUpcomingEmpty from "./empty/ReservationUpcomingEmpty";
+import { WolfSheet } from "@/lib/wolf-ui";
+import {
+  ReservationSheetContent,
+} from "@/components/reservations/tables/ReservationTable";
 
 /* ============================================================================
  * TYPES
@@ -190,6 +194,8 @@ export default function ReservationUpcoming({
 }: ReservationUpcomingProps) {
   const [expandedId, setExpandedId] =
     useState<string | null>(null);
+    const [selectedReservation, setSelectedReservation] =
+  useState<Reservation | null>(null);
 
   const upcoming =
     [...reservations]
@@ -836,13 +842,11 @@ export default function ReservationUpcoming({
                       {/* ACTION */}
                       {/* ------------------------------------------------ */}
 
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onSelectReservation?.(
-                            reservationId
-                          )
-                        }
+<button
+  type="button"
+  onClick={() =>
+    setSelectedReservation(reservation)
+  }
                         className="
                           mt-3
                           flex
@@ -878,6 +882,39 @@ export default function ReservationUpcoming({
           }
         )}
       </div>
+
+      <WolfSheet
+        open={Boolean(selectedReservation)}
+        onClose={() =>
+          setSelectedReservation(null)
+        }
+        title="Reserva"
+        subtitle={
+          selectedReservation
+            ? `${formatTime(
+                selectedReservation
+              )} · ${
+                selectedReservation.guest
+                  .fullName ||
+                "Sin nombre"
+              }`
+            : undefined
+        }
+        ariaLabel="Detalle de reserva"
+        tone="dark"
+        maxWidth={520}
+      >
+        {selectedReservation ? (
+          <ReservationSheetContent
+            reservation={
+              selectedReservation
+            }
+            onClose={() =>
+              setSelectedReservation(null)
+            }
+          />
+        ) : null}
+      </WolfSheet>
     </aside>
   );
 }
