@@ -334,31 +334,7 @@ const Hero = React.memo(function Hero({ restaurant }: HeroProps) {
             "
           />
 
-          {/* Primary-color atmosphere */}
-          <motion.div
-            animate={{
-              opacity: [0.16, 0.24, 0.16],
-              scale: [1, 1.08, 1],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="
-              absolute
-              -left-32
-              -top-32
-              h-[520px]
-              w-[520px]
-              rounded-full
-              blur-[130px]
-              pointer-events-none
-            "
-            style={{
-              backgroundColor: theme.primary,
-            }}
-          />
+
         </motion.div>
       </AnimatePresence>
 
