@@ -1,4 +1,6 @@
 import jsPDF from "jspdf";
+import { Capacitor } from "@capacitor/core";
+import { openPdfOnAndroid } from "@/lib/capacitor/download";
 
 interface DownloadPDFProps {
   restaurantName: string;
@@ -13,7 +15,6 @@ export async function downloadPDF({
   url,
   logoUrl,
 }: DownloadPDFProps) {
-
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -29,26 +30,23 @@ export async function downloadPDF({
   // ------------------------
 
   if (logoUrl) {
-
     try {
+      const response = await fetch(logoUrl);
+      const blob = await response.blob();
 
-      const response =
-        await fetch(logoUrl);
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
 
-      const blob =
-        await response.blob();
+        reader.onloadend = () => {
+          resolve(reader.result as string);
+        };
 
-      const base64 =
-        await new Promise<string>((resolve) => {
+        reader.onerror = () => {
+          reject(new Error("No fue posible leer el logo."));
+        };
 
-          const reader = new FileReader();
-
-          reader.onloadend = () =>
-            resolve(reader.result as string);
-
-          reader.readAsDataURL(blob);
-
-        });
+        reader.readAsDataURL(blob);
+      });
 
       pdf.addImage(
         base64,
@@ -60,15 +58,9 @@ export async function downloadPDF({
       );
 
       currentY += 44;
-
     } catch (error) {
-
-      console.warn(
-        "No fue posible cargar el logo."
-      );
-
+      console.warn("No fue posible cargar el logo.", error);
     }
-
   }
 
   // ------------------------
@@ -76,7 +68,6 @@ export async function downloadPDF({
   // ------------------------
 
   pdf.setFont("helvetica", "bold");
-
   pdf.setFontSize(22);
 
   pdf.text(
@@ -91,7 +82,6 @@ export async function downloadPDF({
   currentY += 12;
 
   pdf.setFontSize(13);
-
   pdf.setFont("helvetica", "normal");
 
   pdf.text(
@@ -149,7 +139,6 @@ export async function downloadPDF({
   currentY += 10;
 
   pdf.setFontSize(10);
-
   pdf.setTextColor(120);
 
   pdf.text(
@@ -161,12 +150,30 @@ export async function downloadPDF({
     }
   );
 
-  pdf.save(
-    `${restaurantName
-      .replace(/\s+/g, "-")
-      .toLowerCase()}-qr.pdf`
-  );
+  // ------------------------
+  // DESCARGA
+  // ------------------------
 
+  const fileName = `${restaurantName
+    .replace(/\s+/g, "-")
+    .toLowerCase()}-qr.pdf`;
+
+  const isAndroid =
+    Capacitor.isNativePlatform() &&
+    Capacitor.getPlatform() === "android";
+
+  if (isAndroid) {
+    const dataUri = pdf.output("datauristring");
+    const base64 = dataUri.split(",")[1];
+
+    if (!base64) {
+      throw new Error("No fue posible generar el PDF.");
+    }
+
+    await openPdfOnAndroid(base64, fileName);
+    return;
+  }
+
+  // Navegador normal
+  pdf.save(fileName);
 }
-
-
