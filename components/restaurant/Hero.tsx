@@ -264,16 +264,16 @@ const Hero = React.memo(function Hero({ restaurant }: HeroProps) {
             opacity: 0,
             scale: 1.02,
           }}
-          transition={{
-            opacity: {
-              duration: 0.9,
-              ease: "easeOut",
-            },
-            scale: {
-              duration: 7,
-              ease: "easeOut",
-            },
-          }}
+transition={{
+  opacity: {
+    duration: 0.35,
+    ease: "easeOut",
+  },
+  scale: {
+    duration: 2.5,
+    ease: "easeOut",
+  },
+}}
           className="
             absolute
             inset-0
