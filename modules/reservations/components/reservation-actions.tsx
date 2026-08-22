@@ -74,20 +74,19 @@ export function ReservationActions({
   const isPending =
     status === ReservationStatus.PENDING;
 
-  const canCancel =
-    status === ReservationStatus.PENDING ||
-    status === ReservationStatus.CONFIRMED ||
-    status === ReservationStatus.CHECKED_IN;
+const canCancel =
+  status === ReservationStatus.PENDING ||
+  status === ReservationStatus.CONFIRMED ||
+  status === ReservationStatus.CHECKED_IN;
 
-  const canNoShow =
-    status === ReservationStatus.CONFIRMED ||
-    status === ReservationStatus.CHECKED_IN;
+const canNoShow =
+  status === ReservationStatus.CONFIRMED;
 
-  const canCheckIn =
-    status === ReservationStatus.CONFIRMED;
+const canCheckIn =
+  status === ReservationStatus.CONFIRMED;
 
-  const canComplete =
-    status === ReservationStatus.CHECKED_IN;
+const canComplete =
+  status === ReservationStatus.CHECKED_IN;
 
   return (
     <div
