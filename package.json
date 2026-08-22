@@ -54,6 +54,7 @@
     "tailwindcss": "^4.3.3",
     "uuid": "^14.0.1",
     "web-push": "^3.6.7",
+    "xlsx": "^0.18.5",
     "zod": "^4.4.3"
   },
   "devDependencies": {

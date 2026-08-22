@@ -207,37 +207,75 @@ async function exportReservationsToExcel(
     }
   );
 
-  const csv = [
+  /*
+   * ============================================================
+   * CREAR LIBRO EXCEL REAL (.xlsx)
+   * ============================================================
+   */
+
+  const XLSX = await import("xlsx");
+
+  const worksheetData = [
     headers,
     ...rows,
-  ]
-    .map((row) =>
-      row
-        .map(escapeCsv)
-        .join(";")
-    )
-    .join("\r\n");
+  ];
 
+  const worksheet =
+    XLSX.utils.aoa_to_sheet(
+      worksheetData
+    );
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Reservas"
+  );
+
+  /*
+   * Anchos de columnas para que el Excel
+   * quede cómodo de leer.
+   */
+  worksheet["!cols"] = [
+    { wch: 14 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 28 },
+    { wch: 18 },
+    { wch: 30 },
+    { wch: 10 },
+    { wch: 18 },
+    { wch: 22 },
+    { wch: 40 },
+    { wch: 18 },
+    { wch: 24 },
+  ];
+
+  /*
+   * Fecha del archivo.
+   */
   const date =
     new Date()
       .toISOString()
       .slice(0, 10);
 
   const fileName =
-    `reservas-${date}.csv`;
+    `reservas-${date}.xlsx`;
 
   /*
+   * ============================================================
    * ANDROID / CAPACITOR
+   * ============================================================
    */
   if (Capacitor.isNativePlatform()) {
     try {
-      const base64 = btoa(
-        unescape(
-          encodeURIComponent(
-            "\uFEFF" + csv
-          )
-        )
-      );
+      const base64 =
+        XLSX.write(workbook, {
+          bookType: "xlsx",
+          type: "base64",
+        });
 
       const result =
         await Filesystem.writeFile({
@@ -268,12 +306,21 @@ async function exportReservationsToExcel(
   }
 
   /*
+   * ============================================================
    * WEB
+   * ============================================================
    */
+  const excelBuffer =
+    XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
   const blob = new Blob(
-    ["\uFEFF" + csv],
+    [excelBuffer],
     {
-      type: "text/csv;charset=utf-8;",
+      type:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     }
   );
 
