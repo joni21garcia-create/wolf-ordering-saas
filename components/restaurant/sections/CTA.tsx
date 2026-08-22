@@ -2,18 +2,13 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-
 import { getTheme } from "@/lib/theme/getTheme";
-
 
 interface Props {
   restaurant: any;
 }
 
-export default function CTA({
-  restaurant,
-}: Props) {
-
+export default function CTA({ restaurant }: Props) {
   const theme = getTheme(restaurant);
 
   const ctaEnabled =
@@ -24,11 +19,17 @@ export default function CTA({
 
   if (!ctaEnabled) return null;
 
+  const isOpen =
+    restaurant.is_open === true ||
+    restaurant.is_open === 1 ||
+    restaurant.is_open === "true" ||
+    restaurant.is_open === "1";
+
   return (
     <section
-      id="contact"
+      id="order"
       className="restaurant-cta"
-      aria-label="Llamado a la acción"
+      aria-label="Pedido y menú digital"
       style={
         {
           "--cta-bg": theme.background,
@@ -37,216 +38,474 @@ export default function CTA({
         } as React.CSSProperties
       }
     >
-      <div className="cta-glow" aria-hidden="true" />
+      {/* Glow principal */}
+      <div className="cta-glow cta-glow-one" aria-hidden="true" />
+
+      <div className="cta-glow cta-glow-two" aria-hidden="true" />
 
       <motion.div
-        initial={{ opacity: 0, y: 18 }}
+        initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.2 }}
-        transition={{ duration: 0.45 }}
-        className="cta-inner"
+        viewport={{ once: true, amount: 0.25 }}
+        transition={{
+          duration: 0.65,
+          ease: [0.22, 1, 0.36, 1],
+        }}
+        className="cta-card"
       >
-        <div className="cta-copy">
-          <span className="cta-eyebrow">LISTO PARA ORDENAR</span>
+        {/* Decoración superior */}
+        <div className="cta-line" aria-hidden="true">
+          <span />
+          <i />
+          <span />
+        </div>
+
+        <div className="cta-content">
+          <span className="cta-eyebrow">
+            MENÚ DIGITAL
+          </span>
 
           <h2>
-            {restaurant.cta_title || "¿Listo para ordenar?"}
+            {restaurant.cta_title ||
+              "Tu próxima experiencia empieza aquí"}
           </h2>
 
           <p>
             {restaurant.cta_description ||
-              "Haz tu pedido ahora mismo y recibe la mejor experiencia gastronómica directamente en tu hogar."}
+              "Explora nuestro menú, elige tus favoritos y haz tu pedido de forma rápida y sencilla."}
           </p>
-        </div>
 
-        <div className="cta-action">
-          {restaurant.is_open ? (
-            <Link
-              href={`/${restaurant.slug}/order`}
-              className="cta-button"
-              aria-label={restaurant.cta_button_text || "Ordenar ahora"}
-            >
+          <div className="cta-action">
+            {isOpen ? (
+              <Link
+                href={`/${restaurant.slug}/order`}
+                className="cta-button"
+                aria-label={
+                  restaurant.cta_button_text ||
+                  "Ver menú y ordenar"
+                }
+              >
+                <span className="cta-button-icon">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 4h15l-1.5 9H8L6 4Z"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M6 4H3"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
+                    <circle
+                      cx="9"
+                      cy="19"
+                      r="1.5"
+                      fill="currentColor"
+                    />
+                    <circle
+                      cx="18"
+                      cy="19"
+                      r="1.5"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </span>
+
+                <span>
+                  {restaurant.cta_button_text ||
+                    "Ver menú y ordenar"}
+                </span>
+
+                <b aria-hidden="true">→</b>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="cta-button cta-closed"
+                aria-disabled="true"
+              >
+                <span className="cta-button-icon">
+                  🔒
+                </span>
+
+                <span>
+                  {restaurant.cta_button_text ||
+                    "Restaurante cerrado"}
+                </span>
+              </button>
+            )}
+          </div>
+
+          {isOpen && (
+            <div className="cta-meta">
+              <span className="status-dot" />
               <span>
-                {restaurant.cta_button_text || "Ordenar Ahora 🚀"}
+                Estamos recibiendo pedidos ahora
               </span>
-              <b aria-hidden="true">→</b>
-            </Link>
-          ) : (
-            <button
-              type="button"
-              disabled
-              className="cta-button cta-closed"
-              aria-disabled="true"
-            >
-              <span>🔒 Cerrado</span>
-            </button>
+            </div>
           )}
         </div>
+
+        {/* Brillo inferior */}
+        <div className="cta-bottom-glow" aria-hidden="true" />
       </motion.div>
 
       <style jsx>{`
         .restaurant-cta {
-          position:relative;
-          width:100%;
-          box-sizing:border-box;
-          overflow:hidden;
-          padding:clamp(42px,7vw,76px) 14px;
-          background:var(--cta-bg);
-          color:var(--cta-text);
-          isolation:isolate;
+          position: relative;
+          width: 100%;
+          box-sizing: border-box;
+          overflow: hidden;
+          padding: clamp(58px, 9vw, 110px) 16px;
+          background: var(--cta-bg);
+          color: var(--cta-text);
+          isolation: isolate;
         }
 
         .cta-glow {
-          position:absolute;
-          width:360px;
-          height:360px;
-          right:-180px;
-          top:-210px;
-          border-radius:50%;
-          background:var(--cta-primary);
-          filter:blur(130px);
-          opacity:.10;
-          pointer-events:none;
-          z-index:-1;
+          position: absolute;
+          border-radius: 50%;
+          background: var(--cta-primary);
+          filter: blur(140px);
+          pointer-events: none;
+          z-index: -1;
         }
 
-        .cta-inner {
-          width:100%;
-          max-width:760px;
-          margin:0 auto;
-          box-sizing:border-box;
-          display:flex;
-          align-items:center;
-          justify-content:space-between;
-          gap:18px;
-          padding:clamp(18px,3vw,28px);
-          border:1px solid rgba(255,255,255,.08);
-          border-radius:20px;
-          background:rgba(0,0,0,.10);
-          box-shadow:0 18px 60px rgba(0,0,0,.14);
+        .cta-glow-one {
+          width: 420px;
+          height: 420px;
+          left: 50%;
+          top: -280px;
+          transform: translateX(-50%);
+          opacity: 0.13;
         }
 
-        .cta-copy {
-          min-width:0;
-          flex:1;
+        .cta-glow-two {
+          width: 260px;
+          height: 260px;
+          right: -130px;
+          bottom: -160px;
+          opacity: 0.07;
+        }
+
+        .cta-card {
+          position: relative;
+          width: 100%;
+          max-width: 900px;
+          margin: 0 auto;
+          box-sizing: border-box;
+          overflow: hidden;
+          padding: clamp(34px, 6vw, 64px)
+            clamp(20px, 5vw, 60px);
+          border: 1px solid rgba(255, 255, 255, 0.09);
+          border-radius: 30px;
+          background:
+            linear-gradient(
+              145deg,
+              rgba(255, 255, 255, 0.055),
+              rgba(255, 255, 255, 0.018)
+            );
+          box-shadow:
+            0 30px 90px rgba(0, 0, 0, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(20px);
+          text-align: center;
+        }
+
+        .cta-content {
+          position: relative;
+          z-index: 2;
+          max-width: 720px;
+          margin: 0 auto;
+        }
+
+        .cta-line {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 9px;
+          margin-bottom: 22px;
+        }
+
+        .cta-line span {
+          width: 42px;
+          height: 1px;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            var(--cta-primary)
+          );
+          opacity: 0.7;
+        }
+
+        .cta-line span:last-child {
+          background: linear-gradient(
+            90deg,
+            var(--cta-primary),
+            transparent
+          );
+        }
+
+        .cta-line i {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: var(--cta-primary);
+          box-shadow:
+            0 0 15px var(--cta-primary);
         }
 
         .cta-eyebrow {
-          display:block;
-          margin-bottom:6px;
-          color:var(--cta-primary);
-          font-size:9px;
-          line-height:1;
-          font-weight:900;
-          letter-spacing:1.2px;
+          display: block;
+          margin-bottom: 12px;
+          color: var(--cta-primary);
+          font-size: 10px;
+          line-height: 1;
+          font-weight: 900;
+          letter-spacing: 2.4px;
+          text-transform: uppercase;
         }
 
-        .cta-copy h2 {
-          margin:0;
-          max-width:650px;
-          color:var(--cta-text);
-          font-size:clamp(1.45rem,4vw,2.65rem);
-          line-height:1.05;
-          letter-spacing:-.045em;
-          font-weight:850;
+        .cta-content h2 {
+          margin: 0 auto;
+          max-width: 720px;
+          color: var(--cta-text);
+          font-size: clamp(
+            2rem,
+            5vw,
+            4rem
+          );
+          line-height: 0.98;
+          letter-spacing: -0.055em;
+          font-weight: 900;
+          text-wrap: balance;
+          text-shadow: var(--cta-text)
+            0 0 35px rgba(255, 255, 255, 0.04);
         }
 
-        .cta-copy p {
-          max-width:590px;
-          margin:8px 0 0;
-          color:var(--cta-text);
-          opacity:.68;
-          font-size:clamp(.76rem,1.7vw,.92rem);
-          line-height:1.5;
+        .cta-content p {
+          max-width: 610px;
+          margin: 20px auto 0;
+          color: var(--cta-text);
+          opacity: 0.62;
+          font-size: clamp(
+            0.82rem,
+            1.8vw,
+            1rem
+          );
+          line-height: 1.65;
+          text-wrap: balance;
         }
 
         .cta-action {
-          flex:0 0 auto;
+          display: flex;
+          justify-content: center;
+          margin-top: 30px;
         }
 
         .cta-button {
-          min-height:42px;
-          display:inline-flex;
-          align-items:center;
-          justify-content:center;
-          gap:10px;
-          box-sizing:border-box;
-          padding:0 15px;
-          border:1px solid transparent;
-          border-radius:${theme.buttonStyle === "rounded" ? "999px" : "12px"};
-          background:var(--cta-primary);
-          color:var(--cta-text);
-          text-decoration:none;
-          font:800 11px/1 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-          white-space:nowrap;
-          cursor:pointer;
-          transition:transform .16s ease, filter .16s ease;
+          min-height: 54px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 11px;
+          box-sizing: border-box;
+          padding: 0 23px;
+          border: 1px solid
+            rgba(255, 255, 255, 0.08);
+          border-radius: ${
+            theme.buttonStyle === "rounded"
+              ? "999px"
+              : "14px"
+          };
+          background: var(--cta-primary);
+          color: var(--cta-text);
+          text-decoration: none;
+          font: 850 12px/1
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+          white-space: nowrap;
+          cursor: pointer;
+          box-shadow:
+            0 12px 30px
+              color-mix(
+                in srgb,
+                var(--cta-primary) 25%,
+                transparent
+              ),
+            inset 0 1px 0
+              rgba(255, 255, 255, 0.2);
+          transition:
+            transform 0.2s ease,
+            filter 0.2s ease,
+            box-shadow 0.2s ease;
         }
 
         .cta-button:hover {
-          transform:translateY(-1px);
-          filter:brightness(1.05);
+          transform: translateY(-2px);
+          filter: brightness(1.06);
+          box-shadow:
+            0 16px 38px
+              color-mix(
+                in srgb,
+                var(--cta-primary) 32%,
+                transparent
+              ),
+            inset 0 1px 0
+              rgba(255, 255, 255, 0.25);
+        }
+
+        .cta-button:active {
+          transform: translateY(0);
+        }
+
+        .cta-button-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 15px;
         }
 
         .cta-button b {
-          font-size:16px;
-          line-height:1;
-          font-weight:500;
+          margin-left: 2px;
+          font-size: 18px;
+          line-height: 1;
+          font-weight: 500;
+          transition: transform 0.2s ease;
+        }
+
+        .cta-button:hover b {
+          transform: translateX(3px);
         }
 
         .cta-closed {
-          background:rgba(239,68,68,.10);
-          color:#ef4444;
-          border-color:rgba(239,68,68,.20);
-          box-shadow:none;
-          cursor:not-allowed;
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+          border-color: rgba(239, 68, 68, 0.2);
+          box-shadow: none;
+          cursor: not-allowed;
         }
 
-        @media(max-width:600px) {
+        .cta-closed:hover {
+          transform: none;
+          filter: none;
+          box-shadow: none;
+        }
+
+        .cta-meta {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          margin-top: 15px;
+          color: var(--cta-text);
+          opacity: 0.42;
+          font-size: 9px;
+          font-weight: 600;
+        }
+
+        .status-dot {
+          width: 6px;
+          height: 6px;
+          flex: 0 0 6px;
+          border-radius: 50%;
+          background: #22c55e;
+          box-shadow:
+            0 0 0 4px
+              rgba(34, 197, 94, 0.08),
+            0 0 12px
+              rgba(34, 197, 94, 0.35);
+        }
+
+        .cta-bottom-glow {
+          position: absolute;
+          width: 70%;
+          height: 80px;
+          left: 15%;
+          bottom: -70px;
+          background: var(--cta-primary);
+          filter: blur(70px);
+          opacity: 0.12;
+          pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
           .restaurant-cta {
-            padding:34px 10px;
+            padding: 42px 10px;
           }
 
-          .cta-inner {
-            display:block;
-            padding:16px;
-            border-radius:16px;
+          .cta-card {
+            padding: 32px 18px 30px;
+            border-radius: 22px;
+          }
+
+          .cta-line {
+            margin-bottom: 18px;
+          }
+
+          .cta-line span {
+            width: 30px;
           }
 
           .cta-eyebrow {
-            font-size:7px;
-            letter-spacing:1px;
+            font-size: 8px;
+            letter-spacing: 1.8px;
           }
 
-          .cta-copy h2 {
-            font-size:clamp(1.35rem,7vw,1.8rem);
+          .cta-content h2 {
+            font-size: clamp(
+              1.85rem,
+              9vw,
+              2.45rem
+            );
+            line-height: 1;
           }
 
-          .cta-copy p {
-            margin-top:7px;
-            font-size:.75rem;
-            line-height:1.45;
+          .cta-content p {
+            margin-top: 14px;
+            font-size: 0.78rem;
+            line-height: 1.55;
           }
 
           .cta-action {
-            margin-top:13px;
+            margin-top: 23px;
           }
 
           .cta-button {
-            width:100%;
-            min-height:40px;
-            border-radius:10px;
-            font-size:10px;
+            width: 100%;
+            min-height: 50px;
+            padding: 0 16px;
+            border-radius: 12px;
+            font-size: 10px;
           }
 
           .cta-button b {
-            font-size:15px;
+            font-size: 16px;
+          }
+
+          .cta-meta {
+            font-size: 8px;
           }
         }
 
-        @media(prefers-reduced-motion:reduce) {
-          .cta-button {
-            transition:none;
+        @media (prefers-reduced-motion: reduce) {
+          .cta-button,
+          .cta-button b {
+            transition: none;
           }
         }
       `}</style>

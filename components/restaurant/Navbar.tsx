@@ -30,6 +30,14 @@ export default function Navbar({ restaurant }: Props) {
     };
   }, []);
 
+  const hasContactSection =
+    restaurant.show_contact === true ||
+    restaurant.show_contact === 1 ||
+    restaurant.show_contact === "true" ||
+    restaurant.show_contact_email === true ||
+    restaurant.show_contact_email === 1 ||
+    restaurant.show_contact_email === "true";
+
   return (
     <motion.nav
       initial={false}
@@ -124,15 +132,17 @@ export default function Navbar({ restaurant }: Props) {
               Nosotros
             </a>
 
-            <a
-              href="#contact"
-              style={{
-                color: theme.text,
-                textDecoration: "none",
-              }}
-            >
-              Contacto
-            </a>
+            {hasContactSection && (
+              <a
+                href="#contact"
+                style={{
+                  color: theme.text,
+                  textDecoration: "none",
+                }}
+              >
+                Contacto
+              </a>
+            )}
           </div>
         )}
 
@@ -151,9 +161,7 @@ export default function Navbar({ restaurant }: Props) {
                   borderRadius: "12px",
                   fontWeight: 700,
                   cursor: "pointer",
-                  fontSize: isMobile
-                    ? "13px"
-                    : "16px",
+                  fontSize: isMobile ? "13px" : "16px",
                 }}
               >
                 {isMobile
@@ -175,9 +183,7 @@ export default function Navbar({ restaurant }: Props) {
                 borderRadius: "12px",
                 fontWeight: 700,
                 cursor: "not-allowed",
-                fontSize: isMobile
-                  ? "13px"
-                  : "16px",
+                fontSize: isMobile ? "13px" : "16px",
               }}
             >
               🔒 Cerrado

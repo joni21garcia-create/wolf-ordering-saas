@@ -14,7 +14,6 @@ import {
 
 import { getTheme } from "@/lib/theme/getTheme";
 
-
 interface Props {
   restaurant: any;
 }
@@ -22,58 +21,130 @@ interface Props {
 export default function Footer({
   restaurant,
 }: Props) {
+  const theme = getTheme(restaurant);
 
-const theme =
-  getTheme(restaurant);
+  /*
+   * ============================================================
+   * CONFIGURACIONES DE VISIBILIDAD
+   * ============================================================
+   */
 
+  const showWhatsapp =
+    restaurant.show_whatsapp === true ||
+    restaurant.show_whatsapp === 1 ||
+    restaurant.show_whatsapp === "true" ||
+    restaurant.show_whatsapp === "1";
 
-const socialButton = {
-  width: "60px",
-  height: "60px",
+  const showContact =
+    restaurant.show_contact === true ||
+    restaurant.show_contact === 1 ||
+    restaurant.show_contact === "true" ||
+    restaurant.show_contact === "1";
 
-  borderRadius: "50%",
+  const showContactEmail =
+    restaurant.show_contact_email === true ||
+    restaurant.show_contact_email === 1 ||
+    restaurant.show_contact_email === "true" ||
+    restaurant.show_contact_email === "1";
 
-  display: "flex",
+  const showSocials =
+    restaurant.show_socials === true ||
+    restaurant.show_socials === 1 ||
+    restaurant.show_socials === "true" ||
+    restaurant.show_socials === "1";
 
-  alignItems: "center",
+  /*
+   * ============================================================
+   * DATOS DISPONIBLES
+   * ============================================================
+   */
 
-  justifyContent: "center",
+  const hasWhatsapp =
+    showWhatsapp &&
+    !!restaurant.whatsapp_url;
 
-  background:
-    "rgba(255,255,255,.03)",
+  const hasAddress =
+    showContact &&
+    !!restaurant.address;
 
-  border:
-    "1px solid rgba(255,255,255,.08)",
+  const hasEmail =
+    showContactEmail &&
+    !!restaurant.contact_email;
 
-  color: theme.primary,
+  /*
+   * ============================================================
+   * CONTACTO
+   *
+   * El título "Contacto" aparece si existe AL MENOS
+   * un dato de contacto visible.
+   *
+   * WhatsApp:
+   *   show_whatsapp + whatsapp_url
+   *
+   * Dirección:
+   *   show_contact + address
+   *
+   * Correo:
+   *   show_contact_email + contact_email
+   * ============================================================
+   */
 
-  textDecoration: "none",
+  const hasContactSection =
+    hasWhatsapp ||
+    hasAddress ||
+    hasEmail;
 
-  backdropFilter: "blur(12px)",
+  /*
+   * ============================================================
+   * REDES SOCIALES
+   * ============================================================
+   */
 
-  transition: ".3s",
+  const hasSocialLinks =
+    !!restaurant.instagram ||
+    !!restaurant.facebook ||
+    !!restaurant.tiktok;
 
-  cursor: "pointer",
-};
+  /*
+   * ============================================================
+   * ESTILO BOTONES SOCIALES
+   * ============================================================
+   */
 
+  const socialButton = {
+    width: "60px",
+    height: "60px",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "rgba(255,255,255,.03)",
+    border: "1px solid rgba(255,255,255,.08)",
+    color: theme.primary,
+    textDecoration: "none",
+    backdropFilter: "blur(12px)",
+    transition: ".3s",
+    cursor: "pointer",
+  };
 
   return (
     <footer
       style={{
         position: "relative",
         overflow: "hidden",
-        background:
-  `linear-gradient(
-    180deg,
-    ${theme.background} 0%,
-    #0a0a0a 100%
-  )`,
+        background: `linear-gradient(
+          180deg,
+          ${theme.background} 0%,
+          #0a0a0a 100%
+        )`,
         borderTop:
           "1px solid rgba(255,255,255,.06)",
         padding: "90px 30px 35px",
       }}
     >
-      {/* GLOW */}
+      {/* ======================================================
+          GLOW
+          ====================================================== */}
 
       <div
         style={{
@@ -81,8 +152,7 @@ const socialButton = {
           width: "500px",
           height: "500px",
           borderRadius: "50%",
-          background:
-  theme.primary,
+          background: theme.primary,
           filter: "blur(180px)",
           opacity: 0.08,
           top: "-250px",
@@ -99,6 +169,10 @@ const socialButton = {
           zIndex: 2,
         }}
       >
+        {/* ====================================================
+            COLUMNAS
+            ==================================================== */}
+
         <div
           style={{
             display: "grid",
@@ -108,16 +182,17 @@ const socialButton = {
             marginBottom: "60px",
           }}
         >
-          {/* RESTAURANTE */}
+          {/* ==================================================
+              RESTAURANTE
+              ================================================== */}
 
           <div>
             <h2
               style={{
                 color: theme.text,
-                textShadow:
-  theme.glow
-    ? `0 0 25px ${theme.primary}55`
-    : "none",
+                textShadow: theme.glow
+                  ? `0 0 25px ${theme.primary}55`
+                  : "none",
                 fontSize: "32px",
                 fontWeight: "800",
                 marginBottom: "20px",
@@ -126,42 +201,48 @@ const socialButton = {
               {restaurant.name}
             </h2>
 
-           <p
-  style={{
-   color: theme.text,
-opacity: 0.65,
-    lineHeight:1.9,
-    fontSize:"15px",
-  }}
->
-  {restaurant.slogan ||
-   restaurant.description}
-</p>
-
+            <p
+              style={{
+                color: theme.text,
+                opacity: 0.65,
+                lineHeight: 1.9,
+                fontSize: "15px",
+              }}
+            >
+              {restaurant.slogan ||
+                restaurant.description}
+            </p>
           </div>
 
-          {/* CONTACTO */}
+          {/* ==================================================
+              CONTACTO
+              ================================================== */}
 
-          {(restaurant.show_whatsapp || restaurant.show_contact || restaurant.show_contact_email) && (
-            <div>
-              <h3
-                style={{
-                  color: theme.text,
-                  marginBottom: "25px",
-                }}
-              >
-                Contacto
-              </h3>
+{hasContactSection && (
+  <div id="contact">
+    {hasWhatsapp && (
+      <h3
+        style={{
+          color: theme.text,
+          marginBottom: "25px",
+        }}
+      >
+        Contacto
+      </h3>
+    )}
 
               <div
                 style={{
                   display: "flex",
-                  flexDirection:
-                    "column",
+                  flexDirection: "column",
                   gap: "18px",
                 }}
               >
-                {restaurant.show_whatsapp && restaurant.whatsapp_url && (
+                {/* ------------------------------------------
+                    WHATSAPP / TELÉFONO
+                    ------------------------------------------ */}
+
+                {hasWhatsapp && (
                   <div
                     style={{
                       display: "flex",
@@ -172,27 +253,40 @@ opacity: 0.65,
                     }}
                   >
                     <Phone size={18} />
-                    {restaurant.whatsapp_url}
+
+                    <span>
+                      {restaurant.whatsapp_url}
+                    </span>
                   </div>
                 )}
 
-                {restaurant.show_contact && restaurant.address && (
+                {/* ------------------------------------------
+                    DIRECCIÓN
+                    ------------------------------------------ */}
+
+                {hasAddress && (
                   <div
                     style={{
                       display: "flex",
                       gap: "12px",
-                      alignItems:
-                        "center",
+                      alignItems: "center",
                       color: theme.text,
                       opacity: 0.75,
                     }}
                   >
                     <MapPin size={18} />
-                    {restaurant.address}
+
+                    <span>
+                      {restaurant.address}
+                    </span>
                   </div>
                 )}
 
-                {restaurant.show_contact_email && restaurant.contact_email && (
+                {/* ------------------------------------------
+                    CORREO
+                    ------------------------------------------ */}
+
+                {hasEmail && (
                   <div
                     style={{
                       display: "flex",
@@ -203,16 +297,21 @@ opacity: 0.65,
                     }}
                   >
                     <Mail size={18} />
-                    {restaurant.contact_email}
+
+                    <span>
+                      {restaurant.contact_email}
+                    </span>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* REDES */}
+          {/* ==================================================
+              REDES SOCIALES
+              ================================================== */}
 
-          {restaurant.show_socials && (
+          {showSocials && hasSocialLinks && (
             <div>
               <h3
                 style={{
@@ -230,33 +329,42 @@ opacity: 0.65,
                   flexWrap: "wrap",
                 }}
               >
+                {/* Instagram */}
+
                 {restaurant.instagram && (
                   <a
                     href={restaurant.instagram}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Instagram"
                     style={socialButton}
                   >
                     <FaInstagram size={22} />
                   </a>
                 )}
 
+                {/* Facebook */}
+
                 {restaurant.facebook && (
                   <a
                     href={restaurant.facebook}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="Facebook"
                     style={socialButton}
                   >
                     <FaFacebookF size={22} />
                   </a>
                 )}
 
+                {/* TikTok */}
+
                 {restaurant.tiktok && (
                   <a
                     href={restaurant.tiktok}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label="TikTok"
                     style={socialButton}
                   >
                     <FaTiktok size={20} />
@@ -267,54 +375,58 @@ opacity: 0.65,
           )}
         </div>
 
-        {/* DIVIDER */}
+        {/* ====================================================
+            DIVIDER
+            ==================================================== */}
 
         <div
           style={{
             height: "1px",
-           background:
-`linear-gradient(
-  90deg,
-  transparent,
-  ${theme.primary}55,
-  transparent
-)`,
+            background: `linear-gradient(
+              90deg,
+              transparent,
+              ${theme.primary}55,
+              transparent
+            )`,
             marginBottom: "30px",
           }}
         />
 
-{/* COPYRIGHT */}
+        {/* ====================================================
+            COPYRIGHT
+            ==================================================== */}
 
-{restaurant.show_footer_copyright && (
-  <div
-    style={{
-      textAlign: "center",
-      color: theme.text,
-opacity: 0.45,
-      fontSize: "14px",
-      marginBottom: "10px",
-    }}
-  >
-    {restaurant.footer_text}
-  </div>
-)}
+        {restaurant.show_footer_copyright && (
+          <div
+            style={{
+              textAlign: "center",
+              color: theme.text,
+              opacity: 0.45,
+              fontSize: "14px",
+              marginBottom: "10px",
+            }}
+          >
+            {restaurant.footer_text}
+          </div>
+        )}
 
-{restaurant.show_wolf_branding && (
-  <div
-    style={{
-      textAlign: "center",
-      marginTop: "12px",
-      color:
-  `${theme.primary}`,
-      fontSize: "12px",
-    }}
-  >
-    Powered by Wolf Ordering™
-  </div>
-)}
+        {/* ====================================================
+            WOLF BRANDING
+            ==================================================== */}
+
+        {restaurant.show_wolf_branding && (
+          <div
+            style={{
+              textAlign: "center",
+              marginTop: "12px",
+              color: theme.primary,
+              fontSize: "12px",
+            }}
+          >
+            Powered by Wolf Ordering™
+          </div>
+        )}
       </div>
     </footer>
   );
-}             
-
-
+}

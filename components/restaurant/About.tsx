@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { getTheme } from "@/lib/theme/getTheme";
 
-
 interface Props {
   restaurant: any;
 }
@@ -11,21 +10,28 @@ interface Props {
 export default function About({
   restaurant,
 }: Props) {
+  const theme = getTheme(restaurant);
 
-const theme =
-  getTheme(restaurant); 
+  const aboutEnabled =
+    restaurant.show_about === true ||
+    restaurant.show_about === 1 ||
+    restaurant.show_about === "true" ||
+    restaurant.show_about === "1";
+
+  if (!aboutEnabled) {
+    return null;
+  }
 
   return (
     <section
       id="about"
       style={{
         padding: "120px 20px",
-      background:
-  `linear-gradient(
-    180deg,
-    ${theme.background} 0%,
-    ${theme.background}dd 100%
-  )`,
+        background: `linear-gradient(
+          180deg,
+          ${theme.background} 0%,
+          ${theme.background}dd 100%
+        )`,
         position: "relative",
         overflow: "hidden",
       }}
@@ -37,8 +43,7 @@ const theme =
           width: "450px",
           height: "450px",
           borderRadius: "50%",
-      background:
-  theme.primary,
+          background: theme.primary,
           filter: "blur(180px)",
           opacity: 0.1,
           top: "-150px",
@@ -70,34 +75,31 @@ const theme =
       >
         <h2
           style={{
-             color: theme.text,
-            textShadow:
-  theme.glow
-    ? `0 0 30px ${theme.primary}55`
-    : "none",
-            fontSize:
-              "clamp(2.8rem,5vw,4.5rem)",
+            color: theme.text,
+            textShadow: theme.glow
+              ? `0 0 30px ${theme.primary}55`
+              : "none",
+            fontSize: "clamp(2.8rem,5vw,4.5rem)",
             fontWeight: "800",
             marginBottom: "30px",
           }}
         >
-     
-  {restaurant.about_title ||
-    "Nuestra Historia"}
-</h2>
+          {restaurant.about_title || "Nuestra Historia"}
+        </h2>
 
-        <p
-          style={{
-            color: theme.text,
-            fontSize: "1.1rem",
-            lineHeight: 1.8,
-            maxWidth: "800px",
-            marginBottom: "70px",
-          }}
-        >
-          
-    {restaurant.about_description}
-        </p>
+        {restaurant.about_description && (
+          <p
+            style={{
+              color: theme.text,
+              fontSize: "1.1rem",
+              lineHeight: 1.8,
+              maxWidth: "800px",
+              marginBottom: "70px",
+            }}
+          >
+            {restaurant.about_description}
+          </p>
+        )}
 
         <div
           style={{
@@ -108,72 +110,63 @@ const theme =
           }}
         >
           {[
-  restaurant.show_about_stat1 && {
-    number:
-      restaurant.about_stat1_value,
-    label:
-      restaurant.about_stat1_label,
-  },
+            restaurant.show_about_stat1 && {
+              number: restaurant.about_stat1_value,
+              label: restaurant.about_stat1_label,
+            },
 
-  restaurant.show_about_stat2 && {
-    number:
-      restaurant.about_stat2_value,
-    label:
-      restaurant.about_stat2_label,
-  },
+            restaurant.show_about_stat2 && {
+              number: restaurant.about_stat2_value,
+              label: restaurant.about_stat2_label,
+            },
 
-  restaurant.show_about_stat3 && {
-    number:
-      restaurant.about_stat3_value,
-    label:
-      restaurant.about_stat3_label,
-  },
-].filter(Boolean).map((item) => (
-            <div
-              key={item.label}
-              style={{
-               background:
-  theme.cardStyle ===
-  "glass"
-    ? "rgba(255,255,255,.05)"
-    : "#111111",
-                backdropFilter:
-                  "blur(20px)",
-                border:
-                  "1px solid rgba(255,255,255,.08)",
-                borderRadius: "24px",
-                padding: "35px",
-                textAlign: "center",
-                boxShadow:
-  theme.glow
-    ? `0 0 25px ${theme.primary}15`
-    : "none",
-              }}
-            >
-              <h3
+            restaurant.show_about_stat3 && {
+              number: restaurant.about_stat3_value,
+              label: restaurant.about_stat3_label,
+            },
+          ]
+            .filter(Boolean)
+            .map((item: any) => (
+              <div
+                key={`${item.label}-${item.number}`}
                 style={{
-                 color:
-  theme.primary,
-  textShadow:
-      theme.glow
-        ? `0 0 20px ${theme.primary}55`
-        : "none",
-                  fontSize: "3rem",
-                  marginBottom: "10px",
+                  background:
+                    theme.cardStyle === "glass"
+                      ? "rgba(255,255,255,.05)"
+                      : "#111111",
+                  backdropFilter: "blur(20px)",
+                  border:
+                    "1px solid rgba(255,255,255,.08)",
+                  borderRadius: "24px",
+                  padding: "35px",
+                  textAlign: "center",
+                  boxShadow: theme.glow
+                    ? `0 0 25px ${theme.primary}15`
+                    : "none",
                 }}
               >
-                {item.number}
-              </h3>
+                <h3
+                  style={{
+                    color: theme.primary,
+                    textShadow: theme.glow
+                      ? `0 0 20px ${theme.primary}55`
+                      : "none",
+                    fontSize: "3rem",
+                    marginBottom: "10px",
+                  }}
+                >
+                  {item.number}
+                </h3>
 
-              <p
-                style={{
-                 color: theme.text,
-                }}
-              >
-                {item.label}
-              </p>
-            </div>
-          ))}
+                <p
+                  style={{
+                    color: theme.text,
+                  }}
+                >
+                  {item.label}
+                </p>
+              </div>
+            ))}
         </div>
       </motion.div>
     </section>
