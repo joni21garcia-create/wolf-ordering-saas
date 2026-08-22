@@ -9,6 +9,7 @@ import UpdateBanner from "@/components/pwa/UpdateBanner";
 import InstallProvider from "@/components/pwa/InstallProvider";
 import AppSplash from "@/components/splash/AppSplash";
 
+
 export const viewport: Viewport = {
   themeColor: "#050505",
   width: "device-width",
