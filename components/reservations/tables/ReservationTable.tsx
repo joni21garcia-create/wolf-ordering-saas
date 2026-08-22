@@ -28,6 +28,10 @@ import { ReservationTableRow } from "./ReservationTableRow";
 
 import { ReservationActions } from "../../../modules/reservations/components/reservation-actions";
 
+import { Capacitor } from "@capacitor/core";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
+
 interface ReservationTableProps {
   reservations: Reservation[];
   loading?: boolean;
@@ -151,7 +155,7 @@ function escapeCsv(value: unknown) {
   return `"${text.replaceAll('"', '""')}"`;
 }
 
-function exportReservationsToExcel(
+async function exportReservationsToExcel(
   reservations: Reservation[]
 ) {
   const headers = [
@@ -169,49 +173,123 @@ function exportReservationsToExcel(
     "Código de confirmación",
   ];
 
-  const rows = reservations.map((reservation) => {
-    const tables =
-      reservation.assignment?.tables
-        ?.map((table) => table.name)
-        .filter(Boolean)
-        .join(", " ) ?? "";
+  const rows = reservations.map(
+    (reservation) => {
+      const tables =
+        reservation.assignment?.tables
+          ?.map((table) => table.name)
+          .filter(Boolean)
+          .join(", ") ?? "";
 
-    return [
-      reservation.datetime?.date ?? "",
-      formatTime(reservation.datetime?.startTime),
-      formatTime(reservation.datetime?.endTime),
-      reservation.guest?.fullName ?? "",
-      reservation.guest?.phone ?? "",
-      reservation.guest?.email ?? "",
-      reservation.capacity?.guests ?? 0,
-      tables,
-      reservation.typeName ?? "",
-      reservation.customerNotes ?? "",
-      STATUS_LABELS[String(reservation.status)] ?? String(reservation.status ?? ""),
-      reservation.confirmationCode ?? "",
-    ];
-  });
+      return [
+        reservation.datetime?.date ?? "",
+        formatTime(
+          reservation.datetime?.startTime
+        ),
+        formatTime(
+          reservation.datetime?.endTime
+        ),
+        reservation.guest?.fullName ?? "",
+        reservation.guest?.phone ?? "",
+        reservation.guest?.email ?? "",
+        reservation.capacity?.guests ?? 0,
+        tables,
+        reservation.typeName ?? "",
+        reservation.customerNotes ?? "",
+        STATUS_LABELS[
+          String(reservation.status)
+        ] ??
+          String(
+            reservation.status ?? ""
+          ),
+        reservation.confirmationCode ?? "",
+      ];
+    }
+  );
 
   const csv = [
     headers,
     ...rows,
   ]
-    .map((row) => row.map(escapeCsv).join(";"))
+    .map((row) =>
+      row
+        .map(escapeCsv)
+        .join(";")
+    )
     .join("\r\n");
 
-  const blob = new Blob(["\uFEFF" + csv], {
-    type: "text/csv;charset=utf-8;",
-  });
+  const date =
+    new Date()
+      .toISOString()
+      .slice(0, 10);
 
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  const date = new Date().toISOString().slice(0, 10);
+  const fileName =
+    `reservas-${date}.csv`;
+
+  /*
+   * ANDROID / CAPACITOR
+   */
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const base64 = btoa(
+        unescape(
+          encodeURIComponent(
+            "\uFEFF" + csv
+          )
+        )
+      );
+
+      const result =
+        await Filesystem.writeFile({
+          path: fileName,
+          data: base64,
+          directory:
+            Directory.Cache,
+          recursive: true,
+        });
+
+      await Share.share({
+        title: "Exportar reservas",
+        text: "Reservas de Wolf Ordering",
+        url: result.uri,
+        dialogTitle:
+          "Guardar o compartir reservas",
+      });
+
+      return;
+    } catch (error) {
+      console.error(
+        "EXPORT RESERVATIONS ANDROID ERROR",
+        error
+      );
+
+      return;
+    }
+  }
+
+  /*
+   * WEB
+   */
+  const blob = new Blob(
+    ["\uFEFF" + csv],
+    {
+      type: "text/csv;charset=utf-8;",
+    }
+  );
+
+  const url =
+    URL.createObjectURL(blob);
+
+  const link =
+    document.createElement("a");
 
   link.href = url;
-  link.download = `reservas-${date}.csv`;
+  link.download = fileName;
+
   document.body.appendChild(link);
   link.click();
   link.remove();
+
   URL.revokeObjectURL(url);
 }
 

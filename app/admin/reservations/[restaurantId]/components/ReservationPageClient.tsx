@@ -34,6 +34,8 @@ import type {
   ReservationCalendarEvent,
 } from "@/types/reservations";
 
+import WolfSheet from "@/lib/wolf-ui/components/WolfSheet";
+
 interface ReservationPageClientProps {
   restaurantId: string;
   reservations: Reservation[];
@@ -64,10 +66,14 @@ function addMinutes(
   const nextMinutes =
     normalized % 60;
 
-  return `${String(nextHours).padStart(
+  return `${String(
+    nextHours
+  ).padStart(
     2,
     "0"
-  )}:${String(nextMinutes).padStart(
+  )}:${String(
+    nextMinutes
+  ).padStart(
     2,
     "0"
   )}`;
@@ -90,13 +96,13 @@ function ReservationWizardContent({
     useState(false);
 
   const [error, setError] =
-    useState<string | null>(null);
+    useState<string | null>(
+      null
+    );
 
   const currentComponent =
     useMemo(() => {
-
       switch (currentStep) {
-
         // PASO 1
         case 0:
           return (
@@ -107,7 +113,9 @@ function ReservationWizardContent({
         case 1:
           return (
             <ReservationDateStep
-              restaurantId={restaurantId}
+              restaurantId={
+                restaurantId
+              }
             />
           );
 
@@ -121,7 +129,9 @@ function ReservationWizardContent({
         case 3:
           return (
             <ReservationTimeStep
-              restaurantId={restaurantId}
+              restaurantId={
+                restaurantId
+              }
             />
           );
 
@@ -154,14 +164,12 @@ function ReservationWizardContent({
             <ReservationCustomerStep />
           );
       }
-
     }, [
       currentStep,
       restaurantId,
     ]);
 
   async function handleConfirm() {
-
     setError(null);
 
     if (!data.customerName?.trim()) {
@@ -206,7 +214,9 @@ function ReservationWizardContent({
       data.customerName.trim();
 
     const nameParts =
-      customerName.split(/\s+/);
+      customerName.split(
+        /\s+/
+      );
 
     const firstName =
       nameParts.shift() ??
@@ -223,7 +233,6 @@ function ReservationWizardContent({
     setSaving(true);
 
     try {
-
       const settings =
         await getReservationSettings(
           restaurantId
@@ -240,26 +249,20 @@ function ReservationWizardContent({
         "America/Guayaquil";
 
       await createReservation({
-
         restaurantId,
 
         slug: restaurantId,
 
         guest: {
           firstName,
-
           lastName,
-
           fullName:
             customerName,
-
           phone:
             data.phone.trim(),
-
           email:
             data.email?.trim() ||
             undefined,
-
           notes:
             customerNotes,
         },
@@ -297,7 +300,9 @@ function ReservationWizardContent({
 
         ...(data.type
           ? {
-              typeId: data.type,
+              typeId:
+                data.type,
+
               typeName:
                 data.typeName?.trim() ||
                 undefined,
@@ -306,7 +311,9 @@ function ReservationWizardContent({
 
         ...(data.service
           ? {
-              serviceId: data.service,
+              serviceId:
+                data.service,
+
               serviceName:
                 data.serviceName?.trim() ||
                 undefined,
@@ -328,9 +335,7 @@ function ReservationWizardContent({
       reset();
 
       onClose();
-
     } catch (caughtError) {
-
       console.error(
         "CREATE RESERVATION ERROR",
         caughtError
@@ -341,58 +346,22 @@ function ReservationWizardContent({
           ? caughtError.message
           : "No se pudo crear la reserva."
       );
-
     } finally {
-
       setSaving(false);
-
     }
   }
 
   return (
-    <div
-      className="
-        fixed
-        inset-0
-        z-50
-        overflow-y-auto
-        bg-[#FAF9F7]
-        p-4
-        md:p-8
-      "
-    >
+    <div className="min-h-full bg-[#FAF9F7] p-3 sm:p-5">
 
-      <div
-        className="
-          mx-auto
-          w-full
-          max-w-4xl
-          rounded-2xl
-          bg-[#FAF9F7]
-          p-4
-          shadow-2xl
-          md:p-6
-        "
-      >
+      <div className="mx-auto w-full max-w-4xl rounded-2xl bg-[#FAF9F7] p-3 sm:p-5">
 
         <ReservationWizardHeader
           title="Nueva reserva"
         />
 
         {error ? (
-          <div
-            className="
-              mb-4
-              rounded-xl
-              border
-              border-red-500/30
-              bg-red-500/10
-              px-4
-              py-3
-              text-sm
-              text-red-300
-            "
-          >
+          <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         ) : null}
@@ -412,21 +381,7 @@ function ReservationWizardContent({
           type="button"
           onClick={onClose}
           disabled={saving}
-          className="
-            mt-4
-            w-full
-            rounded-xl
-            border
-            border-white/10
-            px-4
-            py-3
-            text-sm
-            text-white/60
-            transition
-            hover:bg-white/5
-            hover:text-white
-            disabled:opacity-40
-          "
+          className="mt-4 w-full rounded-xl border border-black/10 px-4 py-3 text-sm text-zinc-500 transition hover:bg-black/5 hover:text-zinc-900 disabled:opacity-40"
         >
           Cancelar
         </button>
@@ -442,7 +397,6 @@ export default function ReservationPageClient({
   reservations,
   events,
 }: ReservationPageClientProps) {
-
   const [
     openCreate,
     setOpenCreate,
@@ -464,14 +418,21 @@ export default function ReservationPageClient({
         events={events}
       />
 
-      {openCreate ? (
-
+      <WolfSheet
+        open={openCreate}
+        onClose={() =>
+          setOpenCreate(false)
+        }
+        title="Nueva reserva"
+        subtitle="Crear una nueva reserva"
+        tone="light"
+        maxWidth={760}
+      >
         <ReservationWizard
           totalSteps={
             TOTAL_STEPS
           }
         >
-
           <ReservationWizardContent
             restaurantId={
               restaurantId
@@ -480,10 +441,8 @@ export default function ReservationPageClient({
               setOpenCreate(false)
             }
           />
-
         </ReservationWizard>
-
-      ) : null}
+      </WolfSheet>
 
     </div>
   );
