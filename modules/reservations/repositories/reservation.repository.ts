@@ -49,7 +49,11 @@ export class ReservationRepository {
       return availability.tables;
     }
 
-    throw new Error(availability.reason ?? "NO_TABLE_AVAILABLE");
+    throw new Error(
+      availability.reason === "NO_TABLE_AVAILABLE"
+        ? "La disponibilidad cambió mientras confirmabas tu reserva. Por favor, selecciona otra hora o fecha disponible."
+        : availability.reason ?? "No se pudo confirmar la reserva."
+    );
   }
 
   private localDateTimeToUtcIso(
@@ -146,9 +150,15 @@ export class ReservationRepository {
 
     this.validateCustomerData(data, policy);
 
-    const timezone = policy.timezone || data.datetime.timezone || "America/Guayaquil";
+    const timezone =
+      policy.timezone ||
+      data.datetime.timezone ||
+      "America/Guayaquil";
 
-    if (data.datetime.timezone && data.datetime.timezone !== timezone) {
+    if (
+      data.datetime.timezone &&
+      data.datetime.timezone !== timezone
+    ) {
       throw new Error("INVALID_TIMEZONE");
     }
 
@@ -178,37 +188,15 @@ export class ReservationRepository {
       throw new Error("INVALID_RESERVATION_INTERVAL");
     }
 
-    const assignedTables =
-      await this.resolveAssignedTables(
-        data.restaurantId,
-        startAt,
-        endAt,
-        data.capacity.guests
-      );
-
-    const confirmationCode =
-      `RES-${Date.now()}-${Math.random()
-        .toString(36)
-        .slice(2, 7)
-        .toUpperCase()}`;
-
-    const reservationNumber =
-      `RES-${Date.now()}`;
-
     /*
-     * restaurant_reservations no tiene columnas
-     * type_id/service_id. Esos datos viven en
-     * metadata y se vuelven a exponer mediante
+     * restaurant_reservations no tiene columnas type_id/service_id.
+     * Esos datos viven en metadata y se vuelven a exponer mediante
      * el mapper.
      *
-     * No usamos occasion como sustituto de ambos:
-     * son conceptos distintos y no debemos perder
-     * información.
+     * No usamos occasion como sustituto de ambos: son conceptos
+     * distintos y no debemos perder información.
      */
-    const reservationMetadata: Record<
-      string,
-      unknown
-    > = {
+    const reservationMetadata: Record<string, unknown> = {
       reservation_type_id:
         data.typeId?.trim() || null,
       reservation_type_name:
@@ -224,11 +212,59 @@ export class ReservationRepository {
       data.guest.notes?.trim() ||
       null;
 
-    const {
-      data: reservation,
-      error: reservationError,
-    } =
-      await supabaseAdmin
+    /*
+     * La disponibilidad se comprueba antes de crear la reserva, pero esa
+     * comprobación por sí sola no elimina una condición de carrera:
+     *
+     *   A comprueba -> mesa libre
+     *   B comprueba -> mesa libre
+     *   A asigna
+     *   B intenta asignar -> conflicto
+     *
+     * La migración de concurrencia de PostgreSQL protege el INSERT final y
+     * devuelve TABLE_ASSIGNMENT_CONFLICT cuando eso ocurre.
+     *
+     * No eliminamos esa protección. Si aparece el conflicto, limpiamos la
+     * reserva provisional y volvemos a consultar disponibilidad. Así un
+     * conflicto esperado de concurrencia no termina como un error genérico
+     * de Server Components para el cliente.
+     *
+     * Dos reintentos, además del intento inicial, son suficientes para cubrir
+     * una carrera puntual sin crear un bucle infinito ni generar carga
+     * innecesaria sobre Supabase.
+     */
+    const MAX_ASSIGNMENT_RETRIES = 2;
+
+    for (
+      let attempt = 0;
+      attempt <= MAX_ASSIGNMENT_RETRIES;
+      attempt += 1
+    ) {
+      const assignedTables =
+        await this.resolveAssignedTables(
+          data.restaurantId,
+          startAt,
+          endAt,
+          data.capacity.guests
+        );
+
+      const uniqueSuffix = Math.random()
+        .toString(36)
+        .slice(2, 7)
+        .toUpperCase();
+
+      const timestamp = Date.now();
+
+      const confirmationCode =
+        `RES-${timestamp}-${uniqueSuffix}`;
+
+      const reservationNumber =
+        `RES-${timestamp}-${uniqueSuffix}`;
+
+      const {
+        data: reservation,
+        error: reservationError,
+      } = await supabaseAdmin
         .from("restaurant_reservations")
         .insert({
           restaurant_id: data.restaurantId,
@@ -250,101 +286,185 @@ export class ReservationRepository {
           occasion:
             data.serviceName?.trim() || null,
           notes: customerNotes,
-          // La columna existe en Supabase; el database.types.ts local todavía no la declara.
-          // El cast mantiene el payload real sin cambiar la estructura de la tabla.
+          // La columna existe en Supabase; el database.types.ts local todavía
+          // no la declara. El cast mantiene el payload real sin cambiar la
+          // estructura de la tabla.
           customer_notes: customerNotes as never,
           metadata: reservationMetadata as never,
         })
         .select()
         .single();
 
-    if (reservationError) {
-      console.error(
-        "CREATE RESERVATION ERROR",
-        reservationError
-      );
-      throw reservationError;
-    }
-
-    let remainingGuests = data.capacity.guests;
-
-    const assignments = assignedTables.map(
-      (table, index) => {
-        const assignedGuests =
-          index === assignedTables.length - 1
-            ? remainingGuests
-            : Math.min(
-                table.capacity,
-                remainingGuests
-              );
-
-        remainingGuests -= assignedGuests;
-
-        return {
-          reservation_id: reservation.id,
-          table_id: table.id,
-          assigned_guests: assignedGuests,
-          is_primary: index === 0,
-          notes:
-            assignedTables.length > 1
-              ? "Asignación automática por combinación de mesas"
-              : "Asignación automática",
-        };
+      if (reservationError) {
+        console.error(
+          "CREATE RESERVATION ERROR",
+          reservationError
+        );
+        throw reservationError;
       }
-    );
 
-    const {
-      error: assignmentError,
-    } =
-      await supabaseAdmin
+      let remainingGuests = data.capacity.guests;
+
+      const assignments = assignedTables.map(
+        (table, index) => {
+          const assignedGuests =
+            index === assignedTables.length - 1
+              ? remainingGuests
+              : Math.min(
+                  table.capacity,
+                  remainingGuests
+                );
+
+          remainingGuests -= assignedGuests;
+
+          return {
+            reservation_id: reservation.id,
+            table_id: table.id,
+            assigned_guests: assignedGuests,
+            is_primary: index === 0,
+            notes:
+              assignedTables.length > 1
+                ? "Asignación automática por combinación de mesas"
+                : "Asignación automática",
+          };
+        }
+      );
+
+      const {
+        error: assignmentError,
+      } = await supabaseAdmin
         .from("restaurant_table_assignments")
         .insert(assignments);
 
-    if (assignmentError) {
-      await supabaseAdmin
-        .from("restaurant_reservations")
-        .delete()
-        .eq("id", reservation.id);
+      if (!assignmentError) {
+        await this.createLog({
+          reservationId: reservation.id,
+          restaurantId: data.restaurantId,
+          action: "created",
+          newStatus: reservation.status,
+          message: "Reserva creada correctamente.",
+          metadata: {
+            source: "website",
+          },
+        });
+
+        await this.createLog({
+          reservationId: reservation.id,
+          restaurantId: data.restaurantId,
+          action: "table_assigned",
+          message:
+            assignedTables.length > 1
+              ? "Mesas combinadas asignadas automáticamente."
+              : "Mesa asignada automáticamente.",
+          metadata: {
+            tableIds: assignedTables.map(
+              (table) => table.id
+            ),
+            tableCodes: assignedTables.map(
+              (table) => table.code
+            ),
+            tableCount: assignedTables.length,
+            guests: data.capacity.guests,
+          },
+        });
+
+        return reservation;
+      }
+
+      /*
+       * El INSERT de asignaciones es una sola operación. PostgreSQL revierte
+       * la operación completa si el trigger detecta un conflicto, pero
+       * limpiamos explícitamente por reservation_id antes de reintentar para
+       * mantener el flujo seguro incluso si la implementación de la tabla
+       * cambia en el futuro.
+       */
+      const isTableAssignmentConflict =
+        assignmentError.code === "23P01" &&
+        assignmentError.message?.includes(
+          "TABLE_ASSIGNMENT_CONFLICT"
+        );
+
+      const { error: cleanupAssignmentsError } =
+        await supabaseAdmin
+          .from("restaurant_table_assignments")
+          .delete()
+          .eq("reservation_id", reservation.id);
+
+      if (cleanupAssignmentsError) {
+        console.error(
+          "CLEANUP TABLE ASSIGNMENTS AFTER RESERVATION FAILURE ERROR",
+          {
+            reservationId: reservation.id,
+            assignmentError,
+            cleanupAssignmentsError,
+          }
+        );
+
+        // No seguimos reintentando si no podemos garantizar que la reserva
+        // provisional quedó limpia.
+        throw new Error(
+          "RESERVATION_CLEANUP_FAILED"
+        );
+      }
+
+      const { error: cleanupReservationError } =
+        await supabaseAdmin
+          .from("restaurant_reservations")
+          .delete()
+          .eq("id", reservation.id);
+
+      if (cleanupReservationError) {
+        console.error(
+          "CLEANUP RESERVATION AFTER TABLE ASSIGNMENT ERROR",
+          {
+            reservationId: reservation.id,
+            assignmentError,
+            cleanupReservationError,
+          }
+        );
+
+        // No seguimos reintentando si la reserva provisional no pudo
+        // eliminarse. Esto evita crear otra reserva encima de un posible
+        // registro huérfano.
+        throw new Error(
+          "RESERVATION_CLEANUP_FAILED"
+        );
+      }
 
       console.error(
         "CREATE TABLE ASSIGNMENT ERROR",
-        assignmentError
+        {
+          attempt: attempt + 1,
+          maxAttempts: MAX_ASSIGNMENT_RETRIES + 1,
+          assignmentError,
+        }
       );
-      throw assignmentError;
+
+      if (!isTableAssignmentConflict) {
+        // Es un error real de base de datos y no una carrera esperada.
+        throw assignmentError;
+      }
+
+      if (attempt >= MAX_ASSIGNMENT_RETRIES) {
+        // La carrera se mantuvo durante todos los intentos. Devolvemos un
+        // código de dominio estable en lugar de propagar el mensaje interno
+        // del trigger de PostgreSQL al cliente.
+        throw new Error(
+          "RESERVATION_TEMPORARILY_UNAVAILABLE"
+        );
+      }
+
+      console.warn(
+        "TABLE ASSIGNMENT CONFLICT - RETRYING RESERVATION",
+        {
+          attempt: attempt + 1,
+          nextAttempt: attempt + 2,
+        }
+      );
     }
 
-    await this.createLog({
-      reservationId: reservation.id,
-      restaurantId: data.restaurantId,
-      action: "created",
-      newStatus: reservation.status,
-      message: "Reserva creada correctamente.",
-      metadata: {
-        source: "website",
-      },
-    });
-
-    await this.createLog({
-      reservationId: reservation.id,
-      restaurantId: data.restaurantId,
-      action: "table_assigned",
-      message:
-        assignedTables.length > 1
-          ? "Mesas combinadas asignadas automáticamente."
-          : "Mesa asignada automáticamente.",
-      metadata: {
-        tableIds: assignedTables.map(
-          (table) => table.id
-        ),
-        tableCodes: assignedTables.map(
-          (table) => table.code
-        ),
-        tableCount: assignedTables.length,
-        guests: data.capacity.guests,
-      },
-    });
-
-    return reservation;
+    // El bucle siempre retorna o lanza, pero mantenemos un guard defensivo.
+    throw new Error("RESERVATION_CREATION_FAILED");
   }
 
   async findById(id: string) {
