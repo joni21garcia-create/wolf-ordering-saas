@@ -25,6 +25,7 @@ interface RestaurantData {
   name: string | null;
   logo_url: string | null;
   google_reviews_url: string | null;
+  show_google_reviews_landing: boolean;
 }
 
 
@@ -72,7 +73,8 @@ export default function GoogleReviewsSettings({
         id,
         name,
         logo_url,
-        google_reviews_url
+        google_reviews_url,
+        show_google_reviews_landing
         `
       )
       .eq("id", restaurantId)
@@ -123,6 +125,31 @@ export default function GoogleReviewsSettings({
 
 
 
+
+  async function saveLandingVisibility(enabled: boolean) {
+    const {
+      error: saveError,
+    } = await supabase
+      .from("restaurants")
+      .update({
+        show_google_reviews_landing: enabled,
+      })
+      .eq("id", restaurantId);
+
+    if (saveError) {
+      console.error(saveError);
+      throw new Error("No se pudo guardar la visibilidad.");
+    }
+
+    setRestaurant((current) =>
+      current
+        ? {
+            ...current,
+            show_google_reviews_landing: enabled,
+          }
+        : current
+    );
+  }
 
   async function saveReviewsUrl(
     url:string
@@ -451,6 +478,86 @@ export default function GoogleReviewsSettings({
 
 
 
+        .landing-toggle {
+          margin-top: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          padding: 14px 16px;
+          border: 1px solid rgba(255,255,255,.07);
+          border-radius: 16px;
+          background: rgba(255,255,255,.025);
+        }
+
+        .toggle-copy {
+          min-width: 0;
+        }
+
+        .toggle-eyebrow {
+          color: #f97316;
+          font-size: 8px;
+          font-weight: 900;
+          letter-spacing: .13em;
+          text-transform: uppercase;
+        }
+
+        .toggle-title {
+          margin-top: 4px;
+          color: #fff;
+          font-size: 12px;
+          font-weight: 900;
+        }
+
+        .toggle-copy p {
+          margin: 4px 0 0;
+          color: #777;
+          font-size: 10px;
+          line-height: 1.45;
+        }
+
+        .toggle-hint {
+          display: block;
+          margin-top: 6px;
+          color: #a1a1aa;
+          font-size: 9px;
+          line-height: 1.4;
+        }
+
+        .switch {
+          position: relative;
+          width: 46px;
+          height: 27px;
+          flex: 0 0 46px;
+          padding: 0;
+          border: 1px solid rgba(255,255,255,.1);
+          border-radius: 999px;
+          background: #27272a;
+          cursor: pointer;
+          transition: background .18s ease, border-color .18s ease;
+        }
+
+        .switch span {
+          position: absolute;
+          top: 3px;
+          left: 3px;
+          width: 19px;
+          height: 19px;
+          border-radius: 50%;
+          background: #fff;
+          box-shadow: 0 2px 6px rgba(0,0,0,.3);
+          transition: transform .18s ease;
+        }
+
+        .switch.on {
+          border-color: rgba(34,197,94,.55);
+          background: #22c55e;
+        }
+
+        .switch.on span {
+          transform: translateX(19px);
+        }
+
         @media(max-width:820px){
 
           .layout {
@@ -571,6 +678,46 @@ export default function GoogleReviewsSettings({
 
           </div>
 
+
+          <div className="landing-toggle">
+            <div className="toggle-copy">
+              <div className="toggle-eyebrow">LANDING PÚBLICO</div>
+              <div className="toggle-title">
+                Botón “Califícanos en Google”
+              </div>
+              <p>
+                Muestra un acceso directo a tus reseñas de Google
+                dentro del Hero. Es independiente del QR y del póster.
+              </p>
+              {!reviewsUrl && (
+                <span className="toggle-hint">
+                  Puedes activar la opción ahora; el botón aparecerá cuando
+                  exista un enlace de Google Reviews.
+                </span>
+              )}
+            </div>
+
+            <button
+              type="button"
+              className={`switch ${
+                restaurant.show_google_reviews_landing ? "on" : ""
+              }`}
+              aria-pressed={restaurant.show_google_reviews_landing}
+              aria-label="Mostrar botón de Google Reviews en el landing"
+              onClick={async () => {
+                try {
+                  await saveLandingVisibility(
+                    !restaurant.show_google_reviews_landing
+                  );
+                } catch (error) {
+                  console.error(error);
+                  setError("No se pudo actualizar la visibilidad.");
+                }
+              }}
+            >
+              <span />
+            </button>
+          </div>
 
 
         </header>
