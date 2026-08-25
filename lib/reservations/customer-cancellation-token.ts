@@ -13,11 +13,26 @@ function getSecret() {
 }
 
 function getSiteUrl() {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000"
-  ).replace(/\/$/, "");
+  const configuredUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    process.env.NEXT_PUBLIC_APP_URL?.trim();
+
+  if (configuredUrl) {
+    return configuredUrl.replace(/\/$/, "");
+  }
+
+  // Producción: nunca generar enlaces localhost.
+  if (process.env.VERCEL_ENV === "production") {
+    return "https://app.wolfordering.com";
+  }
+
+  // Preview de Vercel.
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`.replace(/\/$/, "");
+  }
+
+  // Desarrollo local.
+  return "http://localhost:3000";
 }
 
 function base64UrlEncode(value: string) {
