@@ -14,37 +14,64 @@ export type ReservationCancelledBy =
 export async function sendReservationCancelled(
   reservationId: string,
   cancelledBy: ReservationCancelledBy,
-  reason?: string | null
+  reason?: string | null,
 ) {
-  const data =
-    await getReservationEmailData(reservationId);
+  const data = await getReservationEmailData(reservationId);
 
-  const recipient =
+  const customerIntro =
     cancelledBy === "customer"
-      ? data.restaurant.email
-      : data.guest.email;
+      ? "El cliente canceló esta reserva. El estado fue actualizado a cancelada."
+      : "El restaurante canceló esta reserva. El estado fue actualizado a cancelada.";
 
-  if (!recipient) {
+  const restaurantIntro =
+    cancelledBy === "customer"
+      ? "El cliente canceló esta reserva. El estado fue actualizado a cancelada."
+      : "La reserva fue cancelada desde el restaurante. El estado fue actualizado a cancelada.";
+
+  const sends: Promise<unknown>[] = [];
+
+  if (data.guest.email) {
+    sends.push(
+      resend.emails.send({
+        from: RESERVATION_FROM,
+        to: data.guest.email,
+        subject: `Reserva cancelada — ${data.restaurant.name}`,
+        html: buildReservationDetailsHtml(data, {
+          title: "Reserva cancelada",
+          intro: customerIntro,
+          showCustomerContact: false,
+          showStatus: true,
+          cancellationReason: reason || null,
+        }),
+      }),
+    );
+  }
+
+  if (data.restaurant.email) {
+    sends.push(
+      resend.emails.send({
+        from: RESERVATION_FROM,
+        to: data.restaurant.email,
+        subject: `Reserva cancelada — ${data.guest.name}`,
+        html: buildReservationDetailsHtml(data, {
+          title: "Reserva cancelada",
+          intro: restaurantIntro,
+          showCustomerContact: true,
+          showStatus: true,
+          cancellationReason: reason || null,
+        }),
+      }),
+    );
+  }
+
+  if (sends.length === 0) {
     return { success: false, skipped: true };
   }
 
-  const recipientLabel =
-    cancelledBy === "customer"
-      ? "El cliente canceló la reserva."
-      : "El restaurante canceló la reserva.";
+  const results = await Promise.all(sends);
 
-  const result = await resend.emails.send({
-    from: RESERVATION_FROM,
-    to: recipient,
-    subject: `Reserva cancelada — ${data.restaurant.name}`,
-    html: buildReservationDetailsHtml(data, {
-      title: "Reserva cancelada",
-      intro: recipientLabel,
-      showCustomerContact: cancelledBy === "customer",
-      showStatus: true,
-      cancellationReason: reason || null,
-    }),
-  });
-
-  return { success: true, result };
+  return {
+    success: true,
+    results,
+  };
 }

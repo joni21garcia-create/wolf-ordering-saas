@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 type Props = {
   token: string;
-  reservationId: string;
 };
 
 type ReservationData = {
@@ -72,7 +71,6 @@ function formatTime(
 
 export default function CustomerReservationCancellation({
   token,
-  reservationId,
 }: Props) {
   const [loading, setLoading] =
     useState(true);
@@ -96,18 +94,9 @@ export default function CustomerReservationCancellation({
 
     async function loadReservation() {
       try {
-        if (!reservationId) {
-          throw new Error(
-            "El enlace de cancelación está incompleto.",
-          );
-        }
         const response =
           await fetch(
-            `/api/reservations/customer-cancel/${encodeURIComponent(
-              token,
-            )}?reservation=${encodeURIComponent(
-              reservationId,
-            )}`,
+            `/api/reservations/customer-cancel/${encodeURIComponent(token)}`,
             {
               method: "GET",
               cache: "no-store",
@@ -152,7 +141,7 @@ export default function CustomerReservationCancellation({
     return () => {
       disposed = true;
     };
-  }, [token, reservationId]);
+  }, [token]);
 
   async function handleCancel() {
     const confirmed =
@@ -170,11 +159,7 @@ export default function CustomerReservationCancellation({
     try {
       const response =
         await fetch(
-          `/api/reservations/customer-cancel/${encodeURIComponent(
-            token,
-          )}?reservation=${encodeURIComponent(
-            reservationId,
-          )}`,
+          `/api/reservations/customer-cancel/${encodeURIComponent(token)}`,
           {
             method: "POST",
           },

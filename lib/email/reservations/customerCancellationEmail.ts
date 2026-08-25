@@ -99,7 +99,7 @@ export async function buildCustomerCancellationHtml(
         "
       >
         Puedes cancelar esta reserva hasta
-        <strong>${cancellationTimeText}</strong>.
+        <strong>${cancellationTimeText}</strong> antes de la hora reservada.
       </p>
 
       <a
@@ -127,9 +127,7 @@ export async function buildCustomerCancellationHtml(
           color: #777777;
         "
       >
-        El enlace solo permite cancelar mientras
-        se encuentre vigente el plazo establecido
-        por el restaurante.
+        El enlace no expira por sí mismo. La cancelación está disponible únicamente hasta el límite establecido por el restaurante.
       </p>
     </div>
   `;
