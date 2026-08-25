@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useSession } from "@/providers/SessionProvider";
 
 type Role = {
   id: string;
@@ -13,6 +14,7 @@ type Role = {
 export default function EditRolePage() {
   const params = useParams();
   const router = useRouter();
+  const { user: currentUser, loading: sessionLoading } = useSession();
 
   const restaurantId = params.id as string;
   const roleId = params.roleId as string;
@@ -22,11 +24,14 @@ export default function EditRolePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const isSuperAdmin =
+    currentUser?.role?.code?.trim().toLowerCase() === "super-user";
+
   useEffect(() => {
-    if (restaurantId && roleId) {
+    if (!sessionLoading && restaurantId && roleId) {
       loadRole();
     }
-  }, [restaurantId, roleId]);
+  }, [restaurantId, roleId, sessionLoading]);
 
   async function loadRole() {
     try {
@@ -76,7 +81,7 @@ export default function EditRolePage() {
         protectedNames.includes(roleName) ||
         protectedCodes.includes(roleCode);
 
-      if (isProtected) {
+      if (!isSuperAdmin && isProtected) {
         alert("Este rol está protegido y no puede editarse desde aquí.");
         router.push(
           `/super-admin/restaurants/${restaurantId}/access/roles`

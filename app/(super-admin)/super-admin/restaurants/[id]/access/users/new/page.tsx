@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useSession } from "@/providers/SessionProvider";
 
 type Role = {
   id: string;
@@ -13,6 +14,7 @@ type Role = {
 export default function NewUserPage() {
   const params = useParams();
   const router = useRouter();
+  const { user: currentUser, loading: sessionLoading } = useSession();
 
   const restaurantId = params.id as string;
 
@@ -25,11 +27,14 @@ export default function NewUserPage() {
   const [loading, setLoading] = useState(false);
   const [loadingRoles, setLoadingRoles] = useState(true);
 
+  const isSuperAdmin =
+    currentUser?.role?.code?.trim().toLowerCase() === "super-user";
+
   useEffect(() => {
-    if (restaurantId) {
+    if (!sessionLoading && restaurantId) {
       loadRoles();
     }
-  }, [restaurantId]);
+  }, [restaurantId, sessionLoading]);
 
   async function loadRoles() {
     try {
@@ -52,18 +57,19 @@ export default function NewUserPage() {
        *
        * Solo se muestran roles operativos.
        */
-      const operationalRoles = (data || []).filter((role) => {
-        const name = (role.name || "").trim().toLowerCase();
-        const code = (role.code || "").trim().toLowerCase();
+      const operationalRoles = isSuperAdmin
+        ? (data || [])
+        : (data || []).filter((role) => {
+            const code = (role.code || "").trim().toLowerCase();
 
-        const protectedCodes = [
-  "super-user",
-  "owner",
-  "manager",
-];
+            const protectedCodes = [
+              "super-user",
+              "owner",
+              "manager",
+            ];
 
-        return !protectedCodes.includes(code);
-      });
+            return !protectedCodes.includes(code);
+          });
 
       setRoles(operationalRoles);
 

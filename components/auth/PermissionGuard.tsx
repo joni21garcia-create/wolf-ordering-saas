@@ -29,7 +29,11 @@ export default function PermissionGuard({
       return;
     }
 
+    const isSuperAdmin =
+      user.role?.code?.trim().toLowerCase() === "super-user";
+
     const hasPermission =
+      isSuperAdmin ||
       user.permissions?.includes(
         permission
       );
@@ -54,7 +58,11 @@ export default function PermissionGuard({
     return null;
   }
 
+  const isSuperAdmin =
+    user.role?.code?.trim().toLowerCase() === "super-user";
+
   const hasPermission =
+    isSuperAdmin ||
     user.permissions?.includes(
       permission
     );
@@ -65,5 +73,4 @@ export default function PermissionGuard({
 
   return <>{children}</>;
 }
-
 

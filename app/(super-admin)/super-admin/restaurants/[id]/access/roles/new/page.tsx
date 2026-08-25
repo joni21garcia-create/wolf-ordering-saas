@@ -3,16 +3,21 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useSession } from "@/providers/SessionProvider";
 
 export default function NewRolePage() {
   const params = useParams();
   const router = useRouter();
+  const { user: currentUser, loading: sessionLoading } = useSession();
 
   const restaurantId = params.id as string;
 
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const isSuperAdmin =
+    currentUser?.role?.code?.trim().toLowerCase() === "super-user";
 
   async function createRole() {
     try {
@@ -43,12 +48,18 @@ export default function NewRolePage() {
       ];
 
       if (
-        protectedNames.includes(cleanName.toLowerCase()) ||
-        protectedCodes.includes(cleanCode)
+        !isSuperAdmin &&
+        (protectedNames.includes(cleanName.toLowerCase()) ||
+          protectedCodes.includes(cleanCode))
       ) {
         alert(
           "Ese rol está reservado y no puede ser creado desde el restaurante."
         );
+        return;
+      }
+
+      if (sessionLoading) {
+        alert("Espera a que termine de cargar la sesión.");
         return;
       }
 

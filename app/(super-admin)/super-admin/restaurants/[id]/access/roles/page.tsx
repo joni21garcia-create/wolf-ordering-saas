@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import PermissionGuard from "@/components/auth/PermissionGuard";
+import { useSession } from "@/providers/SessionProvider";
 
 type Role = {
   id: string;
@@ -16,16 +17,20 @@ type Role = {
 export default function RolesPage() {
   const params = useParams();
   const router = useRouter();
+  const { user: currentUser, loading: sessionLoading } = useSession();
   const restaurantId = params.id as string;
 
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const isSuperAdmin =
+    currentUser?.role?.code?.trim().toLowerCase() === "super-user";
+
   useEffect(() => {
-    if (restaurantId) {
+    if (!sessionLoading && restaurantId) {
       loadRoles();
     }
-  }, [restaurantId]);
+  }, [restaurantId, sessionLoading]);
 
   async function loadRoles() {
     try {
@@ -49,23 +54,21 @@ export default function RolesPage() {
        * No se muestran dentro de la administración
        * operativa del restaurante.
        */
-      const operationalRoles = (data || []).filter((role) => {
-        const name = String(role.name || "")
-          .trim()
-          .toLowerCase();
+      const operationalRoles = isSuperAdmin
+        ? (data || [])
+        : (data || []).filter((role) => {
+            const code = String(role.code || "")
+              .trim()
+              .toLowerCase();
 
-        const code = String(role.code || "")
-          .trim()
-          .toLowerCase();
+            const protectedCodes = [
+              "super-user",
+              "owner",
+              "manager",
+            ];
 
-        const protectedCodes = [
-  "super-user",
-  "owner",
-  "manager",
-];
-
-        return !protectedCodes.includes(code);
-      });
+            return !protectedCodes.includes(code);
+          });
 
       const rolesWithUsers = await Promise.all(
         operationalRoles.map(async (role) => {

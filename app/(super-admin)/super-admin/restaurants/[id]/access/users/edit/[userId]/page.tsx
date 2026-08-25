@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useSession } from "@/providers/SessionProvider";
 
 type Role = {
   id: string;
@@ -28,6 +29,7 @@ const PROTECTED_ROLES = [
 export default function EditUserPage() {
   const params = useParams();
   const router = useRouter();
+  const { user: currentUser, loading: sessionLoading } = useSession();
 
   // Route: /super-admin/restaurants/[id]/access/users/edit/[userId]
   const restaurantId = params.id as string;
@@ -47,11 +49,14 @@ export default function EditUserPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
+  const isSuperAdmin =
+    currentUser?.role?.code?.trim().toLowerCase() === "super-user";
+
   useEffect(() => {
-    if (restaurantId && userId) {
+    if (!sessionLoading && restaurantId && userId) {
       loadData();
     }
-  }, [restaurantId, userId]);
+  }, [restaurantId, userId, sessionLoading]);
 
   async function loadData() {
     try {
@@ -117,22 +122,20 @@ export default function EditUserPage() {
       setRoleId(userData.role_id || "");
       setActive(Boolean(userData.active));
 
-      const operationalRoles = allRoles.filter(
-        (role) =>
-          !PROTECTED_ROLES.includes(
-            String(role.code || "").trim().toLowerCase()
-          )
-      );
+      const operationalRoles = isSuperAdmin
+        ? allRoles
+        : allRoles.filter(
+            (role) =>
+              !PROTECTED_ROLES.includes(
+                String(role.code || "").trim().toLowerCase()
+              )
+          );
 
-      // El rol actual siempre debe poder resolverse en el editor.
-      // Si es operativo, permanece en el selector. Si es protegido,
-      // se muestra arriba como rol bloqueado.
+      // Super Admin puede administrar cualquier rol.
+      // Los demás usuarios conservan la protección de roles estructurales.
       if (
         userData.role_id &&
         original &&
-        !PROTECTED_ROLES.includes(
-          String(original.code || "").trim().toLowerCase()
-        ) &&
         !operationalRoles.some((role) => role.id === userData.role_id)
       ) {
         setRoles([original, ...operationalRoles]);
@@ -144,7 +147,7 @@ export default function EditUserPage() {
     }
   }
 
-  const isProtectedRole = originalRole
+  const isProtectedRole = !isSuperAdmin && originalRole
     ? PROTECTED_ROLES.includes(
         String(originalRole.code || "").trim().toLowerCase()
       )
@@ -174,8 +177,9 @@ export default function EditUserPage() {
         active,
       };
 
-      // Nunca permitimos cambiar un rol protegido desde este formulario.
-      if (!isProtectedRole) {
+      // Los roles protegidos solo están bloqueados para usuarios no Super Admin.
+      // Super Admin puede cambiar cualquier rol sin restricciones.
+      if (isSuperAdmin || !isProtectedRole) {
         updateData.role_id = roleId;
       }
 
