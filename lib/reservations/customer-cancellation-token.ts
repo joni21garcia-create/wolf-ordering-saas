@@ -21,17 +21,14 @@ function getSiteUrl() {
     return configuredUrl.replace(/\/$/, "");
   }
 
-  // Producción: nunca generar enlaces localhost.
   if (process.env.VERCEL_ENV === "production") {
     return "https://app.wolfordering.com";
   }
 
-  // Preview de Vercel.
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`.replace(/\/$/, "");
   }
 
-  // Desarrollo local.
   return "http://localhost:3000";
 }
 
