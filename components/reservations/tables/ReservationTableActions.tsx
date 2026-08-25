@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Reservation } from "@/types/reservations";
 import { ReservationStatus } from "@/types/reservations";
 import {
@@ -27,6 +28,7 @@ export function ReservationTableActions({
   reservation,
   onRefresh,
 }: ReservationTableActionsProps) {
+  const router = useRouter();
   const [busy, setBusy] = useState<Action>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,6 +44,7 @@ export function ReservationTableActions({
     try {
       await callback();
       onRefresh?.();
+      router.refresh();
     } catch (err) {
       console.error("Reservation action error:", err);
       setError("No se pudo actualizar la reserva.");

@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -17,8 +17,10 @@ import ReservationSummaryStep from "@/components/reservations/forms/ReservationS
 
 import {
   createReservation,
+  createReservationDeposit,
   getAvailableReservationDates,
   getAvailableReservationTimes,
+  getReservationDepositSettings,
   getReservationSettings,
 } from "@/modules/reservations/actions";
 
@@ -546,6 +548,171 @@ function TimeStep({ restaurantId }: { restaurantId: string }) {
 /* CONTENIDO DEL WIZARD - SIEMPRE DENTRO DEL PROVIDER                         */
 /* -------------------------------------------------------------------------- */
 
+type DepositPaymentMethod = "transfer";
+
+type DepositSettings = {
+  enabled: boolean;
+  amount: number;
+  currency: string;
+  allow_transfer: boolean;
+  bank_name: string | null;
+  bank_account_type: "checking" | "savings" | null;
+  bank_account_number: string | null;
+  bank_account_holder: string | null;
+  bank_account_document: string | null;
+  transfer_instructions: string | null;
+  qr_image_url: string | null;
+};
+
+function DepositPaymentScreen({
+  settings,
+  method,
+  onSelectMethod,
+  saving,
+  error,
+}: {
+  settings: DepositSettings;
+  method: DepositPaymentMethod | null;
+  onSelectMethod: (method: DepositPaymentMethod) => void;
+  saving: boolean;
+  error: string | null;
+}) {
+  if (!method) {
+    return (
+      <div className="mx-auto w-full max-w-xl rounded-3xl border border-zinc-200 bg-white p-7 shadow-sm sm:p-10">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
+          Anticipo requerido
+        </p>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900">
+          Completa el anticipo de tu reserva
+        </h1>
+
+        <div className="mt-6 rounded-2xl bg-zinc-50 p-5">
+          <p className="text-sm text-zinc-500">Monto</p>
+          <p className="mt-1 text-3xl font-black text-zinc-900">
+            {settings.currency} {Number(settings.amount).toFixed(2)}
+          </p>
+        </div>
+
+        <p className="mt-6 text-sm leading-6 text-zinc-500">
+          Selecciona cómo deseas pagar el anticipo.
+        </p>
+
+        <div className="mt-5 space-y-3">
+          {settings.allow_transfer ? (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => onSelectMethod("transfer")}
+              className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-left transition hover:bg-zinc-50 disabled:opacity-50"
+            >
+              <p className="text-sm font-semibold text-zinc-900">
+                Consignación bancaria / QR
+              </p>
+              <p className="mt-1 text-xs text-zinc-500">
+                Paga mediante transferencia o escanea el QR.
+              </p>
+            </button>
+          ) : null}
+
+        </div>
+
+        {error ? (
+          <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (method === "transfer") {
+    return (
+      <div className="mx-auto w-full max-w-xl rounded-3xl border border-zinc-200 bg-white p-7 shadow-sm sm:p-10">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400">
+          Anticipo de reserva
+        </p>
+        <h1 className="mt-2 text-2xl font-bold tracking-tight text-zinc-900">
+          Consignación bancaria / QR
+        </h1>
+
+        <div className="mt-6 rounded-2xl bg-zinc-50 p-5">
+          <p className="text-sm text-zinc-500">Monto a pagar</p>
+          <p className="mt-1 text-3xl font-black text-zinc-900">
+            {settings.currency} {Number(settings.amount).toFixed(2)}
+          </p>
+        </div>
+
+        {settings.qr_image_url ? (
+          <div className="mt-6 rounded-2xl border border-zinc-200 p-5">
+            <p className="text-sm font-semibold text-zinc-800">Código QR</p>
+            <div className="mt-4 flex justify-center rounded-xl bg-white p-4">
+              <img
+                src={settings.qr_image_url}
+                alt="Código QR para pagar el anticipo"
+                className="h-56 w-56 object-contain"
+              />
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mt-6 rounded-2xl border border-zinc-200 p-5">
+          <p className="text-sm font-semibold text-zinc-800">
+            Datos bancarios
+          </p>
+
+          <div className="mt-4 space-y-3 text-sm">
+            <p>
+              <span className="text-zinc-500">Banco: </span>
+              <strong>{settings.bank_name || "—"}</strong>
+            </p>
+            <p>
+              <span className="text-zinc-500">Tipo de cuenta: </span>
+              <strong>
+                {settings.bank_account_type === "checking"
+                  ? "Corriente"
+                  : settings.bank_account_type === "savings"
+                    ? "Ahorros"
+                    : "—"}
+              </strong>
+            </p>
+            <p>
+              <span className="text-zinc-500">Número: </span>
+              <strong>{settings.bank_account_number || "—"}</strong>
+            </p>
+            <p>
+              <span className="text-zinc-500">Titular: </span>
+              <strong>{settings.bank_account_holder || "—"}</strong>
+            </p>
+            <p>
+              <span className="text-zinc-500">Documento/NIT: </span>
+              <strong>{settings.bank_account_document || "—"}</strong>
+            </p>
+          </div>
+        </div>
+
+        {settings.transfer_instructions ? (
+          <div className="mt-6 rounded-2xl bg-zinc-50 p-5">
+            <p className="text-sm font-semibold text-zinc-800">
+              Instrucciones
+            </p>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-600">
+              {settings.transfer_instructions}
+            </p>
+          </div>
+        ) : null}
+
+        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800">
+          Realiza el pago usando estos datos. El comprobante del anticipo se
+          conectará en el siguiente paso.
+        </div>
+      </div>
+    );
+  }
+
+
+}
+
 const STEP_TITLES = [
   "Tus datos",
   "Elige la fecha",
@@ -570,6 +737,14 @@ function ReservationContentInner({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+  const [createdReservationId, setCreatedReservationId] =
+    useState<string | null>(null);
+  const [depositSettings, setDepositSettings] =
+    useState<DepositSettings | null>(null);
+  const [depositMethod, setDepositMethod] =
+    useState<DepositPaymentMethod | null>(null);
+  const [depositId, setDepositId] =
+    useState<string | null>(null);
 
   const components = [
     <CustomerStepWithNotes key="customer" />,
@@ -657,12 +832,12 @@ function ReservationContentInner({
       const settings = await getReservationSettings(restaurantId);
       const durationMinutes = Math.max(
         1,
-        settings.reservation_duration_minutes
+        settings.reservation_duration_minutes,
       );
       const timezone =
         settings.timezone || "America/Guayaquil";
 
-      await createReservation({
+      const reservationResult = await createReservation({
         restaurantId,
         slug: restaurantId,
 
@@ -678,7 +853,10 @@ function ReservationContentInner({
         datetime: {
           date: data.date,
           startTime: data.time,
-          endTime: addMinutes(data.time, durationMinutes),
+          endTime: addMinutes(
+            data.time,
+            durationMinutes,
+          ),
           timezone,
           durationMinutes,
         },
@@ -710,18 +888,105 @@ function ReservationContentInner({
         customerNotes,
       });
 
+      const reservationId =
+        reservationResult?.data?.id;
+
+      if (!reservationId) {
+        throw new Error(
+          "La reserva se creó, pero no recibimos su identificador.",
+        );
+      }
+
+      setCreatedReservationId(reservationId);
+
+      const deposit = (await getReservationDepositSettings(
+        restaurantId,
+      )) as DepositSettings;
+
+      const depositIsActive =
+        Boolean(
+          deposit?.enabled &&
+            Number(deposit.amount) > 0 &&
+            deposit.allow_transfer,
+        );
+
+      if (depositIsActive) {
+        setDepositSettings(deposit);
+        setDepositMethod(null);
+        setDepositId(null);
+        return;
+      }
+
       setConfirmed(true);
     } catch (caughtError) {
-      console.error("CREATE CUSTOMER RESERVATION ERROR", caughtError);
+      console.error(
+        "CREATE CUSTOMER RESERVATION ERROR",
+        caughtError,
+      );
 
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : "No se pudo crear la reserva."
+          : "No se pudo crear la reserva.",
       );
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleSelectDepositMethod(
+    method: DepositPaymentMethod,
+  ) {
+    if (!createdReservationId || !depositSettings) {
+      setError(
+        "No pudimos identificar la reserva para crear el anticipo.",
+      );
+      return;
+    }
+
+    setError(null);
+    setSaving(true);
+
+    try {
+      const result = await createReservationDeposit(
+        createdReservationId,
+        restaurantId,
+        method,
+      );
+
+      const id = result?.id;
+
+      if (!id) {
+        throw new Error(
+          "No pudimos crear el registro del anticipo.",
+        );
+      }
+
+      setDepositId(id);
+      setDepositMethod(method);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "No pudimos crear el anticipo.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+
+
+  if (depositSettings) {
+    return (
+      <DepositPaymentScreen
+        settings={depositSettings}
+        method={depositMethod}
+        saving={saving}
+        error={error}
+        onSelectMethod={handleSelectDepositMethod}
+      />
+    );
   }
 
   if (confirmed) {
@@ -772,6 +1037,10 @@ function ReservationContentInner({
             onClick={() => {
               reset();
               setConfirmed(false);
+              setCreatedReservationId(null);
+              setDepositSettings(null);
+              setDepositMethod(null);
+              setDepositId(null);
               setError(null);
             }}
             className="mt-7 w-full rounded-xl bg-zinc-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800"

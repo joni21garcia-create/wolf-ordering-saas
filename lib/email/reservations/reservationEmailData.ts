@@ -242,6 +242,7 @@ export function buildReservationDetailsHtml(
     showCustomerContact?: boolean;
     showStatus?: boolean;
     cancellationReason?: string | null;
+    extraHtml?: string;
   }
 ): string {
   const tableLabel =
@@ -344,6 +345,10 @@ export function buildReservationDetailsHtml(
                     : ""
                 }
               </div>
+
+              ${
+                options.extraHtml || ""
+              }
 
               ${
                 data.notes

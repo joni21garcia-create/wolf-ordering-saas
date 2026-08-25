@@ -307,6 +307,7 @@ export default function ReservationContent({
           reservations={
             reservations
           }
+          onRefresh={() => router.refresh()}
         />
       </div>
 

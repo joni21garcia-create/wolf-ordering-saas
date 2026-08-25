@@ -49,11 +49,7 @@ export class ReservationRepository {
       return availability.tables;
     }
 
-    throw new Error(
-      availability.reason === "NO_TABLE_AVAILABLE"
-        ? "La disponibilidad cambió mientras confirmabas tu reserva. Por favor, selecciona otra hora o fecha disponible."
-        : availability.reason ?? "No se pudo confirmar la reserva."
-    );
+    throw new Error(availability.reason ?? "NO_TABLE_AVAILABLE");
   }
 
   private localDateTimeToUtcIso(
@@ -279,7 +275,15 @@ export class ReservationRepository {
           start_time: data.datetime.startTime,
           end_time: data.datetime.endTime,
           guests: data.capacity.guests,
-          status: ReservationStatus.PENDING,
+          // La configuración del restaurante define el estado inicial:
+          // - autoConfirm=true  -> CONFIRMED
+          // - autoConfirm=false -> PENDING
+          status: policy.autoConfirm
+            ? ReservationStatus.CONFIRMED
+            : ReservationStatus.PENDING,
+          confirmed_at: policy.autoConfirm
+            ? new Date().toISOString()
+            : null,
           source: "website",
           timezone:
             data.datetime.timezone ?? "America/Guayaquil",

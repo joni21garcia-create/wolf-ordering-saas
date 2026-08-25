@@ -12,6 +12,7 @@ import { PolicySettings } from "./sections/PolicySettings";
 import { ScheduleSettings } from "./sections/ScheduleSettings";
 import { SpecialDatesSettings } from "./sections/SpecialDatesSettings";
 import { TablesSettings } from "./sections/TablesSettings";
+import { DepositSettings } from "./sections/DepositSettings";
 
 type ReservationSettingsPageProps = {
   restaurantId: string;
@@ -25,7 +26,8 @@ type ReservationSettingsSection =
   | "confirmation"
   | "notifications"
   | "special-dates"
-  | "tables";
+  | "tables"
+  | "deposit";
 
 type SectionDefinition = {
   id: ReservationSettingsSection;
@@ -84,6 +86,12 @@ const sections: SectionDefinition[] = [
     shortLabel: "Mesas",
     description:
       "Configura las mesas, capacidades y reglas de combinación.",
+  },
+  {
+    id: "deposit",
+    label: "Anticipo",
+    shortLabel: "Anticipo",
+    description: "Configura el anticipo opcional de las reservas.",
   },
 ];
 
@@ -208,6 +216,8 @@ export function ReservationSettingsPage({
           />
         );
 
+      case "deposit":
+        return <DepositSettings restaurantId={restaurantId} />;
 
       default:
         return null;

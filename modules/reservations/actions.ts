@@ -32,6 +32,23 @@ import type {
   UpdateReservationBlockInput,
 } from "./repositories/reservation-block.repository";
 
+import {
+  paymentService,
+  type CreateReservationDepositInput,
+} from "./services/payment.service";
+
+import {
+  getReservationDepositSettings as getDepositSettingsAction,
+  updateReservationDepositSettings as updateDepositSettingsAction,
+  createReservationDeposit as createDepositAction,
+  markReservationDepositPaid as markDepositPaidAction,
+} from "./actions/deposit.actions";
+
+import type {
+  ReservationDepositPaymentMethod,
+  ReservationDepositSettingsInput,
+} from "./repositories/deposit.repository";
+
 function revalidateReservationPaths() {
   revalidatePath("/admin/reservations");
 }
@@ -183,13 +200,20 @@ export async function createReservation(
   const reservation =
     await reservationRepository.create(data);
 
-  // El contenido del email de creación se adapta al estado final:
+  // El correo depende del estado final de la reserva:
   // - pending: solicitud recibida
-  // - confirmed: reserva confirmada automáticamente
-  await sendReservationEmailSafely(
-    () => sendReservationCreated(reservation.id),
-    "SEND RESERVATION CREATED EMAIL"
-  );
+  // - confirmed: confirmación automática
+  if (reservation.status === "confirmed") {
+    await sendReservationEmailSafely(
+      () => sendReservationConfirmed(reservation.id),
+      "SEND RESERVATION AUTO-CONFIRMED EMAIL"
+    );
+  } else {
+    await sendReservationEmailSafely(
+      () => sendReservationCreated(reservation.id),
+      "SEND RESERVATION CREATED EMAIL"
+    );
+  }
 
   revalidateReservationPaths();
 
@@ -584,4 +608,46 @@ export async function canCreateReservationBlock(
     success: true,
     available,
   };
+}
+
+/* =========================================================
+ * ANTICIPOS / PAGOS DE RESERVAS
+ * ======================================================= */
+
+export async function getReservationDepositSettings(
+  restaurantId: string
+) {
+  return getDepositSettingsAction(restaurantId);
+}
+
+export async function updateReservationDepositSettings(
+  restaurantId: string,
+  input: ReservationDepositSettingsInput
+) {
+  return updateDepositSettingsAction(
+    restaurantId,
+    input
+  );
+}
+
+export async function createReservationDeposit(
+  reservationId: string,
+  restaurantId: string,
+  method: ReservationDepositPaymentMethod
+) {
+  return createDepositAction(
+    reservationId,
+    restaurantId,
+    method
+  );
+}
+
+export async function markReservationDepositPaid(
+  depositId: string,
+  proofUrl?: string | null
+) {
+  return markDepositPaidAction(
+    depositId,
+    proofUrl
+  );
 }

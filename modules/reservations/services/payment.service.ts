@@ -1,148 +1,102 @@
-export interface ReservationPaymentResult {
+import {
+  paymentRepository,
+  type ReservationDeposit,
+  type ReservationDepositMethod,
+  type ReservationDepositStatus,
+} from "../repositories/payment.repository";
 
-  success: boolean;
-
-  paymentId?: string;
-
+export interface CreateReservationDepositInput {
+  reservationId: string;
+  restaurantId: string;
   amount: number;
+  currency?: string;
+  method: ReservationDepositMethod;
+  paypalOrderId?: string | null;
+  notes?: string | null;
+}
 
-  currency: string;
-
-  status:
-    | "pending"
-    | "paid"
-    | "failed"
-    | "refunded";
-
-  transactionId?: string;
-
-  checkoutUrl?: string;
-
+export interface ReservationDepositResult {
+  success: boolean;
+  data?: ReservationDeposit;
   message?: string;
-
 }
 
 export class PaymentService {
+  async createDeposit(
+    input: CreateReservationDepositInput
+  ): Promise<ReservationDepositResult> {
+    try {
+      const deposit = await paymentRepository.create(input);
 
-  /*
-    Crear un pago.
+      return {
+        success: true,
+        data: deposit,
+      };
+    } catch (error) {
+      console.error("[RESERVATION PAYMENT] CREATE DEPOSIT", error);
 
-    Futuro:
-    - Stripe
-    - Mercado Pago
-    - PayPal
-    - Kushki
-  */
-
-  async createPayment(
-
-    reservationId: string,
-
-    amount: number,
-
-    currency = "USD"
-
-  ): Promise<ReservationPaymentResult> {
-
-    return {
-
-      success: true,
-
-      paymentId:
-        `PAY-${Date.now()}`,
-
-      amount,
-
-      currency,
-
-      status: "pending"
-
-    };
-
+      return {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "No se pudo crear el anticipo.",
+      };
+    }
   }
 
-  /*
-    Confirmar pago
-  */
+  async getDeposit(
+    depositId: string
+  ): Promise<ReservationDeposit | null> {
+    return paymentRepository.findById(depositId);
+  }
 
-  async confirmPayment(
-    paymentId: string
-  ): Promise<boolean> {
+  async getDepositByReservation(
+    reservationId: string
+  ): Promise<ReservationDeposit | null> {
+    return paymentRepository.findByReservation(reservationId);
+  }
 
-    console.log(
-      "CONFIRM PAYMENT",
-      paymentId
+  async updateDepositStatus(
+    depositId: string,
+    status: ReservationDepositStatus
+  ): Promise<ReservationDeposit> {
+    return paymentRepository.updateStatus(depositId, status);
+  }
+
+  async markAsPaid(
+    depositId: string
+  ): Promise<ReservationDeposit> {
+    return this.updateDepositStatus(depositId, "paid");
+  }
+
+  async markAsFailed(
+    depositId: string
+  ): Promise<ReservationDeposit> {
+    return this.updateDepositStatus(depositId, "failed");
+  }
+
+  async markAsRefunded(
+    depositId: string
+  ): Promise<ReservationDeposit> {
+    return this.updateDepositStatus(depositId, "refunded");
+  }
+
+  async cancelDeposit(
+    depositId: string
+  ): Promise<ReservationDeposit> {
+    return this.updateDepositStatus(depositId, "cancelled");
+  }
+
+  async attachPayPalOrder(
+    depositId: string,
+    paypalOrderId: string
+  ): Promise<ReservationDeposit> {
+    return paymentRepository.setPayPalOrderId(
+      depositId,
+      paypalOrderId
     );
-
-    return true;
-
   }
-
-  /*
-    Cancelar pago
-  */
-
-  async cancelPayment(
-    paymentId: string
-  ): Promise<boolean> {
-
-    console.log(
-      "CANCEL PAYMENT",
-      paymentId
-    );
-
-    return true;
-
-  }
-
-  /*
-    Reembolso
-  */
-
-  async refundPayment(
-
-    paymentId: string,
-
-    amount?: number
-
-  ): Promise<boolean> {
-
-    console.log(
-      "REFUND PAYMENT",
-      paymentId,
-      amount
-    );
-
-    return true;
-
-  }
-
-  /*
-    Consultar estado
-  */
-
-  async getPaymentStatus(
-    paymentId: string
-  ): Promise<ReservationPaymentResult> {
-
-    return {
-
-      success: true,
-
-      paymentId,
-
-      amount: 0,
-
-      currency: "USD",
-
-      status: "paid"
-
-    };
-
-  }
-
 }
 
-export const paymentService =
-  new PaymentService();
-
+export const paymentService = new PaymentService();

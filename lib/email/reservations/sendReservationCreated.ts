@@ -6,6 +6,9 @@ import {
   buildReservationDetailsHtml,
   getReservationEmailData,
 } from "./reservationEmailData";
+import {
+  buildCustomerCancellationHtml,
+} from "./customerCancellationEmail";
 
 export async function sendReservationCreated(
   reservationId: string
@@ -16,6 +19,14 @@ export async function sendReservationCreated(
   const sends: Promise<unknown>[] = [];
 
   if (data.guest.email) {
+    const cancellationHtml =
+      data.status === "confirmed"
+        ? await buildCustomerCancellationHtml(
+            reservationId,
+            data.restaurant.id,
+          )
+        : "";
+
     sends.push(
       resend.emails.send({
         from: RESERVATION_FROM,
@@ -35,6 +46,7 @@ export async function sendReservationCreated(
               : "Tu solicitud fue registrada correctamente. Conserva este correo con los datos de tu reserva.",
           showCustomerContact: false,
           showStatus: true,
+          extraHtml: cancellationHtml,
         }),
       })
     );
