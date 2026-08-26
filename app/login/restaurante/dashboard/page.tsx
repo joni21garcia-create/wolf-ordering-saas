@@ -44,7 +44,7 @@ export default function RestaurantRedirectPage() {
       }
 
       window.location.href =
-        `/super-admin/restaurants/${user.restaurant_id}/restaurante/dashboard`;
+        `/admin/dashboard/${user.restaurant_id}`;
     } catch (err) {
       console.error(err);
 
@@ -85,5 +85,3 @@ export default function RestaurantRedirectPage() {
     </main>
   );
 }
-
-

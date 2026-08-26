@@ -1,0 +1,20 @@
+"use client";
+
+import type { ReactNode } from "react";
+import { useSession } from "@/providers/SessionProvider";
+import RestaurantShell from "@/components/navigation/RestaurantShell";
+
+export default function RestaurantContextLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const { loading } = useSession();
+
+  if (loading) return null;
+
+  // El Shell se aplica también a Super Admin cuando trabaja dentro
+  // del contexto de un restaurante. El dashboard global /super-admin
+  // conserva su interfaz actual.
+  return <RestaurantShell>{children}</RestaurantShell>;
+}

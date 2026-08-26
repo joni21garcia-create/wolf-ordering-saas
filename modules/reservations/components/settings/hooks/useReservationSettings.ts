@@ -1,4 +1,4 @@
- "use client";
+﻿ "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -36,6 +36,8 @@ export function useReservationSettings(
   const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
+
     return () => {
       mountedRef.current = false;
     };
@@ -45,7 +47,7 @@ export function useReservationSettings(
     if (!restaurantId?.trim()) {
       if (mountedRef.current) {
         setSettings(null);
-        setError("No se encontró el restaurante.");
+        setError("No se encontrÃ³ el restaurante.");
         setIsLoading(false);
       }
 
@@ -87,7 +89,7 @@ export function useReservationSettings(
       input: ReservationSettingsInput,
     ): Promise<ReservationSettings | null> => {
       if (!restaurantId?.trim()) {
-        setError("No se encontró el restaurante.");
+        setError("No se encontrÃ³ el restaurante.");
         return null;
       }
 
@@ -102,7 +104,7 @@ export function useReservationSettings(
 
         if (!result?.success || !result.data) {
           throw new Error(
-            "No fue posible guardar la configuración de reservas.",
+            "No fue posible guardar la configuraciÃ³n de reservas.",
           );
         }
 
@@ -141,49 +143,49 @@ function getErrorMessage(cause: unknown): string {
     return translateSettingsError(cause.message);
   }
 
-  return "No fue posible cargar o guardar la configuración de reservas.";
+  return "No fue posible cargar o guardar la configuraciÃ³n de reservas.";
 }
 
 function translateSettingsError(message: string): string {
   switch (message) {
     case "RESTAURANT_ID_REQUIRED":
-      return "No se encontró el restaurante.";
+      return "No se encontrÃ³ el restaurante.";
 
     case "INVALID_RESERVATION_DURATION":
-      return "La duración de la reserva no es válida.";
+      return "La duraciÃ³n de la reserva no es vÃ¡lida.";
 
     case "INVALID_SLOT_INTERVAL":
-      return "El intervalo entre reservas no es válido.";
+      return "El intervalo entre reservas no es vÃ¡lido.";
 
     case "INVALID_MIN_ADVANCE_HOURS":
-      return "La anticipación mínima no es válida.";
+      return "La anticipaciÃ³n mÃ­nima no es vÃ¡lida.";
 
     case "INVALID_MAX_ADVANCE_DAYS":
-      return "La anticipación máxima no es válida.";
+      return "La anticipaciÃ³n mÃ¡xima no es vÃ¡lida.";
 
     case "INVALID_ADVANCE_WINDOW":
-      return "La ventana de anticipación no es válida.";
+      return "La ventana de anticipaciÃ³n no es vÃ¡lida.";
 
     case "INVALID_MIN_GUESTS":
-      return "El mínimo de personas no es válido.";
+      return "El mÃ­nimo de personas no es vÃ¡lido.";
 
     case "INVALID_MAX_GUESTS":
-      return "El máximo de personas no es válido.";
+      return "El mÃ¡ximo de personas no es vÃ¡lido.";
 
     case "INVALID_GUEST_RANGE":
-      return "El rango de personas no es válido.";
+      return "El rango de personas no es vÃ¡lido.";
 
     case "INVALID_CANCELLATION_LIMIT":
-      return "El límite de cancelación no es válido.";
+      return "El lÃ­mite de cancelaciÃ³n no es vÃ¡lido.";
 
     case "INVALID_BUFFER_BEFORE":
-      return "El margen antes de la reserva no es válido.";
+      return "El margen antes de la reserva no es vÃ¡lido.";
 
     case "INVALID_BUFFER_AFTER":
-      return "El margen después de la reserva no es válido.";
+      return "El margen despuÃ©s de la reserva no es vÃ¡lido.";
 
     case "INVALID_TIMEZONE":
-      return "La zona horaria no es válida.";
+      return "La zona horaria no es vÃ¡lida.";
 
     default:
       return message;

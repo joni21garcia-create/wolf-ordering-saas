@@ -1,0 +1,342 @@
+"use client";
+
+import {
+  Menu,
+  Search,
+  ChevronRight,
+  LogOut,
+  X,
+} from "lucide-react";
+import { usePathname } from "next/navigation";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+
+import { supabase } from "@/lib/supabase/client";
+import { useSession } from "@/providers/SessionProvider";
+import {
+  WolfColors,
+  WolfRadius,
+  WolfScrollArea,
+  WolfSheet,
+  WolfSpacing,
+  WolfTypography,
+} from "@/lib/wolf-ui";
+import {
+  restaurantModules,
+  RESTAURANT_MODULE_COUNT,
+} from "@/lib/navigation/restaurantModules";
+
+interface RestaurantShellProps {
+  children: ReactNode;
+}
+
+const categoryLabels = {
+  experience: "Experiencia",
+  operation: "Operación",
+  business: "Negocio",
+  admin: "Administración",
+  system: "Sistema",
+} as const;
+
+const categoryOrder = [
+  "experience",
+  "operation",
+  "business",
+  "admin",
+  "system",
+] as const;
+
+export default function RestaurantShell({ children }: RestaurantShellProps) {
+  const { user } = useSession();
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  const restaurantId = user?.restaurant_id ?? "";
+  const isSuperAdmin =
+    user?.role?.code?.trim().toLowerCase() === "super-user";
+  const permissions = user?.permissions ?? [];
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 900px)");
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) setMobileOpen(false);
+  }, [pathname, isMobile]);
+
+  const allowedModules = useMemo(() => {
+    const modules = isSuperAdmin
+      ? restaurantModules
+      : restaurantModules.filter((module) =>
+          permissions.includes(module.code),
+        );
+
+    return modules.map((module) => ({
+      ...module,
+      href: module.href(restaurantId),
+    }));
+  }, [isSuperAdmin, permissions, restaurantId]);
+
+  const filteredModules = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return allowedModules;
+
+    return allowedModules.filter((module) =>
+      `${module.title} ${module.description} ${module.code}`
+        .toLowerCase()
+        .includes(normalized),
+    );
+  }, [allowedModules, query]);
+
+  const groupedModules = categoryOrder.map((category) => ({
+    category,
+    title: categoryLabels[category],
+    modules: filteredModules.filter((module) => module.category === category),
+  })).filter((group) => group.modules.length > 0);
+
+  async function handleLogout() {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error al cerrar sesión:", error);
+      return;
+    }
+    window.location.replace("/login");
+  }
+
+  function ModuleLink({
+    module,
+    compact = false,
+  }: {
+    module: (typeof allowedModules)[number];
+    compact?: boolean;
+  }) {
+    const active =
+      pathname === module.href || pathname.startsWith(`${module.href}/`);
+
+    return (
+      <a
+        href={module.href}
+        onClick={() => isMobile && setMobileOpen(false)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: compact ? 10 : 11,
+          minHeight: compact ? 42 : 44,
+          padding: compact ? "0 9px" : "0 10px",
+          borderRadius: WolfRadius.md,
+          color: active ? WolfColors.text : WolfColors.textSecondary,
+          background: active ? WolfColors.primarySoft : "transparent",
+          borderLeft: active
+            ? `3px solid ${WolfColors.primary}`
+            : "3px solid transparent",
+          textDecoration: "none",
+          transition: "all .18s ease",
+          boxSizing: "border-box",
+        }}
+      >
+        <span
+          style={{
+            width: compact ? 30 : 31,
+            height: compact ? 30 : 31,
+            flexShrink: 0,
+            display: "grid",
+            placeItems: "center",
+            borderRadius: WolfRadius.sm,
+            color: active ? module.color : WolfColors.textMuted,
+            background: active
+              ? `${module.color}18`
+              : "rgba(255,255,255,.025)",
+            border: `1px solid ${active ? `${module.color}35` : WolfColors.border}`,
+          }}
+        >
+          {module.icon}
+        </span>
+        <span
+          style={{
+            minWidth: 0,
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+          }}
+        >
+          <span
+            style={{
+              fontFamily: WolfTypography.fontFamily,
+              fontSize: compact ? 11.5 : 12.5,
+              lineHeight: 1.2,
+              fontWeight: active ? 750 : 600,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {module.title}
+          </span>
+          {!compact && (
+            <span
+              style={{
+                color: WolfColors.textMuted,
+                fontSize: 8.5,
+                lineHeight: 1.2,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {module.description}
+            </span>
+          )}
+        </span>
+        <ChevronRight size={14} strokeWidth={2} style={{ flexShrink: 0, opacity: active ? 0.75 : 0.25 }} />
+      </a>
+    );
+  }
+
+  function ModuleGroups({ compact = false }: { compact?: boolean }) {
+    return (
+      <>
+        {groupedModules.map((group) => (
+          <section key={group.category} style={{ marginBottom: compact ? 10 : 13 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: compact ? "8px 4px 5px" : "9px 5px 6px",
+                color: WolfColors.textMuted,
+                fontSize: 8,
+                fontWeight: 800,
+                letterSpacing: "1px",
+                textTransform: "uppercase",
+              }}
+            >
+              <span>{group.title}</span>
+              <span style={{ opacity: 0.5 }}>{group.modules.length}</span>
+            </div>
+            <div style={{ display: "grid", gap: 2 }}>
+              {group.modules.map((module) => (
+                <ModuleLink key={module.code} module={module} compact={compact} />
+              ))}
+            </div>
+          </section>
+        ))}
+
+        {filteredModules.length === 0 && (
+          <div style={{ padding: "28px 14px", textAlign: "center", color: WolfColors.textMuted, fontSize: 11, lineHeight: 1.5 }}>
+            {isSuperAdmin
+              ? "No encontramos ese módulo."
+              : "No tienes módulos asignados."}
+          </div>
+        )}
+      </>
+    );
+  }
+
+  function SidebarContent() {
+    return (
+      <div style={{ height: "100%", display: "flex", flexDirection: "column", background: WolfColors.surface }}>
+        <div style={{ height: 70, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", padding: `0 ${WolfSpacing.lg}px`, borderBottom: `1px solid ${WolfColors.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 34, height: 34, display: "grid", placeItems: "center", borderRadius: WolfRadius.md, background: WolfColors.primarySoft, border: "1px solid rgba(249,115,22,.22)", color: WolfColors.primary, fontWeight: 900, fontSize: 17 }}>W</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ color: WolfColors.text, fontSize: 14, fontWeight: 800, lineHeight: 1 }}>Wolf Ordering</div>
+              <div style={{ marginTop: 4, color: WolfColors.textMuted, fontSize: 9, textTransform: "uppercase", letterSpacing: ".8px" }}>
+                {isSuperAdmin ? "Super Admin" : "Restaurant OS"}
+              </div>
+            </div>
+          </div>
+          {isMobile && (
+            <button type="button" aria-label="Cerrar menú" onClick={() => setMobileOpen(false)} style={iconButtonStyle}>
+              <X size={18} />
+            </button>
+          )}
+        </div>
+
+        <div style={{ padding: `${WolfSpacing.lg}px ${WolfSpacing.lg}px ${WolfSpacing.sm}px` }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <div style={{ color: WolfColors.textMuted, fontSize: 8, fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase" }}>Módulos</div>
+            <div style={{ color: WolfColors.primary, fontSize: 9, fontWeight: 800 }}>
+              {allowedModules.length}/{RESTAURANT_MODULE_COUNT}
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, height: 40, padding: "0 10px", borderRadius: WolfRadius.md, border: `1px solid ${WolfColors.border}`, background: "rgba(255,255,255,.025)" }}>
+            <Search size={15} color={WolfColors.textMuted} strokeWidth={2} />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar módulo..." aria-label="Buscar módulo" style={{ flex: 1, minWidth: 0, border: 0, outline: 0, background: "transparent", color: WolfColors.text, fontFamily: WolfTypography.fontFamily, fontSize: 11 }} />
+            {query && <button type="button" aria-label="Limpiar búsqueda" onClick={() => setQuery("")} style={{ border: 0, background: "transparent", color: WolfColors.textMuted, cursor: "pointer", padding: 0 }}><X size={14} /></button>}
+          </div>
+        </div>
+
+        <WolfScrollArea style={{ flex: 1, padding: `0 ${WolfSpacing.md}px ${WolfSpacing.md}px`, boxSizing: "border-box" }}>
+          <ModuleGroups />
+        </WolfScrollArea>
+
+        <div style={{ flexShrink: 0, padding: `${WolfSpacing.sm}px ${WolfSpacing.md}px ${WolfSpacing.md}px`, borderTop: `1px solid ${WolfColors.border}` }}>
+          <button type="button" onClick={handleLogout} style={{ width: "100%", height: 42, display: "flex", alignItems: "center", gap: 10, padding: "0 12px", border: 0, borderRadius: WolfRadius.md, background: "transparent", color: WolfColors.textMuted, cursor: "pointer", fontFamily: WolfTypography.fontFamily, fontSize: 12, fontWeight: 600, textAlign: "left" }}>
+            <LogOut size={17} />
+            <span>Salir</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: "100dvh", background: WolfColors.background, color: WolfColors.text }}>
+      {!isMobile && (
+        <aside style={{ position: "fixed", inset: "0 auto 0 0", width: 285, zIndex: 40, borderRight: `1px solid ${WolfColors.border}`, boxShadow: "10px 0 40px rgba(0,0,0,.18)" }}>
+          <SidebarContent />
+        </aside>
+      )}
+
+      {isMobile && (
+        <>
+          <div style={{ position: "sticky", top: 0, zIndex: 30, height: 58, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 14px", background: "rgba(9,9,9,.92)", borderBottom: `1px solid ${WolfColors.border}`, backdropFilter: "blur(16px)" }}>
+            <button type="button" aria-label="Abrir módulos" onClick={() => setMobileOpen(true)} style={iconButtonStyle}><Menu size={19} /></button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 800 }}><span style={{ color: WolfColors.primary }}>W</span>Wolf Ordering</div>
+            <div style={{ width: 34, height: 34, display: "grid", placeItems: "center", borderRadius: WolfRadius.md, background: WolfColors.primarySoft, border: "1px solid rgba(249,115,22,.2)", color: WolfColors.primary, fontSize: 12, fontWeight: 800 }}>{(user?.full_name?.trim()?.charAt(0) || "U").toUpperCase()}</div>
+          </div>
+
+          <WolfSheet open={mobileOpen} onClose={() => setMobileOpen(false)} title="Módulos" subtitle={`${allowedModules.length} de ${RESTAURANT_MODULE_COUNT} módulos disponibles`} maxWidth={390} ariaLabel="Módulos del restaurante">
+            <div style={{ padding: "0 14px 18px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, height: 42, marginBottom: 12, padding: "0 10px", borderRadius: WolfRadius.md, border: `1px solid ${WolfColors.border}`, background: "rgba(255,255,255,.025)" }}>
+                <Search size={15} color={WolfColors.textMuted} />
+                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar módulo..." aria-label="Buscar módulo" style={{ flex: 1, minWidth: 0, border: 0, outline: 0, background: "transparent", color: WolfColors.text, fontFamily: WolfTypography.fontFamily, fontSize: 12 }} />
+              </div>
+              <ModuleGroups compact />
+              <button type="button" onClick={handleLogout} style={{ width: "100%", height: 44, marginTop: 16, display: "flex", alignItems: "center", gap: 10, padding: "0 12px", border: `1px solid ${WolfColors.border}`, borderRadius: WolfRadius.md, background: "rgba(255,255,255,.025)", color: WolfColors.textSecondary, cursor: "pointer", fontFamily: WolfTypography.fontFamily, fontSize: 12, fontWeight: 600 }}><LogOut size={17} />Salir</button>
+            </div>
+          </WolfSheet>
+        </>
+      )}
+
+      <main style={{ minHeight: "100dvh", marginLeft: isMobile ? 0 : 285, boxSizing: "border-box", padding: isMobile ? "0 14px 28px" : "28px 32px 36px" }}>
+        {children}
+      </main>
+    </div>
+  );
+}
+
+const iconButtonStyle: React.CSSProperties = {
+  width: 36,
+  height: 36,
+  display: "grid",
+  placeItems: "center",
+  flexShrink: 0,
+  padding: 0,
+  border: "1px solid rgba(255,255,255,.08)",
+  borderRadius: 12,
+  background: "rgba(255,255,255,.035)",
+  color: "#fff",
+  cursor: "pointer",
+};

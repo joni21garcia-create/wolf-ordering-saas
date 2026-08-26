@@ -27,8 +27,9 @@ interface DashboardStats {
  * aplique correctamente también en móvil.
  */
 export default function SuperAdminDashboardClient() {
-  const { user } = useSession();
+  const { user, loading: sessionLoading } = useSession();
   const permissions = user?.permissions ?? [];
+  const [accessDenied, setAccessDenied] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
@@ -39,8 +40,26 @@ export default function SuperAdminDashboardClient() {
   });
 
   useEffect(() => {
+    if (sessionLoading) return;
+
+    // Este componente representa EXCLUSIVAMENTE el centro global de Wolf.
+    // Owner, manager, kitchen, cashier, marketing, etc. deben permanecer
+    // en el dashboard de su restaurante aunque tengan muchos permisos.
+    if (!user) {
+      window.location.replace("/login");
+      return;
+    }
+
+    if (user.role.code !== "super-user") {
+      setAccessDenied(true);
+      window.location.replace(
+        `/super-admin/restaurants/${user.restaurant_id}/restaurante/dashboard`
+      );
+      return;
+    }
+
     loadDashboard();
-  }, []);
+  }, [sessionLoading, user]);
 
   async function loadDashboard() {
     try {
@@ -99,6 +118,29 @@ export default function SuperAdminDashboardClient() {
 
   const displayName = user?.full_name ?? "Super Administrador";
   const roleName = user?.role?.name ?? "Super Admin";
+
+  if (sessionLoading || accessDenied || !user || user.role.code !== "super-user") {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "grid",
+          placeItems: "center",
+          background: "#070707",
+          color: "#fff",
+          padding: 24,
+          textAlign: "center",
+        }}
+      >
+        <div>
+          <strong style={{ fontSize: 16 }}>Validando acceso…</strong>
+          <p style={{ marginTop: 8, color: "#666", fontSize: 12 }}>
+            Este centro está reservado para Super Admin.
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="page">

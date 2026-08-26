@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useSession } from "@/providers/SessionProvider";
 
 type Role = {
   id: string;
@@ -22,6 +23,7 @@ export default function RolesPage() {
   const router = useRouter();
 
   const restaurantId = params.restaurantId as string;
+  const { user: sessionUser } = useSession();
 
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,18 +117,19 @@ export default function RolesPage() {
               Roles utilizados por el equipo del restaurante.
             </p>
           </div>
-
-          <button
-            className="primary-button"
-            onClick={() =>
-              router.push(
-                `/admin/users/${restaurantId}/roles/new`
-              )
-            }
-          >
-            <span>+</span>
-            Nuevo rol
-          </button>
+          {["super-user", "owner", "manager"].includes(
+            String(sessionUser?.role?.code || "").trim().toLowerCase()
+          ) && (
+            <button
+              className="primary-button"
+              onClick={() =>
+                router.push(`/admin/users/${restaurantId}/roles/new`)
+              }
+            >
+              <span>+</span>
+              Nuevo rol
+            </button>
+          )}
         </header>
 
         {/* TABS */}

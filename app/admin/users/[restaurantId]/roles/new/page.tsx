@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useWolfBack } from "@/lib/navigation/useWolfBack";
 
 const PROTECTED_CODES = [
   "super-user",
@@ -13,9 +14,10 @@ const PROTECTED_CODES = [
 export default function NewRolePage() {
   const params = useParams();
   const router = useRouter();
-
   const restaurantId = params.restaurantId as string;
 
+
+  const goBack = useWolfBack(`/admin/users/${restaurantId}/roles`);
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [saving, setSaving] = useState(false);
@@ -52,7 +54,7 @@ export default function NewRolePage() {
     }
 
     if (PROTECTED_CODES.includes(cleanCode)) {
-      setError("Ese código está reservado.");
+      setError("Ese código esta reservado.");
       return;
     }
 
@@ -69,12 +71,12 @@ export default function NewRolePage() {
 
       if (checkError) {
         console.error(checkError);
-        setError("No se pudo validar el código.");
+        setError("No se pudo validar el cÃ³digo.");
         return;
       }
 
       if (existingRole) {
-        setError("Ya existe un rol con ese código.");
+        setError("Ya existe un rol con ese cÃ³digo.");
         return;
       }
 
@@ -92,7 +94,7 @@ export default function NewRolePage() {
         return;
       }
 
-      router.push(
+      router.replace(
         `/admin/users/${restaurantId}/roles`
       );
     } finally {
@@ -108,13 +110,9 @@ export default function NewRolePage() {
         <header className="header">
           <button
             className="back"
-            onClick={() =>
-              router.push(
-                `/admin/users/${restaurantId}/roles`
-              )
-            }
+            onClick={goBack}
           >
-            ← Roles
+            Roles
           </button>
 
           <div className="eyebrow">Equipo</div>
@@ -166,7 +164,7 @@ export default function NewRolePage() {
 
             <span>
               Los permisos se administran desde Wolf.
-              Aquí solamente defines el rol que podrá
+              Aqui solamente defines el rol que podrá
               asignarse a los usuarios del restaurante.
             </span>
           </div>
@@ -180,11 +178,7 @@ export default function NewRolePage() {
           <div className="actions">
             <button
               className="cancel"
-              onClick={() =>
-                router.push(
-                  `/admin/users/${restaurantId}/roles`
-                )
-              }
+              onClick={goBack}
             >
               Cancelar
             </button>

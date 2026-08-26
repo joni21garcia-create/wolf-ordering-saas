@@ -1,8 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useWolfBack } from "@/lib/navigation/useWolfBack";
+import { useSession } from "@/providers/SessionProvider";
+import { getAssignableRoles } from "@/lib/navigation/roleAssignment";
 
 type Role = {
   id: string;
@@ -19,8 +22,11 @@ const PROTECTED_CODES = [
 export default function NewUserPage() {
   const params = useParams();
   const router = useRouter();
-
   const restaurantId = params.restaurantId as string;
+
+  const goBack = useWolfBack(`/admin/users/${restaurantId}`);
+  const { user: sessionUser } = useSession();
+  const actorRoleCode = sessionUser?.role?.code ?? "";
 
   const [roles, setRoles] = useState<Role[]>([]);
   const [fullName, setFullName] = useState("");
@@ -37,7 +43,7 @@ export default function NewUserPage() {
     if (restaurantId) {
       loadRoles();
     }
-  }, [restaurantId]);
+  }, [restaurantId, actorRoleCode]);
 
   async function loadRoles() {
     try {
@@ -55,17 +61,19 @@ export default function NewUserPage() {
         return;
       }
 
-      const operationalRoles = (data || []).filter(
-        (role: Role) =>
-          !PROTECTED_CODES.includes(
-            String(role.code || "").trim().toLowerCase()
-          )
+      const assignableRoles = getAssignableRoles(
+        actorRoleCode,
+        (data || []).map((role: Role) => ({
+          id: role.id,
+          code: role.code,
+          name: role.name,
+        })),
       );
 
-      setRoles(operationalRoles);
+      setRoles(assignableRoles);
 
-      if (operationalRoles.length > 0) {
-        setRoleId(operationalRoles[0].id);
+      if (assignableRoles.length > 0) {
+        setRoleId(assignableRoles[0].id);
       }
     } finally {
       setLoading(false);
@@ -92,7 +100,7 @@ export default function NewUserPage() {
 
     if (password.length < 6) {
       setError(
-        "La contraseña debe tener al menos 6 caracteres."
+        "La contraseÃ±a debe tener al menos 6 caracteres."
       );
       return;
     }
@@ -127,11 +135,9 @@ export default function NewUserPage() {
 
       if (
         !selectedRole ||
-        PROTECTED_CODES.includes(
-          selectedRole.code.trim().toLowerCase()
-        )
+        !getAssignableRoles(actorRoleCode, [selectedRole]).length
       ) {
-        setError("Selecciona un rol operativo válido.");
+        setError("No puedes asignar ese rol con tu nivel de acceso.");
         return;
       }
 
@@ -159,7 +165,7 @@ export default function NewUserPage() {
         return;
       }
 
-      router.push(
+      router.replace(
         `/admin/users/${restaurantId}`
       );
     } catch (err) {
@@ -192,13 +198,9 @@ export default function NewUserPage() {
         <header className="header">
           <button
             className="back"
-            onClick={() =>
-              router.push(
-                `/admin/users/${restaurantId}`
-              )
-            }
+            onClick={goBack}
           >
-            ← Usuarios
+            Usuarios
           </button>
 
           <div className="eyebrow">Equipo</div>
@@ -206,7 +208,7 @@ export default function NewUserPage() {
           <h1>Nuevo usuario</h1>
 
           <p>
-            Crea una cuenta y asígnale un rol operativo.
+            Crea una cuenta y asignarle un rol permitido para tu nivel de acceso.
           </p>
         </header>
 
@@ -219,7 +221,7 @@ export default function NewUserPage() {
               onChange={(e) =>
                 setFullName(e.target.value)
               }
-              placeholder="Ej. Juan Pérez"
+              placeholder="Ej. Juan Perez"
               autoFocus
             />
           </div>
@@ -270,12 +272,12 @@ export default function NewUserPage() {
           </div>
 
           <div className="field">
-            <label>Rol operativo</label>
+            <label>Rol</label>
 
             {roles.length === 0 ? (
               <div className="no-roles">
                 No existen roles operativos disponibles.
-                Crea primero un rol desde la sección Roles.
+                Crea primero un rol desde la secciÃ³n Roles.
               </div>
             ) : (
               <select
@@ -300,9 +302,10 @@ export default function NewUserPage() {
             <strong>Acceso operativo</strong>
 
             <span>
-              El usuario se creará con el rol seleccionado.
-              Los roles administrativos están protegidos y
-              no pueden asignarse desde esta vista.
+              El usuario se creara con el rol seleccionado.
+              Los roles disponibles dependen de tu nivel de
+              acceso: Owner puede asignar Manager y operativos;
+              Manager solo puede asignar operativos.
             </span>
           </div>
 
@@ -315,11 +318,7 @@ export default function NewUserPage() {
           <div className="actions">
             <button
               className="cancel"
-              onClick={() =>
-                router.push(
-                  `/admin/users/${restaurantId}`
-                )
-              }
+              onClick={goBack}
             >
               Cancelar
             </button>

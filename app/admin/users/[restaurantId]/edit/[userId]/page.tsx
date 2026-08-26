@@ -1,8 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useWolfBack } from "@/lib/navigation/useWolfBack";
+import { useSession } from "@/providers/SessionProvider";
+import { canAssignRole, getAssignableRoles } from "@/lib/navigation/roleAssignment";
 
 type Role = {
   id: string;
@@ -17,6 +20,7 @@ type UserData = {
   phone: string | null;
   active: boolean;
   role_id: string | null;
+  role_code: string | null;
 };
 
 const PROTECTED_ROLES = [
@@ -28,9 +32,11 @@ const PROTECTED_ROLES = [
 export default function EditUserPage() {
   const params = useParams();
   const router = useRouter();
-
-  const restaurantId = params.restaurantId as string;
+  const restaurantId = params.restaurantId as string;
+  const goBack = useWolfBack(`/admin/users/${restaurantId}`);
   const userId = params.userId as string;
+  const { user: sessionUser } = useSession();
+  const actorRoleCode = sessionUser?.role?.code ?? "";
 
   const [user, setUser] = useState<UserData | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -49,7 +55,7 @@ export default function EditUserPage() {
     if (restaurantId && userId) {
       loadData();
     }
-  }, [restaurantId, userId]);
+  }, [restaurantId, userId, actorRoleCode]);
 
   async function loadData() {
     try {
@@ -106,6 +112,7 @@ export default function EditUserPage() {
         phone: userData.phone,
         active: Boolean(userData.active),
         role_id: userData.role_id,
+        role_code: userData.restaurant_roles?.[0]?.code ?? null,
       };
 
       setUser(loadedUser);
@@ -116,35 +123,51 @@ export default function EditUserPage() {
       setRoleId(userData.role_id || "");
       setActive(Boolean(userData.active));
 
-      const operationalRoles = (roleData || []).filter(
-        (role: Role) =>
-          !PROTECTED_ROLES.includes(
-            String(role.code || "").trim().toLowerCase()
-          )
+      const assignableRoles = getAssignableRoles(
+        actorRoleCode,
+        (roleData || []).map((role: Role) => ({
+          id: role.id,
+          code: role.code,
+          name: role.name,
+        })),
       );
 
-      setRoles(operationalRoles);
+      // An Owner may keep/manage a Manager. A Manager may not manage
+      // another Manager, Owner, or Super Admin.
+      const currentRoleCode = String(userData.restaurant_roles?.[0]?.code || "")
+        .trim()
+        .toLowerCase();
+
+      if (
+        currentRoleCode === "manager" &&
+        canAssignRole(actorRoleCode, currentRoleCode) &&
+        !assignableRoles.some((role) => role.code.toLowerCase() === "manager")
+      ) {
+        const managerRole = (roleData || []).find(
+          (role: Role) => role.code.trim().toLowerCase() === "manager",
+        );
+        if (managerRole) assignableRoles.push(managerRole);
+      }
+
+      setRoles(assignableRoles);
     } finally {
       setLoading(false);
     }
   }
 
-  const currentRole = user
-    ? null
-    : null;
-
   const selectedOriginalRole = roles.find(
     (role) => role.id === user?.role_id
   );
 
+  const currentRoleCode = String(
+    user?.role_code || selectedOriginalRole?.code || ""
+  )
+    .trim()
+    .toLowerCase();
+
   const isProtectedRole =
-    selectedOriginalRole
-      ? PROTECTED_ROLES.includes(
-          selectedOriginalRole.code
-            .trim()
-            .toLowerCase()
-        )
-      : false;
+    ["super-user", "owner", "manager"].includes(currentRoleCode) &&
+    !canAssignRole(actorRoleCode, currentRoleCode);
 
   async function handleSave() {
     if (!user) return;
@@ -161,6 +184,11 @@ export default function EditUserPage() {
       };
 
       if (!isProtectedRole) {
+        const selectedRole = roles.find((role) => role.id === roleId);
+        if (!selectedRole || !canAssignRole(actorRoleCode, selectedRole.code)) {
+          setMessage("No tienes permiso para asignar ese rol.");
+          return;
+        }
         updateData.role_id = roleId || null;
       }
 
@@ -179,7 +207,7 @@ export default function EditUserPage() {
       setMessage("Usuario actualizado correctamente.");
 
       setTimeout(() => {
-        router.push(
+        router.replace(
           `/admin/users/${restaurantId}`
         );
       }, 700);
@@ -207,11 +235,7 @@ export default function EditUserPage() {
           <h1>Usuario no encontrado</h1>
 
           <button
-            onClick={() =>
-              router.push(
-                `/admin/users/${restaurantId}`
-              )
-            }
+            onClick={goBack}
           >
             Volver a usuarios
           </button>
@@ -227,13 +251,9 @@ export default function EditUserPage() {
       <div className="edit-header">
         <button
           className="back-button"
-          onClick={() =>
-            router.push(
-              `/admin/users/${restaurantId}`
-            )
-          }
+          onClick={goBack}
         >
-          ← Usuarios
+          â† Usuarios
         </button>
 
         <div className="eyebrow">Equipo</div>
@@ -274,7 +294,7 @@ export default function EditUserPage() {
           </div>
 
           <div className="field">
-            <label>Teléfono</label>
+            <label>TelÃ©fono</label>
 
             <input
               value={phone}
@@ -298,7 +318,7 @@ export default function EditUserPage() {
               <span>
                 Este usuario pertenece a un rol
                 administrativo y no puede cambiarse
-                desde aquí.
+                desde aquÃ­.
               </span>
             </div>
           ) : (
@@ -333,7 +353,7 @@ export default function EditUserPage() {
             <div className="status-description">
               {active
                 ? "El usuario puede acceder al restaurante."
-                : "El usuario está desactivado y no puede acceder."}
+                : "El usuario estÃ¡ desactivado y no puede acceder."}
             </div>
           </div>
 
@@ -364,11 +384,7 @@ export default function EditUserPage() {
         <div className="actions">
           <button
             className="cancel-button"
-            onClick={() =>
-              router.push(
-                `/admin/users/${restaurantId}`
-              )
-            }
+            onClick={goBack}
           >
             Cancelar
           </button>
@@ -665,3 +681,4 @@ const styles = `
     }
   }
 `;
+

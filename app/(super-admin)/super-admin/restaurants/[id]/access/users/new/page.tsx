@@ -116,22 +116,29 @@ export default function NewUserPage() {
         return;
       }
 
-      const { error } = await supabase.functions.invoke(
-        "create-restaurant-user",
-        {
-          body: {
-            email,
-            password,
-            full_name: fullName,
-            phone,
-            restaurant_id: restaurantId,
-            role_id: roleId,
-          },
-        }
-      );
+      const response = await fetch("/api/super-admin/users/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password,
+          full_name: fullName.trim(),
+          phone: phone.trim(),
+          restaurant_id: restaurantId,
+          role_id: roleId,
+        }),
+      });
 
-      if (error) {
-        alert(error.message);
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        alert(
+          result?.error ||
+            "No se pudo crear el usuario."
+        );
         return;
       }
 

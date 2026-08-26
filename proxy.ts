@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function proxy(request: NextRequest) {
@@ -24,21 +24,29 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // Sincroniza la sesión entre navegador y SSR (Mantenido intacto)
-  await supabase.auth.getUser();
+  const pathname = request.nextUrl.pathname;
+
+  const isPublicRoute =
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname === "/api/manifest/manager" ||
+    pathname.startsWith("/api/manifest/") ||
+    pathname === "/favicon.ico" ||
+    pathname.startsWith("/icons/");
+
+  if (!isPublicRoute) {
+    try {
+      await supabase.auth.getUser();
+    } catch (error) {
+      console.error("[proxy] Auth refresh failed:", error);
+    }
+  }
 
   return response;
 }
 
 export const config = {
-  /* 
-   * Modificado exclusivamente para incluir:
-   * - manifest.json y manifest.webmanifest
-   * - La carpeta /icons de forma explícita
-   */
   matcher: [
     "/((?!_next/static|_next/image|icons|favicon.ico|manifest.json|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
-
-

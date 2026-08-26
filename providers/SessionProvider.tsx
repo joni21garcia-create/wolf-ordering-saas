@@ -1,15 +1,15 @@
-"use client";
+﻿"use client";
 
 import React, {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 import PushProvider from "@/components/push/PushProvider";
-
 
 type SessionUser = {
   id: string;
@@ -32,176 +32,161 @@ type SessionContextType = {
   refreshUser: () => Promise<void>;
 };
 
-const SessionContext =
-  createContext<SessionContextType>({
-    user: null,
-    loading: true,
-    refreshUser: async () => {},
-  });
+const SessionContext = createContext<SessionContextType>({
+  user: null,
+  loading: true,
+  refreshUser: async () => {},
+});
 
 export function SessionProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [user, setUser] =
-    useState<SessionUser | null>(null);
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [loading, setLoading] =
-    useState(true);
+  const refreshPromiseRef = useRef<Promise<void> | null>(null);
 
   async function refreshUser() {
-    try {
-      setLoading(true);
+    if (refreshPromiseRef.current) {
+      return refreshPromiseRef.current;
+    }
 
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    const promise = (async () => {
+      try {
+        setLoading(true);
 
-      if (!session) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
 
-      const {
-        data: { user: authUser },
-        error: authError,
-      } = await supabase.auth.getUser();
+        if (sessionError) {
+          console.error(
+            "[SessionProvider] getSession error:",
+            sessionError,
+          );
+          return;
+        }
 
-      if (authError) {
-        if (
-          authError.message?.includes(
-            "Auth session missing"
-          )
-        ) {
+        if (!session?.user) {
           setUser(null);
           return;
         }
 
-        console.error(authError);
-        setUser(null);
-        return;
-      }
+        const authUser = session.user;
 
-      if (!authUser) {
-        setUser(null);
-        return;
-      }
+        const {
+          data,
+          error,
+        } = await supabase
+          .from("restaurant_users")
+          .select(`
+            *,
+            restaurant_roles (
+              id,
+              code,
+              name
+            )
+          `)
+          .eq("auth_user_id", authUser.id)
+          .maybeSingle();
 
-      const {
-        data,
-        error,
-      } = await supabase
-        .from("restaurant_users")
-        .select(`
-          *,
-          restaurant_roles (
-            id,
-            code,
-            name
-          )
-        `)
-        .eq(
-          "auth_user_id",
-          authUser.id
-        )
-        .maybeSingle();
+        if (error) {
+          console.error(
+            "[SessionProvider] restaurant_users error:",
+            error,
+          );
+          return;
+        }
 
-      if (error) {
-        console.error(error);
-        setUser(null);
-        return;
-      }
+        if (!data) {
+          setUser(null);
+          return;
+        }
 
-      if (!data) {
-        setUser(null);
-        return;
-      }
+        const rawRole = data.restaurant_roles;
 
-      const role =
-        data.restaurant_roles as {
-          id: string;
-          code: string;
-          name: string;
-        };
+        const role = Array.isArray(rawRole)
+          ? rawRole[0]
+          : rawRole;
 
-      const {
-        data: permissionsData,
-        error: permissionsError,
-      } = await supabase
-        .from("role_modules")
-        .select("module_code")
-        .eq("role_id", role.id)
-        .eq("can_view", true);
+        if (!role) {
+          console.error(
+            "[SessionProvider] Usuario sin rol:",
+            authUser.id,
+          );
+          setUser(null);
+          return;
+        }
 
-      if (permissionsError) {
+        const {
+          data: permissionsData,
+          error: permissionsError,
+        } = await supabase
+          .from("role_modules")
+          .select("module_code")
+          .eq("role_id", role.id)
+          .eq("can_view", true);
+
+        if (permissionsError) {
+          console.error(
+            "[SessionProvider] role_modules error:",
+            permissionsError,
+          );
+          return;
+        }
+
+        const permissions =
+          permissionsData?.map(
+            (item) => item.module_code,
+          ) ?? [];
+
+        setUser({
+          id: data.auth_user_id,
+          email: data.email,
+          restaurant_id: data.restaurant_id,
+          full_name: data.full_name ?? "",
+          role: {
+            id: role.id,
+            code: role.code,
+            name: role.name,
+          },
+          permissions,
+        });
+      } catch (error) {
         console.error(
-          permissionsError
+          "[SessionProvider] refreshUser error:",
+          error,
         );
+      } finally {
+        setLoading(false);
+        refreshPromiseRef.current = null;
       }
+    })();
 
-      const permissions =
-        permissionsData?.map(
-          (item: any) =>
-            item.module_code
-        ) || [];
+    refreshPromiseRef.current = promise;
 
-      setUser({
-        id: data.auth_user_id,
-
-        email: data.email,
-
-        restaurant_id:
-          data.restaurant_id,
-
-        full_name:
-          data.full_name ?? "",
-
-        role,
-
-        permissions,
-      });
-    } catch (err) {
-      console.error(
-        "SessionProvider",
-        err
-      );
-
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
+    return promise;
   }
 
   useEffect(() => {
-    refreshUser();
+    void refreshUser();
 
     const {
       data: authListener,
-    } =
-      supabase.auth.onAuthStateChange(
-        async (event) => {
-          console.log(
-            "AUTH EVENT:",
-            event
-          );
+    } = supabase.auth.onAuthStateChange((event) => {
+      console.log("AUTH EVENT:", event);
 
-          if (
-            event === "SIGNED_IN" ||
-            event ===
-              "TOKEN_REFRESHED"
-          ) {
-            await refreshUser();
-          }
+      if (event === "SIGNED_IN") {
+        void refreshUser();
+      }
 
-          if (
-            event === "SIGNED_OUT"
-          ) {
-            setUser(null);
-          }
-        }
-      );
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+      }
+    });
 
     return () => {
       authListener.subscription.unsubscribe();
@@ -218,19 +203,11 @@ export function SessionProvider({
     >
       {children}
 
-      {user && (
-<PushProvider
-
-/>
-      )}
+      {user && <PushProvider />}
     </SessionContext.Provider>
   );
 }
 
 export function useSession() {
-  return useContext(
-    SessionContext
-  );
+  return useContext(SessionContext);
 }
-
-

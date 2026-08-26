@@ -80,7 +80,7 @@ export default function AuthCallbackPage() {
       }
 
       router.replace(
-        `/super-admin/restaurants/${restaurantUser.restaurant_id}/restaurante/dashboard`
+        `/admin/dashboard/${restaurantUser.restaurant_id}`
       );
     } catch (err) {
       console.error(err);
@@ -105,5 +105,3 @@ export default function AuthCallbackPage() {
     </main>
   );
 }
-
-

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useSession } from "@/providers/SessionProvider";
 
 type UserRow = {
   id: string;
@@ -19,6 +20,7 @@ export default function UsersPage() {
   const router = useRouter();
 
   const restaurantId = params.restaurantId as string;
+  const { user: sessionUser } = useSession();
 
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -375,17 +377,18 @@ export default function UsersPage() {
               Personas con acceso al restaurante.
             </p>
           </div>
-
-          <button
-            className="primary-button"
-            onClick={() =>
-              router.push(
-                `/admin/users/${restaurantId}/new`
-              )
-            }
-          >
-            + Nuevo usuario
-          </button>
+          {["super-user", "owner", "manager"].includes(
+            String(sessionUser?.role?.code || "").trim().toLowerCase()
+          ) && (
+            <button
+              className="primary-button"
+              onClick={() =>
+                router.push(`/admin/users/${restaurantId}/new`)
+              }
+            >
+              + Nuevo usuario
+            </button>
+          )}
         </header>
 
         {/* TABS */}

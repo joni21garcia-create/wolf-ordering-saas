@@ -118,8 +118,11 @@ const { data: deliverySettings } = await supabase
   }
 
   const safeOrders =
-    (orders ??
-      []) as unknown as Order[];
+    ((orders ?? []) as unknown as (Order & {
+      restaurant_id?: string;
+    })[]).filter(
+      (order) => order.restaurant_id === restaurantId
+    ) as Order[];
 
       console.log(
   JSON.stringify(

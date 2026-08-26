@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { useWolfBack } from "@/lib/navigation/useWolfBack";
 
 type Role = {
   id: string;
@@ -20,8 +21,8 @@ const PROTECTED_CODES = [
 export default function EditRolePage() {
   const params = useParams();
   const router = useRouter();
-
-  const restaurantId = params.restaurantId as string;
+  const restaurantId = params.restaurantId as string;
+  const goBack = useWolfBack(`/admin/users/${restaurantId}/roles`);
   const roleId = params.roleId as string;
 
   const [role, setRole] = useState<Role | null>(null);
@@ -52,7 +53,7 @@ export default function EditRolePage() {
 
       if (error || !data) {
         console.error("Error cargando rol:", error);
-        setError("No se encontró el rol.");
+        setError("No se encontrÃ³ el rol.");
         return;
       }
 
@@ -60,11 +61,11 @@ export default function EditRolePage() {
         .trim()
         .toLowerCase();
 
-      // Protección adicional por si alguien entra
+      // ProtecciÃ³n adicional por si alguien entra
       // directamente a una URL de un rol protegido.
       if (PROTECTED_CODES.includes(roleCode)) {
         setError(
-          "Este rol está protegido y no puede editarse desde aquí."
+          "Este rol estÃ¡ protegido y no puede editarse desde aquÃ­."
         );
         return;
       }
@@ -113,7 +114,7 @@ export default function EditRolePage() {
       setMessage("Rol actualizado correctamente.");
 
       setTimeout(() => {
-        router.push(
+        router.replace(
           `/admin/users/${restaurantId}/roles`
         );
       }, 700);
@@ -149,16 +150,12 @@ export default function EditRolePage() {
 
             <p>
               {error ||
-                "Este rol no puede editarse desde aquí."}
+                "Este rol no puede editarse desde aquÃ­."}
             </p>
 
             <button
               className="back-button-large"
-              onClick={() =>
-                router.push(
-                  `/admin/users/${restaurantId}/roles`
-                )
-              }
+              onClick={goBack}
             >
               Volver a roles
             </button>
@@ -176,13 +173,9 @@ export default function EditRolePage() {
         <header className="header">
           <button
             className="back"
-            onClick={() =>
-              router.push(
-                `/admin/users/${restaurantId}/roles`
-              )
-            }
+            onClick={goBack}
           >
-            ← Roles
+            â† Roles
           </button>
 
           <div className="eyebrow">Equipo</div>
@@ -209,7 +202,7 @@ export default function EditRolePage() {
           </div>
 
           <div className="field">
-            <label>Código</label>
+            <label>CÃ³digo</label>
 
             <div className="readonly-code">
               <span>{role.code}</span>
@@ -217,7 +210,7 @@ export default function EditRolePage() {
             </div>
 
             <div className="hint">
-              El código es el identificador interno
+              El cÃ³digo es el identificador interno
               estandarizado del rol y no puede cambiarse.
             </div>
           </div>
@@ -227,8 +220,8 @@ export default function EditRolePage() {
 
             <span>
               Los permisos de este rol son administrados
-              desde Wolf. Aquí solamente se modifica el
-              nombre que verá el equipo.
+              desde Wolf. AquÃ­ solamente se modifica el
+              nombre que verÃ¡ el equipo.
             </span>
           </div>
 
@@ -247,11 +240,7 @@ export default function EditRolePage() {
           <div className="actions">
             <button
               className="cancel"
-              onClick={() =>
-                router.push(
-                  `/admin/users/${restaurantId}/roles`
-                )
-              }
+              onClick={goBack}
             >
               Cancelar
             </button>

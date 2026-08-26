@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
-import { useSession } from "@/providers/SessionProvider";
 
 type Role = {
   id: string;
@@ -29,7 +28,6 @@ const PROTECTED_ROLES = [
 export default function EditUserPage() {
   const params = useParams();
   const router = useRouter();
-  const { user: currentUser, loading: sessionLoading } = useSession();
 
   // Route: /super-admin/restaurants/[id]/access/users/edit/[userId]
   const restaurantId = params.id as string;
@@ -47,16 +45,15 @@ export default function EditUserPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [message, setMessage] = useState("");
 
-  const isSuperAdmin =
-    currentUser?.role?.code?.trim().toLowerCase() === "super-user";
-
   useEffect(() => {
-    if (!sessionLoading && restaurantId && userId) {
+    if (restaurantId && userId) {
       loadData();
     }
-  }, [restaurantId, userId, sessionLoading]);
+  }, [restaurantId, userId]);
 
   async function loadData() {
     try {
@@ -66,6 +63,7 @@ export default function EditUserPage() {
       const [
         { data: userData, error: userError },
         { data: roleData, error: roleError },
+        { data: superAdminData, error: superAdminError },
       ] = await Promise.all([
         supabase
           .from("restaurant_users")
@@ -88,6 +86,8 @@ export default function EditUserPage() {
           .select("id, code, name")
           .eq("restaurant_id", restaurantId)
           .order("name"),
+
+        supabase.rpc("is_super_admin"),
       ]);
 
       if (userError) {
@@ -101,6 +101,15 @@ export default function EditUserPage() {
         setMessage("No se pudieron cargar los roles.");
         return;
       }
+
+      if (superAdminError) {
+        console.error("Error verificando Super Admin:", superAdminError);
+        setMessage("No se pudo verificar el nivel de acceso.");
+        return;
+      }
+
+      const superAdmin = Boolean(superAdminData);
+      setIsSuperAdmin(superAdmin);
 
       const allRoles = (roleData || []) as Role[];
       const loadedUser: UserData = {
@@ -122,7 +131,7 @@ export default function EditUserPage() {
       setRoleId(userData.role_id || "");
       setActive(Boolean(userData.active));
 
-      const operationalRoles = isSuperAdmin
+      const operationalRoles = superAdmin
         ? allRoles
         : allRoles.filter(
             (role) =>
@@ -131,11 +140,16 @@ export default function EditUserPage() {
               )
           );
 
-      // Super Admin puede administrar cualquier rol.
-      // Los demás usuarios conservan la protección de roles estructurales.
+      // El rol actual siempre debe poder resolverse en el editor.
+      // Si es operativo, permanece en el selector. Si es protegido,
+      // se muestra arriba como rol bloqueado.
       if (
         userData.role_id &&
         original &&
+        !superAdmin &&
+        !PROTECTED_ROLES.includes(
+          String(original.code || "").trim().toLowerCase()
+        ) &&
         !operationalRoles.some((role) => role.id === userData.role_id)
       ) {
         setRoles([original, ...operationalRoles]);
@@ -147,11 +161,14 @@ export default function EditUserPage() {
     }
   }
 
-  const isProtectedRole = !isSuperAdmin && originalRole
-    ? PROTECTED_ROLES.includes(
-        String(originalRole.code || "").trim().toLowerCase()
-      )
-    : false;
+  const isProtectedRole =
+    !isSuperAdmin &&
+    Boolean(
+      originalRole &&
+        PROTECTED_ROLES.includes(
+          String(originalRole.code || "").trim().toLowerCase()
+        )
+    );
 
   async function handleSave() {
     if (!user) return;
@@ -177,8 +194,8 @@ export default function EditUserPage() {
         active,
       };
 
-      // Los roles protegidos solo están bloqueados para usuarios no Super Admin.
-      // Super Admin puede cambiar cualquier rol sin restricciones.
+      // Super Admin puede cambiar cualquier rol.
+      // Las protecciones siguen aplicando a usuarios no Super Admin.
       if (isSuperAdmin || !isProtectedRole) {
         updateData.role_id = roleId;
       }
@@ -207,6 +224,48 @@ export default function EditUserPage() {
       setMessage("Ocurrió un error inesperado.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!user || !isSuperAdmin || deleting) return;
+
+    const confirmed = window.confirm(
+      `¿Eliminar a ${user.full_name || user.email}?\n\n` +
+        "Se eliminará su acceso a este restaurante. Si no tiene otros restaurantes asociados, también se eliminará su cuenta de autenticación."
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeleting(true);
+      setMessage("");
+
+      const response = await fetch("/api/super-admin/users/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          restaurantId,
+        }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || !result.success) {
+        setMessage(result.error || "No se pudo eliminar el usuario.");
+        return;
+      }
+
+      router.push(
+        `/super-admin/restaurants/${restaurantId}/access/users`
+      );
+      router.refresh();
+    } catch (error) {
+      console.error("Error eliminando usuario:", error);
+      setMessage("Ocurrió un error inesperado al eliminar el usuario.");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -388,6 +447,17 @@ export default function EditUserPage() {
         )}
 
         <div className="actions">
+          {isSuperAdmin && (
+            <button
+              type="button"
+              className="delete-button"
+              onClick={handleDelete}
+              disabled={saving || deleting}
+            >
+              {deleting ? "Eliminando..." : "Eliminar usuario"}
+            </button>
+          )}
+
           <button
             type="button"
             className="cancel-button"
@@ -750,6 +820,23 @@ const styles = `
     font-size: 10px;
     font-weight: 750;
     cursor: pointer;
+  }
+
+  .delete-button {
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid rgba(239,68,68,.18);
+    border-radius: 8px;
+    background: rgba(239,68,68,.07);
+    color: #f87171;
+    font-size: 10px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .delete-button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
   }
 
   .cancel-button {

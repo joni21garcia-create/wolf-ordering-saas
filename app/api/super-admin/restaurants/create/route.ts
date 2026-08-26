@@ -23,6 +23,13 @@ type CreatedIds = {
   roleIds: string[];
 };
 
+type RestaurantProfile = {
+  auth_user_id: string | null;
+  restaurant_id: string;
+  role_id: string | null;
+  active: boolean | null;
+};
+
 async function rollbackCreatedData(ids: CreatedIds) {
   const errors: string[] = [];
 
@@ -333,8 +340,8 @@ export async function POST(req: Request) {
      * owner, manager, cashier, kitchen, marketing y test.
      *
      * IMPORTANTE: NO se crea `super-user` aquí. Ese rol representa
-     * Super Admin de plataforma y, según las nuevas funciones RLS,
-     * concede `is_super_admin()` globalmente.
+     * Super Admin de plataforma; los roles de restaurante son owner,
+     * manager, cashier, kitchen, marketing y test.
      */
 
     const roleDefinitions = [
@@ -388,20 +395,26 @@ export async function POST(req: Request) {
     /*
      * 8. PERMISOS INICIALES
      *
-     * Conservamos el comportamiento existente de esta API: todos los
-     * roles creados reciben acceso de lectura a los módulos registrados.
-     * Las restricciones reales de seguridad siguen dependiendo de las
-     * funciones/RLS nuevas y las acciones de gestión se irán afinando
-     * en el módulo de roles/permisos.
+     * Regla de Wolf Ordering:
+     * - Pedidos (`orders`) es el único módulo fijo para los roles de restaurante.
+     * - Los demás módulos se asignan manualmente desde Acceso > Permisos.
+     *
+     * No se conceden automáticamente todos los módulos a todos los roles.
      */
 
-    const rolePermissions = systemModules.flatMap((module) =>
-      ids.roleIds.map((roleId) => ({
-        role_id: roleId,
-        module_code: module.code,
-        can_view: true,
-      }))
+    const ordersModule = systemModules.find(
+      (module) => module.code === "orders"
     );
+
+    if (!ordersModule) {
+      throw new Error('No existe el módulo "orders" configurado en system_modules.');
+    }
+
+    const rolePermissions = ids.roleIds.map((roleId) => ({
+      role_id: roleId,
+      module_code: ordersModule.code,
+      can_view: true,
+    }));
 
     const { error: rolePermissionsError } = await supabase
       .from("role_modules")

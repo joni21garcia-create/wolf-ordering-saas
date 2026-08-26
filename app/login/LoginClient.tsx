@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
@@ -123,16 +123,13 @@ export default function LoginClient() {
     const role =
       restaurantUser.restaurant_roles?.code;
 
-    if (
-      role === "super-user" ||
-      role === "owner"
-    ) {
+    if (role === "super-user") {
       window.location.replace("/login/super-admin");
       return;
     }
 
     window.location.replace(
-      `/super-admin/restaurants/${restaurantUser.restaurant_id}/restaurante/dashboard`
+      `/admin/dashboard/${restaurantUser.restaurant_id}`
     );
   }
 

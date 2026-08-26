@@ -1,96 +1,107 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { checkPermission } from "@/lib/auth/checkPermission";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createSupabaseServerClient();
 
-    // 1. Validar sesión SSR
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.error("[GET ORDERS][AUTH]", authError);
-
       return NextResponse.json(
-        {
-          success: false,
-          error: "Unauthorized",
-        },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    // 2. Arquitectura nueva:
-    //    el restaurante se obtiene desde la función centralizada
-    //    current_restaurant_id(), que respeta active = true.
-    const { data: restaurantId, error: restaurantIdError } =
-      await supabase.rpc("current_restaurant_id");
+    const requestedRestaurantId = new URL(request.url)
+      .searchParams.get("restaurantId")
+      ?.trim();
 
-    if (restaurantIdError) {
-      console.error(
-        "[GET ORDERS][RESTAURANT ID]",
-        restaurantIdError
-      );
-
+    if (!requestedRestaurantId) {
       return NextResponse.json(
         {
           success: false,
-          error: "Restaurant lookup failed",
+          error: "restaurantId requerido",
+        },
+        { status: 400 }
+      );
+    }
+
+    // El restaurante solicitado por la URL es la fuente de verdad.
+    // Nunca usamos current_restaurant_id() aquí porque un usuario
+    // puede tener acceso a más de un restaurante.
+    const { data: isSuperAdmin, error: superAdminError } =
+      await supabase.rpc("is_super_admin");
+
+    if (superAdminError) {
+      console.error("[GET ORDERS][SUPER ADMIN]", superAdminError);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Authorization check failed",
         },
         { status: 500 }
       );
     }
 
-    if (!restaurantId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Restaurant not assigned",
-        },
-        { status: 403 }
+    if (!isSuperAdmin) {
+      const { data: restaurantUser, error: restaurantError } =
+        await supabase
+          .from("restaurant_users")
+          .select("restaurant_id, auth_user_id, active")
+          .eq("auth_user_id", user.id)
+          .eq("restaurant_id", requestedRestaurantId)
+          .eq("active", true)
+          .maybeSingle();
+
+      if (restaurantError) {
+        console.error("[GET ORDERS][RESTAURANT]", restaurantError);
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Restaurant lookup failed",
+          },
+          { status: 500 }
+        );
+      }
+
+      if (!restaurantUser) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "No tienes acceso a este restaurante",
+          },
+          { status: 403 }
+        );
+      }
+
+      const hasPermission = await checkPermission(
+        user.id,
+        "orders"
       );
+
+      if (!hasPermission) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Forbidden",
+          },
+          { status: 403 }
+        );
+      }
     }
 
-    // 3. Arquitectura nueva de permisos.
-    //    can_view_orders() es la fuente única de autorización.
-    const { data: canViewOrders, error: permissionError } =
-      await supabase.rpc("can_view_orders");
-
-    if (permissionError) {
-      console.error(
-        "[GET ORDERS][PERMISSION]",
-        permissionError
-      );
-
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Permission check failed",
-        },
-        { status: 500 }
-      );
-    }
-
-    if (!canViewOrders) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Forbidden",
-        },
-        { status: 403 }
-      );
-    }
-
-    // 4. Configuración de delivery del restaurante actual.
     const { data: deliverySettings, error: deliveryError } =
       await supabaseAdmin
         .from("restaurant_delivery_settings")
         .select("delivery_mode")
-        .eq("restaurant_id", restaurantId)
+        .eq("restaurant_id", requestedRestaurantId)
         .maybeSingle();
 
     if (deliveryError) {
@@ -108,8 +119,6 @@ export async function GET() {
       );
     }
 
-    // 5. Obtener únicamente las órdenes del restaurante autenticado.
-    //    Service Role se usa aquí solamente para la lectura controlada.
     const {
       data: orders,
       error: ordersError,
@@ -117,6 +126,7 @@ export async function GET() {
       .from("orders")
       .select(`
         id,
+        restaurant_id,
         tracking_code,
         customer_name,
         customer_phone,
@@ -142,7 +152,7 @@ export async function GET() {
           )
         )
       `)
-      .eq("restaurant_id", restaurantId)
+      .eq("restaurant_id", requestedRestaurantId)
       .order("created_at", {
         ascending: false,
       });
@@ -159,9 +169,17 @@ export async function GET() {
       );
     }
 
+    // Segunda barrera: incluso usando Service Role, devolvemos
+    // exclusivamente órdenes cuyo restaurant_id coincide con la URL.
+    const safeOrders = (orders ?? []).filter(
+      (order) =>
+        order.restaurant_id === requestedRestaurantId
+    );
+
     return NextResponse.json({
       success: true,
-      orders: orders ?? [],
+      restaurantId: requestedRestaurantId,
+      orders: safeOrders,
       deliveryMode:
         deliverySettings?.delivery_mode ?? "fixed",
     });

@@ -64,7 +64,13 @@ import type {
 
     
   const [orders, setOrders] =
-      useState<Order[]>(initialOrders);
+      useState<Order[]>(
+        initialOrders.filter(
+          (order) =>
+            (order as Order & { restaurant_id?: string })
+              .restaurant_id === restaurantId
+        )
+      );
 
 
   const [loading, setLoading] =
@@ -157,7 +163,9 @@ const [ringBell, setRingBell] =
           setLoading(true);
 
           const response = await fetch(
-            "/api/orders/get-orders",
+            `/api/orders/get-orders?restaurantId=${encodeURIComponent(
+              restaurantId
+            )}`,
             {
               cache: "no-store",
             }
@@ -175,7 +183,11 @@ const [ringBell, setRingBell] =
 
           const serverOrders: Order[] =
             Array.isArray(json.orders)
-              ? (json.orders as Order[])
+              ? (json.orders as Order[]).filter(
+                  (order) =>
+                    (order as Order & { restaurant_id?: string })
+                      .restaurant_id === restaurantId
+                )
               : [];
 
           setOrders((currentOrders) => {
@@ -232,7 +244,7 @@ const [ringBell, setRingBell] =
           refreshPromiseRef.current = null;
         }
       }
-    }, []);
+    }, [restaurantId]);
 
     /*
     ==========================================================
@@ -478,6 +490,15 @@ const [ringBell, setRingBell] =
               const realtimeId =
                 realtimeOrder.id;
 
+              // Defensa adicional: nunca aceptamos un evento que no
+              // pertenezca al restaurante actualmente abierto.
+              if (
+                realtimeOrder.restaurant_id &&
+                realtimeOrder.restaurant_id !== restaurantId
+              ) {
+                return;
+              }
+
               // Aplicar Realtime inmediatamente. No esperamos al GET.
               // Esto evita que un GET atrasado haga desaparecer un
               // pedido recién recibido.
@@ -632,6 +653,7 @@ const [ringBell, setRingBell] =
               body: JSON.stringify({
                 orderId,
                 status,
+                restaurantId,
               }),
               cache: "no-store",
             }
@@ -665,7 +687,7 @@ const [ringBell, setRingBell] =
             )
           );
         },
-        [refreshOrders]
+        [refreshOrders, restaurantId]
       );
 
     const updatePayment =
@@ -684,10 +706,11 @@ const [ringBell, setRingBell] =
                   "application/json",
               },
 
-                 body: JSON.stringify({
-                  orderId,
-                  status: paymentStatus,
-                  }),
+              body: JSON.stringify({
+                orderId,
+                status: paymentStatus,
+                restaurantId,
+              }),
               cache: "no-store",
             }
           );
@@ -723,7 +746,7 @@ const [ringBell, setRingBell] =
             )
           );
         },
-        [refreshOrders]
+        [refreshOrders, restaurantId]
       );
 
   const handleViewDetail = (orderId: string) => {
