@@ -41,6 +41,7 @@ export async function PUT(
       shadow_intensity,
       radius,
       card_border,
+      design_theme_id,
     } = body;
 
     const { data, error } = await supabase
@@ -77,9 +78,31 @@ export async function PUT(
       );
     }
 
+    if (design_theme_id) {
+      const { error: designError } = await supabase
+        .from("restaurant_design_themes")
+        .upsert(
+          {
+            restaurant_id: id,
+            theme_id: design_theme_id,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "restaurant_id" }
+        );
+
+      if (designError) {
+        console.error("--- ERROR GUARDANDO DISEÑO ---", designError);
+        return NextResponse.json(
+          { success: false, error: designError.message, details: designError.details },
+          { status: 500 }
+        );
+      }
+    }
+
     return NextResponse.json({
       success: true,
       theme: data,
+      design_theme_id: design_theme_id || null,
     });
   } catch (error: any) {
     console.error("--- INTERNAL ERROR EN API ---", error);

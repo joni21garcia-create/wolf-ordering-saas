@@ -249,6 +249,29 @@ export async function POST(req: Request) {
 
     ids.restaurantId = restaurantData.id;
 
+    // Diseño visual inicial: Cinematic. Se mantiene independiente del contenido.
+    const { data: cinematicTheme } = await supabase
+      .from("design_theme_catalog")
+      .select("id")
+      .eq("slug", "cinematic")
+      .maybeSingle();
+
+    if (cinematicTheme?.id) {
+      const { error: designThemeError } = await supabase
+        .from("restaurant_design_themes")
+        .upsert(
+          {
+            restaurant_id: restaurantData.id,
+            theme_id: cinematicTheme.id,
+          },
+          { onConflict: "restaurant_id" }
+        );
+
+      if (designThemeError) {
+        throw designThemeError;
+      }
+    }
+
     console.log("RESTAURANT CREATED:", ids.restaurantId);
 
     /*

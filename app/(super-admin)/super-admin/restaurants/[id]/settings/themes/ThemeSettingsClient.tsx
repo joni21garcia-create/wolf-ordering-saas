@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import DesignThemeSelector from "./DesignThemeSelector";
 
 type ThemeSettingsClientProps = {
   restaurantId: string;
@@ -176,6 +177,8 @@ const saveTheme = async () => {
   return (
     <div style={{ maxWidth: "1200px", margin: "20px auto", padding: "0 16px", fontFamily: `var(--font-${form.font_family.toLowerCase()}, 'Inter'), sans-serif`, color: "#fff", boxSizing: "border-box" }}>
       
+      <DesignThemeSelector restaurantId={restaurantId} />
+
       {/* HEADER */}
       <div className="header-container" style={{ marginBottom: "30px", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", paddingBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
         <div>

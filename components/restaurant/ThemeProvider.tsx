@@ -1,27 +1,29 @@
 "use client";
 
+import React from "react";
+import "./DesignChrome.css";
+
 interface Props {
   theme: {
-    primary_color?: string;
-    secondary_color?: string;
-    background_color?: string;
-    text_color?: string;
-
-    button_style?: string;
-    font_family?: string;
-    card_style?: string;
-
-    hero_overlay?: string;
-    glow_effect?: boolean;
-
-    animation_style?: string;
-    shadow_intensity?: string;
+    primary?: string;
+    secondary?: string;
+    background?: string;
+    text?: string;
+    buttonStyle?: string;
+    fontFamily?: string;
+    cardStyle?: string;
+    heroOverlay?: string;
+    glow?: boolean;
+    animationStyle?: string;
+    shadowIntensity?: string;
+    designId?: string;
+    heroStyle?: string;
+    menuStyle?: string;
+    galleryStyle?: string;
   };
 }
 
 export default function ThemeProvider({ theme }: Props) {
-  if (!theme) return null;
-
   const getButtonRadius = (style?: string) => {
     switch (style) {
       case "pill":
@@ -98,25 +100,44 @@ export default function ThemeProvider({ theme }: Props) {
     }
   };
 
+  React.useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.wolfDesign = theme.designId || "cinematic";
+    return () => {
+      delete root.dataset.wolfDesign;
+    };
+  }, [theme.designId]);
+
   return (
     <style jsx global>{`
       :root {
-        --primary-color: ${theme.primary_color || "#f97316"};
-        --secondary-color: ${theme.secondary_color || "#fb923c"};
-        --bg-color: ${theme.background_color || "#050505"};
-        --text-color: ${theme.text_color || "#ffffff"};
+        --primary-color: ${theme.primary || "#f97316"};
+        --secondary-color: ${theme.secondary || "#fb923c"};
+        --bg-color: ${theme.background || "#050505"};
+        --text-color: ${theme.text || "#ffffff"};
 
-        --btn-radius: ${getButtonRadius(theme.button_style)};
-        --card-bg: ${getCardBackground(theme.card_style)};
+        --btn-radius: ${getButtonRadius(theme.buttonStyle)};
+        --card-bg: ${getCardBackground(theme.cardStyle)};
         --font-family: ${
-          theme.font_family
-            ? `"${theme.font_family}", sans-serif`
+          theme.fontFamily
+            ? `"${theme.fontFamily}", sans-serif`
             : "system-ui, sans-serif"
         };
 
-        --hero-overlay: ${getHeroOverlay(theme.hero_overlay)};
-        --shadow-style: ${getShadow(theme.shadow_intensity)};
-        --animation-speed: ${getAnimation(theme.animation_style)};
+        --hero-overlay: ${getHeroOverlay(theme.heroOverlay)};
+        --shadow-style: ${getShadow(theme.shadowIntensity)};
+        --animation-speed: ${getAnimation(theme.animationStyle)};
+        --wolf-design: "${theme.designId || "cinematic"}";
+      }
+
+      html[data-wolf-design="minimal"],
+      body[data-wolf-design="minimal"] {
+        color-scheme: light;
+      }
+
+      html[data-wolf-design="editorial"],
+      body[data-wolf-design="editorial"] {
+        --btn-radius: 2px;
       }
 
       html,
@@ -149,7 +170,7 @@ export default function ThemeProvider({ theme }: Props) {
       }
 
       ${
-        theme.glow_effect
+        theme.glow
           ? `
       .premium-card,
       .theme-card,

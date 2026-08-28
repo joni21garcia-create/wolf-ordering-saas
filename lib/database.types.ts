@@ -1643,6 +1643,96 @@ export type Database = {
           },
         ]
       }
+      design_theme_catalog: {
+        Row: {
+          id: string
+          name: string
+          slug: string
+          description: string | null
+          hero_style: string
+          menu_style: string
+          gallery_style: string
+          config: any
+          preview_image: string | null
+          is_active: boolean
+          is_system: boolean
+          sort_order: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          slug: string
+          description?: string | null
+          hero_style?: string
+          menu_style?: string
+          gallery_style?: string
+          config?: any
+          preview_image?: string | null
+          is_active?: boolean
+          is_system?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          slug?: string
+          description?: string | null
+          hero_style?: string
+          menu_style?: string
+          gallery_style?: string
+          config?: any
+          preview_image?: string | null
+          is_active?: boolean
+          is_system?: boolean
+          sort_order?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      restaurant_design_themes: {
+        Row: {
+          id: string
+          restaurant_id: string
+          theme_id: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          restaurant_id: string
+          theme_id: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          restaurant_id?: string
+          theme_id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_design_themes_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: true
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "restaurant_design_themes_theme_id_fkey"
+            columns: ["theme_id"]
+            isOneToOne: false
+            referencedRelation: "design_theme_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       restaurant_theme_settings: {
         Row: {
           animation_style: string | null

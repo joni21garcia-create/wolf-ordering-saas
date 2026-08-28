@@ -129,6 +129,7 @@ export default function Footer({
 
   return (
     <footer
+      className="wolf-footer"
       style={{
         position: "relative",
         overflow: "hidden",

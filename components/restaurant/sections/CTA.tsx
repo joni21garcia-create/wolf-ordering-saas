@@ -28,7 +28,7 @@ export default function CTA({ restaurant }: Props) {
   return (
     <section
       id="order"
-      className="restaurant-cta"
+      className="restaurant-cta wolf-cta"
       aria-label="Pedido y menú digital"
       style={
         {

@@ -81,6 +81,32 @@ const {
   .limit(1)
   .maybeSingle();
 
+const {
+  data: designAssignment,
+} = await supabase
+  .from("restaurant_design_themes")
+  .select("theme_id")
+  .eq("restaurant_id", restaurant.id)
+  .maybeSingle();
+
+let designTheme: any = null;
+
+if (designAssignment?.theme_id) {
+  const { data: catalogTheme } = await supabase
+    .from("design_theme_catalog")
+    .select("*")
+    .eq("id", designAssignment.theme_id)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (catalogTheme) {
+    designTheme = {
+      ...designAssignment,
+      catalog: catalogTheme,
+    };
+  }
+}
+
   const {
     data: categories,
   } = await supabase
@@ -255,6 +281,8 @@ return {
   pwaSettings,
 
    themeSettings,
+
+  designTheme,
 
   deliverySettings,
 

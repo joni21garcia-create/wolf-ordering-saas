@@ -1,6 +1,7 @@
 "use client";
 
 import styles from "./Gallery.module.css";
+import "./GalleryDesigns.css";
 import { getTheme } from "@/lib/theme/getTheme";
 import { motion } from "framer-motion";
 
@@ -17,9 +18,9 @@ export default function Gallery({ restaurant }: Props) {
   if (!gallery.length) return null;
 
   return (
-    <section className={styles.gallerySection} style={{ background: theme.background }}>
-      <div className={styles.container}>
-        <div className={styles.header}>
+    <section data-wolf-gallery={theme.galleryStyle} data-wolf-design={theme.designId} className={styles.gallerySection} style={{ background: theme.background }}>
+      <div className={`${styles.container} wolf-gallery-shell`}>
+        <div className={`${styles.header} wolf-gallery-header`}>
           <span style={{ color: theme.primary, letterSpacing: "2px", fontSize: "0.8rem", fontWeight: 700 }}>
             GALERÍA
           </span>
@@ -30,7 +31,7 @@ export default function Gallery({ restaurant }: Props) {
 
         {/* Forzamos el grid a mostrar 2 fotos (columnas) usando estilos inline de alta prioridad */}
         <div 
-          className={styles.grid}
+          className={`${styles.grid} wolf-gallery-grid`}
           style={{
             display: "grid",
             // repeat(2, 1fr) asegura 2 columnas fijas. En pantallas muy grandes se puede expandir si lo deseas, pero aquí queda en 2.
@@ -42,7 +43,7 @@ export default function Gallery({ restaurant }: Props) {
           {gallery.map((image: any) => (
             <motion.div
               key={image.id}
-              className={styles.card}
+              className={`${styles.card} wolf-gallery-card`}
               whileHover={{ scale: 0.98 }}
               transition={{ duration: 0.3 }}
               style={{

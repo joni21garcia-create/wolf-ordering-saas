@@ -67,6 +67,8 @@ export default function Menu({ restaurant }: Props) {
 
   return (
     <section
+      data-wolf-menu={theme.menuStyle}
+      data-wolf-design={theme.designId}
       id="menu"
       style={{
         position: "relative",
@@ -104,6 +106,7 @@ export default function Menu({ restaurant }: Props) {
       />
 
       <div
+        className="wolf-menu-shell"
         style={{
           maxWidth: "1200px",
           margin: "0 auto",
@@ -111,7 +114,7 @@ export default function Menu({ restaurant }: Props) {
           zIndex: 2,
         }}
       >
-        <div style={{ marginBottom: "25px", textAlign: "left" }}>
+        <div className="wolf-menu-header" style={{ marginBottom: "25px", textAlign: "left" }}>
           <span style={{ color: theme.primary, textTransform: "uppercase", letterSpacing: "2.5px", fontSize: "11px", fontWeight: "800", display: "block", marginBottom: "6px" }}>
             Nuestra Selección
           </span>
@@ -129,7 +132,7 @@ export default function Menu({ restaurant }: Props) {
         </div>
 
         {/* BARRA DE CATEGORÍAS CON FLECHAS EN LOS EXTREMOS */}
-        <div 
+        <div className="wolf-menu-categories"
           style={{ 
             position: "sticky", 
             top: "15px", 
@@ -264,6 +267,7 @@ export default function Menu({ restaurant }: Props) {
 
           return (
             <motion.div
+              className="wolf-menu-category"
               key={category.id}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
@@ -365,6 +369,7 @@ export default function Menu({ restaurant }: Props) {
               >
                 {categoryProducts.map((product: any) => (
                   <motion.div
+                    className="wolf-menu-product"
                     key={product.id}
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}

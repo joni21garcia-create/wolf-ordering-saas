@@ -40,6 +40,7 @@ export default function Navbar({ restaurant }: Props) {
 
   return (
     <motion.nav
+      className="wolf-navbar"
       initial={false}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
