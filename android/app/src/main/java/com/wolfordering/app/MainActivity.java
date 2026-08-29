@@ -2,14 +2,12 @@ package com.wolfordering.app;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.graphics.Color;
 import android.view.Window;
 
-import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.getcapacitor.BridgeActivity;
@@ -20,17 +18,21 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Edge-to-edge: el contenido puede ocupar toda la pantalla,
-        // incluyendo detrás de la barra de navegación de Android.
+        /*
+         * IMPORTANTO PARA EL SHELL WEB DE WOLF:
+         * El PWA se comporta como una ventana normal: el header empieza
+         * debajo de la barra de estado. En Android no debemos dibujar el
+         * WebView por detrás del status/navigation bar porque eso puede
+         * desplazar la zona táctil del header y del menú.
+         */
         Window window = getWindow();
 
-        WindowCompat.setDecorFitsSystemWindows(
-                window,
-                false
-        );
+        // Android debe reservar el área del sistema para el WebView.
+        WindowCompat.setDecorFitsSystemWindows(window, true);
 
-        window.setStatusBarColor(Color.TRANSPARENT);
-        window.setNavigationBarColor(Color.TRANSPARENT);
+        // Barras separadas del contenido, como en la PWA.
+        window.setStatusBarColor(Color.BLACK);
+        window.setNavigationBarColor(Color.BLACK);
 
         WindowInsetsControllerCompat insetsController =
                 WindowCompat.getInsetsController(
@@ -38,23 +40,17 @@ public class MainActivity extends BridgeActivity {
                         window.getDecorView()
                 );
 
-        // Iconos oscuros para fondos claros.
-        // Si tu interfaz mantiene fondo oscuro, cambia ambos a false.
+        // UI oscura: iconos claros en ambas barras.
         insetsController.setAppearanceLightStatusBars(false);
         insetsController.setAppearanceLightNavigationBars(false);
 
-        ViewCompat.setOnApplyWindowInsetsListener(
-                window.getDecorView(),
-                (view, insets) -> {
-                    // Dejamos que el contenido llegue hasta el borde.
-                    // Los componentes que necesiten espacio seguro
-                    // pueden usar env.windowInsets / CSS safe-area.
-                    return insets;
-                }
-        );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Evita que Android aplique un scrim/transparencia que cambie
+            // visualmente el borde inferior del WebView.
+            window.setNavigationBarContrastEnforced(false);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
             NotificationChannel ordersChannel =
                     new NotificationChannel(
                             "orders",

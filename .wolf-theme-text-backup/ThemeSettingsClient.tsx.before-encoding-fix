@@ -391,7 +391,7 @@ const saveTheme = async () => {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", color: "#6b7280", fontSize: "0.75rem", flexWrap: "wrap", gap: "6px" }}>
-              <span>Tipografí­a: <strong style={{ color: "#fff" }}>{form.font_family}</strong></span>
+              <span>Tipografía: <strong style={{ color: "#fff" }}>{form.font_family}</strong></span>
               <span>Botón: <strong style={{ color: "#fff" }}>{form.button_style}</strong></span>
             </div>
           </div>
