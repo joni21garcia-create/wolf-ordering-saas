@@ -318,7 +318,7 @@ const saveTheme = async () => {
 
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div>
-                  <label style={{ fontSize: "0.75rem", color: "#9ca3af", marginBottom: "6px", display: "block" }}>Comportamiento de AnimaciÃ³n</label>
+                  <label style={{ fontSize: "0.75rem", color: "#9ca3af", marginBottom: "6px", display: "block" }}>Comportamiento de Animación</label>
                   <select value={form.animation_style} onChange={(e) => setForm({...form, animation_style: e.target.value})} style={S.input}>
                     {ANIMATION_EFFECTS.map(opt => <option key={opt.id} value={opt.id} style={{ background: "#111" }}>{opt.label}</option>)}
                   </select>
