@@ -512,5 +512,3 @@ export default function CTA({ restaurant }: Props) {
     </section>
   );
 }
-
-

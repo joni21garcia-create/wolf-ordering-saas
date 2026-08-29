@@ -5,6 +5,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { CheckCheck, EyeOff, Loader2 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase/client";
 
@@ -199,6 +200,35 @@ export default function ProductsPanel({
     setLoading(false);
   }
 
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+
+  async function setAllAvailability(available: boolean) {
+    if (bulkUpdating || products.length === 0) return;
+
+    setBulkUpdating(true);
+    const previousProducts = products;
+
+    setProducts((current) =>
+      current.map((product) => ({
+        ...product,
+        available,
+      }))
+    );
+
+    const { error: updateError } = await supabase
+      .from("products")
+      .update({ available })
+      .eq("restaurant_id", restaurantId);
+
+    if (updateError) {
+      console.error("Error actualizando disponibilidad masiva:", updateError);
+      setProducts(previousProducts);
+      setError("No se pudo actualizar la disponibilidad de todos los productos.");
+    }
+
+    setBulkUpdating(false);
+  }
+
   async function toggleAvailability(
     productId: string,
     currentAvailable: boolean
@@ -389,6 +419,43 @@ export default function ProductsPanel({
       </div>
 
       {/* =====================================================
+          DISPONIBILIDAD GLOBAL
+          ===================================================== */}
+
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          marginBottom: "12px",
+          flexWrap: "wrap",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setAllAvailability(true)}
+          disabled={bulkUpdating || products.length === 0}
+          style={bulkActionStyle(true, bulkUpdating)}
+        >
+          {bulkUpdating ? (
+            <Loader2 size={14} aria-hidden="true" />
+          ) : (
+            <CheckCheck size={14} aria-hidden="true" />
+          )}
+          Activar todos
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setAllAvailability(false)}
+          disabled={bulkUpdating || products.length === 0}
+          style={bulkActionStyle(false, bulkUpdating)}
+        >
+          <EyeOff size={14} aria-hidden="true" />
+          Desactivar todos
+        </button>
+      </div>
+
+      {/* =====================================================
           CATEGORÍAS
           ===================================================== */}
 
@@ -458,6 +525,34 @@ export default function ProductsPanel({
       )}
     </section>
   );
+}
+
+
+function bulkActionStyle(
+  active: boolean,
+  disabled: boolean
+): React.CSSProperties {
+  return {
+    minHeight: 40,
+    padding: "0 13px",
+    borderRadius: 10,
+    border: active
+      ? "1px solid rgba(34,197,94,.25)"
+      : "1px solid rgba(255,255,255,.08)",
+    background: active
+      ? "rgba(34,197,94,.08)"
+      : "rgba(255,255,255,.035)",
+    color: active ? "#86EFAC" : "#A1A1AA",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 7,
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: disabled ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.55 : 1,
+    WebkitTapHighlightColor: "transparent",
+  };
 }
 
 /* =========================================================

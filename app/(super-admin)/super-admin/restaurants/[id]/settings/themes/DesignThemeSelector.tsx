@@ -217,7 +217,7 @@ export default function DesignThemeSelector({ restaurantId }: { restaurantId: st
           <span style={{ minWidth: 0 }}>
             <span className="wolf-design-kicker">Diseño de experiencia</span>
             <span className="wolf-design-title">Hero + Menú + Galería</span>
-            <span className="wolf-design-subtitle">La estructura visual cambia. Tu Tema y tu contenido permanecen intactos.</span>
+            <span className="wolf-design-subtitle"></span>
           </span>
         </span>
         <span className="wolf-design-trigger-right">

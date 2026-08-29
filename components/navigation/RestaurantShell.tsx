@@ -328,8 +328,8 @@ export default function RestaurantShell({ children }: RestaurantShellProps) {
 }
 
 const iconButtonStyle: React.CSSProperties = {
-  width: 36,
-  height: 36,
+  width: 48,
+  height: 48,
   display: "grid",
   placeItems: "center",
   flexShrink: 0,

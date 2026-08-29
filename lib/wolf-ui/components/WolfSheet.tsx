@@ -213,11 +213,11 @@ export default function WolfSheet({
       <aside
         style={{
           position: "absolute",
-          top: 0,
+          top: "env(safe-area-inset-top)",
           right: 0,
           width: "100%",
           maxWidth,
-          height: "100dvh",
+          height: "calc(100dvh - env(safe-area-inset-top))",
           display: "flex",
           flexDirection: "column",
           background: light ? "#FFFFFF" : "#0D0D0F",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { CheckCheck, EyeOff, Utensils } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
@@ -83,6 +84,31 @@ export default function ProductsPage() {
     }
   };
 
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+
+  const setAllAvailability = async (available: boolean) => {
+    if (bulkUpdating || products.length === 0) return;
+
+    setBulkUpdating(true);
+    const previousProducts = products;
+    setProducts((current) =>
+      current.map((product) => ({ ...product, available }))
+    );
+
+    const { error } = await supabase
+      .from("products")
+      .update({ available })
+      .eq("restaurant_id", restaurantId);
+
+    if (error) {
+      console.error("Error actualizando disponibilidad masiva:", error);
+      setProducts(previousProducts);
+      alert("No se pudo actualizar la disponibilidad de todos los productos.");
+    }
+
+    setBulkUpdating(false);
+  };
+
   // Filtrar productos según la categoría seleccionada en la barra horizontal
   const filteredProducts = selectedCategory === "all"
     ? products
@@ -109,6 +135,25 @@ export default function ProductsPage() {
             </div>
           </div>
         </header>
+
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+          <button
+            type="button"
+            onClick={() => setAllAvailability(true)}
+            disabled={bulkUpdating || products.length === 0}
+            style={bulkButtonStyle(true, bulkUpdating)}
+          >
+            <CheckCheck size={15} /> Activar todos
+          </button>
+          <button
+            type="button"
+            onClick={() => setAllAvailability(false)}
+            disabled={bulkUpdating || products.length === 0}
+            style={bulkButtonStyle(false, bulkUpdating)}
+          >
+            <EyeOff size={15} /> Desactivar todos
+          </button>
+        </div>
 
         <section className="stats">
           <div><strong>{products.length}</strong><span>Total</span></div>
@@ -192,7 +237,7 @@ export default function ProductsPage() {
                                   className="product-image"
                                 />
                               ) : (
-                                <div className="product-image placeholder">🍔</div>
+                                <div className="product-image placeholder" aria-label={`Sin imagen para ${product.name}`}><Utensils size={22} strokeWidth={1.7} /></div>
                               )}
 
                               <div className="product-info">
@@ -589,4 +634,23 @@ export default function ProductsPage() {
       </main>
     </PermissionGuard>
   );
+}
+
+function bulkButtonStyle(active: boolean, disabled: boolean): React.CSSProperties {
+  return {
+    minHeight: 40,
+    padding: "0 14px",
+    borderRadius: 10,
+    border: active ? "1px solid rgba(34,197,94,.25)" : "1px solid rgba(255,255,255,.08)",
+    background: active ? "rgba(34,197,94,.08)" : "rgba(255,255,255,.035)",
+    color: active ? "#86EFAC" : "#A1A1AA",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 7,
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: disabled ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.55 : 1,
+  };
 }

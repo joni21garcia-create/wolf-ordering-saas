@@ -1,12 +1,11 @@
-WOLF ORDERING — UI/WARNING FIX PATCH
+Wolf Ordering - Public Floating Cart
 
-Purpose:
-- Fix long design names/descriptions overflowing in the compact design selector.
-- Remove the fake/embedded preview dependency from the selector (the selector remains compact).
-- Fix Next Image performance warning in the Hero by using explicit intrinsic dimensions.
-- Fix Framer Motion color warning by giving the hovered "Ver Menú" surface a concrete rgba background instead of relying on Tailwind's color token during animation.
+Changes:
+- Adds a minimal floating cart to the public restaurant page only.
+- Reads the existing `wolf_cart` localStorage key.
+- Shows total quantity (supports `quantity` or `qty`).
+- Hidden when cart is empty or when already on /[slug]/order.
+- Clicking routes to /[slug]/order.
+- Uses Lucide ShoppingCart and Android safe-area spacing.
 
-No database migration.
-Do NOT run supabase db push for this patch.
-
-Copy this package over the existing project and restart Next.js after deleting .next.
+No database migration required.

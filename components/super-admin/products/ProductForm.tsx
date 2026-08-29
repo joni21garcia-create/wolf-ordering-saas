@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import { supabase } from "@/lib/supabase/client";
+import { Utensils } from "lucide-react";
 
 import {
   useRouter,
@@ -447,7 +448,7 @@ price: Number(
             <span>02</span>
             <div>
               <strong>Imagen</strong>
-              <small>Una foto clara vende mejor</small>
+              <small>Opcional · una foto clara vende mejor</small>
             </div>
           </div>
 
@@ -458,7 +459,7 @@ price: Number(
               <div className="upload-empty">
                 <span className="upload-icon">＋</span>
                 <strong>Agregar imagen</strong>
-                <small>Toca aquí para seleccionar una foto</small>
+                <small>Toca para agregar una foto o déjalo así para usar el icono</small>
               </div>
             )}
 

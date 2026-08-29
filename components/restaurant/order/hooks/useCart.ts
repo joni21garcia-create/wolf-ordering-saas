@@ -63,6 +63,8 @@ export function useCart(
             restaurant_id:
               product.restaurant_id,
             name: product.name,
+            category: product.category,
+            description: product.description,
             price:
               Number(product.price) || 0,
             display_price:

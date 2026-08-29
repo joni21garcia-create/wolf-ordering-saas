@@ -10,15 +10,7 @@ import {
 } from "@/lib/configuration/pricing";
 
 
-interface Product {
-  id: string;
-  restaurant_id: string;
-  category: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-}
+import type { Product } from "../types";
 
 interface Props {
   title: string;

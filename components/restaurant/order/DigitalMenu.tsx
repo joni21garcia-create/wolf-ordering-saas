@@ -21,15 +21,7 @@ import {
   getCommissionConfig,
 } from "@/lib/configuration/pricing";
 
-interface Product {
-  id: string;
-  restaurant_id: string;
-  category: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-}
+import type { Product } from "./types";
 
 interface Props {
   restaurant: any;
@@ -146,7 +138,11 @@ const {
 
             image:
               product.image_url ||
-              "/placeholder-product.jpg",
+              null,
+
+            image_url:
+              product.image_url ||
+              null,
 
             category:
               product

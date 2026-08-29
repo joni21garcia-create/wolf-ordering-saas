@@ -13,9 +13,14 @@ export interface Restaurant {
 export interface Product {
   id: string;
   restaurant_id: string;
+  category: string;
   name: string;
+  description: string;
   price: number;
-  image_url?: string |null;
+  /** Display image used by the digital menu. Optional by design. */
+  image?: string | null;
+  /** Original database image URL, also optional. */
+  image_url?: string | null;
 }
 
 export interface CartItem extends Product {

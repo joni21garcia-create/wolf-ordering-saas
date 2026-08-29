@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import DesignThemeSelector from "./DesignThemeSelector";
@@ -36,21 +36,21 @@ export default function ThemeSettingsClient({
 };
 
   const BUTTON_STYLES = [
-    { id: "Solid", label: "SÃ³lido (Estandar)" },
+    { id: "Solid", label: "Sólido (Estandar)" },
     { id: "Glass", label: "Efecto Glassmorphism" },
     { id: "Outline", label: "Borde Minimalista" },
-    { id: "Gradient", label: "Degradado DinÃ¡mico" },
+    { id: "Gradient", label: "Degradado Dinámico" },
     { id: "Neubrutalism", label: "Neubrutalism (Sombra Dura)" },
-    { id: "Pill", label: "CÃ¡psula Redondeada" }
+    { id: "Pill", label: "Cápsula Redondeada" }
   ];
 
   const FONTS = ["Inter", "Plus Jakarta Sans", "Outfit", "Space Grotesk"];
   
   const ANIMATION_EFFECTS = [
-    { id: "smooth", label: "TransiciÃ³n Suave (0.3s)" },
-    { id: "bounce", label: "Efecto Rebote ElÃ¡stico" },
+    { id: "smooth", label: "Transición Suave (0.3s)" },
+    { id: "bounce", label: "Efecto Rebote Elástico" },
     { id: "scale", label: "Zoom en Hover" },
-    { id: "none", label: "Sin AnimaciÃ³n" }
+    { id: "none", label: "Sin Animación" }
   ];
 
 type ThemeForm = {
@@ -99,7 +99,7 @@ const applyTheme = (theme: Theme) => {
 
 const saveTheme = async () => {
     if (!restaurantId) {
-      alert("Error crÃ­tico: El ID del restaurante no estÃ¡ disponible.");
+      alert("Error crítico: El ID del restaurante no está disponible.");
       return;
     }
 
@@ -135,7 +135,7 @@ const saveTheme = async () => {
       }
       
       console.log("Cambios guardados exitosamente:", data);
-      alert("Â¡Ajustes guardados correctamente!");
+      alert("¡Ajustes guardados correctamente!");
     } catch (error: any) {
       console.error("Fallo en la persistencia:", error);
       alert(`Hubo un error al guardar los ajustes de marca: ${error.message}`);
@@ -182,7 +182,7 @@ const saveTheme = async () => {
       {/* HEADER */}
       <div className="header-container" style={{ marginBottom: "30px", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", paddingBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <span style={{ fontSize: "0.85rem", fontWeight: "600", color: form.primary_color, textTransform: "uppercase", letterSpacing: "0.08em" }}>ConfiguraciÃ³n del Sistema</span>
+          <span style={{ fontSize: "0.85rem", fontWeight: "600", color: form.primary_color, textTransform: "uppercase", letterSpacing: "0.08em" }}>Configuración del Sistema</span>
           <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.5rem)", fontWeight: "800", marginTop: "8px", letterSpacing: "-0.03em" }}>
             Ajustes de <span style={{ color: form.primary_color }}>Marca & UI</span>
           </h1>
@@ -243,15 +243,14 @@ const saveTheme = async () => {
             </div>
           </div>
 
-          {/* PERSONALIZACIÃ“N HEX */}
+          {/* PERSONALIZACIÓN HEX */}
           <div style={S.section}>
-            <h2 style={S.h2}>PersonalizaciÃ³n Hex</h2>
+            <h2 style={S.h2}>Personalización Hex</h2>
             <div className="hex-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px" }}>
               {[
                 { l: "Principal", k: "primary_color" as keyof ThemeForm },
                 { l: "Secundario", k: "secondary_color" as keyof ThemeForm },
                 { l: "Fondo", k: "background_color" as keyof ThemeForm },
-                { l: "Texto", k: "text_color" as keyof ThemeForm },
               ].map((item) => (
                 <div key={item.k} style={{ background: "rgba(0,0,0,0.2)", padding: "12px", borderRadius: "14px", border: "1px solid rgba(255,255,255,0.04)" }}>
                   <label style={{ fontSize: "0.8rem", color: "#9ca3af", display: "block", marginBottom: "8px" }}>{item.l}</label>
@@ -264,9 +263,9 @@ const saveTheme = async () => {
             </div>
           </div>
 
-          {/* DISEÃ‘O DE COMPONENTES */}
+          {/* DISEÑO DE COMPONENTES */}
           <div style={S.section}>
-            <h2 style={S.h2}>DiseÃ±o de Componentes & Botones</h2>
+            <h2 style={S.h2}>Diseño de Componentes & Botones</h2>
             <div className="components-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
               <div>
                 <label style={{ fontSize: "0.75rem", color: "#9ca3af", marginBottom: "6px", display: "block" }}>Estilo de Botones Avanzado</label>
@@ -276,7 +275,7 @@ const saveTheme = async () => {
               </div>
 
               <div>
-                <label style={{ fontSize: "0.75rem", color: "#9ca3af", marginBottom: "6px", display: "block" }}>TipografÃ­a de Sistema</label>
+                <label style={{ fontSize: "0.75rem", color: "#9ca3af", marginBottom: "6px", display: "block" }}>Tipografía de Sistema</label>
                 <select value={form.font_family} onChange={(e) => setForm({...form, font_family: e.target.value})} style={S.input}>
                   {FONTS.map(opt => <option key={opt} value={opt} style={{ background: "#111" }}>{opt}</option>)}
                 </select>
@@ -292,7 +291,7 @@ const saveTheme = async () => {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <span style={{ fontSize: "0.85rem", fontWeight: "600", display: "block" }}>Efecto Glow (Resplandor)</span>
-                    <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>IluminaciÃ³n dinÃ¡mica</span>
+                    <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>Iluminación dinámica</span>
                   </div>
                   <input 
                     type="checkbox" 
@@ -305,7 +304,7 @@ const saveTheme = async () => {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <span style={{ fontSize: "0.85rem", fontWeight: "600", display: "block" }}>Borde en Tarjetas</span>
-                    <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>DelimitaciÃ³n sutil UI</span>
+                    <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>Delimitación sutil UI</span>
                   </div>
                   <input 
                     type="checkbox" 
@@ -318,7 +317,7 @@ const saveTheme = async () => {
 
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div>
-                  <label style={{ fontSize: "0.75rem", color: "#9ca3af", marginBottom: "6px", display: "block" }}>Comportamiento de AnimaciÃ³n</label>
+                  <label style={{ fontSize: "0.75rem", color: "#9ca3af", marginBottom: "6px", display: "block" }}>Comportamiento de Animación</label>
                   <select value={form.animation_style} onChange={(e) => setForm({...form, animation_style: e.target.value})} style={S.input}>
                     {ANIMATION_EFFECTS.map(opt => <option key={opt.id} value={opt.id} style={{ background: "#111" }}>{opt.label}</option>)}
                   </select>
@@ -371,7 +370,7 @@ const saveTheme = async () => {
             }}>
               <div style={{ height: "90px", borderRadius: `calc(${form.radius} - 4px)`, background: `linear-gradient(135deg, ${form.primary_color}, ${form.secondary_color})`, marginBottom: "16px", opacity: 0.9 }} />
               <h3 style={{ fontSize: "1.1rem", fontWeight: "700", marginBottom: "6px" }}>Panel de Control</h3>
-              <p style={{ fontSize: "0.8rem", color: "#9ca3af", marginBottom: "16px" }}>Los cambios de botones, tipografÃ­as y efectos se renderizan dinÃ¡micamente aquÃ­.</p>
+              <p style={{ fontSize: "0.8rem", color: "#9ca3af", marginBottom: "16px" }}>Los cambios de botones, tipografías y efectos se renderizan dinámicamente aquí.</p>
               
               <button style={{
                 width: "100%",
@@ -386,13 +385,13 @@ const saveTheme = async () => {
                 boxShadow: form.glow_effect ? `0 0 20px ${form.primary_color}40` : "none",
                 boxSizing: "border-box"
               }}>
-                Configurar mÃ³dulo
+                Configurar módulo
               </button>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", color: "#6b7280", fontSize: "0.75rem", flexWrap: "wrap", gap: "6px" }}>
-              <span>TipografÃ­a: <strong style={{ color: "#fff" }}>{form.font_family}</strong></span>
-              <span>BotÃ³n: <strong style={{ color: "#fff" }}>{form.button_style}</strong></span>
+              <span>Tipografía: <strong style={{ color: "#fff" }}>{form.font_family}</strong></span>
+              <span>Botón: <strong style={{ color: "#fff" }}>{form.button_style}</strong></span>
             </div>
           </div>
         </div>
