@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 /* ==========================================================
    WOLF ORDERING SAAS
@@ -130,7 +130,7 @@ button,
 }
 
 /* ==========================================================
-   IMÃGENES
+   IMÁGENES
 ========================================================== */
 
 img {
@@ -154,7 +154,7 @@ a {
 }
 
 /* ==========================================================
-   SELECCIÃ“N DE TEXTO
+   SELECCIÓN DE TEXTO
 ========================================================== */
 
 ::selection {
@@ -270,7 +270,7 @@ body::before {
 
 
 /* ==========================================================
-   LÃNEAS PREMIUM
+   LÍNEAS PREMIUM
 ========================================================== */
 
 .stripe-lines{
@@ -321,7 +321,7 @@ body::before {
 
 
 /* ==========================================================
-   PARTÃCULAS
+   PARTÍCULAS
 ========================================================== */
 
 .wolf-particle{
@@ -566,7 +566,7 @@ body::before {
 
 
 /* ==========================================================
-   BOTÃ“N PRINCIPAL
+   BOTÓN PRINCIPAL
 ========================================================== */
 
 .wolf-button{
@@ -666,7 +666,7 @@ body::before {
 
 
 /* ==========================================================
-   TÃTULOS
+   TÍTULOS
 ========================================================== */
 
 .wolf-title{
@@ -781,7 +781,7 @@ body::before {
 
 
 /* ==========================================================
-   TRANSICIÃ“N GLOBAL
+   TRANSICIÓN GLOBAL
 ========================================================== */
 
 button,
@@ -862,7 +862,7 @@ select{
 
 
 /* ==========================================================
-   OPTIMIZACIÃ“N DE IMÃGENES
+   OPTIMIZACIÓN DE IMÁGENES
 ========================================================== */
 
 img{
@@ -941,7 +941,7 @@ html{
 
 
 /* ==========================================================
-   SELECCIÃ“N
+   SELECCIÓN
 ========================================================== */
 
 ::selection{
@@ -1066,112 +1066,4 @@ a:focus-visible{
 
 /* ==========================================================
    FIN DEL ARCHIVO
-========================================================== *//* ==========================================================
-   WOLF_PWA_MOBILE_RESPONSIVE_FIX_V1
-   Guard global para PWA / web mÃ³vil.
-   ========================================================== */
-
-html,
-body {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  overflow-x: clip;
-}
-
-body {
-  box-sizing: border-box;
-}
-
-main,
-main > *,
-main > * > *,
-main > * > * > * {
-  box-sizing: border-box;
-  min-width: 0;
-  max-width: 100%;
-}
-
-img,
-video,
-canvas,
-iframe,
-svg {
-  max-width: 100%;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
-span,
-a,
-button,
-label {
-  max-width: 100%;
-  overflow-wrap: anywhere;
-}
-
-button,
-a,
-input,
-select,
-textarea {
-  box-sizing: border-box;
-  max-width: 100%;
-}
-
-@media (max-width: 768px) {
-  body,
-  main {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: clip;
-  }
-
-  main > section,
-  main > header,
-  main > footer,
-  main > nav,
-  main > div {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-  }
-
-  [style*="display: flex"],
-  [style*="display:flex"],
-  [style*="display: grid"],
-  [style*="display:grid"] {
-    min-width: 0;
-  }
-
-  .wolf-mobile-fit {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-  }
-}
-
-@media (max-width: 380px) {
-  main > section,
-  main > header,
-  main > footer {
-    max-width: 100%;
-    overflow-x: clip;
-  }
-
-  h1,
-  h2,
-  h3 {
-    max-width: 100%;
-    text-wrap: balance;
-  }
-}
-
-/* ==========================================================
-   FIN WOLF_PWA_MOBILE_RESPONSIVE_FIX_V1
-   ========================================================== */
+========================================================== */

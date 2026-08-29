@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, {
   useState,
@@ -19,10 +19,8 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
-import "./HeroDesigns.css";
 import { getTheme } from "@/lib/theme/getTheme";
 import { getRestaurantStatus } from "@/lib/schedule";
-import GoogleReviewButton from "@/components/public/GoogleReviewButton";
 
 type ScheduleParam = Parameters<typeof getRestaurantStatus>[0];
 
@@ -48,8 +46,6 @@ export interface RestaurantData {
   primary_color?: string;
   secondary_color?: string;
   text_color?: string;
-  google_reviews_url?: string | null;
-  show_google_reviews_landing?: boolean;
   schedule?: ScheduleParam;
   schedules?: ScheduleParam[];
   slides?: HeroSlide[];
@@ -234,13 +230,10 @@ const Hero = React.memo(function Hero({ restaurant }: HeroProps) {
   return (
     <section
       id="top"
-      data-wolf-hero={theme.heroStyle}
-      data-wolf-design={theme.designId}
       aria-label={`Sección principal de ${
         restaurant.name || "Restaurante"
       }`}
       className="
-        wolf-hero
         relative
         min-h-[760px]
         h-[100svh]
@@ -282,7 +275,6 @@ transition={{
   },
 }}
           className="
-            wolf-hero-media
             absolute
             inset-0
             z-0
@@ -293,14 +285,10 @@ transition={{
           <Image
             src={backgroundImage}
             alt={restaurant.name || "Restaurante"}
-            width={1920}
-            height={1080}
+            fill
             priority
+            sizes="100vw"
             className="
-              absolute
-              inset-0
-              h-full
-              w-full
               object-cover
               object-center
             "
@@ -375,7 +363,6 @@ transition={{
 
       <div
         className="
-          wolf-hero-content
           relative
           z-10
           w-full
@@ -386,7 +373,7 @@ transition={{
           lg:px-10
         "
       >
-        <div className="wolf-hero-copy max-w-4xl pt-20 sm:pt-24 lg:pt-12">
+        <div className="max-w-4xl pt-20 sm:pt-24 lg:pt-12">
 
           {/* -------------------------------------------------------------- */}
           {/* STATUS PILL                                                     */}
@@ -408,7 +395,6 @@ transition={{
               ease: [0.22, 1, 0.36, 1],
             }}
             className="
-              wolf-hero-status
               inline-flex
               items-center
               gap-3
@@ -482,7 +468,6 @@ transition={{
 
           <AnimatePresence mode="wait">
             <motion.div
-              className="wolf-hero-copy-block"
               key={currentSlide}
               initial={{
                 opacity: 0,
@@ -518,10 +503,15 @@ transition={{
                   lg:text-[5.5rem]
                   xl:text-[6.2rem]
                 "
-                dangerouslySetInnerHTML={{
-                  __html: titleHtml || "",
-                }}
-              />
+                suppressHydrationWarning
+                {...(
+                  mounted
+                    ? { dangerouslySetInnerHTML: { __html: titleHtml || "" } }
+                    : {}
+                )}
+              >
+                {!mounted ? titleHtml.replace(/<[^>]*>/g, "") : null}
+              </h1>
 
               <p
                 className="
@@ -535,10 +525,15 @@ transition={{
                   sm:text-lg
                   lg:text-xl
                 "
-                dangerouslySetInnerHTML={{
-                  __html: subtitleHtml || "",
-                }}
-              />
+                suppressHydrationWarning
+                {...(
+                  mounted
+                    ? { dangerouslySetInnerHTML: { __html: subtitleHtml || "" } }
+                    : {}
+                )}
+              >
+                {!mounted ? subtitleHtml.replace(/<[^>]*>/g, "") : null}
+              </p>
             </motion.div>
           </AnimatePresence>
 
@@ -561,7 +556,6 @@ transition={{
               ease: [0.22, 1, 0.36, 1],
             }}
             className="
-              wolf-hero-actions
               mt-8
               flex
               flex-col
@@ -729,9 +723,6 @@ transition={{
                   duration-300
                   sm:w-auto
                 "
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.07)",
-                }}
               >
                 <Utensils className="h-5 w-5 text-white/75 transition-transform duration-300 group-hover:rotate-[-8deg]" />
 
@@ -741,36 +732,6 @@ transition={{
               </motion.div>
             </a>
           </motion.div>
-
-          {/* -------------------------------------------------------------- */}
-          {/* GOOGLE REVIEWS                                                  */}
-          {/* -------------------------------------------------------------- */}
-
-          {restaurant.show_google_reviews_landing &&
-            restaurant.google_reviews_url && (
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: 12,
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.55,
-                  delay: 0.32,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="wolf-hero-review mt-4"
-              >
-                <GoogleReviewButton
-                  reviewsUrl={restaurant.google_reviews_url}
-                  enabled={restaurant.show_google_reviews_landing}
-                />
-              </motion.div>
-            )}
-
 
           {/* -------------------------------------------------------------- */}
           {/* SLIDE INDICATORS                                                 */}
@@ -788,7 +749,7 @@ transition={{
                 delay: 0.45,
                 duration: 0.5,
               }}
-              className="wolf-hero-indicators mt-9 flex items-center gap-2.5 sm:mt-11"
+              className="mt-9 flex items-center gap-2.5 sm:mt-11"
             >
               {slides.map((_, index) => (
                 <button

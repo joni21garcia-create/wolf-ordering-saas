@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 interface Particle {
   id: number;
@@ -14,32 +14,43 @@ interface Particle {
   glow: boolean;
 }
 
+function seeded01(seed: number): number {
+  const x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+  return x - Math.floor(x);
+}
+
 function generateParticles(): Particle[] {
-  return Array.from({ length: 30 }, (_, i) => ({
-    id: i,
-    left: Math.random() * 100,
-    top: Math.random() * 100,
-    size: 1 + Math.random() * 5,
-    duration: 10 + Math.random() * 10,
-    delay: Math.random() * 8,
-    opacity: 0.08 + Math.random() * 0.35,
-    blur: Math.random() * 2,
-    glow: Math.random() > 0.65,
-  }));
+  return Array.from({ length: 30 }, (_, i) => {
+    const r1 = seeded01(i + 1);
+    const r2 = seeded01(i + 101);
+    const r3 = seeded01(i + 201);
+    const r4 = seeded01(i + 301);
+    const r5 = seeded01(i + 401);
+    const r6 = seeded01(i + 501);
+
+    return {
+      id: i,
+      left: r1 * 100,
+      top: r2 * 100,
+      size: 1 + r3 * 5,
+      duration: 10 + r4 * 10,
+      delay: r5 * 8,
+      opacity: 0.08 + r6 * 0.35,
+      blur: seeded01(i + 601) * 2,
+      glow: seeded01(i + 701) > 0.65,
+    };
+  });
 }
 
 export default function FloatingParticles() {
-
-  const [particles, setParticles] =
-    useState<Particle[]>([]);
-
-  useEffect(() => {
-
-    setParticles(
-      generateParticles()
-    );
-
-  }, []);
+  /*
+   * The particle layout is deterministic on both SSR and the client.
+   * This avoids hydration mismatches caused by Math.random().
+   */
+  const particles = useMemo(
+    () => generateParticles(),
+    []
+  );
 
   return (
 
