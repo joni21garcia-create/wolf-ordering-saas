@@ -74,13 +74,13 @@ export default function AuthCallbackPage() {
           ?.code;
 
 
-      if (role === "super-user") {
+      if (role === "super-user" || role === "owner") {
         router.replace("/super-admin");
         return;
       }
 
       router.replace(
-        `/admin/dashboard/${restaurantUser.restaurant_id}`
+        `/super-admin/restaurants/${restaurantUser.restaurant_id}/restaurante/dashboard`
       );
     } catch (err) {
       console.error(err);

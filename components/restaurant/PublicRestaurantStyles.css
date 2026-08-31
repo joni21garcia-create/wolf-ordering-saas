@@ -1,0 +1,365 @@
+
+/*
+ * Wolf Ordering - Public Restaurant fallback shell.
+ * This stylesheet is intentionally independent of Tailwind/styled-jsx.
+ * It keeps the public restaurant composition intact even if generated utility
+ * CSS or runtime CSS arrives late.
+ */
+
+/* ---------------- Public hero ---------------- */
+.wolf-hero {
+  position: relative;
+  width: 100%;
+  min-height: 760px;
+  height: 100svh;
+  max-height: 1080px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: #070707;
+  color: #fff;
+}
+.wolf-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.wolf-hero-media > img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  max-width: none;
+}
+.wolf-hero-media > div {
+  pointer-events: none;
+}
+.wolf-hero-content {
+  position: relative;
+  z-index: 10;
+  width: min(1280px, 100%);
+  margin: 0 auto;
+  padding: 80px 40px 64px;
+}
+.wolf-hero-copy {
+  max-width: 920px;
+}
+.wolf-hero-copy-block {
+  padding-top: 48px;
+}
+.wolf-hero-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  backdrop-filter: blur(20px);
+}
+.wolf-hero-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+.wolf-hero-actions a,
+.wolf-hero-actions > button {
+  max-width: 100%;
+}
+.wolf-hero-indicators {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 36px;
+}
+.wolf-hero > a:last-of-type {
+  position: absolute;
+}
+.wolf-hero h1 {
+  max-width: 920px;
+  margin: 0;
+  font-size: clamp(44px, 6.6vw, 100px);
+  line-height: .98;
+  letter-spacing: -.045em;
+  font-weight: 900;
+}
+.wolf-hero p {
+  max-width: 720px;
+}
+.wolf-hero .wolf-hero-actions a > div,
+.wolf-hero .wolf-hero-actions > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------------- Navbar ---------------- */
+.wolf-navbar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 9999;
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--nav-bg, rgba(8,8,8,.72));
+  border-bottom: 1px solid var(--nav-border, transparent);
+  box-shadow: var(--nav-shadow, none);
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+}
+.wolf-navbar__inner {
+  width: min(1260px, 100%);
+  min-height: 58px;
+  margin: 0 auto;
+  padding: 0 4px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+}
+.wolf-navbar__brand {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: start;
+  color: var(--nav-text, #fff);
+  text-decoration: none;
+}
+.wolf-navbar__logo {
+  width: 42px;
+  height: 42px;
+  border: 1px solid;
+  border-radius: 13px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  background: rgba(255,255,255,.045);
+  color: var(--nav-primary, #f97316);
+  font-weight: 850;
+  font-size: 15px;
+}
+.wolf-navbar__logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  max-width: none;
+}
+.wolf-navbar__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 780;
+  letter-spacing: -.02em;
+}
+.wolf-navbar__links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+.wolf-navbar__links a {
+  position: relative;
+  color: var(--nav-text, #fff);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 650;
+  opacity: .72;
+}
+.wolf-navbar__links a::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 0;
+  height: 1px;
+  border-radius: 999px;
+  background: var(--nav-primary, #f97316);
+  transform: translateX(-50%);
+}
+.wolf-navbar__links a:hover { opacity: 1; color: var(--nav-primary, #f97316); }
+.wolf-navbar__links a:hover::after { width: 18px; }
+.wolf-navbar__actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 8px;
+}
+.wolf-navbar__order {
+  min-width: 0;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.wolf-navbar__menu-button {
+  display: none;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 13px;
+  place-items: center;
+  background: rgba(255,255,255,.045);
+  color: var(--nav-text, #fff);
+  cursor: pointer;
+}
+.wolf-navbar__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: rgba(0,0,0,.34);
+}
+.wolf-navbar__mobile-panel {
+  position: fixed;
+  top: 73px;
+  left: 12px;
+  right: 12px;
+  z-index: 9998;
+  padding: 10px;
+  border: 1px solid;
+  border-radius: 18px;
+  box-shadow: 0 22px 70px rgba(0,0,0,.28);
+  backdrop-filter: blur(22px);
+}
+.wolf-navbar__mobile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 9px 10px;
+  color: rgba(255,255,255,.4);
+  text-transform: uppercase;
+  letter-spacing: .11em;
+  font-size: 9px;
+  font-weight: 800;
+}
+.wolf-navbar__mobile-panel > a {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 10px;
+  border-top: 1px solid rgba(255,255,255,.055);
+  color: var(--nav-text, #fff);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 680;
+}
+.wolf-navbar__mobile-order { width: 100%; margin-top: 8px; }
+
+/* ---------------- Public footer / services / CTA ---------------- */
+.wolf-footer {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: clamp(46px, 7vw, 76px) 18px 20px;
+  isolation: isolate;
+}
+.wolf-footer__inner { width: min(1240px,100%); margin: 0 auto; }
+.wolf-footer__grid {
+  display: grid;
+  grid-template-columns: minmax(260px,1.35fr) minmax(220px,.95fr) minmax(250px,1fr);
+  gap: clamp(28px,5vw,76px);
+  align-items: start;
+}
+.wolf-footer__brand,
+.wolf-footer__contact-item,
+.wolf-footer__social-list,
+.wolf-footer__bottomline,
+.wolf-footer__signature,
+.wolf-footer__legal {
+  display: flex;
+}
+.wolf-footer__brand { align-items:center; gap:11px; }
+.wolf-footer__contact-list { display:grid; gap:7px; }
+.wolf-footer__contact-item { align-items:center; min-width:0; gap:9px; }
+.wolf-footer__social-list { flex-wrap:wrap; gap:10px; }
+.wolf-footer__social { position:relative; width:54px; height:54px; display:grid; place-items:center; }
+.wolf-footer__social-core { position:relative; z-index:3; width:46px; height:46px; display:grid; place-items:center; }
+.wolf-footer__bottomline { align-items:center; justify-content:space-between; gap:20px; }
+.wolf-services {
+  position: relative;
+  width:100%;
+  box-sizing:border-box;
+  padding: clamp(54px,7vw,86px) clamp(16px,5vw,56px) clamp(50px,7vw,82px);
+  overflow:hidden;
+}
+.wolf-services__grid {
+  width:min(1470px,100%);
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:16px;
+}
+.restaurant-cta {
+  position:relative;
+  width:100%;
+  box-sizing:border-box;
+  overflow:hidden;
+  padding:clamp(58px,9vw,110px) 16px;
+}
+.cta-card {
+  position:relative;
+  width:100%;
+  max-width:900px;
+  margin:0 auto;
+  box-sizing:border-box;
+}
+
+/* Navigation links must remain clickable above decorative layers. */
+.wolf-navbar, .wolf-navbar * { pointer-events:auto; }
+
+@media (max-width: 820px) {
+  .wolf-navbar { padding:8px 10px; }
+  .wolf-navbar__inner {
+    min-height:54px;
+    grid-template-columns:1fr auto;
+  }
+  .wolf-navbar__links { display:none; }
+  .wolf-navbar__name { max-width:46vw; }
+  .wolf-navbar__menu-button { display:grid; }
+  .wolf-navbar__order {
+    min-height:40px !important;
+    height:40px;
+    padding-inline:13px !important;
+    font-size:12px !important;
+  }
+  .wolf-hero {
+    min-height: 680px;
+    height: 100svh;
+  }
+  .wolf-hero-content { padding: 96px 22px 52px; }
+  .wolf-hero-copy-block { padding-top: 30px; }
+  .wolf-hero-actions { flex-direction: column; align-items: stretch; }
+  .wolf-hero-actions a,
+  .wolf-hero-actions > button { width: 100%; }
+  .wolf-hero-actions a > div { width:100%; }
+  .wolf-services__grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 580px) {
+  .wolf-navbar__name { display:none; }
+  .wolf-navbar__logo { width:40px; height:40px; border-radius:12px; }
+  .wolf-footer__grid { grid-template-columns:1fr; gap:25px; }
+  .wolf-footer__bottomline { align-items:flex-start; flex-direction:column; gap:10px; }
+  .wolf-services__grid { grid-template-columns:1fr; }
+}
+@media (max-width: 480px) {
+  .wolf-navbar__order { padding-inline:12px !important; }
+  .wolf-hero-content { padding-inline:16px; }
+}

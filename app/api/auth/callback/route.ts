@@ -173,7 +173,7 @@ if (next === "/reset-password") {
   let redirectUrl;
 
 
-  if (role === "super-user") {
+  if (role === "super-user" || role === "owner") {
 
     redirectUrl =
     `${origin}/super-admin`;
@@ -182,7 +182,7 @@ if (next === "/reset-password") {
   else{
 
     redirectUrl =
-    `${origin}/admin/dashboard/${restaurantUser.restaurant_id}`;
+    `${origin}/super-admin/restaurants/${restaurantUser.restaurant_id}/restaurante/dashboard`;
 
   }
 

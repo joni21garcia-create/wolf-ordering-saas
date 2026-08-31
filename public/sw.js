@@ -5,7 +5,7 @@
    CORS/Opacos desde el bucket de Supabase para instalabilidad.
 ============================================================ */
 
-const VERSION = "wolf-v1";
+const VERSION = "1788217252706";
 
 const CACHE = {
     STATIC: `wolf-static-${VERSION}`,
@@ -144,13 +144,11 @@ if (isHTML(request)) {
     return;
 }
 
-// Estrategia JS/CSS/Fonts
-// Network First evita mezclar HTML nuevo con CSS/JS viejo
-// después de una actualización o recarga.
-if (isStatic(request)) {
-    event.respondWith(networkFirstStatic(request));
-    return;
-}
+    // Estrategia JS/CSS/Fonts
+    if (isStatic(request)) {
+        event.respondWith(staleWhileRevalidate(request, CACHE.STATIC));
+        return;
+    }
 
     // Estrategia Imágenes (Incluye iconos guardados en Supabase Storage)
     if (isImage(request, url)) {
@@ -178,41 +176,6 @@ async function networkFirst(request) {
             status: 503,
             headers: { "Content-Type": "text/plain; charset=utf-8" }
         });
-    }
-}
-
-async function networkFirstStatic(request) {
-    const cache = await caches.open(CACHE.STATIC);
-
-    try {
-        const response = await fetch(request, {
-            cache: "no-store"
-        });
-
-        if (response && response.ok) {
-            await cache.put(request, response.clone());
-            return response;
-        }
-
-        throw new Error(
-            `Static asset HTTP ${response?.status ?? "unknown"}`
-        );
-    } catch {
-        const cached = await cache.match(request);
-
-        if (cached) {
-            return cached;
-        }
-
-        return new Response(
-            "Recurso estático no disponible",
-            {
-                status: 503,
-                headers: {
-                    "Content-Type": "text/plain; charset=utf-8"
-                }
-            }
-        );
     }
 }
 

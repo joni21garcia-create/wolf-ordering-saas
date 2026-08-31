@@ -63,11 +63,13 @@ useEffect(()=>{
       const role =
         user.restaurant_roles?.code;
 
-      const isSuperAdmin = role === "super-user";
+      const isSuperAdmin =
+        role === "super-user" ||
+        role === "owner";
 
       if (!isSuperAdmin) {
         window.location.href =
-          `/admin/dashboard/${user.restaurant_id}`;
+          `/super-admin/restaurants/${user.restaurant_id}/restaurante/dashboard`;
         return;
       }
 

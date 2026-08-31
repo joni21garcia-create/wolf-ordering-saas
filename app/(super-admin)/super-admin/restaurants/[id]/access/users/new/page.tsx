@@ -104,17 +104,6 @@ export default function NewUserPage() {
         return;
       }
 
-      const { data: existing } = await supabase
-        .from("restaurant_users")
-        .select("id")
-        .eq("restaurant_id", restaurantId)
-        .eq("email", email)
-        .maybeSingle();
-
-      if (existing) {
-        alert("Ese correo ya existe en este restaurante");
-        return;
-      }
 
       const response = await fetch("/api/super-admin/users/create", {
         method: "POST",

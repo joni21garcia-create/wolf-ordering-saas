@@ -123,13 +123,13 @@ export default function LoginClient() {
     const role =
       restaurantUser.restaurant_roles?.code;
 
-    if (role === "super-user") {
+    if (role === "super-user" || role === "owner") {
       window.location.replace("/login/super-admin");
       return;
     }
 
     window.location.replace(
-      `/admin/dashboard/${restaurantUser.restaurant_id}`
+      `/super-admin/restaurants/${restaurantUser.restaurant_id}/restaurante/dashboard`
     );
   }
 

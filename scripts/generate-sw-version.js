@@ -9,7 +9,7 @@ const swPath = path.join(
 
 const version =
   process.env.VERCEL_GIT_COMMIT_SHA ||
-  "wolf-v1";
+  Date.now().toString();
 
 let sw = fs.readFileSync(swPath, "utf8");
 

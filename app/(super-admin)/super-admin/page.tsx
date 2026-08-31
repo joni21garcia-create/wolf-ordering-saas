@@ -19,7 +19,7 @@ export default function SuperAdminPage() {
     }
 
     if (user.role.code !== "super-user") {
-      router.replace(`/admin/dashboard/${user.restaurant_id}`);
+      router.replace(`/super-admin/restaurants/${user.restaurant_id}/restaurante/dashboard`);
     }
   }, [loading, user, router]);
 

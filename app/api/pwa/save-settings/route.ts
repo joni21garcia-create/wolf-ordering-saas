@@ -68,7 +68,7 @@ export async function POST(
           }
         )
         .select()
-        .single();
+        .maybeSingle();
 
     if (error) {
       return NextResponse.json(
@@ -104,5 +104,3 @@ export async function POST(
     );
   }
 }
-
-

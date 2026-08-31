@@ -108,26 +108,6 @@ export default function NewUserPage() {
     try {
       setSaving(true);
 
-      const { data: existing, error: existingError } =
-        await supabase
-          .from("restaurant_users")
-          .select("id")
-          .eq("restaurant_id", restaurantId)
-          .eq("email", cleanEmail)
-          .maybeSingle();
-
-      if (existingError) {
-        console.error(existingError);
-        setError("No se pudo validar el correo.");
-        return;
-      }
-
-      if (existing) {
-        setError(
-          "Ese correo ya existe en este restaurante."
-        );
-        return;
-      }
 
       const selectedRole = roles.find(
         (role) => role.id === roleId
@@ -141,29 +121,50 @@ export default function NewUserPage() {
         return;
       }
 
-      const { error: functionError } =
-        await supabase.functions.invoke(
-          "create-restaurant-user",
-          {
-            body: {
-              email: cleanEmail,
-              password,
-              full_name: cleanName,
-              phone: cleanPhone,
-              restaurant_id: restaurantId,
-              role_id: roleId,
-            },
-          }
-        );
+ const { data, error: functionError } =
+  await supabase.functions.invoke(
+    "create-restaurant-user",
+    {
+      body: {
+        email: cleanEmail,
+        password,
+        full_name: cleanName,
+        phone: cleanPhone,
+        restaurant_id: restaurantId,
+        role_id: roleId,
+      },
+    }
+  );
 
-      if (functionError) {
-        console.error(functionError);
-        setError(
-          functionError.message ||
-            "No se pudo crear el usuario."
-        );
-        return;
-      }
+if (functionError) {
+  console.error(
+    "[CREATE USER] Function error:",
+    functionError
+  );
+
+  console.error(
+    "[CREATE USER] Function data:",
+    data
+  );
+
+  setError(
+    data?.error ||
+      functionError.message ||
+      "No se pudo crear el usuario."
+  );
+
+  return;
+}
+
+if (data?.error) {
+  console.error(
+    "[CREATE USER] API error:",
+    data.error
+  );
+
+  setError(data.error);
+  return;
+}
 
       router.replace(
         `/admin/users/${restaurantId}`

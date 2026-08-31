@@ -59,6 +59,30 @@ function animationConfig(style: unknown) {
 export default function Navbar({ restaurant }: Props) {
   const theme = getTheme(restaurant);
 
+  const aboutEnabled =
+    restaurant?.show_about === true ||
+    restaurant?.show_about === 1 ||
+    restaurant?.show_about === "true" ||
+    restaurant?.show_about === "1";
+
+  const scrollToSection = (id: string) => {
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    const navbarHeight =
+      document.querySelector(".wolf-navbar")?.getBoundingClientRect().height ?? 0;
+    const top =
+      target.getBoundingClientRect().top +
+      window.scrollY -
+      navbarHeight -
+      12;
+
+    window.scrollTo({
+      top: Math.max(0, top),
+      behavior: "smooth",
+    });
+  };
+
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -181,9 +205,35 @@ export default function Navbar({ restaurant }: Props) {
           </a>
 
           <div className="wolf-navbar__links" aria-label="Navegación principal">
-            <a href="#menu">Menú</a>
-            <a href="#about">Nosotros</a>
-            <a href="#contact">Contacto</a>
+            <a
+              href="#menu"
+              onClick={(event) => {
+                event.preventDefault();
+                scrollToSection("menu");
+              }}
+            >
+              Menú
+            </a>
+            {aboutEnabled && (
+              <a
+                href="#about"
+                onClick={(event) => {
+                  event.preventDefault();
+                  scrollToSection("about");
+                }}
+              >
+                Nosotros
+              </a>
+            )}
+            <a
+              href="#contact"
+              onClick={(event) => {
+                event.preventDefault();
+                scrollToSection("contact");
+              }}
+            >
+              Contacto
+            </a>
           </div>
 
           <div className="wolf-navbar__actions">
@@ -255,17 +305,40 @@ export default function Navbar({ restaurant }: Props) {
                 <ChevronDown size={15} strokeWidth={1.8} />
               </div>
 
-              <a href="#menu" onClick={() => setMobileOpen(false)}>
+              <a
+                href="#menu"
+                onClick={(event) => {
+                  event.preventDefault();
+                  setMobileOpen(false);
+                  scrollToSection("menu");
+                }}
+              >
                 <span>Menú</span>
                 <ArrowRight size={15} />
               </a>
 
-              <a href="#about" onClick={() => setMobileOpen(false)}>
-                <span>Nosotros</span>
-                <ArrowRight size={15} />
-              </a>
+              {aboutEnabled && (
+                <a
+                  href="#about"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setMobileOpen(false);
+                    scrollToSection("about");
+                  }}
+                >
+                  <span>Nosotros</span>
+                  <ArrowRight size={15} />
+                </a>
+              )}
 
-              <a href="#contact" onClick={() => setMobileOpen(false)}>
+              <a
+                href="#contact"
+                onClick={(event) => {
+                  event.preventDefault();
+                  setMobileOpen(false);
+                  scrollToSection("contact");
+                }}
+              >
                 <span>Contacto</span>
                 <ArrowRight size={15} />
               </a>

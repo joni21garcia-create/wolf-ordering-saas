@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
+import "@/components/restaurant/DesignChrome.css";
+import "@/components/restaurant/PublicRestaurantStyles.css";
 
 import ParticlesBackground from "@/components/ParticlesBackground";
 import { SessionProvider } from "@/providers/SessionProvider";

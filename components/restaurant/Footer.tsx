@@ -141,7 +141,7 @@ export default function Footer({ restaurant }: Props) {
   }>;
 
   return (
-    <footer
+    <footer id="contact"
       className="wolf-footer"
       style={
         {

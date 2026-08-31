@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@source "../app/**/*.{js,ts,jsx,tsx}";
+@source "../components/**/*.{js,ts,jsx,tsx}";
+@source "../providers/**/*.{js,ts,jsx,tsx}";
+@source "../lib/**/*.{js,ts,jsx,tsx}";
+@source "../modules/**/*.{js,ts,jsx,tsx}";
 
 /* ==========================================================
    WOLF ORDERING SAAS
@@ -1175,3 +1180,12 @@ textarea {
 /* ==========================================================
    FIN WOLF_PWA_MOBILE_RESPONSIVE_FIX_V1
    ========================================================== */
+
+
+/* WOLF PUBLIC RESTAURANT NAVIGATION */
+html {
+  scroll-padding-top: 86px;
+}
+#top, #menu, #about, #contact {
+  scroll-margin-top: 86px;
+}
