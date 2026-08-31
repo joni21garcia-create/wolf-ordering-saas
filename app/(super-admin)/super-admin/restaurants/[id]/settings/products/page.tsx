@@ -125,8 +125,7 @@ export default function ProductsPage() {
             <div className="eyebrow">Configuración / Productos</div>
             <div className="title-row">
   <div>
-    <h1>Productos</h1>
-    <p>Gestiona tu menú rápido, desde cualquier dispositivo.</p>
+    
   </div>
 
   <div className="products-actions">
