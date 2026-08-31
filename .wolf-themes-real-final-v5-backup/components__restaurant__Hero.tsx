@@ -1,6 +1,5 @@
-"use client";
+﻿"use client";
 
-import "./HeroDesigns.css";
 import React, {
   useState,
   useEffect,
@@ -231,13 +230,10 @@ const Hero = React.memo(function Hero({ restaurant }: HeroProps) {
   return (
     <section
       id="top"
-      data-wolf-hero={theme.heroStyle}
-      data-wolf-design={theme.designId}
       aria-label={`Sección principal de ${
         restaurant.name || "Restaurante"
       }`}
       className="
-        wolf-hero
         relative
         min-h-[760px]
         h-[100svh]
@@ -279,7 +275,6 @@ transition={{
   },
 }}
           className="
-            wolf-hero-media
             absolute
             inset-0
             z-0
@@ -287,14 +282,17 @@ transition={{
             select-none
           "
         >
-<Image
-  src={backgroundImage}
-  alt={restaurant.name || "Restaurante"}
-  fill
-  priority
-  sizes="(max-width: 768px) 100vw, 50vw"
-  className="object-cover object-center"
-/>
+          <Image
+            src={backgroundImage}
+            alt={restaurant.name || "Restaurante"}
+            fill
+            priority
+            sizes="100vw"
+            className="
+              object-cover
+              object-center
+            "
+          />
 
           {/* Cinematic darkening */}
           <div className="absolute inset-0 bg-black/25" />
@@ -365,7 +363,6 @@ transition={{
 
       <div
         className="
-          wolf-hero-content
           relative
           z-10
           w-full
@@ -376,7 +373,7 @@ transition={{
           lg:px-10
         "
       >
-        <div className="wolf-hero-copy wolf-hero-copy-block max-w-4xl pt-20 sm:pt-24 lg:pt-12">
+        <div className="max-w-4xl pt-20 sm:pt-24 lg:pt-12">
 
           {/* -------------------------------------------------------------- */}
           {/* STATUS PILL                                                     */}
@@ -398,7 +395,6 @@ transition={{
               ease: [0.22, 1, 0.36, 1],
             }}
             className="
-              wolf-hero-status
               inline-flex
               items-center
               gap-3
@@ -560,7 +556,6 @@ transition={{
               ease: [0.22, 1, 0.36, 1],
             }}
             className="
-              wolf-hero-actions
               mt-8
               flex
               flex-col
@@ -754,7 +749,7 @@ transition={{
                 delay: 0.45,
                 duration: 0.5,
               }}
-              className="wolf-hero-indicators mt-9 flex items-center gap-2.5 sm:mt-11"
+              className="mt-9 flex items-center gap-2.5 sm:mt-11"
             >
               {slides.map((_, index) => (
                 <button

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import DesignThemeSelector from "./DesignThemeSelector";
@@ -99,7 +99,7 @@ const applyTheme = (theme: Theme) => {
 
 const saveTheme = async () => {
     if (!restaurantId) {
-      alert("Error crÃ­tico: El ID del restaurante no estÃ¡ disponible.");
+      alert("Error crítico: El ID del restaurante no está disponible.");
       return;
     }
 
@@ -135,7 +135,7 @@ const saveTheme = async () => {
       }
       
       console.log("Cambios guardados exitosamente:", data);
-      alert("Â¡Ajustes guardados correctamente!");
+      alert("¡Ajustes guardados correctamente!");
     } catch (error: any) {
       console.error("Fallo en la persistencia:", error);
       alert(`Hubo un error al guardar los ajustes de marca: ${error.message}`);
@@ -182,7 +182,7 @@ const saveTheme = async () => {
       {/* HEADER */}
       <div className="header-container" style={{ marginBottom: "30px", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", paddingBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <span style={{ fontSize: "0.85rem", fontWeight: "600", color: form.primary_color, textTransform: "uppercase", letterSpacing: "0.08em" }}>ConfiguraciÃ³n del Sistema</span>
+          <span style={{ fontSize: "0.85rem", fontWeight: "600", color: form.primary_color, textTransform: "uppercase", letterSpacing: "0.08em" }}>Configuración del Sistema</span>
           <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.5rem)", fontWeight: "800", marginTop: "8px", letterSpacing: "-0.03em" }}>
             Ajustes de <span style={{ color: form.primary_color }}>Marca & UI</span>
           </h1>
@@ -243,9 +243,9 @@ const saveTheme = async () => {
             </div>
           </div>
 
-          {/* PERSONALIZACIÃ“N HEX */}
+          {/* PERSONALIZACIóN HEX */}
           <div style={S.section}>
-            <h2 style={S.h2}>PersonalizaciÃ³n Hex</h2>
+            <h2 style={S.h2}>Personalización Hex</h2>
             <div className="hex-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px" }}>
               {[
                 { l: "Principal", k: "primary_color" as keyof ThemeForm },
@@ -264,7 +264,7 @@ const saveTheme = async () => {
             </div>
           </div>
 
-          {/* DISEÃ‘O DE COMPONENTES */}
+          {/* DISEÑO DE COMPONENTES */}
           <div style={S.section}>
             <h2 style={S.h2}>Diseño de Componentes & Botones</h2>
             <div className="components-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -100,7 +100,7 @@ export default function NewUserPage() {
 
     if (password.length < 6) {
       setError(
-        "La contraseÃ±a debe tener al menos 6 caracteres."
+        "La contraseña debe tener al menos 6 caracteres."
       );
       return;
     }
@@ -277,7 +277,7 @@ export default function NewUserPage() {
             {roles.length === 0 ? (
               <div className="no-roles">
                 No existen roles operativos disponibles.
-                Crea primero un rol desde la secciÃ³n Roles.
+                Crea primero un rol desde la sección Roles.
               </div>
             ) : (
               <select

@@ -274,9 +274,22 @@ export default function Footer({ restaurant }: Props) {
         </div>
 
         <div className="wolf-footer__bottomline">
-          <span>
-            © {new Date().getFullYear()} {restaurant.name}
-          </span>
+          <div className="wolf-footer__legal">
+            {restaurant.show_footer_copyright && (
+              <span>
+                {restaurant.footer_text ||
+                  `© ${new Date().getFullYear()} ${restaurant.name}. Todos los derechos reservados.`}
+              </span>
+            )}
+            {restaurant.show_wolf_branding && (
+              <span className="wolf-footer__powered">
+                <i aria-hidden="true" />
+                Powered by Wolf Ordering™
+                <ArrowUpRight size={10} strokeWidth={1.8} />
+              </span>
+            )}
+          </div>
+
           <span className="wolf-footer__signature">
             <i aria-hidden="true" />
             Hecho para pedir mejor
@@ -651,6 +664,72 @@ export default function Footer({ restaurant }: Props) {
           box-shadow: 0 0 12px var(--footer-primary);
         }
 
+        .wolf-footer__legal {
+          display: inline-flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 10px;
+          min-width: 0;
+        }
+
+        .wolf-footer__powered {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          min-height: 24px;
+          padding: 4px 9px;
+          border-radius: 999px;
+          border: 1px solid color-mix(
+            in srgb,
+            var(--footer-primary) 25%,
+            transparent
+          );
+          background: color-mix(
+            in srgb,
+            var(--footer-primary) 5%,
+            transparent
+          );
+          color: var(--footer-primary);
+          font-size: 8px;
+          font-weight: 800;
+          letter-spacing: .02em;
+          box-shadow:
+            0 0 0 1px color-mix(
+              in srgb,
+              var(--footer-primary) 4%,
+              transparent
+            ),
+            0 5px 18px color-mix(
+              in srgb,
+              var(--footer-primary) 8%,
+              transparent
+            );
+          transition:
+            transform .24s ease,
+            border-color .24s ease,
+            box-shadow .24s ease;
+        }
+
+        .wolf-footer__powered:hover {
+          transform: translateY(-1px);
+          border-color: color-mix(
+            in srgb,
+            var(--footer-primary) 42%,
+            transparent
+          );
+          box-shadow:
+            0 0 0 1px color-mix(
+              in srgb,
+              var(--footer-primary) 8%,
+              transparent
+            ),
+            0 8px 24px color-mix(
+              in srgb,
+              var(--footer-primary) 12%,
+              transparent
+            );
+        }
+
         @keyframes wolf-footer-spin {
           from { transform: rotate(0deg); }
           to { transform: rotate(360deg); }
@@ -695,7 +774,11 @@ export default function Footer({ restaurant }: Props) {
           .wolf-footer__bottomline {
             align-items: flex-start;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
+          }
+
+          .wolf-footer__legal {
+            width: 100%;
           }
 
           .wolf-footer__social {

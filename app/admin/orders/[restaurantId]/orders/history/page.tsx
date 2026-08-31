@@ -45,7 +45,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [restaurantId]);
 
   async function loadOrders() {
     try {
@@ -57,23 +57,33 @@ export default function HistoryPage() {
 
       if (!session) return;
 
-      const response =
-        await fetch(
-          "/api/orders/get-orders",
-          {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            cache: "no-store",
-          }
-        );
+      const response = await fetch(
+        `/api/orders/get-orders?restaurantId=${encodeURIComponent(
+          restaurantId
+        )}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          cache: "no-store",
+        }
+      );
 
-      const json =
-        await response.json();
+      const json = await response.json();
 
-      if (!json.success) return;
+      if (!response.ok || !json.success) {
+        console.error("[HISTORY] Error cargando pedidos:", json);
+        setOrders([]);
+        return;
+      }
 
-      setOrders(json.orders ?? []);
+      const historyOrders = (json.orders ?? []).filter(
+        (order: any) =>
+          order.status === "completed" ||
+          order.status === "delivered"
+      );
+
+      setOrders(historyOrders);
     } finally {
       setLoading(false);
     }
@@ -152,7 +162,9 @@ export default function HistoryPage() {
 
     const cancelled =
       filtered.filter(
-        (o) => o.status === "cancelled"
+        (o) =>
+          o.status === "cancelled" ||
+          o.status === "canceled"
       ).length;
 
     return [

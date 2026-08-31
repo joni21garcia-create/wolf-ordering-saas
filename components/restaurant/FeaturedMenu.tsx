@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ShoppingCart, Utensils, ZoomIn } from "lucide-react";
 import { getTheme } from "@/lib/theme/getTheme";
 import {
@@ -22,6 +22,22 @@ export default function FeaturedMenu({ restaurant }: Props) {
   const [selectedProduct, setSelectedProduct] = useState<CartProduct | null>(null);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [addedProductId, setAddedProductId] = useState<string | null>(null);
+
+  const featuredSliderRef = useRef<HTMLDivElement>(null);
+
+  const scrollFeaturedLeft = () => {
+    featuredSliderRef.current?.scrollBy({
+      left: -250,
+      behavior: "smooth",
+    });
+  };
+
+  const scrollFeaturedRight = () => {
+    featuredSliderRef.current?.scrollBy({
+      left: 250,
+      behavior: "smooth",
+    });
+  };
 
   const featuredProducts = restaurant.featuredProducts || [];
   if (featuredProducts.length === 0) return null;
@@ -68,8 +84,55 @@ export default function FeaturedMenu({ restaurant }: Props) {
           </h2>
         </div>
 
-        <div style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 10, scrollbarWidth: "none", WebkitOverflowScrolling: "touch", scrollBehavior: "smooth" }}>
-          {featuredProducts.map((product: any) => {
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+          }}
+        >
+          {/* Flecha izquierda */}
+          <button
+            type="button"
+            onClick={scrollFeaturedLeft}
+            aria-label="Anterior producto destacado"
+            style={{
+              position: "absolute",
+              left: 6,
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 20,
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              background: "rgba(20,20,20,0.92)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              boxShadow: "0 6px 18px rgba(0,0,0,0.5)",
+              backdropFilter: "blur(10px)",
+              fontSize: 14,
+            }}
+          >
+            &#10094;
+          </button>
+
+          {/* Carrusel de productos destacados */}
+          <div
+            ref={featuredSliderRef}
+            style={{
+              display: "flex",
+              gap: 14,
+              overflowX: "auto",
+              padding: "0 48px 10px",
+              scrollbarWidth: "none",
+              WebkitOverflowScrolling: "touch",
+              scrollBehavior: "smooth",
+            }}
+          >
+            {featuredProducts.map((product: any) => {
             const imageUrl = product.image_url ?? null;
             const imageFailed = imageErrors[product.id];
             const isAdded = addedProductId === product.id;
@@ -123,7 +186,37 @@ export default function FeaturedMenu({ restaurant }: Props) {
                 </div>
               </div>
             );
-          })}
+            })}
+          </div>
+
+          {/* Flecha derecha */}
+          <button
+            type="button"
+            onClick={scrollFeaturedRight}
+            aria-label="Siguiente producto destacado"
+            style={{
+              position: "absolute",
+              right: 6,
+              top: "50%",
+              transform: "translateY(-50%)",
+              zIndex: 20,
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              background: "rgba(20,20,20,0.92)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              boxShadow: "0 6px 18px rgba(0,0,0,0.5)",
+              backdropFilter: "blur(10px)",
+              fontSize: 14,
+            }}
+          >
+            &#10095;
+          </button>
         </div>
       </div>
 
@@ -141,6 +234,3 @@ export default function FeaturedMenu({ restaurant }: Props) {
     </section>
   );
 }
-
-
-

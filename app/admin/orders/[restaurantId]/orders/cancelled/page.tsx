@@ -30,7 +30,7 @@ export default function CancelledPage() {
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [restaurantId]);
 
   async function loadOrders() {
     try {
@@ -43,24 +43,35 @@ export default function CancelledPage() {
       if (!session) return;
 
       const response = await fetch(
-        "/api/orders/get-orders",
+        `/api/orders/get-orders?restaurantId=${encodeURIComponent(
+          restaurantId
+        )}`,
         {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
+          cache: "no-store",
         }
       );
 
       const result = await response.json();
 
-      if (result.success) {
-        setOrders(
-          (result.orders ?? []).filter(
-            (o: any) =>
-              o.status === "cancelled"
-          )
+      if (!response.ok || !result.success) {
+        console.error(
+          "[CANCELLED] Error cargando pedidos:",
+          result
         );
+        setOrders([]);
+        return;
       }
+
+      setOrders(
+        (result.orders ?? []).filter(
+          (o: any) =>
+            o.status === "cancelled" ||
+            o.status === "canceled"
+        )
+      );
     } finally {
       setLoading(false);
     }

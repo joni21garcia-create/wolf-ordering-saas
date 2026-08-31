@@ -273,11 +273,6 @@ console.log(
   deliverySettings
 );
 
-const publicThemeSettings = {
-  ...(themeSettings || {}),
-  designTheme,
-};
-
 return {
   ...restaurant,
 
@@ -285,7 +280,7 @@ return {
 
   pwaSettings,
 
-  themeSettings: publicThemeSettings,
+   themeSettings,
 
   designTheme,
 

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -71,12 +71,12 @@ export default function NewRolePage() {
 
       if (checkError) {
         console.error(checkError);
-        setError("No se pudo validar el cÃ³digo.");
+        setError("No se pudo validar el código.");
         return;
       }
 
       if (existingRole) {
-        setError("Ya existe un rol con ese cÃ³digo.");
+        setError("Ya existe un rol con ese código.");
         return;
       }
 

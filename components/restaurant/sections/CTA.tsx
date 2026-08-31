@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -53,7 +53,7 @@ export default function CTA({ restaurant }: Props) {
         }}
         className="cta-card"
       >
-        {/* DecoraciÃ³n superior */}
+        {/* Decoración superior */}
         <div className="cta-line" aria-hidden="true">
           <span />
           <i />
@@ -67,7 +67,7 @@ export default function CTA({ restaurant }: Props) {
 
           <h2>
             {restaurant.cta_title ||
-              "Tu próxima experiencia empieza aquí­"}
+              "Tu próxima experiencia empieza aquí"}
           </h2>
 
           <p>
@@ -126,7 +126,7 @@ export default function CTA({ restaurant }: Props) {
                     "Ver menú y ordenar"}
                 </span>
 
-                <b aria-hidden="true">â†’</b>
+                <b aria-hidden="true">→</b>
               </Link>
             ) : (
               <button
@@ -136,7 +136,7 @@ export default function CTA({ restaurant }: Props) {
                 aria-disabled="true"
               >
                 <span className="cta-button-icon">
-                  🔒
+                  ðŸ”’
                 </span>
 
                 <span>

@@ -302,7 +302,7 @@ function RestaurantToolbar({
 
   return (
     <nav
-      aria-label="ConfiguraciÃ³n del restaurante"
+      aria-label="Configuración del restaurante"
       style={{
         width: "100%",
         display: "flex",
@@ -692,7 +692,7 @@ function HoursSection({
       setSchedule(nextSchedule);
     } catch (error) {
       console.error(
-        "Error cambiando recepciÃ³n de pedidos:",
+        "Error cambiando recepción de pedidos:",
         error,
       );
     } finally {

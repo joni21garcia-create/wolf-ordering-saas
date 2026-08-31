@@ -1,5 +1,6 @@
-﻿"use client";
+"use client";
 
+import "./MenuDesigns.css";
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { getTheme } from "@/lib/theme/getTheme";
@@ -61,7 +62,7 @@ export default function Menu({ restaurant }: Props) {
     }
   };
 
-  // Funciones de scroll para la BARRA DE CATEGORÃAS
+  // Funciones de scroll para la BARRA DE CATEGORÍAS
   const scrollCategoriesLeft = () => {
     if (categoriesBarRef.current) {
       categoriesBarRef.current.scrollBy({ left: -250, behavior: "smooth" });
@@ -140,7 +141,7 @@ export default function Menu({ restaurant }: Props) {
           </h2>
         </div>
 
-        {/* BARRA DE CATEGORÃAS CON FLECHAS EN LOS EXTREMOS */}
+        {/* BARRA DE CATEGORÍAS CON FLECHAS EN LOS EXTREMOS */}
         <div className="wolf-menu-categories"
           style={{ 
             position: "sticky", 
@@ -158,10 +159,10 @@ export default function Menu({ restaurant }: Props) {
             alignItems: "center"
           }}
         >
-          {/* Flecha Izquierda CategorÃ­as */}
+          {/* Flecha Izquierda Categorías */}
           <button
             onClick={scrollCategoriesLeft}
-            aria-label="Anterior categorÃ­a"
+            aria-label="Anterior categoría"
             style={{
               position: "absolute",
               left: "6px",
@@ -184,7 +185,7 @@ export default function Menu({ restaurant }: Props) {
             &#10094;
           </button>
 
-          {/* Lista scrolleable de categorÃ­as */}
+          {/* Lista scrolleable de categorías */}
           <div 
             ref={categoriesBarRef}
             style={{ 
@@ -225,10 +226,10 @@ export default function Menu({ restaurant }: Props) {
             })}
           </div>
 
-          {/* Flecha Derecha CategorÃ­as */}
+          {/* Flecha Derecha Categorías */}
           <button
             onClick={scrollCategoriesRight}
-            aria-label="Siguiente categorÃ­a"
+            aria-label="Siguiente categoría"
             style={{
               position: "absolute",
               right: "6px",
@@ -252,7 +253,7 @@ export default function Menu({ restaurant }: Props) {
           </button>
         </div>
 
-        {/* CONTENIDO CON SCROLL HORIZONTAL Y FLECHAS DE NAVEGACIÃ“N */}
+        {/* CONTENIDO CON SCROLL HORIZONTAL Y FLECHAS DE NAVEGACIÓN */}
         {categories.map((category: any) => {
           const activeId = selectedCategory || availableCategories[0]?.id;
           
@@ -269,7 +270,7 @@ export default function Menu({ restaurant }: Props) {
           if (categoryProducts.length === 0) {
             return (
               <div key={category.id} style={{ textAlign: "center", padding: "40px 0", color: "rgba(255,255,255,0.5)", fontSize: "13px" }}>
-                No hay productos disponibles en esta categorÃ­a por el momento.
+                No hay productos disponibles en esta categoría por el momento.
               </div>
             );
           }
@@ -283,7 +284,7 @@ export default function Menu({ restaurant }: Props) {
               transition={{ duration: 0.4 }}
               style={{ marginBottom: "40px" }}
             >
-              {/* Cabecera de CategorÃ­a y Flechas de NavegaciÃ³n de Productos */}
+              {/* Cabecera de Categoría y Flechas de Navegación de Productos */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", gap: "12px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", flex: 1 }}>
                   <h3
@@ -515,7 +516,7 @@ export default function Menu({ restaurant }: Props) {
                           style={{ width: "100%", border: 0, borderRadius: 10, padding: "9px 11px", background: theme.primary, color: theme.text ?? "#fff", fontWeight: 750, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
                         >
                           <ShoppingCart size={14} />
-                          Añadir al carrito
+                          AÑadir al carrito
                         </button>
                       </div>
                     </div>

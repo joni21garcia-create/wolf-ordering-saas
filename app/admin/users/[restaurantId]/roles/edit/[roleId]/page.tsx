@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -53,7 +53,7 @@ export default function EditRolePage() {
 
       if (error || !data) {
         console.error("Error cargando rol:", error);
-        setError("No se encontrÃ³ el rol.");
+        setError("No se encontró el rol.");
         return;
       }
 
@@ -61,11 +61,11 @@ export default function EditRolePage() {
         .trim()
         .toLowerCase();
 
-      // ProtecciÃ³n adicional por si alguien entra
+      // Protección adicional por si alguien entra
       // directamente a una URL de un rol protegido.
       if (PROTECTED_CODES.includes(roleCode)) {
         setError(
-          "Este rol estÃ¡ protegido y no puede editarse desde aquÃ­."
+          "Este rol está protegido y no puede editarse desde aquí."
         );
         return;
       }
@@ -150,7 +150,7 @@ export default function EditRolePage() {
 
             <p>
               {error ||
-                "Este rol no puede editarse desde aquÃ­."}
+                "Este rol no puede editarse desde aquí."}
             </p>
 
             <button
@@ -175,7 +175,7 @@ export default function EditRolePage() {
             className="back"
             onClick={goBack}
           >
-            â† Roles
+            ← Roles
           </button>
 
           <div className="eyebrow">Equipo</div>
@@ -202,7 +202,7 @@ export default function EditRolePage() {
           </div>
 
           <div className="field">
-            <label>CÃ³digo</label>
+            <label>Código</label>
 
             <div className="readonly-code">
               <span>{role.code}</span>
@@ -210,7 +210,7 @@ export default function EditRolePage() {
             </div>
 
             <div className="hint">
-              El cÃ³digo es el identificador interno
+              El código es el identificador interno
               estandarizado del rol y no puede cambiarse.
             </div>
           </div>
@@ -220,8 +220,8 @@ export default function EditRolePage() {
 
             <span>
               Los permisos de este rol son administrados
-              desde Wolf. AquÃ­ solamente se modifica el
-              nombre que verÃ¡ el equipo.
+              desde Wolf. Aquí solamente se modifica el
+              nombre que verá el equipo.
             </span>
           </div>
 

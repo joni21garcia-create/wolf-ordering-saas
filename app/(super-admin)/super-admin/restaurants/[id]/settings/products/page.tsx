@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useRef } from "react";
 import { CheckCheck, EyeOff, Utensils } from "lucide-react";
@@ -7,6 +7,8 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import BackToSettings from "@/components/admin/BackToSettings";
 import PermissionGuard from "@/components/auth/PermissionGuard";
+import MenuExcelImporter from "@/components/super-admin/products/MenuExcelImporter";
+import MenuExcelExporter from "@/components/super-admin/products/MenuExcelExporter";
 
 export default function ProductsPage() {
   const params = useParams();
@@ -122,17 +124,29 @@ export default function ProductsPage() {
             <BackToSettings restaurantId={restaurantId} />
             <div className="eyebrow">Configuración / Productos</div>
             <div className="title-row">
-              <div>
-                <h1>Productos</h1>
-                <p>Gestiona tu menú rápido, desde cualquier dispositivo.</p>
-              </div>
-              <Link
-                href={`/super-admin/restaurants/${restaurantId}/settings/products/new`}
-                className="new-product"
-              >
-                <span>+</span> Nuevo
-              </Link>
-            </div>
+  <div>
+    <h1>Productos</h1>
+    <p>Gestiona tu menú rápido, desde cualquier dispositivo.</p>
+  </div>
+
+  <div className="products-actions">
+    <MenuExcelImporter
+      restaurantId={restaurantId}
+      onImported={loadData}
+    />
+
+    <MenuExcelExporter
+      restaurantId={restaurantId}
+    />
+
+    <Link
+      href={`/super-admin/restaurants/${restaurantId}/settings/products/new`}
+      className="new-product"
+    >
+      <span>+</span> Nuevo
+    </Link>
+  </div>
+</div>
           </div>
         </header>
 
@@ -182,10 +196,7 @@ export default function ProductsPage() {
                 (p) => p.category_id === cat.id
               );
               const isOpen = openCategories[cat.id] ?? false;
-              const visibleProducts =
-                selectedCategory === "all" || selectedCategory === cat.id
-                  ? categoryProducts
-                  : [];
+              const visibleProducts = categoryProducts;
 
               return (
                 <section
@@ -202,7 +213,6 @@ export default function ProductsPage() {
                         ...prev,
                         [cat.id]: !isOpen,
                       }));
-                      setSelectedCategory(cat.id);
                     }}
                   >
                     <span className="category-icon">▦</span>
@@ -322,6 +332,7 @@ export default function ProductsPage() {
           .products-heading { min-width:0; }
           .eyebrow { color:#f97316; font-size:8px; font-weight:800; letter-spacing:1.1px; text-transform:uppercase; margin:7px 0 3px; }
           .title-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+          .products-actions { display:flex; align-items:center; justify-content:flex-end; gap:6px; flex-wrap:wrap; flex-shrink:0; }
           .title-row h1 { margin:0; font-size:23px; line-height:1.1; letter-spacing:-.5px; }
           .title-row p { margin:4px 0 0; color:rgba(255,255,255,.38); font-size:10px; }
           .new-product { flex-shrink:0; display:inline-flex; align-items:center; gap:5px; background:#f97316; color:#fff; text-decoration:none; padding:8px 10px; border-radius:8px; font-size:10px; font-weight:800; }
@@ -629,7 +640,37 @@ export default function ProductsPage() {
 
           .empty-state { padding:35px 15px; text-align:center; color:rgba(255,255,255,.35); border:1px dashed rgba(255,255,255,.07); border-radius:11px; }
           .empty-state span { display:block; font-size:25px; margin-bottom:7px; } .empty-state strong { display:block; color:rgba(255,255,255,.62); font-size:10px; } .empty-state small { display:block; margin-top:3px; font-size:8px; }
-          @media (max-width:390px) { .title-row { align-items:flex-start; } .new-product { padding:7px 8px; } .product-actions { gap:3px; } .icon-btn { width:27px; height:27px; } }
+          @media (max-width:390px) {
+  .title-row {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .products-actions {
+    gap: 4px;
+  }
+
+  .excel-import-button {
+    height: 36px;
+    padding: 0 9px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  .new-product {
+    padding: 7px 8px;
+    font-size: 9px;
+  }
+
+  .product-actions {
+    gap: 3px;
+  }
+
+  .icon-btn {
+    width: 27px;
+    height: 27px;
+  }
+}
         `}</style>
       </main>
     </PermissionGuard>

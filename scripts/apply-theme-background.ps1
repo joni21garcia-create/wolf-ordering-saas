@@ -1,3 +1,4 @@
+
 $ErrorActionPreference = "Stop"
 
 $project = (Get-Location).Path

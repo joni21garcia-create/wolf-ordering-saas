@@ -907,7 +907,7 @@ with check (
 --
 -- DescripciÃ³n
 -- ----------------------------------------------------------------------------
--- Almacena las categorÃ­as del menÃº de cada restaurante.
+-- Almacena las categorÃ­as del menú de cada restaurante.
 --
 -- Todas las operaciones quedan restringidas al restaurante del usuario
 -- autenticado.
@@ -1187,7 +1187,7 @@ with check (
 --
 -- PostgreSQL deniega automÃ¡ticamente esta operaciÃ³n.
 --
--- Para retirar un producto del menÃº utilizar:
+-- Para retirar un producto del menú utilizar:
 --
 --     available = false
 --

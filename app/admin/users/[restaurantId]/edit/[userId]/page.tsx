@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -253,7 +253,7 @@ export default function EditUserPage() {
           className="back-button"
           onClick={goBack}
         >
-          â† Usuarios
+          ← Usuarios
         </button>
 
         <div className="eyebrow">Equipo</div>
@@ -294,7 +294,7 @@ export default function EditUserPage() {
           </div>
 
           <div className="field">
-            <label>TelÃ©fono</label>
+            <label>Teléfono</label>
 
             <input
               value={phone}
@@ -318,7 +318,7 @@ export default function EditUserPage() {
               <span>
                 Este usuario pertenece a un rol
                 administrativo y no puede cambiarse
-                desde aquÃ­.
+                desde aquí.
               </span>
             </div>
           ) : (
@@ -353,7 +353,7 @@ export default function EditUserPage() {
             <div className="status-description">
               {active
                 ? "El usuario puede acceder al restaurante."
-                : "El usuario estÃ¡ desactivado y no puede acceder."}
+                : "El usuario está desactivado y no puede acceder."}
             </div>
           </div>
 
