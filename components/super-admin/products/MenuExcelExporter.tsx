@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Download, FileSpreadsheet, Loader2 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/lib/supabase/client";
+import { saveExcelWorkbook } from "@/lib/excel/mobileDownload";
 
 interface Props {
   restaurantId: string;
@@ -91,7 +92,10 @@ export default function MenuExcelExporter({ restaurantId }: Props) {
       XLSX.utils.book_append_sheet(workbook, categorySheet, "Categorias");
 
       const stamp = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(workbook, `wolf-menu-${restaurantId}-${stamp}.xlsx`);
+      await saveExcelWorkbook(
+        workbook,
+        `wolf-menu-${restaurantId}-${stamp}.xlsx`
+      );
     } catch (error) {
       console.error("Error exportando menú:", error);
       alert(`No se pudo exportar el menú: ${error instanceof Error ? error.message : "error desconocido"}`);

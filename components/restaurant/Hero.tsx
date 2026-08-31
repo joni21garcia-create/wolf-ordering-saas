@@ -22,6 +22,7 @@ import {
 
 import { getTheme } from "@/lib/theme/getTheme";
 import { getRestaurantStatus } from "@/lib/schedule";
+import GoogleReviewButton from "@/components/public/GoogleReviewButton";
 
 type ScheduleParam = Parameters<typeof getRestaurantStatus>[0];
 
@@ -47,6 +48,8 @@ export interface RestaurantData {
   primary_color?: string;
   secondary_color?: string;
   text_color?: string;
+  google_reviews_url?: string | null;
+  show_google_reviews_landing?: boolean;
   schedule?: ScheduleParam;
   schedules?: ScheduleParam[];
   slides?: HeroSlide[];
@@ -737,6 +740,29 @@ transition={{
               </motion.div>
             </a>
           </motion.div>
+
+          {/* -------------------------------------------------------------- */}
+          {/* GOOGLE REVIEWS                                                  */}
+          {/* -------------------------------------------------------------- */}
+
+          {restaurant.show_google_reviews_landing &&
+            restaurant.google_reviews_url && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.55,
+                  delay: 0.32,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="wolf-hero-review mt-4"
+              >
+                <GoogleReviewButton
+                  reviewsUrl={restaurant.google_reviews_url}
+                  enabled={restaurant.show_google_reviews_landing}
+                />
+              </motion.div>
+            )}
 
           {/* -------------------------------------------------------------- */}
           {/* SLIDE INDICATORS                                                 */}

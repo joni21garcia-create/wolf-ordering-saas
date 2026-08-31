@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { supabase } from "@/lib/supabase/client";
+import { saveExcelWorkbook } from "@/lib/excel/mobileDownload";
 
 interface Props {
   restaurantId: string;
@@ -87,7 +88,7 @@ export default function MenuExcelImporter({ restaurantId, onImported }: Props) {
     reset();
   };
 
-  const downloadTemplate = () => {
+  const downloadTemplate = async () => {
     const data = [
       {
         Producto_ID: "",
@@ -119,7 +120,12 @@ export default function MenuExcelImporter({ restaurantId, onImported }: Props) {
     ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Menu");
-    XLSX.writeFile(wb, "wolf-menu-template.xlsx");
+    try {
+      await saveExcelWorkbook(wb, "wolf-menu-template.xlsx");
+    } catch (error) {
+      console.error("Error descargando plantilla Excel:", error);
+      alert(`No se pudo guardar la plantilla: ${error instanceof Error ? error.message : "error desconocido"}`);
+    }
   };
 
   const parseFile = async (file: File) => {
@@ -378,7 +384,7 @@ export default function MenuExcelImporter({ restaurantId, onImported }: Props) {
               </div>
             </div>
 
-            <button type="button" className="excel-template" onClick={downloadTemplate} disabled={busy}>
+            <button type="button" className="excel-template" onClick={() => void downloadTemplate()} disabled={busy}>
               <Download size={16} /> Descargar plantilla
             </button>
 
