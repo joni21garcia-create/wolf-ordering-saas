@@ -54,7 +54,7 @@ export default function ProofDownloadButton({
       // Always download through our same-origin proxy. This avoids the
       // cross-origin `download`/CORS behavior that made Supabase Storage
       // links open instead of downloading in Web/PWA.
-      const endpoint = `/api/orders/proof-download?url=${encodeURIComponent(url)}`;
+      const endpoint = `/api/orders/proof/download?url=${encodeURIComponent(url)}`;
       const response = await fetch(endpoint, { cache: "no-store" });
 
       if (!response.ok) {

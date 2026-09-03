@@ -13,11 +13,15 @@ function getR2Key(value: string): string | null {
     const url = new URL(value);
     const base = new URL(publicBase);
 
-    if (url.origin !== base.origin) return null;
+    if (url.origin !== base.origin) {
+      return null;
+    }
 
     const basePath = base.pathname.replace(/\/$/, "");
 
-    if (!url.pathname.startsWith(`${basePath}/`)) return null;
+    if (!url.pathname.startsWith(`${basePath}/`)) {
+      return null;
+    }
 
     const key = decodeURIComponent(
       url.pathname.slice(basePath.length + 1)
@@ -104,7 +108,10 @@ export async function GET(request: NextRequest) {
       headers,
     });
   } catch (error) {
-    console.error("[proof/download] Error descargando comprobante:", error);
+    console.error(
+      "[proof/download] Error descargando comprobante:",
+      error
+    );
 
     return NextResponse.json(
       { error: "No se pudo descargar el comprobante" },
