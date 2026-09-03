@@ -1,53 +1,87 @@
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
+import { r2 } from "@/lib/storage/r2";
 
 export const dynamic = "force-dynamic";
 
-function isAllowedProofUrl(value: string) {
+function getR2Key(value: string) {
   try {
+    const publicBase = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
+    if (!publicBase) return null;
+
     const url = new URL(value);
-    if (url.protocol !== "https:") return false;
+    const base = new URL(publicBase);
 
-    const configured = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (!configured) return false;
+    if (url.origin !== base.origin) return null;
 
-    const origin = new URL(configured).origin;
-    return url.origin === origin && url.pathname.includes("/storage/v1/object/");
+    const basePath = base.pathname.replace(/\/$/, "");
+    if (!url.pathname.startsWith(`${basePath}/`)) return null;
+
+    const key = decodeURIComponent(url.pathname.slice(basePath.length + 1));
+    if (!key || !key.startsWith("payment-proofs/")) return null;
+
+    return key;
   } catch {
-    return false;
+    return null;
   }
+}
+
+function safeFileName(value: string) {
+  return value
+    .replace(/[<>:"/\\|?*\x00-\x1F]/g, "-")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 120) || "comprobante-pago";
 }
 
 export async function GET(request: NextRequest) {
   const value = request.nextUrl.searchParams.get("url");
+  const key = value ? getR2Key(value) : null;
 
-  if (!value || !isAllowedProofUrl(value)) {
-    return NextResponse.json({ error: "URL de comprobante no permitida" }, { status: 400 });
+  if (!key) {
+    return NextResponse.json(
+      { error: "URL de comprobante no permitida" },
+      { status: 400 }
+    );
   }
 
   try {
-    const upstream = await fetch(value, { cache: "no-store" });
-    if (!upstream.ok) {
+    const result = await r2.send(
+      new GetObjectCommand({
+        Bucket: process.env.R2_BUCKET!,
+        Key: key,
+      })
+    );
+
+    if (!result.Body) {
       return NextResponse.json(
-        { error: "No se pudo obtener el comprobante" },
-        { status: upstream.status }
+        { error: "Comprobante no encontrado" },
+        { status: 404 }
       );
     }
 
-    const contentType = upstream.headers.get("content-type") || "application/octet-stream";
-    const contentLength = upstream.headers.get("content-length");
-    const pathname = new URL(value).pathname;
-    const original = pathname.split("/").pop() || "comprobante-pago";
-    const filename = original.replace(/[^a-zA-Z0-9._-]/g, "-").slice(-120) || "comprobante-pago";
-
+    const filename = safeFileName(key.split("/").pop() || "comprobante-pago");
     const headers = new Headers();
-    headers.set("Content-Type", contentType);
+    headers.set(
+      "Content-Type",
+      result.ContentType || "application/octet-stream"
+    );
     headers.set("Content-Disposition", `attachment; filename="${filename}"`);
     headers.set("Cache-Control", "no-store, max-age=0");
-    if (contentLength) headers.set("Content-Length", contentLength);
+    if (result.ContentLength != null) {
+      headers.set("Content-Length", String(result.ContentLength));
+    }
 
-    return new NextResponse(upstream.body, { status: 200, headers });
+    return new NextResponse(await result.Body.transformToByteArray(), {
+      status: 200,
+      headers,
+    });
   } catch (error) {
     console.error("[proof-download]", error);
-    return NextResponse.json({ error: "Error descargando comprobante" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error descargando comprobante" },
+      { status: 500 }
+    );
   }
 }
