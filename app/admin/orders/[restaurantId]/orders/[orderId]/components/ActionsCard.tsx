@@ -657,18 +657,17 @@ export default function ActionsCard({
      * impresora o "Guardar como PDF".
      */
     try {
+      // Use the dedicated OrderPrintView for both normal web and PWA.
+      // Keeping the printable view in the document (instead of opening a
+      // popup) also works when the app is installed as a standalone PWA.
       document.body.setAttribute(
-        "data-wolf-pwa-print",
+        "data-print-order",
         "true"
       );
 
-      window.setTimeout(() => {
-        window.print();
-      }, 30);
-
       const cleanup = () => {
         document.body.removeAttribute(
-          "data-wolf-pwa-print"
+          "data-print-order"
         );
       };
 
@@ -677,6 +676,14 @@ export default function ActionsCard({
         cleanup,
         { once: true }
       );
+
+      // Give the browser one frame to apply the print view before opening
+      // its print manager.
+      window.requestAnimationFrame(() => {
+        window.setTimeout(() => {
+          window.print();
+        }, 80);
+      });
 
       window.setTimeout(cleanup, 120000);
     } catch (error) {
