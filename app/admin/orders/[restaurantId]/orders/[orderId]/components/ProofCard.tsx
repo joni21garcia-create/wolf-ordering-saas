@@ -1,3 +1,7 @@
+"use client";
+
+import ProofDownloadButton from "@/components/restaurant/ProofDownloadButton";
+
 interface Props {
   order: any;
 }
@@ -293,13 +297,13 @@ export default function ProofCard({ order }: Props) {
           Ver completo
         </a>
 
-        <a
-          href={proof}
-          download
+        <ProofDownloadButton
+          url={proof}
+          fileName={`comprobante-${String(order.id ?? "pago")}`}
           className="proof-action"
         >
           Descargar
-        </a>
+        </ProofDownloadButton>
       </div>
     </section>
   );

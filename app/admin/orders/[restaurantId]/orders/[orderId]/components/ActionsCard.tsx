@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Printer } from "@capgo/capacitor-printer";
+import ProofDownloadButton from "@/components/restaurant/ProofDownloadButton";
 
 interface Props {
   order: any;
@@ -656,17 +657,18 @@ export default function ActionsCard({
      * impresora o "Guardar como PDF".
      */
     try {
-      // Use the dedicated OrderPrintView for both normal web and PWA.
-      // Keeping the printable view in the document (instead of opening a
-      // popup) also works when the app is installed as a standalone PWA.
       document.body.setAttribute(
-        "data-print-order",
+        "data-wolf-pwa-print",
         "true"
       );
 
+      window.setTimeout(() => {
+        window.print();
+      }, 30);
+
       const cleanup = () => {
         document.body.removeAttribute(
-          "data-print-order"
+          "data-wolf-pwa-print"
         );
       };
 
@@ -675,14 +677,6 @@ export default function ActionsCard({
         cleanup,
         { once: true }
       );
-
-      // Give the browser one frame to apply the print view before opening
-      // its print manager.
-      window.requestAnimationFrame(() => {
-        window.setTimeout(() => {
-          window.print();
-        }, 80);
-      });
 
       window.setTimeout(cleanup, 120000);
     } catch (error) {
@@ -1568,9 +1562,9 @@ export default function ActionsCard({
       {/* DESCARGAR COMPROBANTE */}
 
       {proofUrl && (
-        <a
-          href={proofUrl}
-          download
+        <ProofDownloadButton
+          url={proofUrl}
+          fileName={`comprobante-${String(order.id ?? "pago")}`}
           className="action-link proof-action"
         >
           <span className="action-link-left">
@@ -1586,7 +1580,7 @@ export default function ActionsCard({
           <span className="action-link-arrow">
             →
           </span>
-        </a>
+        </ProofDownloadButton>
       )}
       <div className="wolf-pwa-print-sheet" aria-hidden="true">
         <div className="wolf-pwa-print-page">
