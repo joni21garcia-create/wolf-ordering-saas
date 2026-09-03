@@ -656,18 +656,17 @@ export default function ActionsCard({
      * impresora o "Guardar como PDF".
      */
     try {
+      // Use the dedicated OrderPrintView for both normal web and PWA.
+      // Keeping the printable view in the document (instead of opening a
+      // popup) also works when the app is installed as a standalone PWA.
       document.body.setAttribute(
-        "data-wolf-pwa-print",
+        "data-print-order",
         "true"
       );
 
-      window.setTimeout(() => {
-        window.print();
-      }, 30);
-
       const cleanup = () => {
         document.body.removeAttribute(
-          "data-wolf-pwa-print"
+          "data-print-order"
         );
       };
 
@@ -676,6 +675,14 @@ export default function ActionsCard({
         cleanup,
         { once: true }
       );
+
+      // Give the browser one frame to apply the print view before opening
+      // its print manager.
+      window.requestAnimationFrame(() => {
+        window.setTimeout(() => {
+          window.print();
+        }, 80);
+      });
 
       window.setTimeout(cleanup, 120000);
     } catch (error) {
@@ -1335,18 +1342,8 @@ export default function ActionsCard({
         }
 
         @media print {
-          /* Hide the action panel during normal browser printing.
-           * The PWA print sheet lives inside this same section, so when
-           * data-wolf-pwa-print is active the parent must remain in the
-           * document; its children are hidden by the print-mode visibility
-           * rules above and only .wolf-pwa-print-sheet is revealed.
-           */
           .order-actions {
             display: none !important;
-          }
-
-          body[data-wolf-pwa-print] .order-actions {
-            display: block !important;
           }
         }
 

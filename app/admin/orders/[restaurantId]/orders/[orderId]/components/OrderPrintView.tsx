@@ -101,6 +101,29 @@ return (
         display: none;
       }
 
+      /* Browser + PWA print mode. Keep this stylesheet global so it can
+         control the body/root tree even though the component is nested. */
+      body[data-print-order="true"] .wolf-order-page {
+        background: #fff !important;
+        color: #111 !important;
+      }
+
+      body[data-print-order="true"] .wolf-order-container {
+        display: none !important;
+      }
+
+      body[data-print-order="true"] .order-print {
+        display: block !important;
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 2147483647 !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        overflow: visible !important;
+        background: #fff !important;
+        color: #111 !important;
+      }
+
       @media print {
         @page {
           size: auto;
@@ -112,13 +135,31 @@ return (
           background: #fff !important;
         }
 
+        body * {
+          visibility: hidden !important;
+        }
+
+        .wolf-order-page {
+          display: block !important;
+          min-height: 0 !important;
+          background: #fff !important;
+        }
+
         .wolf-order-container {
           display: none !important;
         }
 
+        .order-print,
+        .order-print * {
+          visibility: visible !important;
+        }
+
         .order-print {
           display: block !important;
-          width: 100%;
+          position: fixed !important;
+          inset: 0 !important;
+          z-index: 2147483647 !important;
+          width: 100% !important;
           padding: 0;
           color: #111;
           background: #fff;
