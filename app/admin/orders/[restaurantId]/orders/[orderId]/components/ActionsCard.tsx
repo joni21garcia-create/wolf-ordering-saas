@@ -1335,8 +1335,18 @@ export default function ActionsCard({
         }
 
         @media print {
+          /* Hide the action panel during normal browser printing.
+           * The PWA print sheet lives inside this same section, so when
+           * data-wolf-pwa-print is active the parent must remain in the
+           * document; its children are hidden by the print-mode visibility
+           * rules above and only .wolf-pwa-print-sheet is revealed.
+           */
           .order-actions {
             display: none !important;
+          }
+
+          body[data-wolf-pwa-print] .order-actions {
+            display: block !important;
           }
         }
 

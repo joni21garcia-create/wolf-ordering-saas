@@ -176,9 +176,17 @@ useEffect(() => {
       try {
         const customer = JSON.parse(savedCustomer);
 
+        // Checkout debe recuperar todo lo que OrderClient guardó.
         setCustomerName(customer.name || "");
         setCustomerPhone(customer.phone || "");
         setCustomerEmail(customer.email || "");
+        setCustomerAddress(customer.address || "");
+        setCustomerZone(customer.zone || "");
+        setCustomerReference(customer.reference || customer.notes || "");
+        setDeliveryInstructions(
+          customer.instructions || customer.deliveryInstructions || ""
+        );
+        setNotes(customer.notes || customer.reference || "");
       } catch (error) {
         console.error("[CHECKOUT] Error leyendo wolf_customer:", error);
       }
@@ -507,6 +515,27 @@ console.log(
 // Si el cliente está usando una dirección guardada, mantenemos sus datos
 // sincronizados (incluido el correo) para que Discover y Checkout compartan
 // la misma información.
+// Persistimos el formulario completo para que OrderClient y Checkout
+// compartan exactamente los mismos datos del cliente.
+const checkoutCustomer = {
+  name: customerName.trim(),
+  phone: customerPhone.trim(),
+  email: customerEmail.trim(),
+  address: customerAddress.trim(),
+  zone: customerZone.trim(),
+  reference: customerReference.trim(),
+  instructions: deliveryInstructions.trim(),
+};
+
+try {
+  localStorage.setItem("wolf_customer", JSON.stringify(checkoutCustomer));
+} catch (storageError) {
+  console.error(
+    "[CHECKOUT] No se pudo persistir wolf_customer:",
+    storageError
+  );
+}
+
 if (selectedAddressId && customerAddresses.length > 0) {
   const selectedAddress = customerAddresses.find(
     (address) => address.id === selectedAddressId
@@ -583,16 +612,16 @@ customer_email:
   customerEmail || null,
 
 delivery_address:
-  customerAddress,
+  customerAddress.trim() || null,
 
 delivery_sector:
-  customerZone || null,
+  customerZone.trim() || null,
 
 notes:
-  customerReference || null,
+  customerReference.trim() || null,
 
 delivery_instructions:
-  deliveryInstructions || null,
+  deliveryInstructions.trim() || null,
 
 payment_method:
   paymentMethod,
