@@ -4,9 +4,10 @@ import { r2 } from "@/lib/storage/r2";
 
 export const dynamic = "force-dynamic";
 
-function getR2Key(value: string) {
+function getR2Key(value: string): string | null {
   try {
     const publicBase = (process.env.R2_PUBLIC_URL || "").replace(/\/$/, "");
+
     if (!publicBase) return null;
 
     const url = new URL(value);
@@ -15,10 +16,16 @@ function getR2Key(value: string) {
     if (url.origin !== base.origin) return null;
 
     const basePath = base.pathname.replace(/\/$/, "");
+
     if (!url.pathname.startsWith(`${basePath}/`)) return null;
 
-    const key = decodeURIComponent(url.pathname.slice(basePath.length + 1));
-    if (!key || !key.startsWith("payment-proofs/")) return null;
+    const key = decodeURIComponent(
+      url.pathname.slice(basePath.length + 1)
+    );
+
+    if (!key || !key.startsWith("payment-proofs/")) {
+      return null;
+    }
 
     return key;
   } catch {
@@ -26,13 +33,15 @@ function getR2Key(value: string) {
   }
 }
 
-function safeFileName(value: string) {
-  return value
-    .replace(/[<>:"/\\|?*\x00-\x1F]/g, "-")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 120) || "comprobante-pago";
+function safeFileName(value: string): string {
+  return (
+    value
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, "-")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 120) || "comprobante-pago"
+  );
 }
 
 export async function GET(request: NextRequest) {
@@ -61,26 +70,44 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const filename = safeFileName(key.split("/").pop() || "comprobante-pago");
+    const filename = safeFileName(
+      key.split("/").pop() || "comprobante-pago"
+    );
+
     const headers = new Headers();
+
     headers.set(
       "Content-Type",
       result.ContentType || "application/octet-stream"
     );
-    headers.set("Content-Disposition", `attachment; filename="${filename}"`);
+
+    headers.set(
+      "Content-Disposition",
+      `attachment; filename="${filename}"`
+    );
+
     headers.set("Cache-Control", "no-store, max-age=0");
+
     if (result.ContentLength != null) {
       headers.set("Content-Length", String(result.ContentLength));
     }
 
-    return new NextResponse(await result.Body.transformToByteArray(), {
+    const bytes = await result.Body.transformToByteArray();
+
+    const arrayBuffer = bytes.buffer.slice(
+      bytes.byteOffset,
+      bytes.byteOffset + bytes.byteLength
+    ) as ArrayBuffer;
+
+    return new NextResponse(arrayBuffer, {
       status: 200,
       headers,
     });
   } catch (error) {
-    console.error("[proof-download]", error);
+    console.error("[proof/download] Error descargando comprobante:", error);
+
     return NextResponse.json(
-      { error: "Error descargando comprobante" },
+      { error: "No se pudo descargar el comprobante" },
       { status: 500 }
     );
   }
