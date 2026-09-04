@@ -41,12 +41,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!driver || !driver.active) {
-      return NextResponse.json(
-        { success: false, error: "Esta cuenta no está habilitada como repartidor." },
-        { status: 403 },
-      );
-    }
+if (!driver || !driver.active) {
+  console.error("[DELIVERY LOGIN][403]", {
+    userId: data.user.id,
+    driver,
+    driverError,
+  });
+
+  return NextResponse.json(
+    {
+      success: false,
+      error: "Esta cuenta no está habilitada como repartidor.",
+      debug: {
+        userId: data.user.id,
+        driverFound: !!driver,
+        driverActive: driver?.active ?? null,
+      },
+    },
+    { status: 403 },
+  );
+}
 
     return NextResponse.json({
       success: true,
