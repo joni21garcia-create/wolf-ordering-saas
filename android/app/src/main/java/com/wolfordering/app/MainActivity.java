@@ -20,6 +20,10 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+        // Registrar el plugin nativo de descargas de Wolf
+        registerPlugin(WolfDownloadPlugin.class);
+
         super.onCreate(savedInstanceState);
 
         /*
