@@ -19,11 +19,36 @@ import java.io.OutputStream;
 @CapacitorPlugin(name = "WolfDownload")
 public class WolfDownloadPlugin extends Plugin {
 
+    private String makeUniqueFileName(String fileName) {
+
+        if (fileName == null || fileName.trim().isEmpty()) {
+            fileName = "comprobante-pago.png";
+        }
+
+        int extensionIndex = fileName.lastIndexOf(".");
+
+        String baseName;
+        String extension;
+
+        if (extensionIndex > 0) {
+            baseName = fileName.substring(0, extensionIndex);
+            extension = fileName.substring(extensionIndex);
+        } else {
+            baseName = fileName;
+            extension = ".png";
+        }
+
+        return baseName
+                + "-"
+                + System.currentTimeMillis()
+                + extension;
+    }
+
     @PluginMethod
     public void saveToDownloads(PluginCall call) {
 
         String data = call.getString("data");
-        String fileName = call.getString("fileName");
+        String requestedFileName = call.getString("fileName");
         String mimeType = call.getString(
                 "mimeType",
                 "application/octet-stream"
@@ -34,15 +59,21 @@ public class WolfDownloadPlugin extends Plugin {
             return;
         }
 
-        if (fileName == null || fileName.isEmpty()) {
-            fileName = "comprobante-pago";
-        }
-
         try {
 
             byte[] fileBytes = Base64.decode(
                     data,
                     Base64.DEFAULT
+            );
+
+            /*
+             * Android necesita un nombre único.
+             * Esto evita el error:
+             *
+             * Failed to build unique file
+             */
+            String fileName = makeUniqueFileName(
+                    requestedFileName
             );
 
             ContentResolver resolver =
@@ -79,9 +110,11 @@ public class WolfDownloadPlugin extends Plugin {
             );
 
             if (uri == null) {
+
                 call.reject(
                         "No se pudo crear el archivo en Descargas."
                 );
+
                 return;
             }
 
