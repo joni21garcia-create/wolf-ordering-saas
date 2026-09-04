@@ -15,6 +15,7 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
 import java.io.OutputStream;
+import java.util.UUID;
 
 @CapacitorPlugin(name = "WolfDownload")
 public class WolfDownloadPlugin extends Plugin {
@@ -38,9 +39,18 @@ public class WolfDownloadPlugin extends Plugin {
             extension = ".png";
         }
 
+        /*
+         * Generamos un nombre realmente único.
+         * Esto evita conflictos en la carpeta Descargas
+         * incluso si el usuario pulsa varias veces.
+         */
+        String uniqueId = UUID.randomUUID()
+                .toString()
+                .substring(0, 8);
+
         return baseName
                 + "-"
-                + System.currentTimeMillis()
+                + uniqueId
                 + extension;
     }
 
@@ -48,29 +58,37 @@ public class WolfDownloadPlugin extends Plugin {
     public void saveToDownloads(PluginCall call) {
 
         String data = call.getString("data");
-        String requestedFileName = call.getString("fileName");
+
+        String requestedFileName = call.getString(
+                "fileName"
+        );
+
         String mimeType = call.getString(
                 "mimeType",
                 "application/octet-stream"
         );
 
         if (data == null || data.isEmpty()) {
-            call.reject("No se recibieron datos del archivo.");
+
+            call.reject(
+                    "No se recibieron datos del archivo."
+            );
+
             return;
         }
 
         try {
 
+            /*
+             * Convertimos Base64 a bytes.
+             */
             byte[] fileBytes = Base64.decode(
                     data,
                     Base64.DEFAULT
             );
 
             /*
-             * Android necesita un nombre único.
-             * Esto evita el error:
-             *
-             * Failed to build unique file
+             * Creamos un nombre único para Descargas.
              */
             String fileName = makeUniqueFileName(
                     requestedFileName
@@ -79,7 +97,8 @@ public class WolfDownloadPlugin extends Plugin {
             ContentResolver resolver =
                     getContext().getContentResolver();
 
-            ContentValues values = new ContentValues();
+            ContentValues values =
+                    new ContentValues();
 
             values.put(
                     MediaStore.Downloads.DISPLAY_NAME,
@@ -91,6 +110,10 @@ public class WolfDownloadPlugin extends Plugin {
                     mimeType
             );
 
+            /*
+             * Android 10+:
+             * guardar directamente dentro de Descargas.
+             */
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 
                 values.put(
@@ -98,12 +121,19 @@ public class WolfDownloadPlugin extends Plugin {
                         Environment.DIRECTORY_DOWNLOADS
                 );
 
+                /*
+                 * Mientras escribimos el archivo,
+                 * Android lo mantiene pendiente.
+                 */
                 values.put(
                         MediaStore.Downloads.IS_PENDING,
                         1
                 );
             }
 
+            /*
+             * Creamos el archivo.
+             */
             Uri uri = resolver.insert(
                     MediaStore.Downloads.EXTERNAL_CONTENT_URI,
                     values
@@ -118,6 +148,9 @@ public class WolfDownloadPlugin extends Plugin {
                 return;
             }
 
+            /*
+             * Escribimos los bytes del comprobante.
+             */
             try (
                     OutputStream outputStream =
                             resolver.openOutputStream(uri)
@@ -142,6 +175,9 @@ public class WolfDownloadPlugin extends Plugin {
                 outputStream.flush();
             }
 
+            /*
+             * Finalizamos el archivo.
+             */
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 
                 ContentValues completedValues =
@@ -160,7 +196,11 @@ public class WolfDownloadPlugin extends Plugin {
                 );
             }
 
-            JSObject result = new JSObject();
+            /*
+             * Respondemos a JavaScript.
+             */
+            JSObject result =
+                    new JSObject();
 
             result.put(
                     "success",
