@@ -8,22 +8,24 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 
-import com.getcapacitor.CapacitorPlugin;
+import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
-import com.getcapacitor.JSObject;
 
 import java.io.OutputStream;
 
-@CapacitorPlugin(name = "WolfDownload")
 public class WolfDownloadPlugin extends Plugin {
 
     @PluginMethod
     public void saveToDownloads(PluginCall call) {
+
         String data = call.getString("data");
         String fileName = call.getString("fileName");
-        String mimeType = call.getString("mimeType", "application/octet-stream");
+        String mimeType = call.getString(
+                "mimeType",
+                "application/octet-stream"
+        );
 
         if (data == null || data.isEmpty()) {
             call.reject("No se recibieron datos del archivo.");
@@ -31,29 +33,38 @@ public class WolfDownloadPlugin extends Plugin {
         }
 
         if (fileName == null || fileName.isEmpty()) {
-            fileName = "wolf-order-file";
+            fileName = "comprobante-pago";
         }
 
         try {
-            byte[] fileBytes = Base64.decode(data, Base64.DEFAULT);
 
-            ContentResolver resolver = getContext().getContentResolver();
+            byte[] fileBytes = Base64.decode(
+                    data,
+                    Base64.DEFAULT
+            );
+
+            ContentResolver resolver =
+                    getContext().getContentResolver();
 
             ContentValues values = new ContentValues();
+
             values.put(
                     MediaStore.Downloads.DISPLAY_NAME,
                     fileName
             );
+
             values.put(
                     MediaStore.Downloads.MIME_TYPE,
                     mimeType
             );
-            values.put(
-                    MediaStore.Downloads.RELATIVE_PATH,
-                    Environment.DIRECTORY_DOWNLOADS
-            );
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+
+                values.put(
+                        MediaStore.Downloads.RELATIVE_PATH,
+                        Environment.DIRECTORY_DOWNLOADS
+                );
+
                 values.put(
                         MediaStore.Downloads.IS_PENDING,
                         1
@@ -66,16 +77,29 @@ public class WolfDownloadPlugin extends Plugin {
             );
 
             if (uri == null) {
-                call.reject("No se pudo crear el archivo en Descargas.");
+                call.reject(
+                        "No se pudo crear el archivo en Descargas."
+                );
                 return;
             }
 
-            try (OutputStream outputStream =
-                         resolver.openOutputStream(uri)) {
+            try (
+                    OutputStream outputStream =
+                            resolver.openOutputStream(uri)
+            ) {
 
                 if (outputStream == null) {
-                    resolver.delete(uri, null, null);
-                    call.reject("No se pudo abrir el archivo para escritura.");
+
+                    resolver.delete(
+                            uri,
+                            null,
+                            null
+                    );
+
+                    call.reject(
+                            "No se pudo abrir el archivo para escritura."
+                    );
+
                     return;
                 }
 
@@ -84,7 +108,10 @@ public class WolfDownloadPlugin extends Plugin {
             }
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ContentValues completedValues = new ContentValues();
+
+                ContentValues completedValues =
+                        new ContentValues();
+
                 completedValues.put(
                         MediaStore.Downloads.IS_PENDING,
                         0
@@ -99,13 +126,26 @@ public class WolfDownloadPlugin extends Plugin {
             }
 
             JSObject result = new JSObject();
-            result.put("success", true);
-            result.put("uri", uri.toString());
-            result.put("fileName", fileName);
+
+            result.put(
+                    "success",
+                    true
+            );
+
+            result.put(
+                    "uri",
+                    uri.toString()
+            );
+
+            result.put(
+                    "fileName",
+                    fileName
+            );
 
             call.resolve(result);
 
         } catch (Exception e) {
+
             call.reject(
                     "No se pudo guardar el archivo en Descargas: "
                             + e.getMessage(),
