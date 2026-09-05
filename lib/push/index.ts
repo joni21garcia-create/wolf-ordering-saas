@@ -31,3 +31,5 @@ export * from "./sendRestaurant";
 export * from "./sendCustomer";
 
 export * from "./sendPush";
+
+export * from "./sendToDrivers";

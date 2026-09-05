@@ -87,3 +87,9 @@ export interface CustomerPushInput {
   badge?: string;
   image?: string;
 }
+
+export interface DriverPushInput {
+  title: string;
+  body: string;
+  data?: Record<string, string>;
+}
