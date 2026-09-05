@@ -23,7 +23,6 @@ export async function GET(request: NextRequest) {
       `)
       .eq("status", "ready");
 
-    // Usamos as any para evitar errores si TS aún no ve la columna
     query = (query as any).is("delivery_driver_id", null);
 
     if (zone) {
@@ -34,7 +33,16 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
-    return NextResponse.json({ success: true, orders });
+    // Transformamos la respuesta para que Android reciba las coordenadas como GeoPoint
+    const formattedOrders = orders?.map(order => ({
+      ...order,
+      restaurant: {
+        lat: order.restaurants?.latitude || 0,
+        lng: order.restaurants?.longitude || 0
+      }
+    }));
+
+    return NextResponse.json({ success: true, orders: formattedOrders });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

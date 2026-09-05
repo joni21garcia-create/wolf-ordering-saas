@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Datos faltantes" }, { status: 400 });
     }
 
-    // Usamos as any para la tabla de suscripciones
     const { error } = await (supabaseAdmin
       .from("push_subscriptions") as any)
       .upsert({

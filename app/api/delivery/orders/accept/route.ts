@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Datos faltantes" }, { status: 400 });
     }
 
-    // Forzamos as any en el update para aceptar las nuevas columnas
     const { data, error } = await (supabaseAdmin
       .from("orders") as any)
       .update({
@@ -19,13 +18,25 @@ export async function POST(request: NextRequest) {
       })
       .eq("id", orderId)
       .is("delivery_driver_id", null)
-      .select()
+      .select(`
+        *,
+        restaurants (latitude, longitude, name, address)
+      `)
       .maybeSingle();
 
     if (error) throw error;
     if (!data) return NextResponse.json({ success: false, error: "Pedido no disponible" }, { status: 409 });
 
-    return NextResponse.json({ success: true, order: data });
+    return NextResponse.json({
+      success: true,
+      order: {
+        ...data,
+        restaurant: {
+          lat: (data as any).restaurants?.latitude || 0,
+          lng: (data as any).restaurants?.longitude || 0
+        }
+      }
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
