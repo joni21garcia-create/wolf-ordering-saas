@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
     const db = supabaseAdmin as any;
     const { data: driver, error } = await db
       .from("delivery_drivers")
-      .select("id, auth_user_id, full_name, phone, active, online, zone")
+      // CORRECCIÓN: Se añade restaurant_id a la selección
+      .select("id, auth_user_id, full_name, phone, active, online, zone, restaurant_id")
       .eq("auth_user_id", userData.user.id)
       .maybeSingle();
 
