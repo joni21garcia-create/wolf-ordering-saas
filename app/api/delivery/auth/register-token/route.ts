@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Datos faltantes" }, { status: 400 });
     }
 
-    const { error } = await (supabaseAdmin
-      .from("push_subscriptions") as any)
+    const { error } = await supabaseAdmin
+      .from("push_subscriptions")
       .upsert({
         user_id: driverId,
         fcm_token: token,

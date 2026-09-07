@@ -9,12 +9,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Datos faltantes" }, { status: 400 });
     }
 
-    const { data, error } = await (supabaseAdmin
-      .from("orders") as any)
+    const { data, error } = await supabaseAdmin
+      .from("orders")
       .update({
         delivery_driver_id: driverId,
-        status: "out_for_delivery",
-        out_for_delivery_at: new Date().toISOString()
+        status: "accepted",
+        accepted_at: new Date().toISOString()
       })
       .eq("id", orderId)
       .is("delivery_driver_id", null)
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (error) throw error;
-    if (!data) return NextResponse.json({ success: false, error: "Pedido no disponible" }, { status: 409 });
+    if (!data) return NextResponse.json({ success: false, error: "Pedido ya tomado por otro" }, { status: 409 });
 
     return NextResponse.json({
       success: true,

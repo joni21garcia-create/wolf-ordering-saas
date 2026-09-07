@@ -21,9 +21,9 @@ export async function GET(request: NextRequest) {
           longitude
         )
       `)
-      .eq("status", "ready");
-
-    query = (query as any).is("delivery_driver_id", null);
+      .in("status", ["pending", "ready"])
+      .is("delivery_driver_id", null)
+      .eq("order_type", "delivery");
 
     if (zone) {
       query = query.eq("delivery_sector", zone);
@@ -33,12 +33,11 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
-    // Transformamos la respuesta para que Android reciba las coordenadas como GeoPoint
-    const formattedOrders = orders?.map(order => ({
+    const formattedOrders = orders?.map((order: any) => ({
       ...order,
       restaurant: {
-        lat: order.restaurants?.latitude || 0,
-        lng: order.restaurants?.longitude || 0
+        lat: order.restaurants?.latitude || -2.169,
+        lng: order.restaurants?.longitude || -79.916
       }
     }));
 

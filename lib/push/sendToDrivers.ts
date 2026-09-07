@@ -1,6 +1,7 @@
 /*
 ==========================================================
 Wolf Ordering Push V2 - Notificaciones Repartidores
+Versión Alineada para Repique Persistente en Background
 ==========================================================
 */
 
@@ -30,21 +31,26 @@ export async function sendToDrivers({ title, body, data }: DriverPushInput) {
 
     const tokens = subs.map(s => s.fcm_token).filter(Boolean) as string[];
 
-    // 2. Preparamos el mensaje para Firebase
-    // Nota: El campo 'data' es vital para que Android active el "repique"
+    /*
+    ==========================================================
+    CAMBIO CRÍTICO: FORMATO DATA-ONLY
+    ==========================================================
+    Eliminamos el objeto 'notification' de la raíz.
+    Al enviar solo 'data', obligamos a Android a ejecutar el 
+    código de la App (onMessageReceived) incluso en background.
+    ==========================================================
+    */
     const message = {
-      notification: { title, body },
       data: {
         ...data,
-        click_action: "FLUTTER_NOTIFICATION_CLICK", // Opcional, ayuda a abrir la app
+        type: "NEW_ORDER", // Identificador para que la App sepa que debe sonar
+        title: title,      // Pasamos el título dentro de data
+        body: body,        // Pasamos el cuerpo dentro de data
+        click_action: "FLUTTER_NOTIFICATION_CLICK",
       },
       tokens: tokens,
       android: {
-        priority: "high" as const,
-        notification: {
-          sound: "default",
-          channelId: "orders",
-        }
+        priority: "high" as const, // Prioridad máxima para despertar el dispositivo
       }
     };
 
