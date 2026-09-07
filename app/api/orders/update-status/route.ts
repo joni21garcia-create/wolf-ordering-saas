@@ -245,6 +245,11 @@ export async function POST(request: NextRequest) {
           new Date().toISOString();
         break;
 
+      case "out_for_delivery":
+        updateData.out_for_delivery_at =
+          new Date().toISOString();
+        break;
+
       case "completed":
         updateData.completed_at =
           new Date().toISOString();
