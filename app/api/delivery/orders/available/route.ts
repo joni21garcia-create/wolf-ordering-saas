@@ -10,27 +10,17 @@ export async function GET(request: NextRequest) {
       .from("orders")
       .select(`
         *,
-        order_items (
-          *,
-          products (*)
-        ),
-        restaurants (
-          name,
-          address,
-          latitude,
-          longitude
-        )
+        order_items (*, products (*)),
+        restaurants (name, address, latitude, longitude)
       `)
-      .in("status", ["pending", "ready"])
+      // ALINEACIÓN: Permitir pedidos aceptados por el restaurante para negociar
+      .in("status", ["accepted", "ready"]) 
       .is("delivery_driver_id", null)
       .eq("order_type", "delivery");
 
-    if (zone) {
-      query = query.eq("delivery_sector", zone);
-    }
+    if (zone) query = query.eq("delivery_sector", zone);
 
     const { data: orders, error } = await query.order("created_at", { ascending: false });
-
     if (error) throw error;
 
     const formattedOrders = orders?.map((order: any) => ({
