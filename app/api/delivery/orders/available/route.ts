@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const zone = searchParams.get("zone");
 
-    // VISIBILIDAD TOTAL: Incluimos 'pending' y todos los estados de seguimiento
+    // ADAPTACIÓN: Mantenemos tu lógica pero agregamos los campos solicitados
     let query = supabaseAdmin
       .from("orders")
       .select(`
@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
         restaurants (name, address, latitude, longitude, whatsapp_url, phone)
       `)
       .eq("order_type", "delivery")
+      // Incluimos 'pending' para que veas las ofertas nuevas de inmediato
       .in("status", ["pending", "accepted", "preparing", "ready", "out_for_delivery"]);
 
     if (driverId) {
@@ -64,6 +65,7 @@ export async function GET(request: NextRequest) {
 
     const formattedOrders = (orders as OrderWithRestaurant[] | null)?.map((order) => ({
       ...order,
+      // Mapeo para que la App reciba las coordenadas como 'restaurant'
       restaurant: {
         lat: order.restaurants?.latitude || -2.169,
         lng: order.restaurants?.longitude || -79.916
@@ -72,6 +74,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, orders: formattedOrders });
   } catch (error) {
+    console.error("[GET AVAILABLE ORDERS] Error:", error);
     const message = error instanceof Error ? error.message : "Error interno";
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
