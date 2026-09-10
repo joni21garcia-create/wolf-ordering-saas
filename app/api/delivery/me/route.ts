@@ -22,8 +22,23 @@ export async function GET(request: NextRequest) {
     const db = supabaseAdmin as any;
     const { data: driver, error } = await db
       .from("delivery_drivers")
-      // CORRECCIÓN: Se añade restaurant_id a la selección
-      .select("id, auth_user_id, full_name, phone, active, online, zone, restaurant_id")
+      .select(`
+        id, 
+        auth_user_id, 
+        full_name, 
+        email, 
+        phone, 
+        active, 
+        online, 
+        zone, 
+        restaurant_id,
+        vehicle_type,
+        license_plate,
+        vehicle_color,
+        ranking_level,
+        rating,
+        selfie_url
+      `)
       .eq("auth_user_id", userData.user.id)
       .maybeSingle();
 
@@ -32,13 +47,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: "No fue posible obtener el repartidor." }, { status: 500 });
     }
 
-    if (!driver || !driver.active) {
-      return NextResponse.json({ success: false, error: "Repartidor no habilitado." }, { status: 403 });
+    if (!driver) {
+      return NextResponse.json({ success: false, error: "Repartidor no encontrado." }, { status: 404 });
     }
 
+    if (!driver.active) {
+      return NextResponse.json({ success: false, error: "Repartidor no habilitado por administración." }, { status: 403 });
+    }
+
+    // Retornamos el perfil completo para que la App cargue Email, Foto y Ranking
     return NextResponse.json({ success: true, driver });
+    
   } catch (error) {
     console.error("[DELIVERY ME][UNHANDLED]", error);
-    return NextResponse.json({ success: false, error: "Error interno." }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Error interno del servidor." }, { status: 500 });
   }
 }
