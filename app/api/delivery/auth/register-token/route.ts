@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   try {
     const { driverId, token, restaurantId } = await request.json();
 
-    if (!driverId || !token || !restaurantId) {
+    if (!driverId || !token) {
       return NextResponse.json(
         {
           success: false,
@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
       .upsert(
         {
           user_id: driverId,
-          restaurant_id: restaurantId,
+          // Repartidor de flota (sin restaurante fijo) manda "" -> lo guardamos como null
+          restaurant_id: restaurantId ? restaurantId : null,
           fcm_token: token,
           platform: "android",
           active: true,
@@ -32,11 +33,12 @@ export async function POST(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error interno";
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: message,
       },
       { status: 500 }
     );

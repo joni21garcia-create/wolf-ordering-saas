@@ -13,8 +13,23 @@ interface UpdateProfileRequest {
   online?: boolean;
 }
 
+function bearer(request: NextRequest): string | null {
+  const value = request.headers.get("authorization") ?? "";
+  if (!value.toLowerCase().startsWith("bearer ")) return null;
+  return value.slice(7).trim() || null;
+}
+
 export async function POST(request: NextRequest) {
   try {
+    const accessToken = bearer(request);
+    if (!accessToken) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(accessToken);
+    if (userError || !userData.user) {
+      return NextResponse.json({ success: false, error: "Sesión inválida." }, { status: 401 });
+    }
+
     const body: UpdateProfileRequest = await request.json();
     const { driverId, ...updateData } = body;
 
@@ -22,12 +37,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "driverId es requerido." }, { status: 400 });
     }
 
+    // El driverId debe pertenecer al usuario autenticado
+    const { data: driverRow } = await supabaseAdmin
+      .from("delivery_drivers")
+      .select("id")
+      .eq("id", driverId)
+      .eq("auth_user_id", userData.user.id)
+      .maybeSingle();
+    if (!driverRow) {
+      return NextResponse.json({ success: false, error: "driverId no coincide con la sesión." }, { status: 403 });
+    }
+
     // Limpiamos campos indefinidos para no sobreescribir con null por error
     const cleanUpdateData = Object.fromEntries(
-      Object.entries(updateData).filter(([_, v]) => v !== undefined)
+      Object.entries(updateData).filter(([, value]) => value !== undefined)
     );
 
     // Mapeo de nombres de campo de la App a la Base de Datos (snake_case)
+    // Nota: los tipos generados de Supabase están desactualizados y no
+    // incluyen columnas reales como selfie_url/license_plate, por eso 'any'.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dbUpdate: any = {};
     if (cleanUpdateData.selfieUrl) dbUpdate.selfie_url = cleanUpdateData.selfieUrl;
     if (cleanUpdateData.licensePlate) dbUpdate.license_plate = cleanUpdateData.licensePlate;
@@ -54,8 +83,9 @@ export async function POST(request: NextRequest) {
       driver: data
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("[UPDATE_PROFILE][FATAL]", error);
-    return NextResponse.json({ success: false, error: "Error interno: " + error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : "desconocido";
+    return NextResponse.json({ success: false, error: "Error interno: " + message }, { status: 500 });
   }
 }

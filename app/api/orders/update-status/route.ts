@@ -362,6 +362,33 @@ export async function POST(request: NextRequest) {
           title = "👨‍🍳 Pedido aceptado";
           message = "El restaurante confirmó tu pedido.";
           icon = "/icons/push/accepted.png";
+
+          // --- AVISO PARA LOS REPARTIDORES ---
+          // Dispara justo cuando el restaurante acepta, no cuando queda "listo".
+          try {
+
+            const { sendToDrivers } =
+              await import("@/lib/push");
+
+            await sendToDrivers({
+              title: "¡Nuevo pedido disponible!",
+              body: `Un restaurante aceptó un pedido. ¡Entra para confirmar la tarifa!`,
+              data: {
+                type: "NEW_ORDER",
+                orderId: order.id,
+                status: "accepted",
+              },
+            });
+
+          } catch (err) {
+
+            console.error(
+              "Error avisando a repartidores",
+              err
+            );
+
+          }
+
           break;
 
         case "preparing":
@@ -375,25 +402,33 @@ export async function POST(request: NextRequest) {
           message = "Tu pedido está listo y saldrá en unos momentos.";
           icon = "/icons/push/ready.png";
 
-          // --- AVISO PARA LOS REPARTIDORES ---
+          // Recordatorio solo si nadie lo ha tomado todavía
           try {
 
-            const { sendToDrivers } =
-              await import("@/lib/push");
+            const { supabaseAdmin } = await import("@/lib/supabase/admin");
+            const { data: current } = await supabaseAdmin
+              .from("orders")
+              .select("delivery_driver_id")
+              .eq("id", order.id)
+              .maybeSingle();
 
-            await sendToDrivers({
-              title: "¡Nuevo pedido disponible!",
-              body: `Hay un pedido listo para recoger. ¡Acéptalo ahora!`,
-              data: {
-                type: "NEW_ORDER",
-                orderId: order.id,
-              },
-            });
+            if (!current?.delivery_driver_id) {
+              const { sendToDrivers } = await import("@/lib/push");
+              await sendToDrivers({
+                title: "📦 Pedido listo para recoger",
+                body: "Sigue disponible y ya está listo. ¡Tómalo ahora!",
+                data: {
+                  type: "NEW_ORDER",
+                  orderId: order.id,
+                  status: "ready",
+                },
+              });
+            }
 
           } catch (err) {
 
             console.error(
-              "Error avisando a repartidores",
+              "Error avisando a repartidores (ready)",
               err
             );
 
