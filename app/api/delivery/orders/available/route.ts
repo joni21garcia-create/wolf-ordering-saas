@@ -1,47 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
-interface OrderWithRestaurant {
-  restaurants?: { 
-    latitude?: number; 
-    longitude?: number;
-    name?: string;
-    address?: string;
-    whatsapp_url?: string;
-    phone?: string;
-  } | null;
-  [key: string]: unknown;
-}
-
-function bearer(request: NextRequest): string | null {
-  const value = request.headers.get("authorization") ?? "";
-  if (!value.toLowerCase().startsWith("bearer ")) return null;
-  return value.slice(7).trim() || null;
-}
-
 export async function GET(request: NextRequest) {
   try {
-    const accessToken = bearer(request);
-    if (!accessToken) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
-    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(accessToken);
-    if (userError || !userData.user) {
-      return NextResponse.json({ success: false, error: "Sesión inválida." }, { status: 401 });
-    }
+    const authHeader = request.headers.get("authorization") || "";
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+    if (!user) return NextResponse.json({ success: false, error: "Sesión inválida" }, { status: 401 });
 
-    const { data: driverRow } = await supabaseAdmin
-      .from("delivery_drivers")
-      .select("id")
-      .eq("auth_user_id", userData.user.id)
-      .maybeSingle();
+    const { data: driverRow } = await supabaseAdmin.from("delivery_drivers").select("id").eq("auth_user_id", user.id).maybeSingle();
     const driverId = driverRow?.id;
 
-    const { searchParams } = new URL(request.url);
-    const zone = searchParams.get("zone");
-
-    // ADAPTACIÓN: Mantenemos tu lógica pero agregamos los campos solicitados
-    let query = supabaseAdmin
+    // CONSULTA MAESTRA: Trae todo (Efectivo, QR, Transferencia) y todos los tiempos
+    const { data: orders, error } = await supabaseAdmin
       .from("orders")
       .select(`
         *,
@@ -49,23 +20,13 @@ export async function GET(request: NextRequest) {
         restaurants (name, address, latitude, longitude, whatsapp_url, phone)
       `)
       .eq("order_type", "delivery")
-      // Incluimos 'pending' para que veas las ofertas nuevas de inmediato
       .in("status", ["pending", "accepted", "preparing", "ready", "out_for_delivery"]);
 
-    if (driverId) {
-      query = query.or(`delivery_driver_id.is.null,delivery_driver_id.eq.${driverId}`);
-    } else {
-      query = query.is("delivery_driver_id", null);
-    }
-
-    if (zone) query = query.eq("delivery_sector", zone);
-
-    const { data: orders, error } = await query.order("created_at", { ascending: false });
     if (error) throw error;
 
-    const formattedOrders = (orders as OrderWithRestaurant[] | null)?.map((order) => ({
+    // Filtramos manualmente para asegurar visibilidad total (míos + libres)
+    const formattedOrders = orders?.filter(o => !o.delivery_driver_id || o.delivery_driver_id === driverId).map((order) => ({
       ...order,
-      // Mapeo para que la App reciba las coordenadas como 'restaurant'
       restaurant: {
         lat: order.restaurants?.latitude || -2.169,
         lng: order.restaurants?.longitude || -79.916
@@ -73,9 +34,8 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json({ success: true, orders: formattedOrders });
-  } catch (error) {
-    console.error("[GET AVAILABLE ORDERS] Error:", error);
-    const message = error instanceof Error ? error.message : "Error interno";
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  } catch (error: any) {
+    console.error("[BACKEND ERROR]", error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
