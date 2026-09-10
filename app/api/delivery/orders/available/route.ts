@@ -2,7 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 interface OrderWithRestaurant {
-  restaurants?: { latitude?: number; longitude?: number } | null;
+  restaurants?: { 
+    latitude?: number; 
+    longitude?: number;
+    name?: string;
+    address?: string;
+    whatsapp_url?: string;
+    phone?: string;
+  } | null;
   [key: string]: unknown;
 }
 
@@ -41,7 +48,7 @@ export async function GET(request: NextRequest) {
       .select(`
         *,
         order_items (*, products (*)),
-        restaurants (name, address, latitude, longitude)
+        restaurants (name, address, latitude, longitude, whatsapp_url, phone)
       `)
       .eq("order_type", "delivery")
       .in("status", ["accepted", "preparing", "ready", "out_for_delivery"]);
