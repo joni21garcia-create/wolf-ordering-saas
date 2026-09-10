@@ -40,9 +40,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const zone = searchParams.get("zone");
 
-    // Libres para negociar (accepted/ready sin repartidor) + el pedido propio
-    // en cualquier estado activo (preparing/ready/out_for_delivery), para que
-    // el repartidor siga viendo su misión avanzar hasta "entregado".
+    // VISIBILIDAD TOTAL: Incluimos 'pending' y todos los estados de seguimiento
     let query = supabaseAdmin
       .from("orders")
       .select(`
@@ -51,7 +49,7 @@ export async function GET(request: NextRequest) {
         restaurants (name, address, latitude, longitude, whatsapp_url, phone)
       `)
       .eq("order_type", "delivery")
-      .in("status", ["accepted", "preparing", "ready", "out_for_delivery"]);
+      .in("status", ["pending", "accepted", "preparing", "ready", "out_for_delivery"]);
 
     if (driverId) {
       query = query.or(`delivery_driver_id.is.null,delivery_driver_id.eq.${driverId}`);
