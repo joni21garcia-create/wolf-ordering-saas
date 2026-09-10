@@ -55,7 +55,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Repartidor no habilitado por administración." }, { status: 403 });
     }
 
-    // Retornamos el perfil completo para que la App cargue Email, Foto y Ranking
     return NextResponse.json({ success: true, driver });
     
   } catch (error) {

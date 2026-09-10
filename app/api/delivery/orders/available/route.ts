@@ -14,7 +14,10 @@ export async function GET(request: NextRequest) {
     const { data: driverRow } = await supabaseAdmin.from("delivery_drivers").select("id").eq("auth_user_id", userData.user.id).maybeSingle();
     const driverId = driverRow?.id;
 
-    // CONSULTA RESILIENTE: Pedimos solo lo básico garantizado para evitar el Error 500
+    // CONSULTA MAESTRA: 
+    // 1. Trae todos los estados (incluyendo 'pending')
+    // 2. Trae todos los campos de tiempo (* en orders)
+    // 3. Trae whatsapp_url y phone del restaurante
     const { data: orders, error } = await supabaseAdmin
       .from("orders")
       .select(`
@@ -27,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
-    // Mapeo seguro: Si no existe latitude/phone, usamos valores por defecto
+    // Mapeo seguro y filtro para que el repartidor vea solo lo libre o lo suyo
     const formattedOrders = orders?.filter(o => !o.delivery_driver_id || o.delivery_driver_id === driverId).map((order) => {
       const rest = (order.restaurants as any);
       return {
@@ -42,6 +45,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, orders: formattedOrders });
   } catch (error: any) {
     console.error("[GET AVAILABLE ORDERS] Fatal Error:", error);
-    return NextResponse.json({ success: false, error: "Error en servidor: Revisa las columnas de Supabase" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "Falla en servidor: Revisa columnas en Supabase" }, { status: 500 });
   }
 }
