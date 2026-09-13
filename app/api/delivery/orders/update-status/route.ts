@@ -7,9 +7,6 @@ function bearer(request: NextRequest): string | null {
   return value.slice(7).trim() || null;
 }
 
-// Estados que el repartidor tiene permitido setear desde la app.
-// "accepted"/"preparing"/"ready" los controla el restaurante; el repartidor
-// solo avanza el tramo real: en camino -> entregado.
 const DRIVER_ALLOWED_STATUSES = ["out_for_delivery", "completed"];
 
 export async function POST(request: NextRequest) {
@@ -18,47 +15,60 @@ export async function POST(request: NextRequest) {
     if (!accessToken) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
-    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(accessToken);
-    if (userError || !userData.user) {
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(accessToken);
+    if (userError || !user) {
       return NextResponse.json({ success: false, error: "Sesión inválida." }, { status: 401 });
     }
+
     const { data: driver } = await supabaseAdmin
       .from("delivery_drivers")
       .select("id")
-      .eq("auth_user_id", userData.user.id)
+      .eq("auth_user_id", user.id)
       .maybeSingle();
+
     if (!driver) {
       return NextResponse.json({ success: false, error: "Repartidor no encontrado." }, { status: 403 });
     }
 
     const body = await request.json();
-    const { orderId, status } = body;
+    const { 
+      orderId, 
+      status, 
+      evidenceUrl, 
+      feePayer, 
+      driverEarning, 
+      deliveryDuration,
+      customerPhone 
+    } = body;
 
     if (!orderId || !status) {
       return NextResponse.json({ success: false, error: "Datos faltantes" }, { status: 400 });
     }
 
     if (!DRIVER_ALLOWED_STATUSES.includes(status)) {
-      return NextResponse.json({ success: false, error: "Estado no permitido para repartidor" }, { status: 400 });
+      return NextResponse.json({ success: false, error: "Estado no permitido" }, { status: 400 });
     }
 
-    // Nota: los tipos generados de Supabase (database.types.ts) están
-    // desactualizados y no incluyen todas las columnas reales de "orders"
-    // (ej. updated_at), por eso se usa 'any' aquí explícitamente.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
       status,
       updated_at: new Date().toISOString(),
     };
 
+    // --- AUDITORÍA V30: Registro de Billetera y Evidencia ---
     if (status === "out_for_delivery") {
       updateData.out_for_delivery_at = new Date().toISOString();
     } else if (status === "completed") {
       updateData.completed_at = new Date().toISOString();
       updateData.payment_status = "paid";
+      
+      // Guardamos la info financiera y operativa
+      updateData.evidence_url = evidenceUrl;
+      updateData.fee_payer = feePayer;
+      updateData.driver_earning = driverEarning;
+      updateData.delivery_duration = deliveryDuration;
+      if (customerPhone) updateData.customer_phone = customerPhone;
     }
 
-    // Solo puede tocar un pedido que sea suyo, y no reabrir uno ya entregado.
     const { data: updated, error } = await supabaseAdmin
       .from("orders")
       .update(updateData)
@@ -70,21 +80,15 @@ export async function POST(request: NextRequest) {
 
     if (error) throw error;
     if (!updated) {
-      return NextResponse.json({ success: false, error: "Pedido no asignado a este repartidor o ya finalizado" }, { status: 409 });
+      return NextResponse.json({ success: false, error: "No asignado o ya finalizado" }, { status: 409 });
     }
 
-    // --- AVISO AL CLIENTE ---
+    // --- AVISO AL CLIENTE (PUSH) ---
     try {
       const { sendCustomer } = await import("@/lib/push");
       const messages: Record<string, { title: string; body: string }> = {
-        out_for_delivery: {
-          title: "🛵 ¡Va en camino!",
-          body: "Tu pedido salió del restaurante y va rumbo a ti.",
-        },
-        completed: {
-          title: "🎉 ¡Pedido entregado!",
-          body: "Esperamos que disfrutes tu comida. ¡Gracias por elegirnos!",
-        },
+        out_for_delivery: { title: "🛵 ¡Va en camino!", body: "Tu pedido va rumbo a ti." },
+        completed: { title: "🎉 ¡Pedido entregado!", body: "¡Gracias por elegir Wolf!" },
       };
       const msg = messages[status];
       if (msg) {
@@ -94,17 +98,12 @@ export async function POST(request: NextRequest) {
           body: msg.body,
           url: `/tracking/${updated.tracking_code}`,
           icon: status === "completed" ? "/icons/push/completed.png" : "/icons/push/delivery.png",
-          badge: "/icons/badge/wolf.png",
         });
       }
-    } catch (err) {
-      console.error("[PUSH ERROR][CUSTOMER]", err);
-    }
+    } catch (err) { console.error("[PUSH ERROR]", err); }
 
     return NextResponse.json({ success: true, status });
-  } catch (error) {
-    console.error("[UPDATE STATUS FATAL]", error);
-    const message = error instanceof Error ? error.message : "Error interno";
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
