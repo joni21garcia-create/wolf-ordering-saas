@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 
 import "./globals.css";
 import "@/components/restaurant/DesignChrome.css";
@@ -57,7 +58,37 @@ export default function RootLayout({
           overflow-x-hidden
         "
       >
-        {/* Capas decorativas */}
+        {/* =====================================================
+            GOOGLE ANALYTICS
+            Measurement ID: G-2GC9MZ8PBJ
+        ====================================================== */}
+
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-2GC9MZ8PBJ"
+        />
+
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+        >
+          {`
+            window.dataLayer = window.dataLayer || [];
+
+            function gtag() {
+              window.dataLayer.push(arguments);
+            }
+
+            gtag('js', new Date());
+
+            gtag('config', 'G-2GC9MZ8PBJ');
+          `}
+        </Script>
+
+        {/* =====================================================
+            CAPAS DECORATIVAS
+        ====================================================== */}
+
         <div
           className="
             fixed
@@ -72,6 +103,10 @@ export default function RootLayout({
           <div className="stripe-lines" />
           <ParticlesBackground />
         </div>
+
+        {/* =====================================================
+            SESSION
+        ====================================================== */}
 
         <SessionProvider>
           <AppSplash>
