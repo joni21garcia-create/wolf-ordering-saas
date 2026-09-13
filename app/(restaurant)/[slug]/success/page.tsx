@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import UnlockWhatsApp from "@/components/restaurant/UnlockWhatsApp";
+import OrderCompletedAnalytics from "@/components/analytics/OrderCompletedAnalytics";
 
 interface Props {
   searchParams: Promise<{
@@ -221,12 +222,29 @@ const estimatedTime =
     );
   }
 
+ const analyticsValue = Number(orderData.total ?? 0);
+
+ const analytics = (
+   <OrderCompletedAnalytics
+     restaurantId={restaurant.id}
+     restaurantSlug={restaurant.slug}
+     restaurantName={restaurant.name}
+     orderId={orderData.id}
+     orderType={orderData.order_type}
+     paymentMethod={orderData.payment_method}
+     value={analyticsValue}
+     currency="USD"
+   />
+ );
+
  const customerSubtotal =
   Number(orderData.subtotal) +
   Number(orderData.commission_amount ?? 0);
 
   return (
-    <main
+    <>
+      {analytics}
+      <main
       style={{
         maxWidth: "760px",
         margin: "0 auto",
@@ -818,7 +836,8 @@ const estimatedTime =
           </div>
         </div>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
 

@@ -14,6 +14,7 @@ import ReservationTypeStep from "@/components/reservations/forms/ReservationType
 import ReservationServicesStep from "@/components/reservations/forms/ReservationServicesStep";
 import ReservationNotesStep from "@/components/reservations/forms/ReservationNotesStep";
 import ReservationSummaryStep from "@/components/reservations/forms/ReservationSummaryStep";
+import ReservationAnalytics from "@/components/analytics/ReservationAnalytics";
 
 import {
   createReservation,
@@ -727,9 +728,11 @@ const STEP_TITLES = [
 function ReservationContentInner({
   restaurantId,
   restaurantName,
+  slug,
 }: {
   restaurantId: string;
   restaurantName?: string;
+  slug: string;
 }) {
   const { currentStep, data, next, previous, reset } =
     useReservationWizard();
@@ -1054,6 +1057,15 @@ function ReservationContentInner({
 
   return (
     <>
+      <ReservationAnalytics
+        restaurantId={restaurantId}
+        restaurantSlug={slug}
+        restaurantName={restaurantName ?? "Restaurante"}
+        reservationId={createdReservationId}
+        guests={data.guests}
+        reservationDate={data.date}
+      />
+
       <ReservationWizardHeader
         title={STEP_TITLES[currentStep] ?? "Reserva"}
       />
@@ -1123,6 +1135,7 @@ export default function ReservationCustomerPage(props: Props) {
           <ReservationContentInner
             restaurantId={props.restaurantId}
             restaurantName={props.restaurantName}
+            slug={props.slug}
           />
         </ReservationWizard>
       </div>

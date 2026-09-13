@@ -1,3 +1,4 @@
+import { trackEvent } from "@/lib/analytics";
 "use client";
 
 import { motion } from "framer-motion";
@@ -217,6 +218,12 @@ const total = Number(
         "restaurant_slug",
         slug
       );
+
+      trackEvent("order_started", {
+        restaurant_id: items[0]?.restaurant_id,
+        restaurant_slug: slug,
+        item_count: items.reduce((total, item) => total + item.quantity, 0),
+      });
 
       router.push(
         `/${slug}/checkout`
@@ -591,5 +598,3 @@ const total = Number(
     </div>
   );
 }
-
-

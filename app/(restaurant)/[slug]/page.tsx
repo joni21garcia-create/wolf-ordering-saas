@@ -14,6 +14,7 @@ import Footer from "@/components/restaurant/Footer";
 import PushProvider from "@/components/push/PushProvider";
 import PublicFloatingCart from "@/components/restaurant/PublicFloatingCart";
 import FloatingReservationButton from "@/components/reservations/FloatingReservationButton";
+import RestaurantAnalytics from "@/components/analytics/RestaurantAnalytics";
 
 interface Props {
   params: Promise<{
@@ -54,6 +55,12 @@ export default async function RestaurantPage({ params }: Props) {
 
   return (
     <>
+      <RestaurantAnalytics
+        restaurantId={restaurant.id}
+        restaurantSlug={slug}
+        restaurantName={restaurant.name}
+      />
+
       <PushProvider restaurantId={restaurant.id} />
 
       <ThemeProvider theme={restaurant.themeSettings} />
@@ -80,5 +87,3 @@ export default async function RestaurantPage({ params }: Props) {
     </>
   );
 }
-
-
