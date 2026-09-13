@@ -10,17 +10,12 @@ function bearer(request: NextRequest): string | null {
 export async function GET(request: NextRequest) {
   try {
     const accessToken = bearer(request);
-    if (!accessToken) {
-      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
-    }
+    if (!accessToken) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
 
-    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(accessToken);
-    if (userError || !userData.user) {
-      return NextResponse.json({ success: false, error: "Sesión inválida." }, { status: 401 });
-    }
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(accessToken);
+    if (userError || !user) return NextResponse.json({ success: false, error: "Sesión inválida." }, { status: 401 });
 
-    const db = supabaseAdmin as any;
-    const { data: driver, error } = await db
+    const { data: driver, error } = await supabaseAdmin
       .from("delivery_drivers")
       .select(`
         id, 
@@ -37,28 +32,22 @@ export async function GET(request: NextRequest) {
         vehicle_color,
         ranking_level,
         rating,
-        selfie_url
+        total_deliveries, -- Dato vital para el ranking
+        selfie_url,
+        doc_front_url,
+        doc_back_url,
+        type -- Para Staff vs Asociado
       `)
-      .eq("auth_user_id", userData.user.id)
+      .eq("auth_user_id", user.id)
       .maybeSingle();
 
-    if (error) {
-      console.error("[DELIVERY ME]", error);
-      return NextResponse.json({ success: false, error: "No fue posible obtener el repartidor." }, { status: 500 });
-    }
-
-    if (!driver) {
-      return NextResponse.json({ success: false, error: "Repartidor no encontrado." }, { status: 404 });
-    }
-
-    if (!driver.active) {
-      return NextResponse.json({ success: false, error: "Repartidor no habilitado por administración." }, { status: 403 });
-    }
+    if (error) throw error;
+    if (!driver) return NextResponse.json({ success: false, error: "Repartidor no encontrado" }, { status: 404 });
 
     return NextResponse.json({ success: true, driver });
     
-  } catch (error) {
-    console.error("[DELIVERY ME][UNHANDLED]", error);
-    return NextResponse.json({ success: false, error: "Error interno del servidor." }, { status: 500 });
+  } catch (error: any) {
+    console.error("[ME API ERROR]", error.message);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
