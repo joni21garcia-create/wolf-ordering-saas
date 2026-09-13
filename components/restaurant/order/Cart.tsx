@@ -1,6 +1,6 @@
-import { trackEvent } from "@/lib/analytics";
 "use client";
 
+import { trackEvent } from "@/lib/analytics";
 import { motion } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
 import { getDeliveryDisplay } from "@/lib/delivery/getDeliveryDisplay";
