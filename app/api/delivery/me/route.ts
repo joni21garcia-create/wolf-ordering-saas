@@ -32,11 +32,11 @@ export async function GET(request: NextRequest) {
         vehicle_color,
         ranking_level,
         rating,
-        total_deliveries, -- Dato vital para el ranking
+        total_deliveries,
         selfie_url,
         doc_front_url,
         doc_back_url,
-        type -- Para Staff vs Asociado
+        type
       `)
       .eq("auth_user_id", user.id)
       .maybeSingle();
